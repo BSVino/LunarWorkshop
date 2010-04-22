@@ -2,7 +2,7 @@
 
 #include <modelconverter/modelconverter.h>
 #include "ui/modelwindow.h"
-#include "crunch.h"
+#include "crunch/crunch.h"
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <IL/il.h>

@@ -2,7 +2,7 @@
 #define MODELWINDOW_UI_H
 
 #include "modelgui.h"
-#include "../crunch.h"
+#include "crunch/crunch.h"
 
 using namespace modelgui;
 
