@@ -29,8 +29,8 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying to destination folder"
-				CommandLine="if exist &quot;..\..\lib\debug\raytracer.lib&quot; attrib -r &quot;..\..\lib\debug\raytracer.lib&quot;&#x0D;&#x0A;if exist &quot;$(TargetDir)&quot;raytracer.lib copy &quot;$(TargetDir)&quot;raytracer.lib &quot;..\..\lib\debug\raytracer.lib&quot;&#x0D;&#x0A;"
-				Outputs="..\..\lib\debug\raytracer.lib"
+				CommandLine="if exist &quot;..\lib\debug\raytracer.lib&quot; attrib -r &quot;..\lib\debug\raytracer.lib&quot;&#x0D;&#x0A;if exist &quot;$(TargetDir)&quot;raytracer.lib copy &quot;$(TargetDir)&quot;raytracer.lib &quot;..\lib\debug\raytracer.lib&quot;&#x0D;&#x0A;"
+				Outputs="..\lib\debug\raytracer.lib"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -50,7 +50,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;..\..\common;..\..\common\math;../freeglut-2.4.0\include"
+				AdditionalIncludeDirectories="..;..\common;..\common\math;../freeglut-2.4.0\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;FREEGLUT_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -111,8 +111,8 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Copying to destination folder"
-				CommandLine="if exist &quot;..\..\lib\release\raytracer.lib&quot; attrib -r &quot;..\..\lib\release\raytracer.lib&quot;&#x0D;&#x0A;if exist &quot;$(TargetDir)&quot;raytracer.lib copy &quot;$(TargetDir)&quot;raytracer.lib &quot;..\..\lib\release\raytracer.lib&quot;&#x0D;&#x0A;"
-				Outputs="..\..\lib\release\raytracer.lib"
+				CommandLine="if exist &quot;..\lib\release\raytracer.lib&quot; attrib -r &quot;..\lib\release\raytracer.lib&quot;&#x0D;&#x0A;if exist &quot;$(TargetDir)&quot;raytracer.lib copy &quot;$(TargetDir)&quot;raytracer.lib &quot;..\lib\release\raytracer.lib&quot;&#x0D;&#x0A;"
+				Outputs="..\lib\release\raytracer.lib"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -133,7 +133,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..;..\..\common;..\..\common\math"
+				AdditionalIncludeDirectories="..;..\common;..\common\math"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="0"
