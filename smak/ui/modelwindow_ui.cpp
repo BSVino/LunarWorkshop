@@ -1332,32 +1332,32 @@ void CNormalPanel::Layout()
 	m_pRemoveHiRes->SetSize(60, 20);
 	m_pRemoveHiRes->SetPos(iTreeWidth+70, 225);
 
-	m_pTextureLabel->SetPos(35, 220);
+	m_pGenerate->SetSize(100, 33);
+	m_pGenerate->SetPos(GetWidth()/2 - m_pGenerate->GetWidth()/2, 260);
+
+	m_pTextureLabel->SetPos(35, 270);
 	m_pTextureLabel->EnsureTextFits();
 	m_pTextureLabel->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pTextureLabel->SetWrap(false);
-	m_pTextureCheckBox->SetPos(20, 220 + m_pTextureLabel->GetHeight()/2 - m_pTextureCheckBox->GetHeight()/2);
+	m_pTextureCheckBox->SetPos(20, 270 + m_pTextureLabel->GetHeight()/2 - m_pTextureCheckBox->GetHeight()/2);
 
-	m_pHiDepthLabel->SetPos(10, 280);
+	m_pHiDepthLabel->SetPos(10, 330);
 	m_pHiDepthLabel->EnsureTextFits();
 	m_pHiDepthLabel->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pHiDepthLabel->SetWrap(false);
-	m_pHiDepthSelector->SetPos(m_pHiDepthLabel->GetRight() + 10, 280 + m_pHiDepthLabel->GetHeight()/2 - m_pHiDepthSelector->GetHeight()/2);
+	m_pHiDepthSelector->SetPos(m_pHiDepthLabel->GetRight() + 10, 330 + m_pHiDepthLabel->GetHeight()/2 - m_pHiDepthSelector->GetHeight()/2);
 	m_pHiDepthSelector->SetRight(GetWidth() - 10);
 
-	m_pLoDepthLabel->SetPos(10, 300);
+	m_pLoDepthLabel->SetPos(10, 350);
 	m_pLoDepthLabel->EnsureTextFits();
 	m_pLoDepthLabel->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pLoDepthLabel->SetWrap(false);
-	m_pLoDepthSelector->SetPos(m_pLoDepthLabel->GetRight() + 10, 300 + m_pLoDepthLabel->GetHeight()/2 - m_pLoDepthSelector->GetHeight()/2);
+	m_pLoDepthSelector->SetPos(m_pLoDepthLabel->GetRight() + 10, 350 + m_pLoDepthLabel->GetHeight()/2 - m_pLoDepthSelector->GetHeight()/2);
 	m_pLoDepthSelector->SetRight(GetWidth() - 10);
 
 	m_pSave->SetSize(100, 33);
-	m_pSave->SetPos(GetWidth() - m_pSave->GetWidth() - (int)(m_pSave->GetHeight()*0.5f), GetHeight() - (int)(m_pSave->GetHeight()*1.5f));
+	m_pSave->SetPos(GetWidth()/2 - m_pSave->GetWidth()/2, GetHeight() - (int)(m_pSave->GetHeight()*1.5f));
 	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
-
-	m_pGenerate->SetSize(100, 33);
-	m_pGenerate->SetPos(GetWidth() - m_pGenerate->GetWidth() - (int)(m_pGenerate->GetHeight()*0.5f), GetHeight() - (int)(m_pSave->GetHeight()*1.5f) - (int)(m_pGenerate->GetHeight()*1.5f));
 
 	size_t i;
 	m_pLoRes->ClearTree();
@@ -1418,7 +1418,9 @@ void CNormalPanel::Think()
 	}
 
 	m_pTextureLabel->SetText("Use texture");
-	if (m_oGenerator.IsGeneratingNewNormal2())
+	if (!m_apLoResMeshes.size())
+		m_pTextureLabel->AppendText(" (Add a low resolution mesh first!)");
+	else if (m_oGenerator.IsGeneratingNewNormal2())
 	{
 		m_pTextureLabel->AppendText(" (Generating... ");
 		char szPercentage[10];

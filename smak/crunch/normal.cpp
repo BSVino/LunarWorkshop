@@ -826,11 +826,8 @@ float CNormalGenerator::GetLowPassValue(size_t x, size_t y)
 
 void CNormalGenerator::SetNormalTexture(bool bNormalTexture)
 {
-	// Options:
-	// Depth
-	// Lo pass
-	// Mid pass
-	// Hi pass
+	if (!m_apLoRes.size())
+		return;
 
 	if (m_iNormal2GLId)
 		glDeleteTextures(1, &m_iNormal2GLId);
