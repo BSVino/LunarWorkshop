@@ -154,6 +154,7 @@ public:
 	size_t					GetMaterialsNodeTexture() { return m_iTextureTexture; };
 	size_t					GetMeshesNodeTexture() { return m_iWireframeTexture; };
 	size_t					GetScenesNodeTexture() { return m_iAOTexture; };
+	size_t					GetBarretTexture() { return m_iBarretTexture; };
 
 	static CModelWindow*	Get() { return s_pModelWindow; };
 
@@ -193,6 +194,7 @@ protected:
 	size_t					m_iArrowTexture;
 	size_t					m_iVisibilityTexture;
 	size_t					m_iEditTexture;
+	size_t					m_iBarretTexture;
 
 	float					m_flCameraDistance;
 

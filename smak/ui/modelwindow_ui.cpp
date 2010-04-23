@@ -2007,11 +2007,11 @@ void CPiratesPanel::Layout()
 		int px, py, pw, ph;
 		GetParent()->GetAbsDimensions(px, py, pw, ph);
 
-		SetSize(800, 350);
+		SetSize(800, 400);
 		SetPos(pw/2 - GetWidth()/2, ph/2 - GetHeight()/2);
 	}
 
-	m_pInfo->SetSize(GetWidth()-10, GetHeight()-10);
+	m_pInfo->SetSize(GetWidth()-275, GetHeight()-10);
 	m_pInfo->SetPos(5, 5);
 	m_pInfo->SetAlign(CLabel::TA_LEFTCENTER);
 
@@ -2027,7 +2027,7 @@ void CPiratesPanel::Layout()
 	m_pInfo->AppendText(" \n");
 	m_pInfo->AppendText("So please, when you pirate this software, think of the dog.\n");
 	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("Jorge Rodriguez <jrodriguez@matreyastudios.com>\n");
+	m_pInfo->AppendText("Jorge Rodriguez <jrodriguez@getsmak.net>\n");
 
 	CMovablePanel::Layout();
 }
@@ -2035,6 +2035,24 @@ void CPiratesPanel::Layout()
 void CPiratesPanel::Paint(int x, int y, int w, int h)
 {
 	CMovablePanel::Paint(x, y, w, h);
+
+	// ACTIVATE OPERATION GUILT TRIP!!!
+	glDisable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+
+	glBindTexture(GL_TEXTURE_2D, (GLuint)CModelWindow::Get()->GetBarretTexture());
+	glColor4f(1,1,1,1);
+	glBegin(GL_QUADS);
+		glTexCoord2f(0, 1);
+		glVertex2d(x+w-266, y+h/2-128);
+		glTexCoord2f(0, 0);
+		glVertex2d(x+w-266, y+h/2+128);
+		glTexCoord2f(1, 0);
+		glVertex2d(x+w-10, y+h/2+128);
+		glTexCoord2f(1, 1);
+		glVertex2d(x+w-10, y+h/2-128);
+	glEnd();
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 bool CPiratesPanel::MousePressed(int iButton, int mx, int my)

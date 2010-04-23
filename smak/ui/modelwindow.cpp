@@ -103,6 +103,7 @@ CModelWindow::CModelWindow()
 	m_iArrowTexture = LoadTextureIntoGL(L"arrow.png");
 	m_iEditTexture = LoadTextureIntoGL(L"pencil.png");
 	m_iVisibilityTexture = LoadTextureIntoGL(L"eye.png");
+	m_iBarretTexture = LoadTextureIntoGL(L"barret.png");
 
 	InitUI();
 
