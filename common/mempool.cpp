@@ -3,6 +3,7 @@
 
 size_t CMemPool::s_iMemoryAllocated = 0;
 std::vector<CMemPool*> CMemPool::s_apMemPools;
+size_t CMemPool::s_iLastMemPoolHandle = 0;
 
 CMemPool::CMemPool()
 	: m_pMemPool(NULL), m_iMemPoolSize(0), m_pAllocMap(NULL), m_pAllocMapBack(NULL)
@@ -15,7 +16,7 @@ CMemPool::~CMemPool()
 		free(m_pMemPool);
 }
 
-CMemPool* CMemPool::AddPool(size_t iSize)
+CMemPool* CMemPool::AddPool(size_t iSize, size_t iHandle)
 {
 	s_apMemPools.push_back(new CMemPool());
 
@@ -24,17 +25,23 @@ CMemPool* CMemPool::AddPool(size_t iSize)
 	pPool->m_iMemPoolSize = iSize;
 	pPool->m_pMemPool = malloc(pPool->m_iMemPoolSize);
 	pPool->m_iMemoryAllocated = 0;
+	pPool->m_iHandle = iHandle;
 
 	assert(pPool->m_pMemPool);
 
 	return pPool;
 }
 
-void CMemPool::ClearPools()
+void CMemPool::ClearPool(size_t iHandle)
 {
-	for (size_t i = 0; i < s_apMemPools.size(); i++)
+	for (size_t i = s_apMemPools.size()-1; i < s_apMemPools.size(); i--)
+	{
+		if (s_apMemPools[i]->m_iHandle != iHandle)
+			continue;
+
 		delete s_apMemPools[i];
-	s_apMemPools.clear();
+		s_apMemPools.erase(s_apMemPools.begin()+i);
+	}
 }
 
 void* CMemPool::Reserve(void* pLocation, size_t iSize, CMemChunk* pAfter)
@@ -72,11 +79,11 @@ void* CMemPool::Reserve(void* pLocation, size_t iSize, CMemChunk* pAfter)
 	return pChunk->m_pMem;
 }
 
-void* CMemPool::Alloc(size_t iSize)
+void* CMemPool::Alloc(size_t iSize, size_t iHandle)
 {
 	if (!s_apMemPools.size())
 	{
-		CMemPool::AddPool(256 * sizeof(float));	// 1kb
+		CMemPool::AddPool(256 * sizeof(float), 0);	// 1kb
 		s_iMemoryAllocated = 0;
 	}
 
@@ -84,6 +91,9 @@ void* CMemPool::Alloc(size_t iSize)
 	for (unsigned int i = 0; i < s_apMemPools.size(); i++)
 	{
 		CMemPool* pPool = s_apMemPools[i];
+
+		if (pPool->m_iHandle != iHandle)
+			continue;
 
 		// Easy out, is there not enough room?
 		if (pPool->m_iMemoryAllocated + sizeof(CMemChunk) + iSize > pPool->m_iMemPoolSize)
@@ -123,7 +133,7 @@ void* CMemPool::Alloc(size_t iSize)
 	if (!pReturn)
 	{
 		// Create a new one same size as the old plus a little more, so effectively we have a little more than 2x as much memory now.
-		CMemPool* pPool = CMemPool::AddPool(s_iMemoryAllocated+iSize+sizeof(CMemChunk));
+		CMemPool* pPool = CMemPool::AddPool(s_iMemoryAllocated+iSize+sizeof(CMemChunk), iHandle);
 		pReturn = pPool->Reserve(pPool->m_pMemPool, iSize);
 	}
 
@@ -133,7 +143,7 @@ void* CMemPool::Alloc(size_t iSize)
 	return pReturn;
 }
 
-void CMemPool::Free(void* p)
+void CMemPool::Free(void* p, size_t iHandle)
 {
 	if (!p)
 		return;
@@ -142,6 +152,9 @@ void CMemPool::Free(void* p)
 	for (size_t i = 0; i < s_apMemPools.size(); i++)
 	{
 		CMemPool* pPool = s_apMemPools[i];
+
+		if (pPool->m_iHandle != iHandle)
+			continue;
 
 		CMemChunk* pLast = NULL;
 		for (CMemChunk* pChunk = pPool->m_pAllocMap; pChunk; pLast = pChunk, pChunk = pChunk->m_pNext)
@@ -179,12 +192,27 @@ void CMemPool::Free(void* p)
 	assert(bFound);
 }
 
-void* mempool_alloc(size_t iSize)
+size_t CMemPool::GetMemPoolHandle()
 {
-	return CMemPool::Alloc(iSize);
+	return ++s_iLastMemPoolHandle;
 }
 
-void mempool_free(void* p)
+void* mempool_alloc(size_t iSize, size_t iHandle)
 {
-	CMemPool::Free(p);
+	return CMemPool::Alloc(iSize, iHandle);
+}
+
+void mempool_free(void* p, size_t iHandle)
+{
+	CMemPool::Free(p, iHandle);
+}
+
+size_t mempool_gethandle()
+{
+	return CMemPool::GetMemPoolHandle();
+}
+
+void mempool_clearpool(size_t iHandle)
+{
+	CMemPool::ClearPool(iHandle);
 }

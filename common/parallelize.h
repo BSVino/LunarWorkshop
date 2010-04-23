@@ -68,6 +68,8 @@ private:
 	pthread_mutex_t					m_iDataMutex;
 	size_t							m_iExecutions;
 
+	size_t							m_iMemPool;
+
 	bool							m_bStopped;
 	bool							m_bShuttingDown;
 

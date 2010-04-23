@@ -112,6 +112,8 @@ CParallelizer::CParallelizer(JobCallback pfnCallback)
 	m_aJobs.resize(100);
 
 	m_iExecutions = 1;
+
+	m_iMemPool = mempool_gethandle();
 }
 
 CParallelizer::~CParallelizer()
@@ -120,11 +122,8 @@ CParallelizer::~CParallelizer()
 
 	while (!AreAllJobsQuit());
 
-	for (size_t i = 0; i < m_aJobs.size(); i++)
-	{
-		if (m_aJobs[i].m_pJobData)
-			mempool_free(m_aJobs[i].m_pJobData);
-	}
+	// Clears all mempool_alloc'd job data
+	mempool_clearpool(m_iMemPool);
 
 	pthread_mutex_destroy(&m_iDataMutex);
 	pthread_mutex_destroy(&m_iJobsMutex);
@@ -143,7 +142,7 @@ void CParallelizer::AddJob(void* pJobData, size_t iSize)
 	if (i >= m_aJobs.size())
 		m_aJobs.resize(m_aJobs.size()*2);
 
-	m_aJobs[i].m_pJobData = mempool_alloc(iSize);
+	m_aJobs[i].m_pJobData = mempool_alloc(iSize, m_iMemPool);
 	m_aJobs[i].m_iExecuted = 0;
 	m_iLastAssigned = i;
 
