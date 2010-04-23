@@ -989,6 +989,8 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			GLuint iAOMap = glGetUniformLocation((GLuint)m_iShaderProgram, "iAOMap");
 			GLuint iCAOMap = glGetUniformLocation((GLuint)m_iShaderProgram, "iCAOMap");
 
+			GLuint bShadeBottoms = glGetUniformLocation((GLuint)m_iShaderProgram, "bShadeBottoms");
+
 			g_iTangentAttrib = glGetAttribLocation((GLuint)m_iShaderProgram, "vecTangent");
 			g_iBitangentAttrib = glGetAttribLocation((GLuint)m_iShaderProgram, "vecBitangent");
 
@@ -1004,6 +1006,8 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			glUniform1i(bNormal2Map, bNormal2);
 			glUniform1i(bAOMap, bAO);
 			glUniform1i(bCAOMap, bCAO);
+
+			glUniform1i(bShadeBottoms, true);
 
 			gluTessBeginPolygon(m_pTesselator, pMesh);
 			gluTessBeginContour(m_pTesselator);
@@ -1189,7 +1193,7 @@ void CModelWindow::RenderUV()
 			glDisable(GL_TEXTURE_2D);
 		}
 
-		glActiveTexture(GL_TEXTURE3);
+		glActiveTexture(GL_TEXTURE2);
 		if (m_bDisplayNormal && pMaterial->m_iNormal2)
 		{
 			bNormal2 = true;
@@ -1204,7 +1208,7 @@ void CModelWindow::RenderUV()
 			glDisable(GL_TEXTURE_2D);
 		}
 
-		glActiveTexture(GL_TEXTURE4);
+		glActiveTexture(GL_TEXTURE3);
 		if (m_bDisplayAO && pMaterial->m_iAO)
 		{
 			bAO = true;
@@ -1219,7 +1223,7 @@ void CModelWindow::RenderUV()
 			glDisable(GL_TEXTURE_2D);
 		}
 
-		glActiveTexture(GL_TEXTURE5);
+		glActiveTexture(GL_TEXTURE4);
 		if (m_bDisplayColorAO && pMaterial->m_iColorAO)
 		{
 			bCAO = true;
@@ -1275,8 +1279,10 @@ void CModelWindow::RenderUV()
 	GLuint iAOMap = glGetUniformLocation((GLuint)m_iShaderProgram, "iAOMap");
 	GLuint iCAOMap = glGetUniformLocation((GLuint)m_iShaderProgram, "iCAOMap");
 
-	int iTangent = glGetAttribLocation((GLuint)m_iShaderProgram, "vecTangent");
-	int iBitangent = glGetAttribLocation((GLuint)m_iShaderProgram, "vecBitangent");
+	GLuint bShadeBottoms = glGetUniformLocation((GLuint)m_iShaderProgram, "bShadeBottoms");
+
+	GLuint iTangent = glGetAttribLocation((GLuint)m_iShaderProgram, "vecTangent");
+	GLuint iBitangent = glGetAttribLocation((GLuint)m_iShaderProgram, "vecBitangent");
 
 	glUniform1i(iDiffuseTexture, 0);
 	glUniform1i(iNormalMap, 1);
@@ -1290,6 +1296,8 @@ void CModelWindow::RenderUV()
 	glUniform1i(bNormal2Map, bNormal2);
 	glUniform1i(bAOMap, bAO);
 	glUniform1i(bCAOMap, bCAO);
+
+	glUniform1i(bShadeBottoms, bNormal||bNormal2);
 
 	Vector vecUV;
 

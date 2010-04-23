@@ -102,6 +102,8 @@ const char* GetFSModelShader()
 		"uniform bool bAOMap;"
 		"uniform bool bCAOMap;"
 
+		"uniform bool bShadeBottoms;"
+
 		"void main()"
 		"{"
 		"	vec4 clrDiffuseColor = vec4(1.0, 1.0, 1.0, 1.0);"
@@ -180,8 +182,13 @@ const char* GetFSModelShader()
 		"		else"
 		"			vecTranslatedNormal = normalize(gl_NormalMatrix * vecVertexNormal);"
 
-		"		float flDot = dot(vecTranslatedNormal, vec3(0, 1, 0));"
-		"		clrLight = vec4(1, 1, 1, 1) * (flDot * 0.5) + vec4(0.45, 0.45, 0.45, 0.45);"
+		"		if (bShadeBottoms)"
+		"		{"
+		"			float flDot = dot(vecTranslatedNormal, vec3(0, 1, 0));"
+		"			clrLight = vec4(1, 1, 1, 1) * (flDot * 0.5) + vec4(0.45, 0.45, 0.45, 0.45);"
+		"		}"
+		"		else"
+		"			clrLight = vec4(1, 1, 1, 1);"
 		"		clrLight = clrLight * gl_FrontMaterial.diffuse;"
 		"	}"
 
