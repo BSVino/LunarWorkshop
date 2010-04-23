@@ -36,6 +36,25 @@ void CModelWindow::MouseDragged(int x, int y)
 
 			glutPostRedisplay();
 		}
+
+		if (m_bLightRotating)
+		{
+			m_vecLightPositionUV.x += (float)(x - m_iMouseStartX)/100;
+			m_vecLightPositionUV.y += (float)(m_iMouseStartY - y)/100;
+
+			if (m_vecLightPositionUV.x < -3.0f)
+				m_vecLightPositionUV.x = -3.0f;
+			if (m_vecLightPositionUV.x > 3.0f)
+				m_vecLightPositionUV.x = 3.0f;
+			if (m_vecLightPositionUV.y < -3.0f)
+				m_vecLightPositionUV.y = -3.0f;
+			if (m_vecLightPositionUV.y > 3.0f)
+				m_vecLightPositionUV.y = 3.0f;
+
+			m_iMouseStartX = x;
+			m_iMouseStartY = y;
+			glutPostRedisplay();
+		}
 	}
 	else
 	{
@@ -113,6 +132,17 @@ void CModelWindow::MouseInput(int iButton, int iState, int x, int y)
 
 			if (m_flCameraUVZoom < 0.01f)
 				m_flCameraUVZoom = 0.01f;
+		}
+		else if ((glutGetModifiers() & GLUT_ACTIVE_CTRL) && iButton == GLUT_LEFT_BUTTON)
+		{
+			if (iState == GLUT_DOWN)
+			{
+				m_bLightRotating = 1;
+				m_iMouseStartX = x;
+				m_iMouseStartY = y;
+			}
+			if (iState == GLUT_UP)
+				m_bLightRotating = 0;
 		}
 		else if (iButton == GLUT_LEFT_BUTTON)
 		{

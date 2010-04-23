@@ -215,6 +215,8 @@ protected:
 	float					m_flCameraUVY;
 	float					m_flCameraUVZoom;
 
+	Vector					m_vecLightPositionUV;
+
 	size_t					m_iWindowWidth;
 	size_t					m_iWindowHeight;
 

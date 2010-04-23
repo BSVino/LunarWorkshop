@@ -63,6 +63,8 @@ CModelWindow::CModelWindow()
 	m_flLightYaw = 100;
 	m_flLightPitch = 45;
 
+	m_vecLightPositionUV = Vector(0.5f, 0.5f, 1.0f);
+
 	glutInit(&argc, &argv);
 
 	int iScreenWidth = glutGet(GLUT_SCREEN_WIDTH);
@@ -1117,13 +1119,23 @@ void CModelWindow::RenderUV()
 	glPushMatrix();
 	glLoadIdentity();
 
+	GLfloat flLightPosition[4];
+	flLightPosition[0] = m_vecLightPositionUV.x;
+	flLightPosition[1] = m_vecLightPositionUV.y;
+	flLightPosition[2] = 1.0f;
+	flLightPosition[3] = 0;
+
+	// Tell GL new light source position.
+    glLightfv(GL_LIGHT0, GL_POSITION, flLightPosition);
+
 	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT);
 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
-	glDisable(GL_COLOR_MATERIAL);
+	glEnable(GL_COLOR_MATERIAL);
 	glDisable(GL_CULL_FACE);
+	glDisable(GL_COLOR);
 
 	glShadeModel(GL_FLAT);
 
@@ -1132,6 +1144,12 @@ void CModelWindow::RenderUV()
 	CMaterial* pMaterial = NULL;
 	if (m_aoMaterials.size())
 		pMaterial = &m_aoMaterials[0];
+
+	bool bTexture = false;
+	bool bNormal = false;
+	bool bNormal2 = false;
+	bool bAO = false;
+	bool bCAO = false;
 
 	if (!pMaterial)
 	{
@@ -1142,8 +1160,9 @@ void CModelWindow::RenderUV()
 		bMultiTexture = true;
 
 		glActiveTexture(GL_TEXTURE0);
-		if (m_bDisplayTexture)
+		if (m_bDisplayTexture && pMaterial->m_iBase)
 		{
+			bTexture = true;
 			glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iBase);
 			glEnable(GL_TEXTURE_2D);
 			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -1156,8 +1175,9 @@ void CModelWindow::RenderUV()
 		}
 
 		glActiveTexture(GL_TEXTURE1);
-		if (m_bDisplayNormal)
+		if (m_bDisplayNormal && pMaterial->m_iNormal)
 		{
+			bNormal = true;
 			glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iNormal);
 			glEnable(GL_TEXTURE_2D);
 			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -1170,8 +1190,9 @@ void CModelWindow::RenderUV()
 		}
 
 		glActiveTexture(GL_TEXTURE3);
-		if (m_bDisplayNormal)
+		if (m_bDisplayNormal && pMaterial->m_iNormal2)
 		{
+			bNormal2 = true;
 			glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iNormal2);
 			glEnable(GL_TEXTURE_2D);
 			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -1184,8 +1205,9 @@ void CModelWindow::RenderUV()
 		}
 
 		glActiveTexture(GL_TEXTURE4);
-		if (m_bDisplayAO)
+		if (m_bDisplayAO && pMaterial->m_iAO)
 		{
+			bAO = true;
 			glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iAO);
 			glEnable(GL_TEXTURE_2D);
 			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -1198,8 +1220,9 @@ void CModelWindow::RenderUV()
 		}
 
 		glActiveTexture(GL_TEXTURE5);
-		if (m_bDisplayColorAO)
+		if (m_bDisplayColorAO && pMaterial->m_iColorAO)
 		{
+			bCAO = true;
 			glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iColorAO);
 			glEnable(GL_TEXTURE_2D);
 			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -1224,9 +1247,49 @@ void CModelWindow::RenderUV()
 	else if (!pMaterial->m_iBase && !(m_bDisplayAO || m_bDisplayColorAO))
 		glColor3f(0.0f, 0.0f, 0.0f);
 	else if (m_bDisplayTexture || m_bDisplayNormal || m_bDisplayAO || m_bDisplayColorAO)
-		glColor3f(1.0f, 1.0f, 1.0f);
+	{
+		CConversionMaterial* pConversionMaterial = m_Scene.GetMaterial(0);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, pConversionMaterial->m_vecAmbient);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, pConversionMaterial->m_vecDiffuse);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, pConversionMaterial->m_vecSpecular);
+		glMaterialfv(GL_FRONT, GL_EMISSION, pConversionMaterial->m_vecEmissive);
+		glMaterialf(GL_FRONT, GL_SHININESS, pConversionMaterial->m_flShininess);
+		glColor4fv(pConversionMaterial->m_vecDiffuse);
+	}
 	else
 		glColor3f(0.0f, 0.0f, 0.0f);
+
+
+	glUseProgram((GLuint)m_iShaderProgram);
+
+	GLuint bLighting = glGetUniformLocation((GLuint)m_iShaderProgram, "bLighting");
+	GLuint bDiffuseTexture = glGetUniformLocation((GLuint)m_iShaderProgram, "bDiffuseTexture");
+	GLuint bNormalMap = glGetUniformLocation((GLuint)m_iShaderProgram, "bNormalMap");
+	GLuint bNormal2Map = glGetUniformLocation((GLuint)m_iShaderProgram, "bNormal2Map");
+	GLuint bAOMap = glGetUniformLocation((GLuint)m_iShaderProgram, "bAOMap");
+	GLuint bCAOMap = glGetUniformLocation((GLuint)m_iShaderProgram, "bCAOMap");
+
+	GLuint iDiffuseTexture = glGetUniformLocation((GLuint)m_iShaderProgram, "iDiffuseTexture");
+	GLuint iNormalMap = glGetUniformLocation((GLuint)m_iShaderProgram, "iNormalMap");
+	GLuint iNormal2Map = glGetUniformLocation((GLuint)m_iShaderProgram, "iNormal2Map");
+	GLuint iAOMap = glGetUniformLocation((GLuint)m_iShaderProgram, "iAOMap");
+	GLuint iCAOMap = glGetUniformLocation((GLuint)m_iShaderProgram, "iCAOMap");
+
+	int iTangent = glGetAttribLocation((GLuint)m_iShaderProgram, "vecTangent");
+	int iBitangent = glGetAttribLocation((GLuint)m_iShaderProgram, "vecBitangent");
+
+	glUniform1i(iDiffuseTexture, 0);
+	glUniform1i(iNormalMap, 1);
+	glUniform1i(iNormal2Map, 2);
+	glUniform1i(iAOMap, 3);
+	glUniform1i(iCAOMap, 4);
+
+	glUniform1i(bLighting, m_bDisplayLight);
+	glUniform1i(bDiffuseTexture, bTexture);
+	glUniform1i(bNormalMap, bNormal);
+	glUniform1i(bNormal2Map, bNormal2);
+	glUniform1i(bAOMap, bAO);
+	glUniform1i(bCAOMap, bCAO);
 
 	Vector vecUV;
 
@@ -1243,6 +1306,9 @@ void CModelWindow::RenderUV()
 		}
 		else
 			glTexCoord2fv(vecUV);
+		glVertexAttrib3fv(iTangent, Vector(0.8165f, 0.4082f, 0.4082f));
+		glVertexAttrib3fv(iBitangent, Vector(0.0f, 0.7071f, -0.7071f));
+		glNormal3f(-0.5574f, 0.5574f, 0.5574f);
 		glVertex2f(-0.5f, 0.5f);
 
 		vecUV = Vector(1.0f, 1.0f, 0.0f);
@@ -1256,6 +1322,9 @@ void CModelWindow::RenderUV()
 		}
 		else
 			glTexCoord2fv(vecUV);
+		glVertexAttrib3fv(iTangent, Vector(0.8165f, -0.4082f, -0.4082f));
+		glVertexAttrib3fv(iBitangent, Vector(0.0f, 0.7071f, 0.7071f));
+		glNormal3f(0.5574f, 0.5574f, 0.5574f);
 		glVertex2f(0.5f, 0.5f);
 
 		vecUV = Vector(1.0f, 0.0f, 0.0f);
@@ -1269,6 +1338,9 @@ void CModelWindow::RenderUV()
 		}
 		else
 			glTexCoord2fv(vecUV);
+		glVertexAttrib3fv(iTangent, Vector(0.8165f, 0.4082f, -0.4082f));
+		glVertexAttrib3fv(iBitangent, Vector(0.0f, 0.7071f, 0.7071f));
+		glNormal3f(0.5574f, -0.5574f, 0.5574f);
 		glVertex2f(0.5f, -0.5f);
 
 		vecUV = Vector(0.0f, 0.0f, 0.0f);
@@ -1282,9 +1354,14 @@ void CModelWindow::RenderUV()
 		}
 		else
 			glTexCoord2fv(vecUV);
+		glVertexAttrib3fv(iTangent, Vector(0.8165f, -0.4082f, 0.4082f));
+		glVertexAttrib3fv(iBitangent, Vector(0.0f, 0.7071f, 0.7071f));
+		glNormal3f(-0.5574f, -0.5574f, 0.5574f);
 		glVertex2f(-0.5f, -0.5f);
 
 	glEnd();
+
+	glUseProgram(0);
 
 	if (GLEW_VERSION_1_3)
 	{
