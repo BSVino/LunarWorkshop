@@ -1223,7 +1223,7 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, std::vector<CMaterial>* pao
 	m_pTextureLabel = new CLabel(0, 0, 100, 100, "Use texture");
 	AddControl(m_pTextureLabel);
 
-	m_pHiDepthLabel = new CLabel(0, 0, 32, 32, "Texture Hi-Res Depth");
+	m_pHiDepthLabel = new CLabel(0, 0, 32, 32, "Texture Hi-Freq Depth");
 	AddControl(m_pHiDepthLabel);
 
 	m_pHiDepthSelector = new CScrollSelector<float>();
@@ -1252,7 +1252,7 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, std::vector<CMaterial>* pao
 	m_pHiDepthSelector->SetSelectedListener(this, UpdateNormal2);
 	AddControl(m_pHiDepthSelector);
 
-	m_pLoDepthLabel = new CLabel(0, 0, 32, 32, "Texture Lo-Res Depth");
+	m_pLoDepthLabel = new CLabel(0, 0, 32, 32, "Texture Lo-Freq Depth");
 	AddControl(m_pLoDepthLabel);
 
 	m_pLoDepthSelector = new CScrollSelector<float>();
