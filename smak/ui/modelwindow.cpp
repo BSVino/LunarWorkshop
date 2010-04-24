@@ -251,6 +251,12 @@ void CModelWindow::ReadFile(const wchar_t* pszFile)
 
 void CModelWindow::ReadFileIntoScene(const wchar_t* pszFile)
 {
+	if (!pszFile)
+		return;
+
+	if (m_bLoadingFile)
+		return;
+
 	m_bLoadingFile = true;
 
 	CModelConverter c(&m_Scene);
