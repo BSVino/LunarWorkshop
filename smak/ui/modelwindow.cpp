@@ -964,7 +964,7 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 				}
 			}
 
-			if (pFace->m != ~0 && pMeshInstance->GetMappedMaterial(pFace->m) && m_Scene.GetMaterial(pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial))
+			if (m_Scene.DoesFaceHaveValidMaterial(pFace, pMeshInstance))
 			{
 				CConversionMaterial* pMaterial = m_Scene.GetMaterial(pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial);
 				glMaterialfv(GL_FRONT, GL_AMBIENT, pMaterial->m_vecAmbient);
@@ -1249,7 +1249,7 @@ void CModelWindow::RenderUV()
 
 	if (!pMaterial)
 		glColor3f(0.8f, 0.8f, 0.8f);
-	else if (!pMaterial->m_iBase && !(m_bDisplayAO || m_bDisplayColorAO))
+	else if (!pMaterial->m_iBase && !(m_bDisplayNormal || m_bDisplayAO || m_bDisplayColorAO))
 		glColor3f(0.0f, 0.0f, 0.0f);
 	else if (m_bDisplayTexture || m_bDisplayNormal || m_bDisplayAO || m_bDisplayColorAO)
 	{
