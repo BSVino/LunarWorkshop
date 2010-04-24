@@ -323,7 +323,7 @@ void CAOGenerator::RenderSetupSceneNode(CConversionSceneNode* pNode, GLUtesselat
 			glBindTexture(GL_TEXTURE_2D, (GLuint)(*m_paoMaterials)[m].m_iBase);
 			glColor3f(1, 1, 1);
 
-			if (pFace->m != ~0 && pMeshInstance->GetMappedMaterial(pFace->m) && m_pScene->GetMaterial(pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial))
+			if (m_pScene->DoesFaceHaveValidMaterial(pFace, pMeshInstance))
 			{
 				CConversionMaterial* pMaterial = m_pScene->GetMaterial(pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial);
 				glMaterialfv(GL_FRONT, GL_AMBIENT, pMaterial->m_vecAmbient);

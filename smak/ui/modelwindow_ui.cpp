@@ -440,6 +440,9 @@ void CProgressBar::Paint(int x, int y, int w, int h)
 {
 	float flTotalProgress = (float)m_iCurrentProgress/(float)m_iTotalProgress;
 
+	if (flTotalProgress > 1)
+		flTotalProgress = 1;
+
 	CPanel::PaintRect(x, y, w, h);
 	CPanel::PaintRect(x+10, y+10, (int)((w-20)*flTotalProgress), h-20, g_clrBoxHi);
 
@@ -469,7 +472,7 @@ void CProgressBar::SetAction(wchar_t* pszAction)
 	if (m_iTotalProgress)
 	{
 		wchar_t szProgress[100];
-		wsprintf(szProgress, L" %d/%d", m_iCurrentProgress, m_iTotalProgress);
+		wsprintf(szProgress, L" %d%%", m_iCurrentProgress*100/m_iTotalProgress);
 		m_pAction->AppendText(szProgress);
 	}
 }
@@ -1362,7 +1365,7 @@ void CNormalPanel::Layout()
 	size_t i;
 	m_pLoRes->ClearTree();
 	if (!m_apLoResMeshes.size())
-		m_pLoRes->AddNode(L"No meshes.");
+		m_pLoRes->AddNode(L"No meshes. Click 'Add'");
 	else
 	{
 		for (i = 0; i < m_apLoResMeshes.size(); i++)
@@ -1374,7 +1377,7 @@ void CNormalPanel::Layout()
 
 	m_pHiRes->ClearTree();
 	if (!m_apHiResMeshes.size())
-		m_pHiRes->AddNode(L"No meshes.");
+		m_pHiRes->AddNode(L"No meshes. Click 'Add'");
 	else
 	{
 		for (i = 0; i < m_apHiResMeshes.size(); i++)
@@ -1415,11 +1418,34 @@ void CNormalPanel::Think()
 		}
 
 		m_pSave->SetVisible(!!iNormal2);
+
+		if (!!iNormal2)
+			CModelWindow::Get()->SetDisplayNormal(true);
+	}
+
+	bool bFoundMaterial = false;
+	for (size_t iMesh = 0; iMesh < m_apLoResMeshes.size(); iMesh++)
+	{
+		CConversionMeshInstance* pMeshInstance = m_apLoResMeshes[iMesh];
+
+		for (size_t iMaterialStub = 0; iMaterialStub < pMeshInstance->GetMesh()->GetNumMaterialStubs(); iMaterialStub++)
+		{
+			size_t iMaterial = pMeshInstance->GetMappedMaterial(iMaterialStub)->m_iMaterial;
+
+			// Materials not loaded yet?
+			if (!m_paoMaterials->size())
+				continue;
+
+			bFoundMaterial = true;
+			break;
+		}
 	}
 
 	m_pTextureLabel->SetText("Use texture");
 	if (!m_apLoResMeshes.size())
 		m_pTextureLabel->AppendText(" (Add a low resolution mesh first!)");
+	else if (!bFoundMaterial)
+		m_pTextureLabel->AppendText(" (None of those meshes have materials!)");
 	else if (m_oGenerator.IsGeneratingNewNormal2())
 	{
 		m_pTextureLabel->AppendText(" (Generating... ");
@@ -1468,6 +1494,9 @@ void CNormalPanel::GenerateCallback()
 	// Disappear all of the hi-res meshes so we can see the lo res better.
 	for (size_t m = 0; m < m_apHiResMeshes.size(); m++)
 		m_apHiResMeshes[m]->SetVisible(false);
+
+	for (size_t m = 0; m < m_apLoResMeshes.size(); m++)
+		m_apLoResMeshes[m]->SetVisible(true);
 
 	int iSize = m_pSizeSelector->GetSelectionValue();
 	m_oGenerator.SetSize(iSize, iSize);
@@ -1614,18 +1643,16 @@ void CNormalPanel::AddLoResMeshCallback()
 	if (!pMeshInstance)
 		return;
 
-	bool bFound = false;
 	size_t i;
 	for (i = 0; i < m_apLoResMeshes.size(); i++)
 		if (m_apLoResMeshes[i] == pMeshInstance)
-			bFound = true;
+			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
 
 	for (i = 0; i < m_apHiResMeshes.size(); i++)
 		if (m_apHiResMeshes[i] == pMeshInstance)
-			bFound = true;
+			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
 
-	if (!bFound)
-		m_apLoResMeshes.push_back(pMeshInstance);
+	m_apLoResMeshes.push_back(pMeshInstance);
 
 	delete m_pMeshInstancePicker;
 	m_pMeshInstancePicker = NULL;
@@ -1641,18 +1668,16 @@ void CNormalPanel::AddHiResMeshCallback()
 	if (!pMeshInstance)
 		return;
 
-	bool bFound = false;
 	size_t i;
 	for (i = 0; i < m_apLoResMeshes.size(); i++)
 		if (m_apLoResMeshes[i] == pMeshInstance)
-			bFound = true;
+			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
 
 	for (i = 0; i < m_apHiResMeshes.size(); i++)
 		if (m_apHiResMeshes[i] == pMeshInstance)
-			bFound = true;
+			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
 
-	if (!bFound)
-		m_apHiResMeshes.push_back(pMeshInstance);
+	m_apHiResMeshes.push_back(pMeshInstance);
 
 	delete m_pMeshInstancePicker;
 	m_pMeshInstancePicker = NULL;
@@ -1706,6 +1731,9 @@ void CNormalPanel::UpdateNormal2Callback()
 
 	if (!m_pTextureCheckBox->GetState())
 		m_pSave->SetVisible(false);
+
+	if (m_pTextureCheckBox->GetState())
+		CModelWindow::Get()->SetDisplayNormal(true);
 }
 
 void CNormalPanel::Open(CConversionScene* pScene, std::vector<CMaterial>* paoMaterials)

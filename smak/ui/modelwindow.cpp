@@ -866,7 +866,7 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			bool bAO = m_bDisplayAO;
 			bool bCAO = m_bDisplayColorAO;
 
-			if (pFace->m == ~0 || !pMeshInstance->GetMappedMaterial(pFace->m) || pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial == ~0 || m_aoMaterials.size() == 0)
+			if (!m_Scene.DoesFaceHaveValidMaterial(pFace, pMeshInstance) || pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial >= m_aoMaterials.size())
 			{
 				glBindTexture(GL_TEXTURE_2D, 0);
 				bTexture = false;

@@ -400,7 +400,7 @@ CConversionSceneNode* CConversionScene::GetDefaultSceneMeshInstance(CConversionS
 	}
 
 	// Put it in its own child node so that it can be moved around on its own.
-	size_t iChild = pScene->AddChild(L"Default mesh");
+	size_t iChild = pScene->AddChild(L"Mesh node");
 	pScene->GetChild(iChild)->AddMeshInstance(FindMesh(pMesh));
 
 	return pScene->GetChild(iChild);
@@ -415,6 +415,23 @@ size_t CConversionScene::AddDefaultSceneMaterial(CConversionSceneNode* pScene, C
 	pMeshInstance->m_aiMaterialsMap.insert(std::pair<size_t, CConversionMaterialMap>(iMaterialStub, CConversionMaterialMap(iMaterialStub, iMaterial)));
 
 	return iMaterialStub;
+}
+
+bool CConversionScene::DoesFaceHaveValidMaterial(CConversionFace* pFace, CConversionMeshInstance* pMeshInstance)
+{
+	if (pFace->m == ~0)
+		return false;
+	
+	if (pMeshInstance)
+	{
+		if (!pMeshInstance->GetMappedMaterial(pFace->m))
+			return false;
+
+		if (!GetMaterial(pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial))
+			return false;
+	}
+
+	return true;
 }
 
 CConversionSceneNode::CConversionSceneNode(const std::wstring& sName, CConversionScene* pScene, CConversionSceneNode* pParent)

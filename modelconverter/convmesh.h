@@ -356,6 +356,8 @@ public:
 	// this will add a material to the mesh and map it properly in the scene.
 	size_t								AddDefaultSceneMaterial(CConversionSceneNode* pScene, CConversionMesh* pMesh, const std::wstring& sName);
 
+	bool								DoesFaceHaveValidMaterial(CConversionFace* pFace, class CConversionMeshInstance* pMeshInstance = NULL);
+
 	void								SetWorkListener(IWorkListener* pWorkListener) { m_pWorkListener = pWorkListener; }
 
 	std::vector<CConversionMesh>		m_aMeshes;

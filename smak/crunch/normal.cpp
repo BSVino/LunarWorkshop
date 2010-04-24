@@ -829,6 +829,27 @@ void CNormalGenerator::SetNormalTexture(bool bNormalTexture)
 	if (!m_apLoRes.size())
 		return;
 
+	bool bFoundMaterial = false;
+	for (size_t iMesh = 0; iMesh < m_apLoRes.size(); iMesh++)
+	{
+		CConversionMeshInstance* pMeshInstance = m_apLoRes[iMesh];
+
+		for (size_t iMaterialStub = 0; iMaterialStub < pMeshInstance->GetMesh()->GetNumMaterialStubs(); iMaterialStub++)
+		{
+			size_t iMaterial = pMeshInstance->GetMappedMaterial(iMaterialStub)->m_iMaterial;
+
+			// Materials not loaded yet?
+			if (!m_paoMaterials->size())
+				continue;
+
+			bFoundMaterial = true;
+			break;
+		}
+	}
+
+	if (!bFoundMaterial)
+		return;
+
 	if (m_iNormal2GLId)
 		glDeleteTextures(1, &m_iNormal2GLId);
 	m_iNormal2GLId = 0;
