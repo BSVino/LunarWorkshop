@@ -1402,7 +1402,7 @@ void CModelWindow::RenderUV()
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 	}
 
-	if (!CModelWindow::Get()->GetSMAKTexture() && (m_bDisplayAO || m_bDisplayColorAO))
+	if (!CModelWindow::Get()->GetSMAKTexture() && (m_bDisplayAO || m_bDisplayColorAO || m_bDisplayNormal))
 	{
 		static char szFont[1024];
 		sprintf(szFont, "%s\\Fonts\\Arial.ttf", getenv("windir"));
@@ -1410,19 +1410,22 @@ void CModelWindow::RenderUV()
 		FTGLPixmapFont*	pFont = new FTGLPixmapFont(szFont);
 		pFont->FaceSize(48);
 
-		glColor4ubv(Color(155, 155, 255, 60));
+		if (m_bDisplayAO || m_bDisplayColorAO)
+		{
+			glColor4ubv(Color(155, 155, 255, 60));
 
-		glRasterPos2f(0.15f, 0.2f);
-		pFont->Render("DEMO");
+			glRasterPos2f(0.15f, 0.2f);
+			pFont->Render("DEMO");
 
-		glRasterPos2f(-0.35f, 0.2f);
-		pFont->Render("DEMO");
+			glRasterPos2f(-0.35f, 0.2f);
+			pFont->Render("DEMO");
 
-		glRasterPos2f(0.15f, -0.2f);
-		pFont->Render("DEMO");
+			glRasterPos2f(0.15f, -0.2f);
+			pFont->Render("DEMO");
 
-		glRasterPos2f(-0.35f, -0.2f);
-		pFont->Render("DEMO");
+			glRasterPos2f(-0.35f, -0.2f);
+			pFont->Render("DEMO");
+		}
 
 		glColor4ubv(Color(255, 255, 255, 180));
 		glRasterPos2f(-0.5f, 0.51f);
