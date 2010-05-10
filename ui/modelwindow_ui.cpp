@@ -1462,6 +1462,12 @@ void CNormalPanel::Think()
 void CNormalPanel::Paint(int x, int y, int w, int h)
 {
 	CMovablePanel::Paint(x, y, w, h);
+
+	if (!m_bMinimized)
+	{
+		CRootPanel::PaintRect(x+10, y+305, w-20, 1, g_clrBoxHi);
+		CRootPanel::PaintRect(x+10, y+385, w-20, 1, g_clrBoxHi);
+	}
 }
 
 bool CNormalPanel::KeyPressed(int iKey)
