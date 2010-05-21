@@ -1857,7 +1857,7 @@ void CAboutPanel::Layout()
 
 	m_pInfo->SetText("SMAK - The Super Model Army Knife\n");
 	m_pInfo->AppendText("Version " SMAK_VERSION "\n");
-	m_pInfo->AppendText("Copyright © 2010, Jorge Rodriguez <jrodriguez@matreyastudios.com>\n");
+	m_pInfo->AppendText("Copyright © 2010, Jorge Rodriguez <jrodriguez@getsmak.net>\n");
 	m_pInfo->AppendText(" \n");
 	m_pInfo->AppendText("FCollada copyright © 2006, Feeling Software\n");
 	m_pInfo->AppendText("DevIL copyright © 2001-2009, Denton Woods\n");
