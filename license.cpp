@@ -1,17 +1,17 @@
-#include <string>
-#include <vector>
+#include <EASTL/string.h>
+#include <EASTL/vector.h>
 #include <string.h>
 
 #include <strutils.h>
 #include <platform.h>
 #include <mtrand.h>
 
-bool GenerateKey(std::string sProductCode, std::string& sKey)
+bool GenerateKey(eastl::string sProductCode, eastl::string& sKey)
 {
 	if (!sProductCode.size())
 		return false;
 
-	std::vector<std::string> sTokens;
+	eastl::vector<eastl::string> sTokens;
 	strtok(sProductCode, sTokens, "-");
 
 	int iProductCode = atoi(sTokens[0].c_str());
@@ -77,7 +77,7 @@ bool GenerateKey(std::string sProductCode, std::string& sKey)
 
 	szResult[40] = '\0';
 
-	sKey = std::string((char*)szResult);
+	sKey = eastl::string((char*)szResult);
 
 	return true;
 }

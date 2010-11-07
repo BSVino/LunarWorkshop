@@ -4,8 +4,8 @@
 #pragma once
 #endif
 
-#include <string>
+#include <EASTL/string.h>
 
-extern bool GenerateKey(std::string sCode, std::string& sKey);
+extern bool GenerateKey(eastl::string sCode, eastl::string& sKey);
 
 #endif
