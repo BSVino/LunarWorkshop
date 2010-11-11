@@ -58,9 +58,9 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>modelconverter.lib;raytracer.lib;DevIL.lib;ILU.lib;ftgl_static_D.lib;freetype2311MT_D.lib;iphlpapi.lib;FColladaU.lib;pthreadVSE2.lib;glfw.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>modelconverter.lib;raytracer.lib;DevIL.lib;ILU.lib;ftgl_static_D.lib;freetype2311MT_D.lib;iphlpapi.lib;FCollada-2010.lib;farchivexml-2010.lib;libxml-2010.lib;pthreadVSE2.lib;glfw.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(IntDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>../glfw\support\msvc2010\Debug;../lib/debug;C:\Program Files (x86)\Feeling Software\FCollada\Output\Debug Unicode Win32;..\DevIL\lib\unicode;..\freetype-2.3.11\objs\win32\vc2005;..\ftgl-2.1.3~rc5\msvc\build;..\pthreads-win32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../glfw\support\msvc2010\Debug;../lib/debug;..\fcollada\fcollada-2010\Debug;..\DevIL\lib\unicode;..\freetype-2.3.11\objs\win32\vc2005;..\ftgl-2.1.3~rc5\msvc\build;..\pthreads-win32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
@@ -81,9 +81,9 @@ if exist "$(TargetDir)"smak.exe copy "$(TargetDir)"smak.exe "install\smak.exe"
     </ClCompile>
     <Link>
       <AdditionalOptions>/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>modelconverter.lib;raytracer.lib;DevIL.lib;ILU.lib;ftgl_static.lib;freetype2311MT.lib;iphlpapi.lib;FColladaU.lib;pthreadVSE2.lib;glfw.lib;opengl32.lib;glu32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>modelconverter.lib;raytracer.lib;DevIL.lib;ILU.lib;ftgl_static.lib;freetype2311MT.lib;iphlpapi.lib;FCollada-2010.lib;farchivexml-2010.lib;libxml-2010.lib;pthreadVSE2.lib;glfw.lib;opengl32.lib;glu32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(IntDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>../glfw\support\msvc2010\Release;../lib/release;C:\Program Files (x86)\Feeling Software\FCollada\Output\Retail Unicode Win32;..\DevIL\lib\unicode;..\freetype-2.3.11\objs\win32\vc2005;..\ftgl-2.1.3~rc5\msvc\build;..\pthreads-win32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../glfw\support\msvc2010\Release;../lib/release;..\fcollada\fcollada-2010\Release;..\DevIL\lib\unicode;..\freetype-2.3.11\objs\win32\vc2005;..\ftgl-2.1.3~rc5\msvc\build;..\pthreads-win32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
