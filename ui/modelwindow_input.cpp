@@ -1,17 +1,12 @@
 #include "modelwindow.h"
 
-#include <GL/glut.h>
+#include <tinker/keys.h>
+#include <glgui/glgui.h>
 
 #include "crunch/crunch.h"
-#include "modelgui.h"
 #include "modelwindow_ui.h"
 
 void CModelWindow::MouseMotion(int x, int y)
-{
-	modelgui::CRootPanel::Get()->CursorMoved(x, y);
-}
-
-void CModelWindow::MouseDragged(int x, int y)
 {
 	if (m_bRenderUV)
 	{
@@ -23,7 +18,6 @@ void CModelWindow::MouseDragged(int x, int y)
 				m_flCameraUVZoom = 0.01f;
 
 			m_iMouseStartY = y;
-			glutPostRedisplay();
 		}
 
 		if (m_bCameraPanning)
@@ -33,8 +27,6 @@ void CModelWindow::MouseDragged(int x, int y)
 
 			m_iMouseStartX = x;
 			m_iMouseStartY = y;
-
-			glutPostRedisplay();
 		}
 
 		if (m_bLightRotating)
@@ -53,7 +45,6 @@ void CModelWindow::MouseDragged(int x, int y)
 
 			m_iMouseStartX = x;
 			m_iMouseStartY = y;
-			glutPostRedisplay();
 		}
 	}
 	else
@@ -70,7 +61,6 @@ void CModelWindow::MouseDragged(int x, int y)
 
 			m_iMouseStartX = x;
 			m_iMouseStartY = y;
-			glutPostRedisplay();
 		}
 
 		if (m_bCameraDollying)
@@ -81,7 +71,6 @@ void CModelWindow::MouseDragged(int x, int y)
 				m_flCameraDistance = 1;
 
 			m_iMouseStartY = y;
-			glutPostRedisplay();
 		}
 
 		if (m_bLightRotating)
@@ -100,123 +89,139 @@ void CModelWindow::MouseDragged(int x, int y)
 
 			m_iMouseStartX = x;
 			m_iMouseStartY = y;
-			glutPostRedisplay();
 		}
 	}
 
-	modelgui::CRootPanel::Get()->CursorMoved(x, y);
+	glgui::CRootPanel::Get()->CursorMoved(x, y);
 }
 
-void CModelWindow::MouseInput(int iButton, int iState, int x, int y)
+void CModelWindow::MouseInput(int iButton, int iState)
 {
-	if (iState == GLUT_DOWN)
+	int x, y;
+	GetMousePosition(x, y);
+
+	if (iState == 1)
 	{
-		if (modelgui::CRootPanel::Get()->MousePressed(iButton, x, y))
+		if (glgui::CRootPanel::Get()->MousePressed(iButton, x, y))
 			return;
 	}
 	else
 	{
-		if (modelgui::CRootPanel::Get()->MouseReleased(iButton, x, y))
+		if (glgui::CRootPanel::Get()->MouseReleased(iButton, x, y))
 			return;
 	}
 
 	if (m_bRenderUV)
 	{
-		if (iButton == 3)
+		if (IsCtrlDown() && iButton == TINKER_KEY_MOUSE_LEFT)
+		{
+			if (iState == 1)
+			{
+				m_bLightRotating = 1;
+				m_iMouseStartX = x;
+				m_iMouseStartY = y;
+			}
+			if (iState == 0)
+				m_bLightRotating = 0;
+		}
+		else if (iButton == TINKER_KEY_MOUSE_LEFT)
+		{
+			if (iState == 1)
+			{
+				m_bCameraPanning = 1;
+				m_iMouseStartX = x;
+				m_iMouseStartY = y;
+			}
+			if (iState == 0)
+				m_bCameraPanning = 0;
+		}
+		else
+		{
+			if (iState == 1)
+			{
+				m_bCameraDollying = 1;
+				m_iMouseStartX = x;
+				m_iMouseStartY = y;
+			}
+			if (iState == 0)
+				m_bCameraDollying = 0;
+		}
+	}
+	else
+	{
+		if (IsCtrlDown() && iButton == TINKER_KEY_MOUSE_LEFT)
+		{
+			if (iState == 1)
+			{
+				m_bLightRotating = 1;
+				m_iMouseStartX = x;
+				m_iMouseStartY = y;
+			}
+			if (iState == 0)
+				m_bLightRotating = 0;
+		}
+		else if (iButton == TINKER_KEY_MOUSE_LEFT)
+		{
+			if (iState == 1)
+			{
+				m_bCameraRotating = 1;
+				m_iMouseStartX = x;
+				m_iMouseStartY = y;
+			}
+			if (iState == 0)
+				m_bCameraRotating = 0;
+		}
+		else if (iButton == TINKER_KEY_MOUSE_RIGHT)
+		{
+			if (iState == 1)
+			{
+				m_bCameraDollying = 1;
+				m_iMouseStartX = x;
+				m_iMouseStartY = y;
+			}
+			if (iState == 0)
+				m_bCameraDollying = 0;
+		}
+	}
+}
+
+void CModelWindow::MouseWheel(int iState)
+{
+	static int iOldState = 0;
+
+	if (m_bRenderUV)
+	{
+		if (iState > iOldState)
 		{
 			m_flCameraUVZoom += 0.01f;
 		}
-		else if (iButton == 4)
+		else
 		{
 			m_flCameraUVZoom -= 0.01f;
 
 			if (m_flCameraUVZoom < 0.01f)
 				m_flCameraUVZoom = 0.01f;
 		}
-		else if ((glutGetModifiers() & GLUT_ACTIVE_CTRL) && iButton == GLUT_LEFT_BUTTON)
-		{
-			if (iState == GLUT_DOWN)
-			{
-				m_bLightRotating = 1;
-				m_iMouseStartX = x;
-				m_iMouseStartY = y;
-			}
-			if (iState == GLUT_UP)
-				m_bLightRotating = 0;
-		}
-		else if (iButton == GLUT_LEFT_BUTTON)
-		{
-			if (iState == GLUT_DOWN)
-			{
-				m_bCameraPanning = 1;
-				m_iMouseStartX = x;
-				m_iMouseStartY = y;
-			}
-			if (iState == GLUT_UP)
-				m_bCameraPanning = 0;
-		}
-		else
-		{
-			if (iState == GLUT_DOWN)
-			{
-				m_bCameraDollying = 1;
-				m_iMouseStartX = x;
-				m_iMouseStartY = y;
-			}
-			if (iState == GLUT_UP)
-				m_bCameraDollying = 0;
-		}
 	}
 	else
 	{
-		if (iButton == 3)
+		if (iState > iOldState)
 		{
 			m_flCameraDistance += 1.0f;
 		}
-		else if (iButton == 4)
+		else
 		{
 			m_flCameraDistance -= 1.0f;
 
 			if (m_flCameraDistance < 1.0f)
 				m_flCameraDistance = 1.0f;
 		}
-		else if ((glutGetModifiers() & GLUT_ACTIVE_CTRL) && iButton == GLUT_LEFT_BUTTON)
-		{
-			if (iState == GLUT_DOWN)
-			{
-				m_bLightRotating = 1;
-				m_iMouseStartX = x;
-				m_iMouseStartY = y;
-			}
-			if (iState == GLUT_UP)
-				m_bLightRotating = 0;
-		}
-		else if (iButton == GLUT_LEFT_BUTTON)
-		{
-			if (iState == GLUT_DOWN)
-			{
-				m_bCameraRotating = 1;
-				m_iMouseStartX = x;
-				m_iMouseStartY = y;
-			}
-			if (iState == GLUT_UP)
-				m_bCameraRotating = 0;
-		}
-		else if (iButton == GLUT_RIGHT_BUTTON)
-		{
-			if (iState == GLUT_DOWN)
-			{
-				m_bCameraDollying = 1;
-				m_iMouseStartX = x;
-				m_iMouseStartY = y;
-			}
-			if (iState == GLUT_UP)
-				m_bCameraDollying = 0;
-		}
 	}
+
+	iOldState = iState;
 }
 
-void CModelWindow::KeyPress(unsigned char c, int x, int y)
+void CModelWindow::CharPress(int c)
 {
 	if (c == 'a')
 		CAOPanel::Open(false, &m_Scene, &m_aoMaterials);
@@ -224,26 +229,21 @@ void CModelWindow::KeyPress(unsigned char c, int x, int y)
 	if (c == 'n')
 		CNormalPanel::Open(&m_Scene, &m_aoMaterials);
 
-	if (c == 'r'-'a'+1 && (glutGetModifiers()&GLUT_ACTIVE_CTRL))
+	if (c == 'r' && IsCtrlDown())
 		ReloadFromFile();
 
-	if (modelgui::CRootPanel::Get()->KeyPressed(c))
-	{
-		glutPostRedisplay();
+	if (glgui::CRootPanel::Get()->CharPressed(c))
 		return;
-	}
-
-	if (c == 27)
-		exit(0);
 }
 
-void CModelWindow::Special(int k, int x, int y)
+void CModelWindow::KeyPress(int c)
 {
-	if (k == GLUT_KEY_F4 && (glutGetModifiers()&GLUT_ACTIVE_ALT))
+	if (c == 27)
 		exit(0);
 
-	if (k == GLUT_KEY_F5)
-		ReloadFromFile();
+	if (c == TINKER_KEY_F4 && IsAltDown())
+		exit(0);
 
-	glutPostRedisplay();
+	if (c == TINKER_KEY_F5)
+		ReloadFromFile();
 }

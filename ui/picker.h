@@ -1,12 +1,12 @@
-#ifndef PICKER_H
-#define PICKER_H
+#ifndef SMAK_PICKER_H
+#define SMAK_PICKER_H
 
 #include "modelwindow_ui.h"
 
 class CPicker : public CMovablePanel
 {
 public:
-								CPicker(char* pszName, IEventListener* pCallback, IEventListener::Callback pfnCallback);
+								CPicker(const eastl::string16& sName, IEventListener* pCallback, IEventListener::Callback pfnCallback);
 
 public:
 	virtual void				Delete() { delete this; };
@@ -44,7 +44,7 @@ public:
 
 public:
 	virtual void				PopulateTree();
-	virtual void				PopulateTreeNode(modelgui::CTreeNode* pTreeNode, CConversionSceneNode* pSceneNode);
+	virtual void				PopulateTreeNode(glgui::CTreeNode* pTreeNode, CConversionSceneNode* pSceneNode);
 
 	virtual void				NodeSelected(CTreeNode* pNode);
 

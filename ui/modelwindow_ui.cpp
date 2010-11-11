@@ -2,75 +2,74 @@
 
 #include <IL/il.h>
 #include <maths.h>
-#include <GL/freeglut.h>
 #include <strutils.h>
+#include <platform.h>
+#include <GL/glfw.h>
 
+#include <tinker/keys.h>
 #include "modelwindow.h"
 #include "scenetree.h"
 #include "../smak_version.h"
 #include "picker.h"
 
-// wingdi.h
-#undef GetObject
-
 void CModelWindow::InitUI()
 {
-	CMenu* pFile = CRootPanel::Get()->AddMenu("File");
-	CMenu* pView = CRootPanel::Get()->AddMenu("View");
-	CMenu* pTools = CRootPanel::Get()->AddMenu("Tools");
-	CMenu* pHelp = CRootPanel::Get()->AddMenu("Help");
+	CMenu* pFile = CRootPanel::Get()->AddMenu(L"File");
+	CMenu* pView = CRootPanel::Get()->AddMenu(L"View");
+	CMenu* pTools = CRootPanel::Get()->AddMenu(L"Tools");
+	CMenu* pHelp = CRootPanel::Get()->AddMenu(L"Help");
 
-	pFile->AddSubmenu("Open...", this, Open);
-	pFile->AddSubmenu("Open Into...", this, OpenInto);
-	pFile->AddSubmenu("Reload", this, Reload);
-//	pFile->AddSubmenu("Save...", this, Save);
-	pFile->AddSubmenu("Close", this, Close);
-	pFile->AddSubmenu("Exit", this, Exit);
+	pFile->AddSubmenu(L"Open...", this, Open);
+	pFile->AddSubmenu(L"Open Into...", this, OpenInto);
+	pFile->AddSubmenu(L"Reload", this, Reload);
+//	pFile->AddSubmenu(L"Save...", this, Save);
+	pFile->AddSubmenu(L"Close", this, Close);
+	pFile->AddSubmenu(L"Exit", this, Exit);
 
-	pView->AddSubmenu("3D view", this, Render3D);
-	pView->AddSubmenu("UV view", this, RenderUV);
-	pView->AddSubmenu("View wireframe", this, Wireframe);
-	pView->AddSubmenu("Toggle light", this, LightToggle);
-	pView->AddSubmenu("Toggle texture", this, TextureToggle);
-	pView->AddSubmenu("Toggle normal map", this, NormalToggle);
-	pView->AddSubmenu("Toggle AO map", this, AOToggle);
-	pView->AddSubmenu("Toggle color AO map", this, ColorAOToggle);
+	pView->AddSubmenu(L"3D view", this, Render3D);
+	pView->AddSubmenu(L"UV view", this, RenderUV);
+	pView->AddSubmenu(L"View wireframe", this, Wireframe);
+	pView->AddSubmenu(L"Toggle light", this, LightToggle);
+	pView->AddSubmenu(L"Toggle texture", this, TextureToggle);
+	pView->AddSubmenu(L"Toggle normal map", this, NormalToggle);
+	pView->AddSubmenu(L"Toggle AO map", this, AOToggle);
+	pView->AddSubmenu(L"Toggle color AO map", this, ColorAOToggle);
 
-	pTools->AddSubmenu("Generate AO map", this, GenerateAO);
-	pTools->AddSubmenu("Generate color AO map", this, GenerateColorAO);
-	pTools->AddSubmenu("Generate normal map", this, GenerateNormal);
+	pTools->AddSubmenu(L"Generate AO map", this, GenerateAO);
+	pTools->AddSubmenu(L"Generate color AO map", this, GenerateColorAO);
+	pTools->AddSubmenu(L"Generate normal map", this, GenerateNormal);
 
-	pHelp->AddSubmenu("Help", this, Help);
-	pHelp->AddSubmenu("Register...", this, Register);
-	pHelp->AddSubmenu("About SMAK", this, About);
+	pHelp->AddSubmenu(L"Help", this, Help);
+	pHelp->AddSubmenu(L"Register...", this, Register);
+	pHelp->AddSubmenu(L"About SMAK", this, About);
 
 	CButtonPanel* pTopButtons = new CButtonPanel(BA_TOP);
 
-	m_pRender3D = new CButton(0, 0, 100, 100, "3D", true);
-	m_pRenderUV = new CButton(0, 0, 100, 100, "UV", true);
+	m_pRender3D = new CButton(0, 0, 100, 100, L"3D", true);
+	m_pRenderUV = new CButton(0, 0, 100, 100, L"UV", true);
 
-	pTopButtons->AddButton(m_pRender3D, "Render 3D View", false, this, Render3D);
-	pTopButtons->AddButton(m_pRenderUV, "Render UV View", false, this, RenderUV);
+	pTopButtons->AddButton(m_pRender3D, L"Render 3D View", false, this, Render3D);
+	pTopButtons->AddButton(m_pRenderUV, L"Render UV View", false, this, RenderUV);
 
 	CRootPanel::Get()->AddControl(pTopButtons);
 
 	CButtonPanel* pBottomButtons = new CButtonPanel(BA_BOTTOM);
 
-	m_pWireframe = new CPictureButton("Wire", m_iWireframeTexture, true);
-	m_pUVWireframe = new CPictureButton("Wire", m_iUVTexture, true);
-	m_pLight = new CPictureButton("Lght", m_iLightTexture, true);
-	m_pTexture = new CPictureButton("Tex", m_iTextureTexture, true);
-	m_pNormal = new CPictureButton("Nrml", m_iNormalTexture, true);
-	m_pAO = new CPictureButton("AO", m_iAOTexture, true);
-	m_pColorAO = new CPictureButton("C AO", m_iCAOTexture, true);
+	m_pWireframe = new CPictureButton(L"Wire", m_iWireframeTexture, true);
+	m_pUVWireframe = new CPictureButton(L"Wire", m_iUVTexture, true);
+	m_pLight = new CPictureButton(L"Lght", m_iLightTexture, true);
+	m_pTexture = new CPictureButton(L"Tex", m_iTextureTexture, true);
+	m_pNormal = new CPictureButton(L"Nrml", m_iNormalTexture, true);
+	m_pAO = new CPictureButton(L"AO", m_iAOTexture, true);
+	m_pColorAO = new CPictureButton(L"C AO", m_iCAOTexture, true);
 
-	pBottomButtons->AddButton(m_pWireframe, "Toggle Wireframe", true, this, Wireframe);
-	pBottomButtons->AddButton(m_pUVWireframe, "Toggle UVs", true, this, UVWireframe);
-	pBottomButtons->AddButton(m_pLight, "Toggle Light", false, this, Light);
-	pBottomButtons->AddButton(m_pTexture, "Toggle Texture", false, this, Texture);
-	pBottomButtons->AddButton(m_pNormal, "Toggle Normal Map", false, this, Normal);
-	pBottomButtons->AddButton(m_pAO, "Toggle AO Map", false, this, AO);
-	pBottomButtons->AddButton(m_pColorAO, "Toggle Color AO", false, this, ColorAO);
+	pBottomButtons->AddButton(m_pWireframe, L"Toggle Wireframe", true, this, Wireframe);
+	pBottomButtons->AddButton(m_pUVWireframe, L"Toggle UVs", true, this, UVWireframe);
+	pBottomButtons->AddButton(m_pLight, L"Toggle Light", false, this, Light);
+	pBottomButtons->AddButton(m_pTexture, L"Toggle Texture", false, this, Texture);
+	pBottomButtons->AddButton(m_pNormal, L"Toggle Normal Map", false, this, Normal);
+	pBottomButtons->AddButton(m_pAO, L"Toggle AO Map", false, this, AO);
+	pBottomButtons->AddButton(m_pColorAO, L"Toggle Color AO", false, this, ColorAO);
 
 	CRootPanel::Get()->AddControl(pBottomButtons);
 
@@ -298,23 +297,20 @@ void CModelWindow::SetAction(wchar_t* pszAction, size_t iTotalProgress)
 
 void CModelWindow::WorkProgress(size_t iProgress, bool bForceDraw)
 {
-	static int iLastTime = 0;
-	static int iLastGenerate = 0;
+	static float flLastTime = 0;
 
 	// Don't update too often or it'll slow us down just because of the updates.
-	if (!bForceDraw && glutGet(GLUT_ELAPSED_TIME) - iLastTime < 100)
+	if (!bForceDraw && GetTime() - flLastTime < 0.1f)
 		return;
 
 	CProgressBar::Get()->SetProgress(iProgress);
 
-	glutMainLoopEvent();
-
 	CModelWindow::Get()->Render();
-	CRootPanel::Get()->Think();
+	CRootPanel::Get()->Think(GetTime());
 	CRootPanel::Get()->Paint(0, 0, (int)m_iWindowWidth, (int)m_iWindowHeight);
-	glutSwapBuffers();
+	glfwSwapBuffers();
 
-	iLastTime = glutGet(GLUT_ELAPSED_TIME);
+	flLastTime = GetTime();
 }
 
 void CModelWindow::EndProgress()
@@ -361,14 +357,14 @@ void CButtonPanel::Layout()
 	CPanel::Layout();
 }
 
-void CButtonPanel::AddButton(CButton* pButton, char* pszHints, bool bNewSection, IEventListener* pListener, IEventListener::Callback pfnCallback)
+void CButtonPanel::AddButton(CButton* pButton, const eastl::string16& sHints, bool bNewSection, IEventListener* pListener, IEventListener::Callback pfnCallback)
 {
 	AddControl(pButton);
 	m_apButtons.push_back(pButton);
 
 	m_aiSpaces.push_back(bNewSection?BTN_SECTION:BTN_SPACE);
 
-	CLabel* pHint = new CLabel(0, 0, 0, 0, pszHints);
+	CLabel* pHint = new CLabel(0, 0, 0, 0, sHints);
 	pHint->SetAlpha(0);
 	pHint->EnsureTextFits();
 	AddControl(pHint);
@@ -421,7 +417,7 @@ CProgressBar::CProgressBar()
 	CRootPanel::Get()->AddControl(this);
 	SetVisible(false);
 
-	m_pAction = new CLabel(0, 0, 200, BTN_HEIGHT, "");
+	m_pAction = new CLabel(0, 0, 200, BTN_HEIGHT, L"");
 	AddControl(m_pAction);
 	m_pAction->SetWrap(false);
 
@@ -455,25 +451,24 @@ void CProgressBar::SetTotalProgress(size_t iProgress)
 	SetProgress(0);
 }
 
-void CProgressBar::SetProgress(size_t iProgress, wchar_t* pszAction)
+void CProgressBar::SetProgress(size_t iProgress, const eastl::string16& sAction)
 {
 	m_iCurrentProgress = iProgress;
 
-	SetAction(pszAction);
+	SetAction(sAction);
 }
 
-void CProgressBar::SetAction(wchar_t* pszAction)
+void CProgressBar::SetAction(const eastl::string16& sAction)
 {
-	if (pszAction)
-		m_sAction = std::wstring(pszAction);
+	m_sAction = sAction;
 
 	m_pAction->SetText(m_sAction.c_str());
 
 	if (m_iTotalProgress)
 	{
-		wchar_t szProgress[100];
-		wsprintf(szProgress, L" %d%%", m_iCurrentProgress*100/m_iTotalProgress);
-		m_pAction->AppendText(szProgress);
+		eastl::string16 sProgress;
+		sProgress.sprintf(L" %d%%", m_iCurrentProgress*100/m_iTotalProgress);
+		m_pAction->AppendText(sProgress);
 	}
 }
 
@@ -509,12 +504,12 @@ void CMinimizeButton::Paint(int x, int y, int w, int h)
 	CRootPanel::PaintRect(x, y+h/3+1, w, h/3, c);
 }
 
-CMovablePanel::CMovablePanel(char* pszName)
+CMovablePanel::CMovablePanel(const eastl::string16& sName)
 	: CPanel(0, 0, 200, 350)
 {
 	m_bMoving = false;
 
-	m_pName = new CLabel(0, GetHeight()-HEADER_HEIGHT, GetWidth(), HEADER_HEIGHT, pszName);
+	m_pName = new CLabel(0, GetHeight()-HEADER_HEIGHT, GetWidth(), HEADER_HEIGHT, sName);
 	AddControl(m_pName);
 
 	m_pCloseButton = new CCloseButton();
@@ -599,7 +594,7 @@ bool CMovablePanel::MousePressed(int iButton, int mx, int my)
 	int x, y;
 	GetAbsPos(x, y);
 
-	if (iButton == 0 && mx > x && mx < x + GetWidth() - HEADER_HEIGHT*2 && my > y && my < y + HEADER_HEIGHT )
+	if (iButton == TINKER_KEY_MOUSE_LEFT && mx > x && mx < x + GetWidth() - HEADER_HEIGHT*2 && my > y && my < y + HEADER_HEIGHT )
 	{
 		m_iMouseStartX = mx;
 		m_iMouseStartY = my;
@@ -658,8 +653,8 @@ void CMovablePanel::MinimizeWindowCallback()
 CAOPanel* CAOPanel::s_pAOPanel = NULL;
 CAOPanel* CAOPanel::s_pColorAOPanel = NULL;
 
-CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, std::vector<CMaterial>* paoMaterials)
-	: CMovablePanel(bColor?"Color AO generator":"AO generator"), m_oGenerator(pScene, paoMaterials)
+CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+	: CMovablePanel(bColor?L"Color AO generator":L"AO generator"), m_oGenerator(pScene, paoMaterials)
 {
 	m_bColor = bColor;
 
@@ -671,7 +666,7 @@ CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, std::vector<CMaterial>
 	else
 		SetPos(GetParent()->GetWidth() - GetWidth() - 200, GetParent()->GetHeight() - GetHeight() - 100);
 
-	m_pSizeLabel = new CLabel(0, 0, 32, 32, "Size");
+	m_pSizeLabel = new CLabel(0, 0, 32, 32, L"Size");
 	AddControl(m_pSizeLabel);
 
 	m_pSizeSelector = new CScrollSelector<int>();
@@ -689,7 +684,7 @@ CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, std::vector<CMaterial>
 	m_pSizeSelector->SetSelection(2);
 	AddControl(m_pSizeSelector);
 
-	m_pEdgeBleedLabel = new CLabel(0, 0, 32, 32, "Edge Bleed");
+	m_pEdgeBleedLabel = new CLabel(0, 0, 32, 32, L"Edge Bleed");
 	AddControl(m_pEdgeBleedLabel);
 
 	m_pEdgeBleedSelector = new CScrollSelector<int>();
@@ -709,7 +704,7 @@ CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, std::vector<CMaterial>
 
 	if (!m_bColor)
 	{
-		m_pAOMethodLabel = new CLabel(0, 0, 32, 32, "Method");
+		m_pAOMethodLabel = new CLabel(0, 0, 32, 32, L"Method");
 		AddControl(m_pAOMethodLabel);
 
 		m_pAOMethodSelector = new CScrollSelector<int>();
@@ -719,7 +714,7 @@ CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, std::vector<CMaterial>
 		m_pAOMethodSelector->SetSelectedListener(this, AOMethod);
 		AddControl(m_pAOMethodSelector);
 
-		m_pRayDensityLabel = new CLabel(0, 0, 32, 32, "Ray Density");
+		m_pRayDensityLabel = new CLabel(0, 0, 32, 32, L"Ray Density");
 		AddControl(m_pRayDensityLabel);
 
 		m_pRayDensitySelector = new CScrollSelector<int>();
@@ -747,7 +742,7 @@ CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, std::vector<CMaterial>
 		m_pRayDensitySelector->SetSelection(15);
 		AddControl(m_pRayDensitySelector);
 
-		m_pFalloffLabel = new CLabel(0, 0, 32, 32, "Ray Falloff");
+		m_pFalloffLabel = new CLabel(0, 0, 32, 32, L"Ray Falloff");
 		AddControl(m_pFalloffLabel);
 
 		m_pFalloffSelector = new CScrollSelector<float>();
@@ -782,7 +777,7 @@ CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, std::vector<CMaterial>
 		m_pFalloffSelector->SetSelection(6);
 		AddControl(m_pFalloffSelector);
 
-		m_pLightsLabel = new CLabel(0, 0, 32, 32, "Lights");
+		m_pLightsLabel = new CLabel(0, 0, 32, 32, L"Lights");
 		AddControl(m_pLightsLabel);
 
 		m_pLightsSelector = new CScrollSelector<int>();
@@ -795,31 +790,31 @@ CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, std::vector<CMaterial>
 		m_pLightsSelector->SetSelection(3);
 		AddControl(m_pLightsSelector);
 
-		m_pRandomLabel = new CLabel(0, 0, 32, 32, "Randomize rays");
+		m_pRandomLabel = new CLabel(0, 0, 32, 32, L"Randomize rays");
 		AddControl(m_pRandomLabel);
 
 		m_pRandomCheckBox = new CCheckBox();
 		AddControl(m_pRandomCheckBox);
 
-		m_pCreaseLabel = new CLabel(0, 0, 32, 32, "Crease edges");
+		m_pCreaseLabel = new CLabel(0, 0, 32, 32, L"Crease edges");
 		AddControl(m_pCreaseLabel);
 
 		m_pCreaseCheckBox = new CCheckBox();
 		AddControl(m_pCreaseCheckBox);
 
-		m_pGroundOcclusionLabel = new CLabel(0, 0, 32, 32, "Ground occlusion");
+		m_pGroundOcclusionLabel = new CLabel(0, 0, 32, 32, L"Ground occlusion");
 		AddControl(m_pGroundOcclusionLabel);
 
 		m_pGroundOcclusionCheckBox = new CCheckBox();
 		AddControl(m_pGroundOcclusionCheckBox);
 	}
 
-	m_pGenerate = new CButton(0, 0, 100, 100, "Generate");
+	m_pGenerate = new CButton(0, 0, 100, 100, L"Generate");
 	AddControl(m_pGenerate);
 
 	m_pGenerate->SetClickedListener(this, Generate);
 
-	m_pSave = new CButton(0, 0, 100, 100, "Save Map");
+	m_pSave = new CButton(0, 0, 100, 100, L"Save Map");
 	AddControl(m_pSave);
 
 	m_pSave->SetClickedListener(this, SaveMap);
@@ -980,17 +975,17 @@ void CAOPanel::GenerateCallback()
 	// If the 3d model was there get rid of it.
 	CModelWindow::Get()->Render();
 	CRootPanel::Get()->Paint(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
-	glutSwapBuffers();
+	glfwSwapBuffers();
 	CModelWindow::Get()->Render();
 	CRootPanel::Get()->Paint(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
-	glutSwapBuffers();
+	glfwSwapBuffers();
 
 	if (m_bColor)
 		CModelWindow::Get()->SetDisplayColorAO(true);
 	else
 		CModelWindow::Get()->SetDisplayAO(true);
 
-	m_pGenerate->SetText("Cancel");
+	m_pGenerate->SetText(L"Cancel");
 
 	int iSize = m_pSizeSelector->GetSelectionValue();
 	m_oGenerator.SetMethod(m_bColor?AOMETHOD_RENDER:(aomethod_t)m_pAOMethodSelector->GetSelectionValue());
@@ -1033,7 +1028,7 @@ void CAOPanel::GenerateCallback()
 
 	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
 
-	m_pGenerate->SetText("Generate");
+	m_pGenerate->SetText(L"Generate");
 }
 
 void CAOPanel::SaveMapCallback()
@@ -1041,7 +1036,7 @@ void CAOPanel::SaveMapCallback()
 	if (!m_oGenerator.DoneGenerating())
 		return;
 
-	m_oGenerator.SaveToFile(CModelWindow::Get()->SaveFileDialog(L"Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0"));
+	m_oGenerator.SaveToFile(SaveFileDialog(L"Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0"));
 }
 
 void CAOPanel::BeginProgress()
@@ -1058,11 +1053,11 @@ void CAOPanel::SetAction(wchar_t* pszAction, size_t iTotalProgress)
 
 void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 {
-	static int iLastTime = 0;
-	static int iLastGenerate = 0;
+	static float flLastTime = 0;
+	static float flLastGenerate = 0;
 
 	// Don't update too often or it'll slow us down just because of the updates.
-	if (!bForceDraw && glutGet(GLUT_ELAPSED_TIME) - iLastTime < 10)
+	if (!bForceDraw && CModelWindow::Get()->GetTime() - flLastTime < 0.01f)
 		return;
 
 	CProgressBar::Get()->SetProgress(iProgress);
@@ -1071,9 +1066,7 @@ void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 	// button presses and the line will use the wrong viewport size.
 	glViewport(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
 
-	glutMainLoopEvent();
-
-	if (m_oGenerator.IsGenerating() && glutGet(GLUT_ELAPSED_TIME) - iLastGenerate > 500)
+	if (m_oGenerator.IsGenerating() && flLastTime - flLastGenerate > 0.5f)
 	{
 		size_t iAO = m_oGenerator.GenerateTexture(true);
 
@@ -1087,15 +1080,15 @@ void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 			iAOTexture = iAO;
 		}
 
-		iLastGenerate = glutGet(GLUT_ELAPSED_TIME);
+		flLastGenerate = CModelWindow::Get()->GetTime();
 	}
 
 	CModelWindow::Get()->Render();
-	CRootPanel::Get()->Think();
+	CRootPanel::Get()->Think(CModelWindow::Get()->GetTime());
 	CRootPanel::Get()->Paint(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
-	glutSwapBuffers();
+	glfwSwapBuffers();
 
-	iLastTime = glutGet(GLUT_ELAPSED_TIME);
+	flLastTime = CModelWindow::Get()->GetTime();
 }
 
 void CAOPanel::EndProgress()
@@ -1112,7 +1105,7 @@ void CAOPanel::FindBestRayFalloff()
 		m_pFalloffSelector->SetSelection(m_pFalloffSelector->FindClosestSelectionValue(m_pScene->m_oExtends.Size().Length()/2));
 }
 
-void CAOPanel::Open(bool bColor, CConversionScene* pScene, std::vector<CMaterial>* paoMaterials)
+void CAOPanel::Open(bool bColor, CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
 {
 	CAOPanel* pPanel = Get(bColor);
 
@@ -1156,8 +1149,8 @@ void CAOPanel::AOMethodCallback()
 
 CNormalPanel* CNormalPanel::s_pNormalPanel = NULL;
 
-CNormalPanel::CNormalPanel(CConversionScene* pScene, std::vector<CMaterial>* paoMaterials)
-	: CMovablePanel("Normal map generator"), m_oGenerator(pScene, paoMaterials)
+CNormalPanel::CNormalPanel(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+	: CMovablePanel(L"Normal map generator"), m_oGenerator(pScene, paoMaterials)
 {
 	m_pScene = pScene;
 	m_paoMaterials = paoMaterials;
@@ -1167,7 +1160,7 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, std::vector<CMaterial>* pao
 	SetSize(400, 450);
 	SetPos(GetParent()->GetWidth() - GetWidth() - 50, GetParent()->GetHeight() - GetHeight() - 100);
 
-	m_pSizeLabel = new CLabel(0, 0, 32, 32, "Size");
+	m_pSizeLabel = new CLabel(0, 0, 32, 32, L"Size");
 	AddControl(m_pSizeLabel);
 
 	m_pSizeSelector = new CScrollSelector<int>();
@@ -1185,33 +1178,33 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, std::vector<CMaterial>* pao
 	m_pSizeSelector->SetSelection(4);
 	AddControl(m_pSizeSelector);
 
-	m_pLoResLabel = new CLabel(0, 0, 32, 32, "Low Resolution Meshes");
+	m_pLoResLabel = new CLabel(0, 0, 32, 32, L"Low Resolution Meshes");
 	AddControl(m_pLoResLabel);
 
 	m_pLoRes = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
 	m_pLoRes->SetBackgroundColor(g_clrBox);
 	AddControl(m_pLoRes);
 
-	m_pHiResLabel = new CLabel(0, 0, 32, 32, "High Resolution Meshes");
+	m_pHiResLabel = new CLabel(0, 0, 32, 32, L"High Resolution Meshes");
 	AddControl(m_pHiResLabel);
 
 	m_pHiRes = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
 	m_pHiRes->SetBackgroundColor(g_clrBox);
 	AddControl(m_pHiRes);
 
-	m_pAddLoRes = new CButton(0, 0, 100, 100, "Add");
+	m_pAddLoRes = new CButton(0, 0, 100, 100, L"Add");
 	m_pAddLoRes->SetClickedListener(this, AddLoRes);
 	AddControl(m_pAddLoRes);
 
-	m_pAddHiRes = new CButton(0, 0, 100, 100, "Add");
+	m_pAddHiRes = new CButton(0, 0, 100, 100, L"Add");
 	m_pAddHiRes->SetClickedListener(this, AddHiRes);
 	AddControl(m_pAddHiRes);
 
-	m_pRemoveLoRes = new CButton(0, 0, 100, 100, "Remove");
+	m_pRemoveLoRes = new CButton(0, 0, 100, 100, L"Remove");
 	m_pRemoveLoRes->SetClickedListener(this, RemoveLoRes);
 	AddControl(m_pRemoveLoRes);
 
-	m_pRemoveHiRes = new CButton(0, 0, 100, 100, "Remove");
+	m_pRemoveHiRes = new CButton(0, 0, 100, 100, L"Remove");
 	m_pRemoveHiRes->SetClickedListener(this, RemoveHiRes);
 	AddControl(m_pRemoveHiRes);
 
@@ -1220,10 +1213,10 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, std::vector<CMaterial>* pao
 	m_pTextureCheckBox->SetUnclickedListener(this, UpdateNormal2);
 	AddControl(m_pTextureCheckBox);
 
-	m_pTextureLabel = new CLabel(0, 0, 100, 100, "Use texture");
+	m_pTextureLabel = new CLabel(0, 0, 100, 100, L"Use texture");
 	AddControl(m_pTextureLabel);
 
-	m_pHiDepthLabel = new CLabel(0, 0, 32, 32, "Texture Hi-Freq Depth");
+	m_pHiDepthLabel = new CLabel(0, 0, 32, 32, L"Texture Hi-Freq Depth");
 	AddControl(m_pHiDepthLabel);
 
 	m_pHiDepthSelector = new CScrollSelector<float>();
@@ -1252,7 +1245,7 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, std::vector<CMaterial>* pao
 	m_pHiDepthSelector->SetSelectedListener(this, UpdateNormal2);
 	AddControl(m_pHiDepthSelector);
 
-	m_pLoDepthLabel = new CLabel(0, 0, 32, 32, "Texture Lo-Freq Depth");
+	m_pLoDepthLabel = new CLabel(0, 0, 32, 32, L"Texture Lo-Freq Depth");
 	AddControl(m_pLoDepthLabel);
 
 	m_pLoDepthSelector = new CScrollSelector<float>();
@@ -1281,11 +1274,11 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, std::vector<CMaterial>* pao
 	m_pLoDepthSelector->SetSelectedListener(this, UpdateNormal2);
 	AddControl(m_pLoDepthSelector);
 
-	m_pGenerate = new CButton(0, 0, 100, 100, "Generate");
+	m_pGenerate = new CButton(0, 0, 100, 100, L"Generate");
 	m_pGenerate->SetClickedListener(this, Generate);
 	AddControl(m_pGenerate);
 
-	m_pSave = new CButton(0, 0, 100, 100, "Save Map");
+	m_pSave = new CButton(0, 0, 100, 100, L"Save Map");
 	AddControl(m_pSave);
 
 	m_pSave->SetClickedListener(this, SaveMap);
@@ -1441,18 +1434,18 @@ void CNormalPanel::Think()
 		}
 	}
 
-	m_pTextureLabel->SetText("Use texture");
+	m_pTextureLabel->SetText(L"Use texture");
 	if (!m_apLoResMeshes.size())
-		m_pTextureLabel->AppendText(" (Add a low resolution mesh first!)");
+		m_pTextureLabel->AppendText(L" (Add a low resolution mesh first!)");
 	else if (!bFoundMaterial)
-		m_pTextureLabel->AppendText(" (None of those meshes have materials!)");
+		m_pTextureLabel->AppendText(L" (None of those meshes have materials!)");
 	else if (m_oGenerator.IsGeneratingNewNormal2())
 	{
-		m_pTextureLabel->AppendText(" (Generating... ");
+		m_pTextureLabel->AppendText(L" (Generating... ");
 		char szPercentage[10];
 		sprintf(szPercentage, "%d", (int)(m_oGenerator.GetNormal2GenerationProgress()*100));
 		m_pTextureLabel->AppendText(szPercentage);
-		m_pTextureLabel->AppendText("%)");
+		m_pTextureLabel->AppendText(L"%)");
 		m_pSave->SetVisible(false);
 	}
 
@@ -1493,7 +1486,7 @@ void CNormalPanel::GenerateCallback()
 
 	m_pSave->SetVisible(false);
 
-	m_pGenerate->SetText("Cancel");
+	m_pGenerate->SetText(L"Cancel");
 
 	CModelWindow::Get()->SetDisplayNormal(true);
 
@@ -1532,7 +1525,7 @@ void CNormalPanel::GenerateCallback()
 
 	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
 
-	m_pGenerate->SetText("Generate");
+	m_pGenerate->SetText(L"Generate");
 }
 
 void CNormalPanel::SaveMapCallback()
@@ -1540,7 +1533,7 @@ void CNormalPanel::SaveMapCallback()
 	if (!m_oGenerator.DoneGenerating())
 		return;
 
-	const wchar_t* pszFilename = CModelWindow::Get()->SaveFileDialog(L"Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0");
+	const wchar_t* pszFilename = SaveFileDialog(L"Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0");
 
 	if (!pszFilename)
 		return;
@@ -1572,11 +1565,11 @@ void CNormalPanel::SetAction(wchar_t* pszAction, size_t iTotalProgress)
 
 void CNormalPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 {
-	static int iLastTime = 0;
-	static int iLastGenerate = 0;
+	static float flLastTime = 0;
+	static float flLastGenerate = 0;
 
 	// Don't update too often or it'll slow us down just because of the updates.
-	if (!bForceDraw && glutGet(GLUT_ELAPSED_TIME) - iLastTime < 10)
+	if (!bForceDraw && CModelWindow::Get()->GetTime() - flLastTime < 0.01f)
 		return;
 
 	CProgressBar::Get()->SetProgress(iProgress);
@@ -1585,9 +1578,7 @@ void CNormalPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 	// button presses and the line will use the wrong viewport size.
 	glViewport(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
 
-	glutMainLoopEvent();
-
-	if (m_oGenerator.IsGenerating() && glutGet(GLUT_ELAPSED_TIME) - iLastGenerate > 500)
+	if (m_oGenerator.IsGenerating() && CModelWindow::Get()->GetTime() - flLastGenerate > 500)
 	{
 		size_t iNormal = m_oGenerator.GenerateTexture(true);
 
@@ -1601,15 +1592,15 @@ void CNormalPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 			iNormalTexture = iNormal;
 		}
 
-		iLastGenerate = glutGet(GLUT_ELAPSED_TIME);
+		flLastGenerate = CModelWindow::Get()->GetTime();
 	}
 
 	CModelWindow::Get()->Render();
-	CRootPanel::Get()->Think();
+	CRootPanel::Get()->Think(CModelWindow::Get()->GetTime());
 	CRootPanel::Get()->Paint(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
-	glutSwapBuffers();
+	glfwSwapBuffers();
 
-	iLastTime = glutGet(GLUT_ELAPSED_TIME);
+	flLastTime = CModelWindow::Get()->GetTime();
 }
 
 void CNormalPanel::EndProgress()
@@ -1742,7 +1733,7 @@ void CNormalPanel::UpdateNormal2Callback()
 		CModelWindow::Get()->SetDisplayNormal(true);
 }
 
-void CNormalPanel::Open(CConversionScene* pScene, std::vector<CMaterial>* paoMaterials)
+void CNormalPanel::Open(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
 {
 	CNormalPanel* pPanel = s_pNormalPanel;
 
@@ -1768,9 +1759,9 @@ void CNormalPanel::SetVisible(bool bVisible)
 CHelpPanel* CHelpPanel::s_pHelpPanel = NULL;
 
 CHelpPanel::CHelpPanel()
-	: CMovablePanel("Help")
+	: CMovablePanel(L"Help")
 {
-	m_pInfo = new CLabel(0, 0, 100, 100, "");
+	m_pInfo = new CLabel(0, 0, 100, 100, L"");
 	AddControl(m_pInfo);
 	Layout();
 }
@@ -1789,12 +1780,12 @@ void CHelpPanel::Layout()
 	m_pInfo->SetSize(GetWidth(), GetHeight());
 	m_pInfo->SetPos(0, 0);
 
-	m_pInfo->SetText("CONTROLS:\n");
-	m_pInfo->AppendText("Left Mouse Button - Move the camera\n");
-	m_pInfo->AppendText("Right Mouse Button - Zoom in and out\n");
-	m_pInfo->AppendText("Ctrl-LMB - Rotate the light\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("For in-depth help information please visit our website, http://www.matreyastudios.com/smak\n");
+	m_pInfo->SetText(L"CONTROLS:\n");
+	m_pInfo->AppendText(L"Left Mouse Button - Move the camera\n");
+	m_pInfo->AppendText(L"Right Mouse Button - Zoom in and out\n");
+	m_pInfo->AppendText(L"Ctrl-LMB - Rotate the light\n");
+	m_pInfo->AppendText(L" \n");
+	m_pInfo->AppendText(L"For in-depth help information please visit our website, http://www.matreyastudios.com/smak\n");
 
 	CMovablePanel::Layout();
 }
@@ -1834,9 +1825,9 @@ void CHelpPanel::Close()
 CAboutPanel* CAboutPanel::s_pAboutPanel = NULL;
 
 CAboutPanel::CAboutPanel()
-	: CMovablePanel("About SMAK")
+	: CMovablePanel(L"About SMAK")
 {
-	m_pInfo = new CLabel(0, 0, 100, 100, "");
+	m_pInfo = new CLabel(0, 0, 100, 100, L"");
 	AddControl(m_pInfo);
 	Layout();
 }
@@ -1855,17 +1846,17 @@ void CAboutPanel::Layout()
 	m_pInfo->SetSize(GetWidth(), GetHeight());
 	m_pInfo->SetPos(0, 0);
 
-	m_pInfo->SetText("SMAK - The Super Model Army Knife\n");
-	m_pInfo->AppendText("Version " SMAK_VERSION "\n");
-	m_pInfo->AppendText("Copyright © 2010, Jorge Rodriguez <jrodriguez@getsmak.net>\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("FCollada copyright © 2006, Feeling Software\n");
-	m_pInfo->AppendText("DevIL copyright © 2001-2009, Denton Woods\n");
-	m_pInfo->AppendText("FTGL copyright © 2001-2003 Henry Maddocks\n");
-	m_pInfo->AppendText("Freeglut copyright © 1999-2000, Pawel W. Olszta\n");
-	m_pInfo->AppendText("pthreads-win32 copyright © 2001, 2006 Ross P. Johnson\n");
-	m_pInfo->AppendText("GLEW copyright © 2002-2007, Milan Ikits, Marcelo E. Magallon, Lev Povalahev\n");
-	m_pInfo->AppendText("Freetype copyright © 1996-2002, 2006 by David Turner, Robert Wilhelm, and Werner Lemberg\n");
+	m_pInfo->SetText(L"SMAK - The Super Model Army Knife\n");
+	m_pInfo->AppendText(L"Version " SMAK_VERSION L"\n");
+	m_pInfo->AppendText(L"Copyright © 2010, Jorge Rodriguez <jorge@lunarworkshop.net>\n");
+	m_pInfo->AppendText(L" \n");
+	m_pInfo->AppendText(L"FCollada copyright © 2006, Feeling Software\n");
+	m_pInfo->AppendText(L"DevIL copyright © 2001-2009, Denton Woods\n");
+	m_pInfo->AppendText(L"FTGL copyright © 2001-2003 Henry Maddocks\n");
+	m_pInfo->AppendText(L"Freeglut copyright © 1999-2000, Pawel W. Olszta\n");
+	m_pInfo->AppendText(L"pthreads-win32 copyright © 2001, 2006 Ross P. Johnson\n");
+	m_pInfo->AppendText(L"GLEW copyright © 2002-2007, Milan Ikits, Marcelo E. Magallon, Lev Povalahev\n");
+	m_pInfo->AppendText(L"Freetype copyright © 1996-2002, 2006 by David Turner, Robert Wilhelm, and Werner Lemberg\n");
 
 	CMovablePanel::Layout();
 }
@@ -1905,12 +1896,12 @@ void CAboutPanel::Close()
 CRegisterPanel* CRegisterPanel::s_pRegisterPanel = NULL;
 
 CRegisterPanel::CRegisterPanel()
-	: CMovablePanel("Register SMAK")
+	: CMovablePanel(L"Register SMAK")
 {
-	m_pInfo = new CLabel(0, 0, 100, 100, "");
+	m_pInfo = new CLabel(0, 0, 100, 100, L"");
 	AddControl(m_pInfo);
 
-	m_pPirates = new CButton(0, 0, 1, 1, "A message to pirates");
+	m_pPirates = new CButton(0, 0, 1, 1, L"A message to pirates");
 	m_pPirates->SetClickedListener(this, Pirates);
 	AddControl(m_pPirates);
 
@@ -1936,32 +1927,32 @@ void CRegisterPanel::Layout()
 
 	if (!CModelWindow::Get()->GetSMAKTexture())
 	{
-		m_pInfo->SetText("Steps to Register SMAK\n");
-		m_pInfo->AppendText(" \n");
-		m_pInfo->AppendText("1. Visit http://www.matreyastudios.com/smak and purchase SMAK using the on-site store.\n");
-		m_pInfo->AppendText("2. You will be sent an unlock key in your email. Select it and use the COPY command (Ctrl-c)\n");
-		m_pInfo->AppendText("3. While this window is open, use the PASTE command (Ctrl-v)\n");
-		m_pInfo->AppendText("4. ...?\n");
-		m_pInfo->AppendText("5. Profit!\n");
+		m_pInfo->SetText(L"Steps to Register SMAK\n");
+		m_pInfo->AppendText(L" \n");
+		m_pInfo->AppendText(L"1. Visit http://www.matreyastudios.com/smak and purchase SMAK using the on-site store.\n");
+		m_pInfo->AppendText(L"2. You will be sent an unlock key in your email. Select it and use the COPY command (Ctrl-c)\n");
+		m_pInfo->AppendText(L"3. While this window is open, use the PASTE command (Ctrl-v)\n");
+		m_pInfo->AppendText(L"4. ...?\n");
+		m_pInfo->AppendText(L"5. Profit!\n");
 
-		m_pInfo->AppendText(" \n");
-		m_pInfo->AppendText(" \n");
+		m_pInfo->AppendText(L" \n");
+		m_pInfo->AppendText(L" \n");
 
-		m_pInfo->AppendText("Your product code is: ");
+		m_pInfo->AppendText(L"Your product code is: ");
 		m_pInfo->AppendText(CModelWindow::Get()->GetSMAKTextureCode().c_str());
-		m_pInfo->AppendText("\n");
-		m_pInfo->AppendText("Use the COPY command (Ctrl-c) to move it to the clipboard.\n");
+		m_pInfo->AppendText(L"\n");
+		m_pInfo->AppendText(L"Use the COPY command (Ctrl-c) to move it to the clipboard.\n");
 
 		if (m_bBadTry)
 		{
-			m_pInfo->AppendText(" \n");
-			m_pInfo->AppendText("Sorry, it seems that didn't work. Please try again.\n");
-			m_pInfo->AppendText("Make sure you copy only the key itself, without any quotes or other text.\n");
+			m_pInfo->AppendText(L" \n");
+			m_pInfo->AppendText(L"Sorry, it seems that didn't work. Please try again.\n");
+			m_pInfo->AppendText(L"Make sure you copy only the key itself, without any quotes or other text.\n");
 		}
 	}
 	else
 	{
-		m_pInfo->SetText("Your installation of SMAK is now fully registered. Thanks!\n");
+		m_pInfo->SetText(L"Your installation of SMAK is now fully registered. Thanks!\n");
 	}
 
 	m_pPirates->EnsureTextFits();
@@ -1985,17 +1976,17 @@ bool CRegisterPanel::MousePressed(int iButton, int mx, int my)
 
 bool CRegisterPanel::KeyPressed(int iKey)
 {
-	if (!CModelWindow::Get()->GetSMAKTexture() && (iKey == 'v' || ((glutGetModifiers()&GLUT_ACTIVE_CTRL) && iKey == 'v'-'a'+1)))
+	if (!CModelWindow::Get()->GetSMAKTexture() && (iKey == 'v' || CModelWindow::Get()->IsCtrlDown() && iKey == 'v'))
 	{
-		std::string sClipboard = trim(CModelWindow::GetClipboard());
+		eastl::string sClipboard = trim(GetClipboard());
 		CModelWindow::Get()->SetSMAKTexture(sClipboard.c_str());
 		m_bBadTry = true;
 		Layout();
 		return true;
 	}
-	else if (!CModelWindow::Get()->GetSMAKTexture() && (iKey == 'c' || ((glutGetModifiers()&GLUT_ACTIVE_CTRL) && iKey == 'c'-'a'+1)))
+	else if (!CModelWindow::Get()->GetSMAKTexture() && (iKey == 'c' || CModelWindow::Get()->IsCtrlDown() && iKey == 'c'))
 	{
-		CModelWindow::SetClipboard(CModelWindow::Get()->GetSMAKTextureCode());
+		SetClipboard(CModelWindow::Get()->GetSMAKTextureCode());
 		return true;
 	}
 	else
@@ -2029,9 +2020,9 @@ void CRegisterPanel::Close()
 CPiratesPanel* CPiratesPanel::s_pPiratesPanel = NULL;
 
 CPiratesPanel::CPiratesPanel()
-	: CMovablePanel("A Message to Software Pirates")
+	: CMovablePanel(L"A Message to Software Pirates")
 {
-	m_pInfo = new CLabel(0, 0, 100, 100, "");
+	m_pInfo = new CLabel(0, 0, 100, 100, L"");
 	AddControl(m_pInfo, true);
 	Layout();
 }
@@ -2051,19 +2042,19 @@ void CPiratesPanel::Layout()
 	m_pInfo->SetPos(5, 5);
 	m_pInfo->SetAlign(CLabel::TA_LEFTCENTER);
 
-	m_pInfo->SetText("Dear pirates,\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("I know who you are. I know where you live. I'm coming for you.\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("Just kidding.\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("Obviously there's nothing I can do to keep a determined person from pirating my software. I know how these things work, I've pirated plenty of things myself. All I can do is ask you sincerely, if you pirate this software and you are able to use it and enjoy it, please pay for it. It's not a very expensive tool. I worked very hard on this thing (Almost as hard as you did to pirate it!) and all I'm trying to do is exchange a hard day's work for a couple of well-earned bones.\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("I'm not some big corporation trying to screw its customers. I'm not an industry assocation who will come after you if you download one thing. I'm not the man trying to hold you down, bro. I'm just a guy who's trying to make a living doing something that he loves. I don't have a BMW or a Rolex. I'm just a dude trying to feed his dog.\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("So please, when you pirate this software, think of the dog.\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("Jorge Rodriguez <jrodriguez@getsmak.net>\n");
+	m_pInfo->SetText(L"Dear pirates,\n");
+	m_pInfo->AppendText(L" \n");
+	m_pInfo->AppendText(L"I know who you are. I know where you live. I'm coming for you.\n");
+	m_pInfo->AppendText(L" \n");
+	m_pInfo->AppendText(L"Just kidding.\n");
+	m_pInfo->AppendText(L" \n");
+	m_pInfo->AppendText(L"Obviously there's nothing I can do to keep a determined person from pirating my software. I know how these things work, I've pirated plenty of things myself. All I can do is ask you sincerely, if you pirate this software and you are able to use it and enjoy it, please pay for it. It's not a very expensive tool. I worked very hard on this thing (Almost as hard as you did to pirate it!) and all I'm trying to do is exchange a hard day's work for a couple of well-earned bones.\n");
+	m_pInfo->AppendText(L" \n");
+	m_pInfo->AppendText(L"I'm not some big corporation trying to screw its customers. I'm not an industry assocation who will come after you if you download one thing. I'm not the man trying to hold you down, bro. I'm just a guy who's trying to make a living doing something that he loves. I don't have a BMW or a Rolex. I'm just a dude trying to feed his dog.\n");
+	m_pInfo->AppendText(L" \n");
+	m_pInfo->AppendText(L"So please, when you pirate this software, think of the dog.\n");
+	m_pInfo->AppendText(L" \n");
+	m_pInfo->AppendText(L"Jorge Rodriguez <jorge@lunarworkshop.net>\n");
 
 	CMovablePanel::Layout();
 }

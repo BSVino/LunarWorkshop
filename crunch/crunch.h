@@ -1,5 +1,5 @@
-#ifndef CF_CRUNCH_H
-#define CF_CRUNCH_H
+#ifndef SMAK_CRUNCH_H
+#define SMAK_CRUNCH_H
 
 #include <modelconverter/convmesh.h>
 #include <parallelize.h>
@@ -23,7 +23,7 @@ typedef enum
 class CAOGenerator
 {
 public:
-							CAOGenerator(CConversionScene* pScene, std::vector<CMaterial>* paoMaterials);
+							CAOGenerator(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
 							~CAOGenerator();
 
 public:
@@ -73,7 +73,7 @@ public:
 
 protected:
 	CConversionScene*		m_pScene;
-	std::vector<CMaterial>*	m_paoMaterials;
+	eastl::vector<CMaterial>*	m_paoMaterials;
 
 	size_t					m_iWidth;
 	size_t					m_iHeight;
@@ -117,12 +117,12 @@ protected:
 class CNormalGenerator
 {
 public:
-							CNormalGenerator(CConversionScene* pScene, std::vector<CMaterial>* paoMaterials);
+							CNormalGenerator(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
 							~CNormalGenerator();
 
 public:
 	void					SetSize(size_t iWidth, size_t iHeight);
-	void					SetModels(const std::vector<CConversionMeshInstance*>& apHiRes, const std::vector<CConversionMeshInstance*>& apLoRes);
+	void					SetModels(const eastl::vector<CConversionMeshInstance*>& apHiRes, const eastl::vector<CConversionMeshInstance*>& apLoRes);
 
 	void					SetWorkListener(IWorkListener* pListener) { m_pWorkListener = pListener; };
 
@@ -157,10 +157,10 @@ public:
 
 protected:
 	CConversionScene*		m_pScene;
-	std::vector<CMaterial>*	m_paoMaterials;
+	eastl::vector<CMaterial>*	m_paoMaterials;
 
-	std::vector<CConversionMeshInstance*>	m_apHiRes;
-	std::vector<CConversionMeshInstance*>	m_apLoRes;
+	eastl::vector<CConversionMeshInstance*>	m_apHiRes;
+	eastl::vector<CConversionMeshInstance*>	m_apLoRes;
 
 	size_t					m_iWidth;
 	size_t					m_iHeight;

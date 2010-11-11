@@ -5,10 +5,10 @@
 #include "modelwindow.h"
 #include <modelconverter/convmesh.h>
 
-using namespace modelgui;
+using namespace glgui;
 
-CPicker::CPicker(char* pszName, IEventListener* pCallback, IEventListener::Callback pfnCallback)
-	: CMovablePanel(pszName)
+CPicker::CPicker(const eastl::string16& sName, IEventListener* pCallback, IEventListener::Callback pfnCallback)
+	: CMovablePanel(sName)
 {
 	m_pCallback = pCallback;
 	m_pfnCallback = pfnCallback;
@@ -66,7 +66,7 @@ void CPicker::Close()
 }
 
 CMeshInstancePicker::CMeshInstancePicker(IEventListener* pCallback, IEventListener::Callback pfnCallback)
-	: CPicker("Pick a mesh", pCallback, pfnCallback)
+	: CPicker(L"Pick a mesh", pCallback, pfnCallback)
 {
 	m_pPickedMeshInstance = NULL;
 }
@@ -79,13 +79,13 @@ void CMeshInstancePicker::PopulateTree()
 		PopulateTreeNode(NULL, pScene->GetScene(i));
 }
 
-void CMeshInstancePicker::PopulateTreeNode(modelgui::CTreeNode* pTreeNode, CConversionSceneNode* pSceneNode)
+void CMeshInstancePicker::PopulateTreeNode(glgui::CTreeNode* pTreeNode, CConversionSceneNode* pSceneNode)
 {
 	if (!pSceneNode->GetNumChildren() && !pSceneNode->GetNumMeshInstances())
 		return;
 
 	size_t iNode;
-	modelgui::CTreeNode* pChildNode;
+	glgui::CTreeNode* pChildNode;
 	if (pTreeNode)
 	{
 		iNode = pTreeNode->AddNode<CConversionSceneNode>(pSceneNode->GetName(), pSceneNode);

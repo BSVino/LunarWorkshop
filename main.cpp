@@ -1,11 +1,17 @@
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 #include <assert.h>
+#include <GL/glew.h>
+#include <GL/glfw.h>
+#include <IL/il.h>
+
+#include <platform.h>
 
 #include <modelconverter/modelconverter.h>
 #include "ui/modelwindow.h"
 #include "crunch/crunch.h"
-#include <GL/glew.h>
-#include <GL/freeglut.h>
-#include <IL/il.h>
 
 typedef enum
 {
@@ -62,9 +68,9 @@ public:
 	size_t					m_iTotalProgress;
 };
 
-int main(int argc, char** argv)
+int CreateApplication(int argc, char** argv)
 {
-	std::wstring sFile;
+	eastl::string16 sFile;
 	command_t eCommand = COMMAND_NONE;
 	aomethod_t eMethod = AOMETHOD_SHADOWMAP;
 	size_t iSize = 1024;
@@ -75,7 +81,7 @@ int main(int argc, char** argv)
 	bool bRandomize = false;
 	bool bCrease = false;
 	bool bGroundOcclusion = false;
-	std::wstring sOutput;
+	eastl::string16 sOutput;
 
 	if (argc >= 2)
 	{
@@ -178,13 +184,13 @@ int main(int argc, char** argv)
 				{
 					i++;
 					mbstowcs(szToken, argv[i], strlen(argv[i])+1);
-					sOutput = std::wstring(szToken);
+					sOutput = eastl::string16(szToken);
 				}
 			}
 			else
 			{
 				// It's a file
-				sFile = std::wstring(szToken);
+				sFile = eastl::string16(szToken);
 			}
 		}
 
@@ -234,12 +240,12 @@ int main(int argc, char** argv)
 
 			if (eMethod == AOMETHOD_SHADOWMAP || eMethod == AOMETHOD_RENDER)
 			{
-				glutInit(&argc, argv);
-				glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_ALPHA | GLUT_MULTISAMPLE);
+				glfwInit();
 
 				// The easy way to get a "windowless" context.
-				glutCreateWindow("SMAK a Batch");
-				glutHideWindow();
+				glfwOpenWindow(100, 100, 0, 0, 0, 0, 16, 0, GLFW_WINDOW);
+				glfwSetWindowTitle("SMAK a Batch");
+				glfwIconifyWindow();
 
 				glewInit();
 			}
@@ -247,7 +253,7 @@ int main(int argc, char** argv)
 			ilInit();
 
 			// If this is the color AO method, we need to load the textures.
-			std::vector<CMaterial> aMaterials;
+			eastl::vector<CMaterial> aMaterials;
 			CModelWindow::LoadSMAKTexture();
 			if (eMethod == AOMETHOD_RENDER)
 			{
@@ -301,10 +307,35 @@ int main(int argc, char** argv)
 		}
 	}
 
-	CModelWindow oWindow;
+	CModelWindow oWindow(argc, argv);
 
 	if (sFile.length())
 		oWindow.ReadFile(sFile.c_str());
 
+	oWindow.OpenWindow();
 	oWindow.Run();
+
+	return 0;
+}
+
+int main(int argc, char** argv)
+{
+#ifdef _WIN32
+	// Make sure we open up an assert messagebox window instead of just aborting like it does for console apps.
+	_set_error_mode(_OUT_TO_MSGBOX);
+
+#ifndef _DEBUG
+	__try
+	{
+#endif
+#endif
+
+	return CreateApplication(argc, argv);
+
+#if defined(_WIN32) && !defined(_DEBUG)
+	}
+	__except (CreateMinidump(GetExceptionInformation(), L"SMAK"), EXCEPTION_EXECUTE_HANDLER)
+	{
+	}
+#endif
 }

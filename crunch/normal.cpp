@@ -4,7 +4,6 @@
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <GL/glew.h>
-#include <GL/glut.h>
 
 #include <raytracer/raytracer.h>
 #include <maths.h>
@@ -19,7 +18,7 @@
 #include "ui/modelwindow.h"
 #endif
 
-CNormalGenerator::CNormalGenerator(CConversionScene* pScene, std::vector<CMaterial>* paoMaterials)
+CNormalGenerator::CNormalGenerator(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
 {
 	m_pScene = pScene;
 	m_paoMaterials = paoMaterials;
@@ -90,7 +89,7 @@ void CNormalGenerator::SetSize(size_t iWidth, size_t iHeight)
 	m_bPixelMask = (bool*)malloc(m_iWidth*m_iHeight*sizeof(bool));
 }
 
-void CNormalGenerator::SetModels(const std::vector<CConversionMeshInstance*>& apHiRes, const std::vector<CConversionMeshInstance*>& apLoRes)
+void CNormalGenerator::SetModels(const eastl::vector<CConversionMeshInstance*>& apHiRes, const eastl::vector<CConversionMeshInstance*>& apLoRes)
 {
 	m_apLoRes = apLoRes;
 	m_apHiRes = apHiRes;
@@ -187,8 +186,8 @@ void CNormalGenerator::Generate()
 					continue;
 			}
 
-			std::vector<Vector> avecPoints;
-			std::vector<size_t> aiPoints;
+			eastl::vector<Vector> avecPoints;
+			eastl::vector<size_t> aiPoints;
 			for (size_t t = 0; t < pFace->GetNumVertices(); t++)
 			{
 				avecPoints.push_back(pMeshInstance->GetVertex(pFace->GetVertex(t)->v));
@@ -705,7 +704,7 @@ void CNormalGenerator::NormalizeHeightValue(size_t x, size_t y)
 	size_t iTexel;
 	Texel(x, y, iTexel, m_iNormal2Width, m_iNormal2Height, false);
 
-	std::vector<Vector> avecHeights;
+	eastl::vector<Vector> avecHeights;
 
 	float flHeight = (m_aflTextureTexels[iTexel*3]+m_aflTextureTexels[iTexel*3+1]+m_aflTextureTexels[iTexel*3+2])/3 * flHiScale;
 	float flLoPass = GetLowPassValue(x, y) * flLoScale;

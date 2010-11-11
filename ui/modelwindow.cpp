@@ -6,12 +6,14 @@
 #include <string.h>
 #include <maths.h>
 #include <GL/glew.h>
-#include <GL/freeglut.h>
+#include <GL/glfw.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 
+#include <platform.h>
+
 #include <modelconverter/modelconverter.h>
-#include "modelgui.h"
+#include <glgui/glgui.h>
 #include "scenetree.h"
 #include "../shaders/shaders.h"
 
@@ -28,12 +30,10 @@ static void CALLBACK RenderTesselateEnd();
 
 CModelWindow* CModelWindow::s_pModelWindow = NULL;
 
-CModelWindow::CModelWindow()
+CModelWindow::CModelWindow(int argc, char** argv)
+	: CApplication(argc, argv)
 {
 	s_pModelWindow = this;
-
-	int argc = 1;
-	char* argv = "smak";
 
 	m_bLoadingFile = false;
 
@@ -65,20 +65,40 @@ CModelWindow::CModelWindow()
 
 	m_vecLightPositionUV = Vector(0.5f, 0.5f, 1.0f);
 
-	glutInit(&argc, &argv);
+	LoadSMAKTexture();
 
-	int iScreenWidth = glutGet(GLUT_SCREEN_WIDTH);
-	int iScreenHeight = glutGet(GLUT_SCREEN_HEIGHT);
+	int iScreenWidth;
+	int iScreenHeight;
 
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_ALPHA | GLUT_MULTISAMPLE);
+	GetScreenSize(iScreenWidth, iScreenHeight);
 
 	m_iWindowWidth = iScreenWidth*2/3;
 	m_iWindowHeight = iScreenHeight*2/3;
 
-	glutInitWindowPosition(iScreenWidth/6, iScreenHeight/6);
-	glutInitWindowSize((int)m_iWindowWidth, (int)m_iWindowHeight);
+	m_pLightHalo = NULL;
+	m_pLightBeam = NULL;
 
-	glutCreateWindow("SMAK - Super Model Army Knife");
+	m_iWireframeTexture = 0;
+	m_iSmoothTexture = 0;
+	m_iUVTexture = 0;
+	m_iLightTexture = 0;
+	m_iTextureTexture = 0;
+	m_iNormalTexture = 0;
+	m_iAOTexture = 0;
+	m_iCAOTexture = 0;
+	m_iArrowTexture = 0;
+	m_iEditTexture = 0;
+	m_iVisibilityTexture = 0;
+	m_iBarretTexture = 0;
+
+	m_iShaderProgram = 0;
+}
+
+void CModelWindow::OpenWindow()
+{
+	BaseClass::OpenWindow(m_iWindowWidth, m_iWindowHeight, false);
+
+	CompileShaders();
 
 	ilInit();
 
@@ -89,8 +109,6 @@ CModelWindow::CModelWindow()
 	iTexture = LoadTextureIntoGL(L"lightbeam.png");
 	if (iTexture)
 		m_pLightBeam = new CMaterial(iTexture);
-
-	LoadSMAKTexture();
 
 	m_iWireframeTexture = LoadTextureIntoGL(L"wireframe.png");
 	m_iSmoothTexture = LoadTextureIntoGL(L"smooth.png");
@@ -121,27 +139,10 @@ CModelWindow::CModelWindow()
 	gluTessCallback(m_pTesselator, GLU_TESS_END, (void(CALLBACK*)())RenderTesselateEnd);
 	gluTessProperty(m_pTesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
 
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-		exit(0);
-
-	CompileShaders();
-
-	glutPassiveMotionFunc(&CModelWindow::MouseMotionCallback);
-	glutMotionFunc(&CModelWindow::MouseDraggedCallback);
-	glutMouseFunc(&CModelWindow::MouseInputCallback);
-	glutReshapeFunc(&CModelWindow::WindowResizeCallback);
-	glutDisplayFunc(&CModelWindow::DisplayCallback);
-	glutVisibilityFunc(&CModelWindow::VisibleCallback);
-	glutKeyboardFunc(&CModelWindow::KeyPressCallback);
-	glutSpecialFunc(&CModelWindow::SpecialCallback);
-
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	glLineWidth(1.0);
-
-	WindowResize(iScreenWidth*2/3, iScreenHeight*2/3);
 
 	GLfloat flLightDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
 	GLfloat flLightAmbient[] = {0.2f, 0.2f, 0.2f, 1.0f};
@@ -206,13 +207,12 @@ void CModelWindow::CompileShaders()
 
 void CModelWindow::Run()
 {
-	while (true)
+	while (IsOpen())
 	{
-		glutMainLoopEvent();
 		Render();
-		modelgui::CRootPanel::Get()->Think();
-		modelgui::CRootPanel::Get()->Paint(0, 0, (int)m_iWindowWidth, (int)m_iWindowHeight);
-		glutSwapBuffers();
+		glgui::CRootPanel::Get()->Think(GetTime());
+		glgui::CRootPanel::Get()->Paint(0, 0, (int)m_iWindowWidth, (int)m_iWindowHeight);
+		SwapBuffers();
 	}
 }
 
@@ -242,7 +242,7 @@ void CModelWindow::ReadFile(const wchar_t* pszFile)
 		return;
 
 	// Save it in here in case m_szFileLoaded was passed into ReadFile, in which case it would be destroyed by DestroyAll.
-	std::wstring sFile = pszFile;
+	eastl::string16 sFile = pszFile;
 
 	DestroyAll();
 
@@ -295,7 +295,7 @@ void CModelWindow::LoadIntoGL()
 	ClearDebugLines();
 }
 
-size_t CModelWindow::LoadTextureIntoGL(std::wstring sFilename)
+size_t CModelWindow::LoadTextureIntoGL(eastl::string16 sFilename)
 {
 	if (!sFilename.length())
 		return 0;
@@ -373,9 +373,9 @@ void CModelWindow::SaveFile(const wchar_t* pszFile)
 	CModelConverter c(&m_Scene);
 
 	size_t iFileLength = wcslen(pszFile);
-	std::wstring sExtension = pszFile+iFileLength-4;
+	eastl::string16 sExtension = pszFile+iFileLength-4;
 
-	if (wcscmp(sExtension.c_str(), L".smd") == 0)
+	if (sExtension == L".smd")
 		c.WriteSMDs(pszFile);
 }
 
@@ -1484,9 +1484,6 @@ void CModelWindow::RenderUV()
 
 void CModelWindow::WindowResize(int w, int h)
 {
-	m_iWindowWidth = w;
-	m_iWindowHeight = h;
-
 	glViewport(0, 0, (GLsizei)w, (GLsizei)h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -1499,19 +1496,10 @@ void CModelWindow::WindowResize(int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	Render();
-	modelgui::CRootPanel::Get()->Layout();
-	modelgui::CRootPanel::Get()->Paint(0, 0, (int)m_iWindowWidth, (int)m_iWindowHeight);
+	if (!IsOpen())
+		return;
 
-	glutSwapBuffers();
-}
-
-void CModelWindow::Display()
-{
-}
-
-void CModelWindow::Visible(int vis)
-{
+	BaseClass::WindowResize(w, h);
 }
 
 size_t CModelWindow::GetNextObjectId()

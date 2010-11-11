@@ -1,5 +1,5 @@
-#ifndef SCENETREE_H
-#define SCENETREE_H
+#ifndef SMAK_SCENETREE_H
+#define SMAK_SCENETREE_H
 
 #include "modelwindow_ui.h"
 
@@ -15,7 +15,7 @@ public:
 
 	void							UpdateTree();
 	void							AddAllToTree();
-	void							AddNodeToTree(modelgui::CTreeNode* pTreeNode, CConversionSceneNode* pNode);
+	void							AddNodeToTree(glgui::CTreeNode* pTreeNode, CConversionSceneNode* pNode);
 
 	void							OpenMaterialEditor(CConversionMaterial* pMaterial);
 
@@ -25,7 +25,7 @@ public:
 public:
 	CConversionScene*				m_pScene;
 
-	modelgui::CTree*				m_pTree;
+	glgui::CTree*					m_pTree;
 
 	class CMaterialEditor*			m_pMaterialEditor;
 

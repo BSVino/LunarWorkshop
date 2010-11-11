@@ -4,7 +4,7 @@
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <GL/glew.h>
-#include <GL/glut.h>
+#include <GL/glfw.h>
 #include <time.h>
 
 #include <geometry.h>
@@ -26,7 +26,7 @@
 void DrawTexture(GLuint iTexture, float flScale = 1.0f);
 #endif
 
-CAOGenerator::CAOGenerator(CConversionScene* pScene, std::vector<CMaterial>* paoMaterials)
+CAOGenerator::CAOGenerator(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
 {
 	m_eAOMethod = AOMETHOD_NONE;
 	m_pScene = pScene;
@@ -475,9 +475,9 @@ void CAOGenerator::Generate()
 
 void CAOGenerator::GenerateShadowMaps()
 {
-	int iProcessScene = 0;
-	int iProcessSceneRead = 0;
-	int iProgress = 0;
+	float flProcessScene = 0;
+	float flProcessSceneRead = 0;
+	float flProgress = 0;
 
 	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT);
 
@@ -776,7 +776,7 @@ void CAOGenerator::GenerateShadowMaps()
 			glFinish();
 #endif
 
-			int iTimeBefore = glutGet(GLUT_ELAPSED_TIME);
+			float flTimeBefore = CModelWindow::Get()->GetTime();
 
 			glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 			glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)m_iAOFB);
@@ -795,13 +795,13 @@ void CAOGenerator::GenerateShadowMaps()
 			glFinish();
 #endif
 
-			iProcessSceneRead += (glutGet(GLUT_ELAPSED_TIME) - iTimeBefore);
-			iTimeBefore = glutGet(GLUT_ELAPSED_TIME);
+			flProcessSceneRead += (CModelWindow::Get()->GetTime() - flTimeBefore);
+			flTimeBefore = CModelWindow::Get()->GetTime();
 
 			if (m_pWorkListener)
 				m_pWorkListener->WorkProgress(x*iSamples + y);
 
-			iProgress += (glutGet(GLUT_ELAPSED_TIME) - iTimeBefore);
+			flProgress += (CModelWindow::Get()->GetTime() - flTimeBefore);
 
 			if (m_bStopGenerating)
 				break;
@@ -1007,8 +1007,8 @@ void CAOGenerator::GenerateNodeByTexel(CConversionSceneNode* pNode, raytrace::CR
 					continue;
 			}
 
-			std::vector<Vector> avecPoints;
-			std::vector<size_t> aiPoints;
+			eastl::vector<Vector> avecPoints;
+			eastl::vector<size_t> aiPoints;
 			for (size_t t = 0; t < pFace->GetNumVertices(); t++)
 			{
 				avecPoints.push_back(pMeshInstance->GetVertex(pFace->GetVertex(t)->v));
@@ -1207,7 +1207,7 @@ void CAOGenerator::GenerateTriangleByTexel(CConversionMeshInstance* pMeshInstanc
 						if (bFoundAdjacent)
 							continue;
 
-						std::vector<Vector> av;
+						eastl::vector<Vector> av;
 
 						float flDistance = DistanceToPolygon(vecUVPosition, pFace2->GetVertices(av), pFace2->GetNormal());
 						float flDistanceToCenter = (vecUVPosition - pFace2->GetCenter()).Length();

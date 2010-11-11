@@ -1,13 +1,15 @@
 #include "scenetree.h"
 
-#include <GL/freeglut.h>
+#include <gl/glew.h>
 
-using namespace modelgui;
+#include <platform.h>
+
+using namespace glgui;
 
 CSceneTreePanel* CSceneTreePanel::s_pSceneTreePanel = NULL;
 
 CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
-	: CMovablePanel("Scene Tree")
+	: CMovablePanel(L"Scene Tree")
 {
 	m_pScene = pScene;
 	m_pTree = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
@@ -93,7 +95,7 @@ void CSceneTreePanel::AddAllToTree()
 		pScenesNode->SetExpanded(false);
 }
 
-void CSceneTreePanel::AddNodeToTree(modelgui::CTreeNode* pTreeNode, CConversionSceneNode* pSceneNode)
+void CSceneTreePanel::AddNodeToTree(glgui::CTreeNode* pTreeNode, CConversionSceneNode* pSceneNode)
 {
 	size_t iNode = pTreeNode->AddNode<CConversionSceneNode>(pSceneNode->GetName(), pSceneNode);
 	for (size_t i = 0; i < pSceneNode->GetNumChildren(); i++)
@@ -162,7 +164,7 @@ CSceneTreePanel* CSceneTreePanel::Get()
 }
 
 CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel* pSceneTree)
-	: CMovablePanel("Material Properties")
+	: CMovablePanel(L"Material Properties")
 {
 	m_pMaterial = pMaterial;
 	m_pSceneTree = pSceneTree;
@@ -187,29 +189,29 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 	m_pName->AppendText(L" - ");
 	m_pName->AppendText(pMaterial->GetName().c_str());
 
-	m_pDiffuseLabel = new CLabel(0, 0, 1, 1, "Diffuse map: ");
+	m_pDiffuseLabel = new CLabel(0, 0, 1, 1, L"Diffuse map: ");
 	AddControl(m_pDiffuseLabel);
-	m_pDiffuseFile = new CButton(0, 0, 1, 1, "");
+	m_pDiffuseFile = new CButton(0, 0, 1, 1, L"");
 	m_pDiffuseFile->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pDiffuseFile->SetWrap(false);
 	m_pDiffuseFile->SetClickedListener(this, ChooseDiffuse);
 	AddControl(m_pDiffuseFile);
-	m_pDiffuseRemove = new CButton(0, 0, 70, 20, "Remove");
+	m_pDiffuseRemove = new CButton(0, 0, 70, 20, L"Remove");
 	m_pDiffuseRemove->SetClickedListener(this, RemoveDiffuse);
 	AddControl(m_pDiffuseRemove);
 
-	m_pNormalLabel = new CLabel(0, 0, 1, 1, "Normal map: ");
+	m_pNormalLabel = new CLabel(0, 0, 1, 1, L"Normal map: ");
 	AddControl(m_pNormalLabel);
-	m_pNormalFile = new CButton(0, 0, 1, 1, "");
+	m_pNormalFile = new CButton(0, 0, 1, 1, L"");
 	m_pNormalFile->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pNormalFile->SetWrap(false);
 	m_pNormalFile->SetClickedListener(this, ChooseNormal);
 	AddControl(m_pNormalFile);
-	m_pNormalRemove = new CButton(0, 0, 70, 20, "Remove");
+	m_pNormalRemove = new CButton(0, 0, 70, 20, L"Remove");
 	m_pNormalRemove->SetClickedListener(this, RemoveNormal);
 	AddControl(m_pNormalRemove);
 
-	m_pAmbientLabel = new CLabel(0, 0, 1, 1, "Ambient: ");
+	m_pAmbientLabel = new CLabel(0, 0, 1, 1, L"Ambient: ");
 	AddControl(m_pAmbientLabel);
 	m_pAmbientRedSelector = new CScrollSelector<float>();
 	SetupSelector(m_pAmbientRedSelector, 1);
@@ -224,7 +226,7 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 	m_pAmbientBlueSelector->SetSelectedListener(this, SetAmbientBlue);
 	AddControl(m_pAmbientBlueSelector);
 
-	m_pDiffuseSelectorLabel = new CLabel(0, 0, 1, 1, "Diffuse: ");
+	m_pDiffuseSelectorLabel = new CLabel(0, 0, 1, 1, L"Diffuse: ");
 	AddControl(m_pDiffuseSelectorLabel);
 	m_pDiffuseRedSelector = new CScrollSelector<float>();
 	SetupSelector(m_pDiffuseRedSelector, 1);
@@ -239,7 +241,7 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 	m_pDiffuseBlueSelector->SetSelectedListener(this, SetDiffuseBlue);
 	AddControl(m_pDiffuseBlueSelector);
 
-	m_pSpecularLabel = new CLabel(0, 0, 1, 1, "Specular: ");
+	m_pSpecularLabel = new CLabel(0, 0, 1, 1, L"Specular: ");
 	AddControl(m_pSpecularLabel);
 	m_pSpecularRedSelector = new CScrollSelector<float>();
 	SetupSelector(m_pSpecularRedSelector, 1);
@@ -254,7 +256,7 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 	m_pSpecularBlueSelector->SetSelectedListener(this, SetSpecularBlue);
 	AddControl(m_pSpecularBlueSelector);
 
-	m_pEmissiveLabel = new CLabel(0, 0, 1, 1, "Emissive: ");
+	m_pEmissiveLabel = new CLabel(0, 0, 1, 1, L"Emissive: ");
 	AddControl(m_pEmissiveLabel);
 	m_pEmissiveRedSelector = new CScrollSelector<float>();
 	SetupSelector(m_pEmissiveRedSelector, 1);
@@ -269,7 +271,7 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 	m_pEmissiveBlueSelector->SetSelectedListener(this, SetEmissiveBlue);
 	AddControl(m_pEmissiveBlueSelector);
 
-	m_pShininessLabel = new CLabel(0, 0, 1, 1, "Shininess: ");
+	m_pShininessLabel = new CLabel(0, 0, 1, 1, L"Shininess: ");
 	AddControl(m_pShininessLabel);
 	m_pShininessSelector = new CScrollSelector<float>();
 	SetupSelector(m_pShininessSelector, 128);
@@ -463,12 +465,12 @@ void CMaterialEditor::Layout()
 
 void CMaterialEditor::ChooseDiffuseCallback()
 {
-	wchar_t* pszOpen = CModelWindow::OpenFileDialog(L"All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0");
+	wchar_t* pszOpen = OpenFileDialog(L"All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0");
 
 	if (!pszOpen)
 		return;
 
-	size_t iTexture = CModelWindow::LoadTextureIntoGL(std::wstring(pszOpen));
+	size_t iTexture = CModelWindow::LoadTextureIntoGL(eastl::string16(pszOpen));
 
 	if (!iTexture)
 		return;
@@ -486,12 +488,12 @@ void CMaterialEditor::ChooseDiffuseCallback()
 
 void CMaterialEditor::ChooseNormalCallback()
 {
-	wchar_t* pszOpen = CModelWindow::OpenFileDialog(L"All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0");
+	wchar_t* pszOpen = OpenFileDialog(L"All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0");
 
 	if (!pszOpen)
 		return;
 
-	size_t iTexture = CModelWindow::LoadTextureIntoGL(std::wstring(pszOpen));
+	size_t iTexture = CModelWindow::LoadTextureIntoGL(eastl::string16(pszOpen));
 
 	if (!iTexture)
 		return;

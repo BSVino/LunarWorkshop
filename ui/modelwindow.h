@@ -1,9 +1,11 @@
-#ifndef CF_MODELWINDOW_H
-#define CF_MODELWINDOW_H
+#ifndef SMAK_MODELWINDOW_H
+#define SMAK_MODELWINDOW_H
 
 #include <modelconverter/convmesh.h>
-#include "modelgui.h"
+#include <glgui/glgui.h>
 #include <worklistener.h>
+#include <tinker/application.h>
+#include <common.h>
 
 class CMaterial
 {
@@ -24,11 +26,19 @@ public:
 	size_t		m_iColorAO;
 };
 
-class CModelWindow : public modelgui::IEventListener, IWorkListener
+class CModelWindow : public CApplication, glgui::IEventListener, IWorkListener
 {
+	DECLARE_CLASS(CModelWindow, CApplication);
+
 public:
-							CModelWindow();
+							CModelWindow(int argc, char** argv);
 							~CModelWindow();
+
+public:
+	virtual eastl::string	WindowTitle() { return "SMAK - Super Model Army Knife"; }
+	virtual eastl::string16	AppDirectory() { return L"SMAK"; }
+
+	void					OpenWindow();
 
 	void					InitUI();
 
@@ -42,7 +52,7 @@ public:
 	void					ReloadFromFile();
 
 	void					LoadIntoGL();
-	static size_t			LoadTextureIntoGL(std::wstring sFilename);
+	static size_t			LoadTextureIntoGL(eastl::string16 sFilename);
 	void					LoadTexturesIntoGL();
 
 	// License management
@@ -51,7 +61,7 @@ public:
 	static void				SetupSMAKTexture();
 	static void				SaveSMAKTexture();
 	static bool				GetSMAKTexture();
-	static std::string		GetSMAKTextureCode();
+	static eastl::string	GetSMAKTextureCode();
 	static void				GetSMAKTextureId(unsigned char* paiId);
 	static void				SetSMAKTexture(const char* pszTex);
 
@@ -59,8 +69,7 @@ public:
 
 	void					Layout();
 
-	static void				RenderCallback() { Get()->Render(); };
-	void					Render();
+	virtual void			Render();
 	void					Render3D();
 	void					RenderGround();
 	void					RenderObjects();
@@ -69,29 +78,12 @@ public:
 	void					RenderLightSource();
 	void					RenderUV();
 
-	static void				WindowResizeCallback(int x, int y) { Get()->WindowResize(x, y); };
-	void					WindowResize(int x, int y);
-
-	static void				DisplayCallback() { Get()->Display(); };
-	void					Display();
-
-	static void				MouseMotionCallback(int x, int y) { Get()->MouseMotion(x, y); };
-	void					MouseMotion(int x, int y);
-
-	static void				MouseDraggedCallback(int x, int y) { Get()->MouseDragged(x, y); };
-	void					MouseDragged(int x, int y);
-
-	static void				MouseInputCallback(int iButton, int iState, int x, int y) { Get()->MouseInput(iButton, iState, x, y); };
-	void					MouseInput(int iButton, int iState, int x, int y);
-
-	static void				VisibleCallback(int vis) { Get()->Visible(vis); };
-	void					Visible(int vis);
-
-	static void				KeyPressCallback(unsigned char c, int x, int y) { Get()->KeyPress(c, x, y); };
-	void					KeyPress(unsigned char c, int x, int y);
-
-	static void				SpecialCallback(int k, int x, int y) { Get()->Special(k, x, y); };
-	void					Special(int k, int x, int y);
+	virtual void			WindowResize(int x, int y);
+	virtual void			MouseMotion(int x, int y);
+	virtual void			MouseInput(int iButton, int iState);
+	virtual void			MouseWheel(int iState);
+	virtual void			CharPress(int c);
+	virtual void			KeyPress(int c);
 
 	EVENT_CALLBACK(CModelWindow, Open);
 	EVENT_CALLBACK(CModelWindow, OpenInto);
@@ -125,11 +117,6 @@ public:
 
 	size_t					GetNextObjectId();
 
-	static wchar_t*			OpenFileDialog(wchar_t* pszFileTypes);
-	static wchar_t*			SaveFileDialog(wchar_t* pszFileTypes);
-	static std::string		GetClipboard();
-	static void				SetClipboard(const std::string& sBuf);
-
 	void					OpenHelpPanel();
 	void					OpenRegisterPanel();
 	void					OpenAboutPanel();
@@ -159,7 +146,7 @@ public:
 	static CModelWindow*	Get() { return s_pModelWindow; };
 
 	CConversionScene*		GetScene() { return &m_Scene; };
-	std::vector<CMaterial>*	GetMaterials() { return &m_aoMaterials; };
+	eastl::vector<CMaterial>*	GetMaterials() { return &m_aoMaterials; };
 
 	void					ClearDebugLines();
 	void					AddDebugLine(Vector vecStart, Vector vecEnd);
@@ -174,10 +161,10 @@ protected:
 	bool					m_bLoadingFile;
 	wchar_t					m_szFileLoaded[1024];
 
-	std::vector<size_t>		m_aiObjects;
+	eastl::vector<size_t>		m_aiObjects;
 	size_t					m_iObjectsCreated;
 
-	std::vector<CMaterial>	m_aoMaterials;
+	eastl::vector<CMaterial>	m_aoMaterials;
 
 	CMaterial*				m_pLightHalo;
 	CMaterial*				m_pLightBeam;
@@ -222,7 +209,7 @@ protected:
 	size_t					m_iWindowWidth;
 	size_t					m_iWindowHeight;
 
-	std::vector<Vector>		m_avecDebugLines;
+	eastl::vector<Vector>	m_avecDebugLines;
 
 	// Options
 	bool					m_bRenderUV;
@@ -239,18 +226,18 @@ protected:
 	size_t					m_iShaderProgram;
 
 	// Controls
-	modelgui::CButton*		m_pRender3D;
-	modelgui::CButton*		m_pRenderUV;
+	glgui::CButton*			m_pRender3D;
+	glgui::CButton*			m_pRenderUV;
 
-	modelgui::CButton*		m_pWireframe;
-	modelgui::CButton*		m_pFlat;
-	modelgui::CButton*		m_pSmooth;
-	modelgui::CButton*		m_pUVWireframe;
-	modelgui::CButton*		m_pLight;
-	modelgui::CButton*		m_pTexture;
-	modelgui::CButton*		m_pNormal;
-	modelgui::CButton*		m_pAO;
-	modelgui::CButton*		m_pColorAO;
+	glgui::CButton*			m_pWireframe;
+	glgui::CButton*			m_pFlat;
+	glgui::CButton*			m_pSmooth;
+	glgui::CButton*			m_pUVWireframe;
+	glgui::CButton*			m_pLight;
+	glgui::CButton*			m_pTexture;
+	glgui::CButton*			m_pNormal;
+	glgui::CButton*			m_pAO;
+	glgui::CButton*			m_pColorAO;
 
 	static CModelWindow*	s_pModelWindow;
 };

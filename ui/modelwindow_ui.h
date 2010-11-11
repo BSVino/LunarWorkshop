@@ -1,10 +1,10 @@
-#ifndef MODELWINDOW_UI_H
-#define MODELWINDOW_UI_H
+#ifndef SMAK_MODELWINDOW_UI_H
+#define SMAK_MODELWINDOW_UI_H
 
-#include "modelgui.h"
+#include <glgui/glgui.h>
 #include "crunch/crunch.h"
 
-using namespace modelgui;
+using namespace glgui;
 
 typedef enum
 {
@@ -19,7 +19,7 @@ public:
 
 	virtual void			Layout();
 
-	virtual void			AddButton(CButton* pButton, char* pszHints, bool bNewSection, IEventListener* pListener = NULL, IEventListener::Callback pfnCallback = NULL);
+	virtual void			AddButton(CButton* pButton, const eastl::string16& sHints, bool bNewSection, IEventListener* pListener = NULL, IEventListener::Callback pfnCallback = NULL);
 
 	virtual void			Think();
 	virtual void			Paint(int x, int y, int w, int h);
@@ -27,9 +27,9 @@ public:
 protected:
 	buttonalignment_t		m_eAlign;
 
-	std::vector<int>		m_aiSpaces;
-	std::vector<CButton*>	m_apButtons;
-	std::vector<CLabel*>	m_apHints;
+	eastl::vector<int>		m_aiSpaces;
+	eastl::vector<CButton*>	m_apButtons;
+	eastl::vector<CLabel*>	m_apHints;
 };
 
 class CProgressBar : public CPanel
@@ -42,8 +42,8 @@ public:
 	void					Paint(int x, int y, int w, int h);
 
 	void					SetTotalProgress(size_t iProgress);
-	void					SetProgress(size_t iProgress, wchar_t* pszAction = NULL);
-	void					SetAction(wchar_t* pszAction);
+	void					SetProgress(size_t iProgress, const eastl::string16& sAction = L"");
+	void					SetAction(const eastl::string16& sAction);
 
 	static CProgressBar*	Get();
 
@@ -52,7 +52,7 @@ protected:
 	size_t					m_iCurrentProgress;
 
 	CLabel*					m_pAction;
-	std::wstring			m_sAction;
+	eastl::string16			m_sAction;
 
 	static CProgressBar*	s_pProgressBar;
 };
@@ -62,7 +62,7 @@ protected:
 class CCloseButton : public CButton
 {
 public:
-							CCloseButton() : CButton(0, 0, 10, 10, "") {};
+							CCloseButton() : CButton(0, 0, 10, 10, L"") {};
 
 public:
 	virtual void			Paint() { CButton::Paint(); };
@@ -72,7 +72,7 @@ public:
 class CMinimizeButton : public CButton
 {
 public:
-							CMinimizeButton() : CButton(0, 0, 10, 10, "") {};
+							CMinimizeButton() : CButton(0, 0, 10, 10, L"") {};
 
 public:
 	virtual void			Paint() { CButton::Paint(); };
@@ -82,7 +82,7 @@ public:
 class CMovablePanel : public CPanel, public IEventListener
 {
 public:
-							CMovablePanel(char* pszName);
+							CMovablePanel(const eastl::string16& sName);
 							~CMovablePanel();
 
 	virtual void			Layout();
@@ -124,7 +124,7 @@ protected:
 class CAOPanel : public CMovablePanel, public IWorkListener
 {
 public:
-							CAOPanel(bool bColor, CConversionScene* pScene, std::vector<CMaterial>* paoMaterials);
+							CAOPanel(bool bColor, CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
 
 	virtual void			SetVisible(bool bVisible);
 
@@ -146,14 +146,14 @@ public:
 
 	virtual void			FindBestRayFalloff();
 
-	static void				Open(bool bColor, CConversionScene* pScene, std::vector<CMaterial>* paoMaterials);
+	static void				Open(bool bColor, CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
 	static CAOPanel*		Get(bool bColor);
 
 protected:
 	bool					m_bColor;
 
 	CConversionScene*		m_pScene;
-	std::vector<CMaterial>*	m_paoMaterials;
+	eastl::vector<CMaterial>*	m_paoMaterials;
 
 	CAOGenerator			m_oGenerator;
 
@@ -194,7 +194,7 @@ protected:
 class CNormalPanel : public CMovablePanel, public IWorkListener
 {
 public:
-								CNormalPanel(CConversionScene* pScene, std::vector<CMaterial>* paoMaterials);
+								CNormalPanel(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
 
 public:
 	virtual void				SetVisible(bool bVisible);
@@ -226,12 +226,12 @@ public:
 	EVENT_CALLBACK(CNormalPanel,	AddHiResMesh);
 	EVENT_CALLBACK(CNormalPanel,	UpdateNormal2);
 
-	static void					Open(CConversionScene* pScene, std::vector<CMaterial>* paoMaterials);
+	static void					Open(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
 	static CNormalPanel*		Get() { return s_pNormalPanel; }
 
 protected:
 	CConversionScene*			m_pScene;
-	std::vector<CMaterial>*		m_paoMaterials;
+	eastl::vector<CMaterial>*		m_paoMaterials;
 
 	CNormalGenerator			m_oGenerator;
 
@@ -244,8 +244,8 @@ protected:
 	CLabel*						m_pHiResLabel;
 	CTree*						m_pHiRes;
 
-	std::vector<CConversionMeshInstance*>	m_apLoResMeshes;
-	std::vector<CConversionMeshInstance*>	m_apHiResMeshes;
+	eastl::vector<CConversionMeshInstance*>	m_apLoResMeshes;
+	eastl::vector<CConversionMeshInstance*>	m_apHiResMeshes;
 
 	CButton*					m_pAddLoRes;
 	CButton*					m_pAddHiRes;

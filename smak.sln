@@ -1,18 +1,15 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modelconverter", "..\modelconverter\modelconverter.vcproj", "{E5304F25-B6F8-4BCA-BC3A-DF1ECAF35F28}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "smak", "smak.vcproj", "{FCA9F04C-73DB-4863-B8A8-4B7FC09D07B9}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "smak", "smak.vcxproj", "{FCA9F04C-73DB-4863-B8A8-4B7FC09D07B9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E5304F25-B6F8-4BCA-BC3A-DF1ECAF35F28} = {E5304F25-B6F8-4BCA-BC3A-DF1ECAF35F28}
-		{1CA7C79D-FA58-47A9-B0D6-619B1475DD9A} = {1CA7C79D-FA58-47A9-B0D6-619B1475DD9A}
 		{E351902A-0AB8-477C-8FC1-09C56E0BF57F} = {E351902A-0AB8-477C-8FC1-09C56E0BF57F}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "raytracer", "..\raytracer\raytracer.vcproj", "{E351902A-0AB8-477C-8FC1-09C56E0BF57F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modelconverter", "..\modelconverter\modelconverter.vcxproj", "{E5304F25-B6F8-4BCA-BC3A-DF1ECAF35F28}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "license", "..\license\license.vcproj", "{1CA7C79D-FA58-47A9-B0D6-619B1475DD9A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "raytracer", "..\raytracer\raytracer.vcxproj", "{E351902A-0AB8-477C-8FC1-09C56E0BF57F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,22 +17,18 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E5304F25-B6F8-4BCA-BC3A-DF1ECAF35F28}.Debug|Win32.ActiveCfg = Debug|Win32
-		{E5304F25-B6F8-4BCA-BC3A-DF1ECAF35F28}.Debug|Win32.Build.0 = Debug|Win32
-		{E5304F25-B6F8-4BCA-BC3A-DF1ECAF35F28}.Release|Win32.ActiveCfg = Release|Win32
-		{E5304F25-B6F8-4BCA-BC3A-DF1ECAF35F28}.Release|Win32.Build.0 = Release|Win32
 		{FCA9F04C-73DB-4863-B8A8-4B7FC09D07B9}.Debug|Win32.ActiveCfg = Debug|Win32
 		{FCA9F04C-73DB-4863-B8A8-4B7FC09D07B9}.Debug|Win32.Build.0 = Debug|Win32
 		{FCA9F04C-73DB-4863-B8A8-4B7FC09D07B9}.Release|Win32.ActiveCfg = Release|Win32
 		{FCA9F04C-73DB-4863-B8A8-4B7FC09D07B9}.Release|Win32.Build.0 = Release|Win32
+		{E5304F25-B6F8-4BCA-BC3A-DF1ECAF35F28}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E5304F25-B6F8-4BCA-BC3A-DF1ECAF35F28}.Debug|Win32.Build.0 = Debug|Win32
+		{E5304F25-B6F8-4BCA-BC3A-DF1ECAF35F28}.Release|Win32.ActiveCfg = Release|Win32
+		{E5304F25-B6F8-4BCA-BC3A-DF1ECAF35F28}.Release|Win32.Build.0 = Release|Win32
 		{E351902A-0AB8-477C-8FC1-09C56E0BF57F}.Debug|Win32.ActiveCfg = Debug|Win32
 		{E351902A-0AB8-477C-8FC1-09C56E0BF57F}.Debug|Win32.Build.0 = Debug|Win32
 		{E351902A-0AB8-477C-8FC1-09C56E0BF57F}.Release|Win32.ActiveCfg = Release|Win32
 		{E351902A-0AB8-477C-8FC1-09C56E0BF57F}.Release|Win32.Build.0 = Release|Win32
-		{1CA7C79D-FA58-47A9-B0D6-619B1475DD9A}.Debug|Win32.ActiveCfg = Debug|Win32
-		{1CA7C79D-FA58-47A9-B0D6-619B1475DD9A}.Debug|Win32.Build.0 = Debug|Win32
-		{1CA7C79D-FA58-47A9-B0D6-619B1475DD9A}.Release|Win32.ActiveCfg = Release|Win32
-		{1CA7C79D-FA58-47A9-B0D6-619B1475DD9A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
