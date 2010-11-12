@@ -300,7 +300,7 @@ void CModelWindow::WorkProgress(size_t iProgress, bool bForceDraw)
 	static float flLastTime = 0;
 
 	// Don't update too often or it'll slow us down just because of the updates.
-	if (!bForceDraw && GetTime() - flLastTime < 0.1f)
+	if (!bForceDraw && GetTime() - flLastTime < 0.2f)
 		return;
 
 	CProgressBar::Get()->SetProgress(iProgress);
@@ -460,9 +460,10 @@ void CProgressBar::SetProgress(size_t iProgress, const eastl::string16& sAction)
 
 void CProgressBar::SetAction(const eastl::string16& sAction)
 {
-	m_sAction = sAction;
+	if (sAction.length())
+		m_sAction = sAction;
 
-	m_pAction->SetText(m_sAction.c_str());
+	m_pAction->SetText(m_sAction);
 
 	if (m_iTotalProgress)
 	{
