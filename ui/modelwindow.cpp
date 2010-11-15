@@ -848,17 +848,20 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 
 	CConversionMesh* pMesh = pMeshInstance->GetMesh();
 
-	for (size_t j = 0; j < pMesh->GetNumFaces(); j++)
+	size_t iFaces = pMesh->GetNumFaces();
+	for (size_t j = 0; j < iFaces; j++)
 	{
 		size_t k;
 		CConversionFace* pFace = pMesh->GetFace(j);
 
-		if (pFace->m != ~0 && pMeshInstance->GetMappedMaterial(pFace->m))
+		CConversionMaterialMap* pMappedMaterial = pMeshInstance->GetMappedMaterial(pFace->m);
+
+		if (pFace->m != ~0 && pMappedMaterial)
 		{
-			if (!pMeshInstance->GetMappedMaterial(pFace->m)->IsVisible())
+			if (!pMappedMaterial->IsVisible())
 				continue;
 
-			CConversionMaterial* pMaterial = m_Scene.GetMaterial(pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial);
+			CConversionMaterial* pMaterial = m_Scene.GetMaterial(pMappedMaterial->m_iMaterial);
 			if (pMaterial && !pMaterial->IsVisible())
 				continue;
 		}
@@ -872,7 +875,7 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			bool bAO = m_bDisplayAO;
 			bool bCAO = m_bDisplayColorAO;
 
-			if (!m_Scene.DoesFaceHaveValidMaterial(pFace, pMeshInstance) || pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial >= m_aoMaterials.size())
+			if (!m_Scene.DoesFaceHaveValidMaterial(pFace, pMeshInstance) || pMappedMaterial->m_iMaterial >= m_aoMaterials.size())
 			{
 				glBindTexture(GL_TEXTURE_2D, 0);
 				bTexture = false;
@@ -884,7 +887,7 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			}
 			else
 			{
-				CMaterial* pMaterial = &m_aoMaterials[pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial];
+				CMaterial* pMaterial = &m_aoMaterials[pMappedMaterial->m_iMaterial];
 
 				if (!pMaterial->m_iBase)
 					bTexture = false;
@@ -972,7 +975,7 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 
 			if (m_Scene.DoesFaceHaveValidMaterial(pFace, pMeshInstance))
 			{
-				CConversionMaterial* pMaterial = m_Scene.GetMaterial(pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial);
+				CConversionMaterial* pMaterial = m_Scene.GetMaterial(pMappedMaterial->m_iMaterial);
 				glMaterialfv(GL_FRONT, GL_AMBIENT, pMaterial->m_vecAmbient);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, pMaterial->m_vecDiffuse);
 				glMaterialfv(GL_FRONT, GL_SPECULAR, pMaterial->m_vecSpecular);

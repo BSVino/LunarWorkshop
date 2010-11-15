@@ -392,9 +392,6 @@ void CAOGenerator::Generate()
 	}
 	else
 	{
-		if (m_eAOMethod == AOMETHOD_RAYTRACE)
-			RaytraceSetupThreads();
-
 		if (m_eAOMethod == AOMETHOD_RENDER)
 			RenderSetupScene();
 #ifdef AO_DEBUG
@@ -454,9 +451,6 @@ void CAOGenerator::Generate()
 		glMatrixMode(GL_MODELVIEW);
 		glPopMatrix();
 	}
-
-	if (m_eAOMethod == AOMETHOD_RAYTRACE)
-		RaytraceCleanupThreads();
 
 	// Somebody get this ao some clotters and morphine, STAT!
 	m_bIsBleeding = true;
@@ -934,6 +928,9 @@ void CAOGenerator::AccumulateTexture(size_t iTexture)
 
 void CAOGenerator::GenerateByTexel()
 {
+	if (m_eAOMethod == AOMETHOD_RAYTRACE)
+		RaytraceSetupThreads();
+
 	float flTotalArea = 0;
 
 	for (size_t m = 0; m < m_pScene->GetNumMeshes(); m++)
@@ -974,10 +971,11 @@ void CAOGenerator::GenerateByTexel()
 		GenerateNodeByTexel(m_pScene->GetScene(0), pTracer, iRendered);
 
 	if (m_eAOMethod == AOMETHOD_RAYTRACE)
+	{
 		RaytraceJoinThreads();
-
-	if (m_eAOMethod == AOMETHOD_RAYTRACE)
+		RaytraceCleanupThreads();
 		delete pTracer;
+	}
 }
 
 void CAOGenerator::GenerateNodeByTexel(CConversionSceneNode* pNode, raytrace::CRaytracer* pTracer, size_t& iRendered)
