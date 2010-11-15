@@ -21,3 +21,6 @@ It's minhrifle.obj copied twice, which results in a 10k poly model, to test load
 
 * occ_test.obj
 Has no UV. Exported from LightWave with no vt entries and the second value in each vertex empty.
+
+* zbrush_huge.obj
+It's a huge model exported from zbrush with a million faces. It shouldn't take more than 20 or 30 seconds to load.
