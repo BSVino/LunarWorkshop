@@ -165,6 +165,9 @@ void CNormalGenerator::Generate()
 
 	size_t iRendered = 0;
 
+	eastl::vector<Vector> avecPoints;
+	eastl::vector<size_t> aiPoints;
+
 	for (size_t i = 0; i < m_apLoRes.size(); i++)
 	{
 		CConversionMeshInstance* pMeshInstance = m_apLoRes[i];
@@ -186,8 +189,8 @@ void CNormalGenerator::Generate()
 					continue;
 			}
 
-			eastl::vector<Vector> avecPoints;
-			eastl::vector<size_t> aiPoints;
+			avecPoints.clear();
+			aiPoints.clear();
 			for (size_t t = 0; t < pFace->GetNumVertices(); t++)
 			{
 				avecPoints.push_back(pMeshInstance->GetVertex(pFace->GetVertex(t)->v));

@@ -1496,7 +1496,12 @@ void CNormalPanel::GenerateCallback()
 		m_apHiResMeshes[m]->SetVisible(false);
 
 	for (size_t m = 0; m < m_apLoResMeshes.size(); m++)
+	{
+		if (m_apLoResMeshes[m]->GetMesh()->GetNumFaces() > 10000)
+			continue;
+
 		m_apLoResMeshes[m]->SetVisible(true);
+	}
 
 	int iSize = m_pSizeSelector->GetSelectionValue();
 	m_oGenerator.SetSize(iSize, iSize);
