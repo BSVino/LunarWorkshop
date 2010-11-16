@@ -1410,32 +1410,37 @@ void CModelWindow::RenderUV()
 		static char szFont[1024];
 		sprintf(szFont, "%s\\Fonts\\Arial.ttf", getenv("windir"));
 
-		FTGLPixmapFont*	pFont = new FTGLPixmapFont(szFont);
-		pFont->FaceSize(48);
+		static FTTextureFont* pDemoFont = NULL;
+		if (!pDemoFont)
+			pDemoFont = new FTTextureFont(szFont);
+
+		pDemoFont->FaceSize(48);
 
 		if (m_bDisplayAO || m_bDisplayColorAO)
 		{
 			glColor4ubv(Color(155, 155, 255, 60));
 
 			glRasterPos2f(0.15f, 0.2f);
-			pFont->Render("DEMO");
+			pDemoFont->Render("DEMO");
 
 			glRasterPos2f(-0.35f, 0.2f);
-			pFont->Render("DEMO");
+			pDemoFont->Render("DEMO");
 
 			glRasterPos2f(0.15f, -0.2f);
-			pFont->Render("DEMO");
+			pDemoFont->Render("DEMO");
 
 			glRasterPos2f(-0.35f, -0.2f);
-			pFont->Render("DEMO");
+			pDemoFont->Render("DEMO");
 		}
+
+		static FTTextureFont* pNoticeFont = NULL;
+		if (!pNoticeFont)
+			pNoticeFont = new FTTextureFont(szFont);
 
 		glColor4ubv(Color(255, 255, 255, 180));
 		glRasterPos2f(-0.5f, 0.51f);
-		pFont->FaceSize(16);
-		pFont->Render("This demo version will generate all map sizes, but will downsample to 128x128 when saving.");
-
-		delete pFont;
+		pNoticeFont->FaceSize(16);
+		pNoticeFont->Render("This demo version will generate all map sizes, but will downsample to 128x128 when saving.");
 	}
 
 	if (m_bDisplayUV)

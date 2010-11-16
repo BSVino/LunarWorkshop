@@ -300,7 +300,7 @@ void CModelWindow::WorkProgress(size_t iProgress, bool bForceDraw)
 	static float flLastTime = 0;
 
 	// Don't update too often or it'll slow us down just because of the updates.
-	if (!bForceDraw && GetTime() - flLastTime < 0.2f)
+	if (!bForceDraw && GetTime() - flLastTime < 0.3f)
 		return;
 
 	CProgressBar::Get()->SetProgress(iProgress);
@@ -1442,11 +1442,9 @@ void CNormalPanel::Think()
 		m_pTextureLabel->AppendText(L" (None of those meshes have materials!)");
 	else if (m_oGenerator.IsGeneratingNewNormal2())
 	{
-		m_pTextureLabel->AppendText(L" (Generating... ");
-		char szPercentage[10];
-		sprintf(szPercentage, "%d", (int)(m_oGenerator.GetNormal2GenerationProgress()*100));
-		m_pTextureLabel->AppendText(szPercentage);
-		m_pTextureLabel->AppendText(L"%)");
+		eastl::string16 s;
+		s.sprintf(L" (Generating... %d%%)", (int)(m_oGenerator.GetNormal2GenerationProgress()*100));
+		m_pTextureLabel->AppendText(s);
 		m_pSave->SetVisible(false);
 	}
 
