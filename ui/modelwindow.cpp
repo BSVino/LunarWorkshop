@@ -372,11 +372,9 @@ void CModelWindow::SaveFile(const wchar_t* pszFile)
 
 	CModelConverter c(&m_Scene);
 
-	size_t iFileLength = wcslen(pszFile);
-	eastl::string16 sExtension = pszFile+iFileLength-4;
+	c.SetWorkListener(this);
 
-	if (sExtension == L".smd")
-		c.WriteSMDs(pszFile);
+	c.SaveModel(pszFile);
 }
 
 void CModelWindow::Render()

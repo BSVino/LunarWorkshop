@@ -22,7 +22,7 @@ void CModelWindow::InitUI()
 	pFile->AddSubmenu(L"Open...", this, Open);
 	pFile->AddSubmenu(L"Open Into...", this, OpenInto);
 	pFile->AddSubmenu(L"Reload", this, Reload);
-//	pFile->AddSubmenu(L"Save...", this, Save);
+	pFile->AddSubmenu(L"Save...", this, Save);
 	pFile->AddSubmenu(L"Close", this, Close);
 	pFile->AddSubmenu(L"Exit", this, Exit);
 
@@ -109,7 +109,7 @@ void CModelWindow::ReloadCallback()
 
 void CModelWindow::SaveCallback()
 {
-	SaveFile(SaveFileDialog(L"Valve Source SMD\0*.smd\0"));
+	SaveFile(SaveFileDialog(L"All *.obj\0*.obj\0"));
 }
 
 void CModelWindow::CloseCallback()
@@ -288,7 +288,7 @@ void CModelWindow::BeginProgress()
 	CProgressBar::Get()->SetVisible(true);
 }
 
-void CModelWindow::SetAction(wchar_t* pszAction, size_t iTotalProgress)
+void CModelWindow::SetAction(const wchar_t* pszAction, size_t iTotalProgress)
 {
 	CProgressBar::Get()->SetTotalProgress(iTotalProgress);
 	CProgressBar::Get()->SetAction(pszAction);
@@ -1045,7 +1045,7 @@ void CAOPanel::BeginProgress()
 	CProgressBar::Get()->SetVisible(true);
 }
 
-void CAOPanel::SetAction(wchar_t* pszAction, size_t iTotalProgress)
+void CAOPanel::SetAction(const wchar_t* pszAction, size_t iTotalProgress)
 {
 	CProgressBar::Get()->SetTotalProgress(iTotalProgress);
 	CProgressBar::Get()->SetAction(pszAction);
@@ -1560,7 +1560,7 @@ void CNormalPanel::BeginProgress()
 	CProgressBar::Get()->SetVisible(true);
 }
 
-void CNormalPanel::SetAction(wchar_t* pszAction, size_t iTotalProgress)
+void CNormalPanel::SetAction(const wchar_t* pszAction, size_t iTotalProgress)
 {
 	CProgressBar::Get()->SetTotalProgress(iTotalProgress);
 	CProgressBar::Get()->SetAction(pszAction);

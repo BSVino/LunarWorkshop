@@ -152,7 +152,7 @@ public:
 	void					AddDebugLine(Vector vecStart, Vector vecEnd);
 
 	void					BeginProgress();
-	void					SetAction(wchar_t* pszAction, size_t iTotalProgress);
+	void					SetAction(const wchar_t* pszAction, size_t iTotalProgress);
 	void					WorkProgress(size_t iProgress, bool bForceDraw = false);
 	void					EndProgress();
 
