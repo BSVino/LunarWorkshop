@@ -22,7 +22,7 @@ void CModelWindow::InitUI()
 	pFile->AddSubmenu(L"Open...", this, Open);
 	pFile->AddSubmenu(L"Open Into...", this, OpenInto);
 	pFile->AddSubmenu(L"Reload", this, Reload);
-	pFile->AddSubmenu(L"Save...", this, Save);
+	pFile->AddSubmenu(L"Save As...", this, Save);
 	pFile->AddSubmenu(L"Close", this, Close);
 	pFile->AddSubmenu(L"Exit", this, Exit);
 
@@ -109,7 +109,7 @@ void CModelWindow::ReloadCallback()
 
 void CModelWindow::SaveCallback()
 {
-	SaveFile(SaveFileDialog(L"All *.obj\0*.obj\0"));
+	SaveFile(SaveFileDialog(L"Wavefront *.obj\0*.obj\0Silo ASCII .sia\0*.sia\0"));
 }
 
 void CModelWindow::CloseCallback()
