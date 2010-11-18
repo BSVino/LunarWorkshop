@@ -109,7 +109,7 @@ void CModelWindow::ReloadCallback()
 
 void CModelWindow::SaveCallback()
 {
-	SaveFile(SaveFileDialog(L"Wavefront *.obj\0*.obj\0Silo ASCII .sia\0*.sia\0"));
+	SaveFile(SaveFileDialog(L"Wavefront .obj\0*.obj\0Silo ASCII .sia\0*.sia\0Collada .dae\0*.dae\0"));
 }
 
 void CModelWindow::CloseCallback()
