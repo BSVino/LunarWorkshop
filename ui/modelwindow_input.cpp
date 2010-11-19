@@ -65,7 +65,7 @@ void CModelWindow::MouseMotion(int x, int y)
 
 		if (m_bCameraDollying)
 		{
-			m_flCameraDistance += y - m_iMouseStartY;
+			m_flCameraDistance += (y - m_iMouseStartY)*(m_flCameraDistance/100);
 
 			if (m_flCameraDistance < 1)
 				m_flCameraDistance = 1;

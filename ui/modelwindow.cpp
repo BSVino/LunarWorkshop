@@ -431,6 +431,10 @@ void CModelWindow::Render3D()
 {
 	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT);
 
+	float flSceneSize = m_Scene.m_oExtends.Size().Length()/2;
+	if (flSceneSize < 150)
+		flSceneSize = 150;
+
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -438,7 +442,7 @@ void CModelWindow::Render3D()
 			44.0,
 			(float)m_iWindowWidth/(float)m_iWindowHeight,
 			1,
-			10000.0
+			m_flCameraDistance + flSceneSize
 		);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -1490,6 +1494,10 @@ void CModelWindow::RenderUV()
 
 void CModelWindow::WindowResize(int w, int h)
 {
+	float flSceneSize = m_Scene.m_oExtends.Size().Length()/2;
+	if (flSceneSize < 150)
+		flSceneSize = 150;
+
 	glViewport(0, 0, (GLsizei)w, (GLsizei)h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -1497,7 +1505,7 @@ void CModelWindow::WindowResize(int w, int h)
 			44.0,						// FOV
 			(float)w/(float)h,			// Aspect ratio
 			1.0,						// Z near
-			10000.0						// Z far
+			m_flCameraDistance + flSceneSize
 		);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
