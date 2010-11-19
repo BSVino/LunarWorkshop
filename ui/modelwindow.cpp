@@ -1409,40 +1409,46 @@ void CModelWindow::RenderUV()
 
 	if (!CModelWindow::Get()->GetSMAKTexture() && (m_bDisplayAO || m_bDisplayColorAO || m_bDisplayNormal))
 	{
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glScalef(0.002f, 0.002f, 0.002f);
+
+		glMatrixMode(GL_MODELVIEW);
+
 		static char szFont[1024];
 		sprintf(szFont, "%s\\Fonts\\Arial.ttf", getenv("windir"));
 
 		static FTTextureFont* pDemoFont = NULL;
 		if (!pDemoFont)
+		{
 			pDemoFont = new FTTextureFont(szFont);
-
-		pDemoFont->FaceSize(48);
+			pDemoFont->FaceSize(48);
+		}
 
 		if (m_bDisplayAO || m_bDisplayColorAO)
 		{
-			glColor4ubv(Color(155, 155, 255, 60));
+			glColor4ubv(Color(155, 155, 255, 100));
 
-			glRasterPos2f(0.15f, 0.2f);
-			pDemoFont->Render("DEMO");
-
-			glRasterPos2f(-0.35f, 0.2f);
-			pDemoFont->Render("DEMO");
-
-			glRasterPos2f(0.15f, -0.2f);
-			pDemoFont->Render("DEMO");
-
-			glRasterPos2f(-0.35f, -0.2f);
-			pDemoFont->Render("DEMO");
+			pDemoFont->Render("DEMO", -1, FTPoint(100.0f, 150.0f));
+			pDemoFont->Render("DEMO", -1, FTPoint(-200.0f, 150.0f));
+			pDemoFont->Render("DEMO", -1, FTPoint(100.0f, -150.0f));
+			pDemoFont->Render("DEMO", -1, FTPoint(-200.0f, -150.0f));
 		}
 
 		static FTTextureFont* pNoticeFont = NULL;
 		if (!pNoticeFont)
+		{
 			pNoticeFont = new FTTextureFont(szFont);
+			pNoticeFont->FaceSize(16);
+		}
 
-		glColor4ubv(Color(255, 255, 255, 180));
-		glRasterPos2f(-0.5f, 0.51f);
-		pNoticeFont->FaceSize(16);
-		pNoticeFont->Render("This demo version will generate all map sizes, but will downsample to 128x128 when saving.");
+		glColor4ubv(Color(255, 255, 255, 255));
+		pNoticeFont->Render("This demo version will generate all map sizes, but will downsample to 128x128 when saving.", -1, FTPoint(-300.0f, 260.0f));
+
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+
+		glMatrixMode(GL_MODELVIEW);
 	}
 
 	if (m_bDisplayUV)
