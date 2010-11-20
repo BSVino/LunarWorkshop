@@ -164,9 +164,7 @@ const char* GetFSModelShader()
 
 		"		float flNormalDotHalfVector = max(0.0, dot(vecTranslatedNormal, normalize(vecLightHalf)));"
 
-		"		float flPowerFactor = 0.0;"
-		"		if (flLightStrength > 0.0)"
-		"			flPowerFactor = pow(flNormalDotHalfVector, gl_FrontMaterial.shininess);"
+		"		float flPowerFactor = pow(flNormalDotHalfVector, gl_FrontMaterial.shininess);"
 
 		"		clrLight = vecAmbientLight +"
 		"			vecDiffuseLight * flLightStrength +"
