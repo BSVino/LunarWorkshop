@@ -1,5 +1,5 @@
-#ifndef CF_LICENSE_H
-#define CF_LICENSE_H
+#ifndef LW_LICENSE_H
+#define LW_LICENSE_H
 #ifdef _WIN32
 #pragma once
 #endif
