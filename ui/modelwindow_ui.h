@@ -323,12 +323,24 @@ public:
 	static void				Close();
 
 	EVENT_CALLBACK(CRegisterPanel, Pirates);
+	EVENT_CALLBACK(CRegisterPanel, Website);
+	EVENT_CALLBACK(CRegisterPanel, Register);
+	EVENT_CALLBACK(CRegisterPanel, RegisterOffline);
+	EVENT_CALLBACK(CRegisterPanel, CopyProductCode);
+	EVENT_CALLBACK(CRegisterPanel, SetKey);
 
 protected:
+	CButton*				m_pWebsiteButton;
+
 	CLabel*					m_pInfo;
 	CButton*				m_pPirates;
 
-	bool					m_bBadTry;
+	CTextField*				m_pRegistrationKey;
+	CButton*				m_pRegister;
+	CLabel*					m_pRegisterResult;
+
+	CButton*				m_pRegisterOffline;
+	CLabel*					m_pProductCode;
 
 	static CRegisterPanel*	s_pRegisterPanel;
 };

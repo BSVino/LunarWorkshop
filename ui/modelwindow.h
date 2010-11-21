@@ -55,16 +55,6 @@ public:
 	static size_t			LoadTextureIntoGL(eastl::string16 sFilename);
 	void					LoadTexturesIntoGL();
 
-	// License management
-	static unsigned long	PNG_CRC(unsigned char *buf, int len);
-	static void				LoadSMAKTexture();
-	static void				SetupSMAKTexture();
-	static void				SaveSMAKTexture();
-	static bool				GetSMAKTexture();
-	static eastl::string	GetSMAKTextureCode();
-	static void				GetSMAKTextureId(unsigned char* paiId);
-	static void				SetSMAKTexture(const char* pszTex);
-
 	void					SaveFile(const wchar_t* pszFile);
 
 	void					Layout();
@@ -241,5 +231,10 @@ protected:
 
 	static CModelWindow*	s_pModelWindow;
 };
+
+inline CModelWindow* ModelWindow()
+{
+	return CModelWindow::Get();
+}
 
 #endif

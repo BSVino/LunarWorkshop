@@ -238,6 +238,9 @@ void CModelWindow::CharPress(int c)
 
 void CModelWindow::KeyPress(int c)
 {
+	if (glgui::CRootPanel::Get()->KeyPressed(c, IsCtrlDown()))
+		return;
+
 	if (c == 27)
 		exit(0);
 

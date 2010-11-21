@@ -1789,7 +1789,7 @@ void CHelpPanel::Layout()
 	m_pInfo->AppendText(L"Right Mouse Button - Zoom in and out\n");
 	m_pInfo->AppendText(L"Ctrl-LMB - Rotate the light\n");
 	m_pInfo->AppendText(L" \n");
-	m_pInfo->AppendText(L"For in-depth help information please visit our website, http://www.matreyastudios.com/smak\n");
+	m_pInfo->AppendText(L"For in-depth help information please visit our website, http://www.getsmak.net/\n");
 
 	CMovablePanel::Layout();
 }
@@ -1902,6 +1902,10 @@ CRegisterPanel* CRegisterPanel::s_pRegisterPanel = NULL;
 CRegisterPanel::CRegisterPanel()
 	: CMovablePanel(L"Register SMAK")
 {
+	m_pWebsiteButton = new CButton(0, 0, 100, 100, L"Visit www.getsmak.net");
+	m_pWebsiteButton->SetClickedListener(this, Website);
+	AddControl(m_pWebsiteButton);
+
 	m_pInfo = new CLabel(0, 0, 100, 100, L"");
 	AddControl(m_pInfo);
 
@@ -1909,7 +1913,22 @@ CRegisterPanel::CRegisterPanel()
 	m_pPirates->SetClickedListener(this, Pirates);
 	AddControl(m_pPirates);
 
-	m_bBadTry = false;
+	m_pRegistrationKey = new CTextField();
+	AddControl(m_pRegistrationKey);
+
+	m_pRegister = new CButton(0, 0, 100, 100, L"Register");
+	m_pRegister->SetClickedListener(this, Register);
+	AddControl(m_pRegister);
+
+	m_pRegisterResult = new CLabel(0, 0, 100, 100, L"");
+	AddControl(m_pRegisterResult);
+
+	m_pRegisterOffline = new CButton(0, 0, 100, 100, L"Register Offline");
+	m_pRegisterOffline->SetFontFaceSize(11);
+	m_pRegisterOffline->SetClickedListener(this, RegisterOffline);
+	AddControl(m_pRegisterOffline);
+
+	m_pProductCode = NULL;
 
 	Layout();
 }
@@ -1921,43 +1940,53 @@ void CRegisterPanel::Layout()
 		int px, py, pw, ph;
 		GetParent()->GetAbsDimensions(px, py, pw, ph);
 
-		SetSize(600, 300);
+		SetSize(600, 400);
 		SetPos(pw/2 - GetWidth()/2, ph/2 - GetHeight()/2);
 	}
 
-	m_pInfo->SetAlign(CLabel::TA_TOPCENTER);
-	m_pInfo->SetSize(GetWidth(), GetHeight()-40);
-	m_pInfo->SetPos(0, 40);
+	m_pWebsiteButton->SetSize(120, 40);
+	m_pWebsiteButton->SetPos(GetWidth()/2 - m_pWebsiteButton->GetWidth()/2, 40);
 
-	if (!CModelWindow::Get()->GetSMAKTexture())
+	if (m_pProductCode)
+		m_pProductCode->SetVisible(false);
+
+	m_pInfo->SetAlign(CLabel::TA_TOPCENTER);
+	m_pInfo->SetSize(GetWidth(), GetHeight()-100);
+	m_pInfo->SetPos(0, 100);
+	m_pInfo->SetVisible(true);
+
+	if (!ModelWindow()->IsRegistered())
 	{
 		m_pInfo->SetText(L"Steps to Register SMAK\n");
 		m_pInfo->AppendText(L" \n");
-		m_pInfo->AppendText(L"1. Visit http://www.matreyastudios.com/smak and purchase SMAK using the on-site store.\n");
-		m_pInfo->AppendText(L"2. You will be sent an unlock key in your email. Select it and use the COPY command (Ctrl-c)\n");
-		m_pInfo->AppendText(L"3. While this window is open, use the PASTE command (Ctrl-v)\n");
+		m_pInfo->AppendText(L"1. Depress the above button to visit http://www.getsmak.net/ and purchase SMAK in the onsite store.\n");
+		m_pInfo->AppendText(L"2. You will be sent an registration code in your email. Select it and use the COPY command (Ctrl-c)\n");
+		m_pInfo->AppendText(L"3. Paste your registration code into the box below (Ctrl-v)\n");
 		m_pInfo->AppendText(L"4. ...?\n");
 		m_pInfo->AppendText(L"5. Profit!\n");
 
 		m_pInfo->AppendText(L" \n");
 		m_pInfo->AppendText(L" \n");
-
-		m_pInfo->AppendText(L"Your product code is: ");
-		m_pInfo->AppendText(CModelWindow::Get()->GetSMAKTextureCode().c_str());
-		m_pInfo->AppendText(L"\n");
-		m_pInfo->AppendText(L"Use the COPY command (Ctrl-c) to move it to the clipboard.\n");
-
-		if (m_bBadTry)
-		{
-			m_pInfo->AppendText(L" \n");
-			m_pInfo->AppendText(L"Sorry, it seems that didn't work. Please try again.\n");
-			m_pInfo->AppendText(L"Make sure you copy only the key itself, without any quotes or other text.\n");
-		}
 	}
 	else
 	{
 		m_pInfo->SetText(L"Your installation of SMAK is now fully registered. Thanks!\n");
 	}
+
+	m_pRegistrationKey->SetPos(GetWidth()/2 - m_pRegistrationKey->GetWidth()/2, 250);
+
+	m_pRegister->SetSize(100, 30);
+	m_pRegister->SetPos(GetWidth()/2 - m_pRegister->GetWidth()/2, 290);
+	m_pRegister->SetClickedListener(this, Register);
+
+	m_pRegisterResult->SetPos(10, 330);
+	m_pRegisterResult->SetSize(GetWidth()-20, GetHeight());
+	m_pRegisterResult->SetAlign(CLabel::TA_TOPCENTER);
+
+	m_pRegisterOffline->SetText(L"Register Offline");
+	m_pRegisterOffline->SetSize(60, 40);
+	m_pRegisterOffline->SetPos(GetWidth()-80, 40);
+	m_pRegisterOffline->SetClickedListener(this, RegisterOffline);
 
 	m_pPirates->EnsureTextFits();
 	m_pPirates->SetDimensions(GetWidth() - m_pPirates->GetWidth() - 5, GetHeight() - m_pPirates->GetHeight() - 5, m_pPirates->GetWidth(), m_pPirates->GetHeight());
@@ -1980,21 +2009,83 @@ bool CRegisterPanel::MousePressed(int iButton, int mx, int my)
 
 bool CRegisterPanel::KeyPressed(int iKey)
 {
-	if (!CModelWindow::Get()->GetSMAKTexture() && (iKey == 'v' || CModelWindow::Get()->IsCtrlDown() && iKey == 'v'))
+	if (!ModelWindow()->IsRegistered() && (iKey == 'c' || CModelWindow::Get()->IsCtrlDown() && iKey == 'c'))
 	{
-		eastl::string sClipboard = trim(GetClipboard());
-		CModelWindow::Get()->SetSMAKTexture(sClipboard.c_str());
-		m_bBadTry = true;
-		Layout();
-		return true;
-	}
-	else if (!CModelWindow::Get()->GetSMAKTexture() && (iKey == 'c' || CModelWindow::Get()->IsCtrlDown() && iKey == 'c'))
-	{
-		SetClipboard(CModelWindow::Get()->GetSMAKTextureCode());
+		SetClipboard(ModelWindow()->GetProductCode());
 		return true;
 	}
 	else
 		return CMovablePanel::KeyPressed(iKey);
+}
+
+void CRegisterPanel::WebsiteCallback()
+{
+	OpenBrowser(L"http://getsmak.net/");
+	exit(0);
+}
+
+void CRegisterPanel::RegisterCallback()
+{
+	eastl::string16 sError;
+	bool bSucceeded = ModelWindow()->QueryRegistrationKey(L"getsmak.net", L"/reg/reg.php", m_pRegistrationKey->GetText(), sError);
+	m_pRegisterResult->SetText(sError.c_str());
+
+	if (bSucceeded)
+	{
+		m_pRegister->SetVisible(false);
+		m_pRegisterOffline->SetVisible(false);
+		m_pRegistrationKey->SetVisible(false);
+	}
+
+	Layout();
+}
+
+void CRegisterPanel::RegisterOfflineCallback()
+{
+	m_pInfo->SetVisible(false);
+
+	m_pRegistrationKey->SetSize(400, m_pRegister->GetHeight());
+	m_pRegistrationKey->SetPos(GetWidth()/2 - m_pRegistrationKey->GetWidth()/2, 140);
+	m_pRegister->SetPos(GetWidth()/2 - m_pRegister->GetWidth()/2, 180);
+	m_pRegister->SetClickedListener(this, SetKey);
+	m_pRegisterResult->SetPos(10, 220);
+
+	m_pRegisterOffline->SetSize(60, 20);
+	m_pRegisterOffline->SetText(L"Copy");
+	m_pRegisterOffline->SetPos(GetWidth()-80, 100);
+	m_pRegisterOffline->SetClickedListener(this, CopyProductCode);
+
+	if (!m_pProductCode)
+	{
+		m_pProductCode = new CLabel(0, 110, GetWidth(), GetHeight(), L"");
+		AddControl(m_pProductCode);
+	}
+
+	m_pProductCode->SetVisible(true);
+	m_pProductCode->SetAlign(CLabel::TA_TOPCENTER);
+	m_pProductCode->SetText(L"Product Code: ");
+	m_pProductCode->AppendText(ModelWindow()->GetProductCode().c_str());
+}
+
+void CRegisterPanel::CopyProductCodeCallback()
+{
+	SetClipboard(ModelWindow()->GetProductCode());
+}
+
+void CRegisterPanel::SetKeyCallback()
+{
+	ModelWindow()->SetLicenseKey(convertstring<char16_t, char>(m_pRegistrationKey->GetText()));
+
+	if (ModelWindow()->IsRegistered())
+	{
+		m_pRegisterResult->SetText(L"Thank you for registering SMAK!");
+		m_pRegister->SetVisible(false);
+		m_pRegisterOffline->SetVisible(false);
+		m_pRegistrationKey->SetVisible(false);
+		m_pProductCode->SetVisible(false);
+	}
+	else
+		m_pRegisterResult->SetText(L"Sorry, that key didn't seem to work. Try again!");
 }
 
 void CRegisterPanel::PiratesCallback()
@@ -2008,7 +2099,6 @@ void CRegisterPanel::Open()
 	if (!s_pRegisterPanel)
 		s_pRegisterPanel = new CRegisterPanel();
 
-	s_pRegisterPanel->m_bBadTry = false;
 	s_pRegisterPanel->SetVisible(true);
 	s_pRegisterPanel->Layout();
 }

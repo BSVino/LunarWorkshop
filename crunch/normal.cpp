@@ -651,7 +651,7 @@ void CNormalGenerator::SaveToFile(const wchar_t *pszFilename)
 	// Formats like PNG and VTF don't work unless it's in integer format.
 	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
 
-	if (!CModelWindow::GetSMAKTexture() && (m_iWidth > 128 || m_iHeight > 128))
+	if (!ModelWindow()->IsRegistered() && (m_iWidth > 128 || m_iHeight > 128))
 	{
 		iluImageParameter(ILU_FILTER, ILU_BILINEAR);
 		iluScale(128, 128, 1);

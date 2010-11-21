@@ -111,13 +111,16 @@
     <ClCompile Include="..\glgui\glgui.cpp">
       <Filter>Source Files\glgui</Filter>
     </ClCompile>
-    <ClCompile Include="register.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\license\license.cpp">
       <Filter>Source Files\license</Filter>
     </ClCompile>
     <ClCompile Include="..\common\mtrand.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinker\register.cpp">
+      <Filter>Source Files\tinker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\configfile.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -165,6 +168,9 @@
       <Filter>Source Files\glgui</Filter>
     </ClInclude>
     <ClInclude Include="..\common\mtrand.h">
+      <Filter>Source Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\configfile.h">
       <Filter>Source Files\common</Filter>
     </ClInclude>
   </ItemGroup>

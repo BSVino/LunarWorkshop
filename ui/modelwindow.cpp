@@ -65,8 +65,6 @@ CModelWindow::CModelWindow(int argc, char** argv)
 
 	m_vecLightPositionUV = Vector(0.5f, 0.5f, 1.0f);
 
-	LoadSMAKTexture();
-
 	int iScreenWidth;
 	int iScreenHeight;
 
@@ -1407,7 +1405,7 @@ void CModelWindow::RenderUV()
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 	}
 
-	if (!CModelWindow::Get()->GetSMAKTexture() && (m_bDisplayAO || m_bDisplayColorAO || m_bDisplayNormal))
+	if (!ModelWindow()->IsRegistered() && (m_bDisplayAO || m_bDisplayColorAO || m_bDisplayNormal))
 	{
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();

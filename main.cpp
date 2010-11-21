@@ -254,7 +254,6 @@ int CreateApplication(int argc, char** argv)
 
 			// If this is the color AO method, we need to load the textures.
 			eastl::vector<CMaterial> aMaterials;
-			CModelWindow::LoadSMAKTexture();
 			if (eMethod == AOMETHOD_RENDER)
 			{
 				for (size_t i = 0; i < s.GetNumMaterials(); i++)
