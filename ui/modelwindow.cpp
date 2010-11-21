@@ -94,6 +94,7 @@ CModelWindow::CModelWindow(int argc, char** argv)
 
 void CModelWindow::OpenWindow()
 {
+	SetMultisampling(true);
 	BaseClass::OpenWindow(m_iWindowWidth, m_iWindowHeight, false);
 
 	CompileShaders();
