@@ -1582,7 +1582,7 @@ void CNormalPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 	// button presses and the line will use the wrong viewport size.
 	glViewport(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
 
-	if (m_oGenerator.IsGenerating() && CModelWindow::Get()->GetTime() - flLastGenerate > 500)
+	if (m_oGenerator.IsGenerating() && CModelWindow::Get()->GetTime() - flLastGenerate > 0.5f)
 	{
 		size_t iNormal = m_oGenerator.GenerateTexture(true);
 
