@@ -1152,7 +1152,8 @@ void CAOGenerator::GenerateTriangleByTexel(CConversionMeshInstance* pMeshInstanc
 #endif
 
 			size_t iTexel;
-			Texel(i, j, iTexel, false);
+			if (!Texel(i, j, iTexel, false))
+				continue;
 
 			if (m_eAOMethod == AOMETHOD_RENDER)
 			{

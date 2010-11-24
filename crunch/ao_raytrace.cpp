@@ -28,9 +28,11 @@ void CAOGenerator::RaytraceSceneFromPosition(raytrace::CRaytracer* pTracer, Vect
 
 	// Turn it sideways so that pitch 90 is up, for more uniform sampling
 	Matrix4x4 m2;
-	m2.SetRotation(EAngle(0, -90, 0));
+	m2.SetRotation(EAngle(-90, 0, 0));
 
 	m *= m2;
+
+	//ModelWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecNormal*0.2f);
 
 	float flHits = 0;
 	float flTotalHits = 0;
@@ -61,6 +63,8 @@ void CAOGenerator::RaytraceSceneFromPosition(raytrace::CRaytracer* pTracer, Vect
 			//RenderSceneFromPosition(vecUVPosition, vecRay, pFace);
 
 			flTotalHits += flWeight;
+
+			//ModelWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecRay.Normalized()*0.05f);
 
 			raytrace::CTraceResult tr;
 			if (pTracer->Raytrace(Ray(vecUVPosition + pFace->GetNormal()*0.01f, vecRay), &tr))
@@ -100,6 +104,8 @@ void CAOGenerator::RaytraceSceneFromPosition(raytrace::CRaytracer* pTracer, Vect
 	//RenderSceneFromPosition(vecUVPosition, vecRay, pFace);
 
 	flTotalHits++;
+
+	//ModelWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecRay.Normalized()*0.1f);
 
 	raytrace::CTraceResult tr;
 	if (pTracer->Raytrace(Ray(vecUVPosition + pFace->GetNormal()*0.01f, vecRay), &tr))
