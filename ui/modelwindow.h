@@ -139,7 +139,7 @@ public:
 	eastl::vector<CMaterial>*	GetMaterials() { return &m_aoMaterials; };
 
 	void					ClearDebugLines();
-	void					AddDebugLine(Vector vecStart, Vector vecEnd);
+	void					AddDebugLine(Vector vecStart, Vector vecEnd, Color clrLine = Color(150, 150, 150));
 
 	void					BeginProgress();
 	void					SetAction(const wchar_t* pszAction, size_t iTotalProgress);
@@ -199,7 +199,13 @@ protected:
 	size_t					m_iWindowWidth;
 	size_t					m_iWindowHeight;
 
-	eastl::vector<Vector>	m_avecDebugLines;
+	typedef struct
+	{
+		Vector vecStart;
+		Vector vecEnd;
+		Color clrLine;
+	} DebugLine;
+	eastl::vector<DebugLine>	m_aDebugLines;
 
 	// Options
 	bool					m_bRenderUV;

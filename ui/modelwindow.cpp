@@ -478,26 +478,26 @@ void CModelWindow::Render3D()
 	// Render light source on top of objects, since it doesn't use the depth buffer.
 	RenderLightSource();
 
-	if (m_avecDebugLines.size())
+	if (m_aDebugLines.size())
 	{
 		glLineWidth(1);
 		glDisable(GL_COLOR_MATERIAL);
 		glDisable(GL_LIGHTING);
 		glDisable(GL_TEXTURE_2D);
 		glBegin(GL_LINES);
-			glColor3f(0.4f, 0.4f, 0.4f);
-			for (size_t i = 0; i < m_avecDebugLines.size(); i+=2)
+			for (size_t i = 0; i < m_aDebugLines.size(); i++)
 			{
-				glVertex3fv(m_avecDebugLines[i]);
-				glVertex3fv(m_avecDebugLines[i+1]);
+				glColor3ubv(m_aDebugLines[i].clrLine);
+				glVertex3fv(m_aDebugLines[i].vecStart);
+				glVertex3fv(m_aDebugLines[i].vecEnd);
 			}
 		glEnd();
 		glBegin(GL_POINTS);
 			glColor3f(0.6f, 0.6f, 0.6f);
-			for (size_t i = 0; i < m_avecDebugLines.size(); i+=2)
+			for (size_t i = 0; i < m_aDebugLines.size(); i++)
 			{
-				glVertex3fv(m_avecDebugLines[i]);
-				glVertex3fv(m_avecDebugLines[i+1]);
+				glVertex3fv(m_aDebugLines[i].vecStart);
+				glVertex3fv(m_aDebugLines[i].vecEnd);
 			}
 		glEnd();
 	}
@@ -1588,11 +1588,14 @@ void CModelWindow::SetDisplayColorAO(bool bColorAO)
 
 void CModelWindow::ClearDebugLines()
 {
-	m_avecDebugLines.clear();
+	m_aDebugLines.clear();
 }
 
-void CModelWindow::AddDebugLine(Vector vecStart, Vector vecEnd)
+void CModelWindow::AddDebugLine(Vector vecStart, Vector vecEnd, Color clrLine)
 {
-	m_avecDebugLines.push_back(vecStart);
-	m_avecDebugLines.push_back(vecEnd);
+	m_aDebugLines.push_back();
+	size_t iLine = m_aDebugLines.size()-1;
+	m_aDebugLines[iLine].vecStart = vecStart;
+	m_aDebugLines[iLine].vecEnd = vecEnd;
+	m_aDebugLines[iLine].clrLine = clrLine;
 }
