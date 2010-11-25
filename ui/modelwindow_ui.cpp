@@ -1971,6 +1971,9 @@ void CRegisterPanel::Layout()
 	else
 	{
 		m_pInfo->SetText(L"Your installation of SMAK is now fully registered. Thanks!\n");
+		m_pRegistrationKey->SetVisible(false);
+		m_pRegister->SetVisible(false);
+		m_pRegisterOffline->SetVisible(false);
 	}
 
 	m_pRegistrationKey->SetPos(GetWidth()/2 - m_pRegistrationKey->GetWidth()/2, 250);
@@ -2074,7 +2077,11 @@ void CRegisterPanel::CopyProductCodeCallback()
 
 void CRegisterPanel::SetKeyCallback()
 {
-	ModelWindow()->SetLicenseKey(convertstring<char16_t, char>(m_pRegistrationKey->GetText()));
+	eastl::string sKey = convertstring<char16_t, char>(m_pRegistrationKey->GetText());
+	// eastl::string has some kind of bug that needs working around.
+	eastl::string sBugKey = sKey.substr(0, 40);
+
+	ModelWindow()->SetLicenseKey(sBugKey);
 
 	if (ModelWindow()->IsRegistered())
 	{
@@ -2133,8 +2140,8 @@ void CPiratesPanel::Layout()
 	}
 
 	m_pInfo->SetSize(GetWidth()-275, GetHeight()-10);
-	m_pInfo->SetPos(5, 5);
-	m_pInfo->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pInfo->SetPos(5, 25);
+	m_pInfo->SetAlign(CLabel::TA_TOPLEFT);
 
 	m_pInfo->SetText(L"Dear pirates,\n");
 	m_pInfo->AppendText(L" \n");
