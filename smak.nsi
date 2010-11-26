@@ -11,7 +11,7 @@ Var StartMenuFolder
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start Menu Folder"
 !define MUI_FINISHPAGE_RUN "$INSTDIR/smak.exe"
 !define MUI_FINISHPAGE_LINK "Click here to visit the SMAK website"
-!define MUI_FINISHPAGE_LINK_LOCATION  "http://www.matreyastudios.com/smak"
+!define MUI_FINISHPAGE_LINK_LOCATION  "http://www.getsmak.net/"
 !define MUI_FINISHPAGE_NOREBOOTSUPPORT
 
 !include "MUI2.nsh"
@@ -31,10 +31,7 @@ InstallDir $PROGRAMFILES\SMAK
 Section "-Program Files" FILES
 	SetOverwrite on
 	SetOutPath "$INSTDIR"
-	File /r /x *.svn /x smak.png "${LOCALDIR}\*.*"
-	SetOverwrite off
-	File "${LOCALDIR}\smak.png"
-	SetOverwrite on
+	File /r /x *.svn "${LOCALDIR}\*.*"
 SectionEnd
 
 Section -StartMenu

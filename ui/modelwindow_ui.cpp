@@ -1781,8 +1781,9 @@ void CHelpPanel::Layout()
 		SetPos(pw/2 - GetWidth()/2, ph/2 - GetHeight()/2);
 	}
 
+	m_pInfo->SetAlign(CLabel::TA_TOPCENTER);
 	m_pInfo->SetSize(GetWidth(), GetHeight());
-	m_pInfo->SetPos(0, 0);
+	m_pInfo->SetPos(0, 30);
 
 	m_pInfo->SetText(L"CONTROLS:\n");
 	m_pInfo->AppendText(L"Left Mouse Button - Move the camera\n");
@@ -1847,8 +1848,9 @@ void CAboutPanel::Layout()
 		SetPos(pw/2 - GetWidth()/2, ph/2 - GetHeight()/2);
 	}
 
+	m_pInfo->SetAlign(CLabel::TA_TOPCENTER);
 	m_pInfo->SetSize(GetWidth(), GetHeight());
-	m_pInfo->SetPos(0, 0);
+	m_pInfo->SetPos(0, 30);
 
 	m_pInfo->SetText(L"SMAK - The Super Model Army Knife\n");
 	m_pInfo->AppendText(L"Version " SMAK_VERSION L"\n");
