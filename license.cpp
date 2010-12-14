@@ -46,6 +46,7 @@ bool GenerateKey(eastl::string sProductCode, eastl::string& sKey)
 	for (i = 0; i < 8; i++)
 		iIdSum += aiHostID[i];
 
+	size_t iSeed = mtrand();
 	mtsrand(iProductCode + iIdSum);
 
 	unsigned char szResult[41];
@@ -78,6 +79,9 @@ bool GenerateKey(eastl::string sProductCode, eastl::string& sKey)
 	szResult[40] = '\0';
 
 	sKey = eastl::string((char*)szResult);
+
+	// Re-seed to ensure randomness.
+	mtsrand(iSeed);
 
 	return true;
 }
