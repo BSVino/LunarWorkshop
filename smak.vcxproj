@@ -110,6 +110,7 @@
     <ClCompile Include="..\license\license.cpp" />
     <ClCompile Include="..\tinker\application.cpp" />
     <ClCompile Include="..\tinker\register.cpp" />
+    <ClCompile Include="crunch\crunch.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ui\modelwindow.cpp" />
     <ClCompile Include="ui\modelwindow_input.cpp" />

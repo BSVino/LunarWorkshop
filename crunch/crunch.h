@@ -5,10 +5,152 @@
 #include <parallelize.h>
 #include "ui/modelwindow.h"
 #include <worklistener.h>
+#include <common.h>
 
 namespace raytrace
 {
 	class CRaytracer;
+	class CTraceResult;
+};
+
+class CTexelMethod
+{
+public:
+							CTexelMethod(class CTexelGenerator* pGenerator);
+	virtual 				~CTexelMethod();
+
+public:
+	virtual void			SetSize(size_t iWidth, size_t iHeight);
+
+	virtual void			GenerateTexel(size_t iTexel, CConversionMeshInstance* pMeshInstance, CConversionFace* pFace, CConversionVertex* pV1, CConversionVertex* pV2, CConversionVertex* pV3, class raytrace::CTraceResult* tr, const Vector& vecUVPosition, class raytrace::CRaytracer* pTracer) {};
+
+	virtual void			PostGenerate() {};
+
+	virtual size_t			GenerateNormal(bool bInMedias = false) { return 0; };
+	virtual size_t			GenerateAO(bool bInMedias = false) { return 0; };
+
+protected:
+	CTexelGenerator*		m_pGenerator;
+
+	size_t					m_iWidth;
+	size_t					m_iHeight;
+};
+
+class CTexelAOMethod : public CTexelMethod
+{
+	DECLARE_CLASS(CTexelAOMethod, CTexelMethod);
+
+public:
+							CTexelAOMethod(class CTexelGenerator* pGenerator);
+	virtual 				~CTexelAOMethod();
+
+public:
+	virtual void			SetSize(size_t iWidth, size_t iHeight);
+
+	virtual void			GenerateTexel(size_t iTexel, CConversionMeshInstance* pMeshInstance, CConversionFace* pFace, CConversionVertex* pV1, CConversionVertex* pV2, CConversionVertex* pV3, class raytrace::CTraceResult* tr, const Vector& vecUVPosition, class raytrace::CRaytracer* pTracer);
+
+	virtual void			PostGenerate();
+	void					Bleed();
+
+	virtual size_t			GenerateAO(bool bInMedias = false);
+
+protected:
+	size_t					m_iSamples;
+	bool					m_bRandomize;
+	float					m_flRayFalloff;
+	bool					m_bGroundOcclusion;
+	size_t					m_iBleed;
+
+	Vector*					m_avecShadowValues;
+	Vector*					m_avecShadowGeneratedValues;
+	size_t*					m_aiShadowReads;
+};
+
+class CTexelNormalMethod : public CTexelMethod
+{
+	DECLARE_CLASS(CTexelNormalMethod, CTexelMethod);
+
+public:
+							CTexelNormalMethod(class CTexelGenerator* pGenerator);
+	virtual 				~CTexelNormalMethod();
+
+public:
+	virtual void			SetSize(size_t iWidth, size_t iHeight);
+
+	virtual void			GenerateTexel(size_t iTexel, CConversionMeshInstance* pMeshInstance, CConversionFace* pFace, CConversionVertex* pV1, CConversionVertex* pV2, CConversionVertex* pV3, class raytrace::CTraceResult* tr, const Vector& vecUVPosition, class raytrace::CRaytracer* pTracer);
+
+	virtual void			PostGenerate();
+	void					Bleed();
+
+	void					TexturizeValues(Vector* avecTexture);
+	virtual size_t			GenerateNormal(bool bInMedias = false);
+
+protected:
+	Vector*					m_avecNormalValues;
+	Vector*					m_avecNormalGeneratedValues;
+};
+
+// Accepts hi and lo res models, bakes the hi to the low res using any of a multitude of mix-and-matchable generators.
+// For example, can make an ao + normal or just ao or just normal from hi to lo in one pass.
+// All generation in CTexelGenerator works on a texel basis, each triangle is broken down into texels and computed one texel at a time
+// by tracing to find the hi res mesh and then doing whatever calculations are needed for that method.
+class CTexelGenerator
+{
+public:
+							CTexelGenerator(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
+							~CTexelGenerator();
+
+public:
+	void					SetSize(size_t iWidth, size_t iHeight);
+	void					SetModels(const eastl::vector<CConversionMeshInstance*>& apHiRes, const eastl::vector<CConversionMeshInstance*>& apLoRes);
+
+	void					ClearMethods();
+	void					AddAO();
+	void					AddNormal();
+
+	void					SetWorkListener(IWorkListener* pListener) { m_pWorkListener = pListener; };
+	IWorkListener*			GetWorkListener() { return m_pWorkListener; };
+
+	void					Generate();
+	void					GenerateTriangleByTexel(CConversionMeshInstance* pMeshInstance, CConversionFace* pFace, size_t v1, size_t v2, size_t v3, class raytrace::CRaytracer* pTracer, size_t& iRendered);
+	void					FindHiResMeshLocation(CConversionMeshInstance* pMeshInstance, CConversionFace* pFace, CConversionVertex* pV1, CConversionVertex* pV2, CConversionVertex* pV3, size_t i, size_t j, raytrace::CRaytracer* pTracer);
+
+	bool					Texel(size_t w, size_t h, size_t& iTexel, bool bUseMask = true);
+	bool					Texel(size_t w, size_t h, size_t& iTexel, size_t tw, size_t th, bool* abMask = NULL);
+
+	CParallelizer*			GetParallelizer() { return m_pWorkParallelizer; }
+
+	void					MarkTexelUsed(size_t iTexel) { m_abTexelMask[iTexel] = true; }
+
+	size_t					GenerateAO(bool bInMedias = false);
+	size_t					GenerateNormal(bool bInMedias = false);
+
+	bool					IsGenerating() { return m_bIsGenerating; }
+	bool					DoneGenerating() { return m_bDoneGenerating; }
+	void					StopGenerating() { m_bStopGenerating = true; }
+	bool					IsStopped() { return m_bStopGenerating; }
+
+protected:
+	CConversionScene*		m_pScene;
+	eastl::vector<CMaterial>*	m_paoMaterials;
+
+	eastl::vector<CConversionMeshInstance*>	m_apHiRes;
+	eastl::vector<CConversionMeshInstance*>	m_apLoRes;
+
+	eastl::vector<CTexelMethod*>	m_apMethods;
+
+	size_t					m_iWidth;
+	size_t					m_iHeight;
+
+	IWorkListener*			m_pWorkListener;
+
+	bool*					m_abTexelMask;
+
+	bool					m_bIsGenerating;
+	bool					m_bDoneGenerating;
+	bool					m_bStopGenerating;
+
+	CParallelizer*			m_pWorkParallelizer;
 };
 
 typedef enum

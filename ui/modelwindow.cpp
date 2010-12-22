@@ -90,6 +90,8 @@ CModelWindow::CModelWindow(int argc, char** argv)
 	m_iBarretTexture = 0;
 
 	m_iShaderProgram = 0;
+
+	m_aDebugLines.set_capacity(2);
 }
 
 void CModelWindow::OpenWindow()
@@ -1593,9 +1595,10 @@ void CModelWindow::ClearDebugLines()
 
 void CModelWindow::AddDebugLine(Vector vecStart, Vector vecEnd, Color clrLine)
 {
-	m_aDebugLines.push_back();
-	size_t iLine = m_aDebugLines.size()-1;
-	m_aDebugLines[iLine].vecStart = vecStart;
-	m_aDebugLines[iLine].vecEnd = vecEnd;
-	m_aDebugLines[iLine].clrLine = clrLine;
+	DebugLine l;
+	l.vecStart = vecStart;
+	l.vecEnd = vecEnd;
+	l.clrLine = clrLine;
+
+	m_aDebugLines.push_back(l);
 }

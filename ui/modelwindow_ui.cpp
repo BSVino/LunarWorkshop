@@ -35,6 +35,7 @@ void CModelWindow::InitUI()
 	pView->AddSubmenu(L"Toggle AO map", this, AOToggle);
 	pView->AddSubmenu(L"Toggle color AO map", this, ColorAOToggle);
 
+	pTools->AddSubmenu(L"Generate all maps", this, GenerateCombo);
 	pTools->AddSubmenu(L"Generate AO map", this, GenerateAO);
 	pTools->AddSubmenu(L"Generate color AO map", this, GenerateColorAO);
 	pTools->AddSubmenu(L"Generate normal map", this, GenerateNormal);
@@ -162,36 +163,11 @@ void CModelWindow::TextureCallback()
 
 void CModelWindow::NormalCallback()
 {
-	if (CNormalPanel::Get() && CNormalPanel::Get()->IsGenerating() && !CNormalPanel::Get()->DoneGenerating())
-	{
-		m_pNormal->SetState(true, false);
-		return;
-	}
-
-	if (!CNormalPanel::Get() || !CNormalPanel::Get()->DoneGenerating())
-	{
-		if (!CNormalPanel::Get() || !CNormalPanel::Get()->IsVisible())
-			CNormalPanel::Open(&m_Scene, &m_aoMaterials);
-	}
-
 	SetDisplayNormal(m_pNormal->GetState());
 }
 
 void CModelWindow::AOCallback()
 {
-	if (CAOPanel::Get(false) && CAOPanel::Get(false)->IsGenerating() && !CAOPanel::Get(false)->DoneGenerating())
-	{
-		m_pAO->SetState(true, false);
-		return;
-	}
-
-	if (!CAOPanel::Get(false) || !CAOPanel::Get(false)->DoneGenerating())
-	{
-		CAOPanel::Open(false, &m_Scene, &m_aoMaterials);
-		m_pAO->SetState(false, false);
-		return;
-	}
-
 	SetDisplayAO(m_pAO->GetState());
 }
 
@@ -236,6 +212,11 @@ void CModelWindow::AOToggleCallback()
 void CModelWindow::ColorAOToggleCallback()
 {
 	SetDisplayColorAO(!m_bDisplayColorAO);
+}
+
+void CModelWindow::GenerateComboCallback()
+{
+	CComboGeneratorPanel::Open(&m_Scene, &m_aoMaterials);
 }
 
 void CModelWindow::GenerateAOCallback()
@@ -1146,6 +1127,532 @@ void CAOPanel::AOMethodCallback()
 {
 	// So we can appear/disappear the ray density bar if the AO method has changed.
 	Layout();
+}
+
+CComboGeneratorPanel* CComboGeneratorPanel::s_pComboGeneratorPanel = NULL;
+
+CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+	: CMovablePanel(L"Combo map generator"), m_oGenerator(pScene, paoMaterials)
+{
+	m_pScene = pScene;
+	m_paoMaterials = paoMaterials;
+
+	m_pMeshInstancePicker = NULL;
+
+	SetSize(400, 450);
+	SetPos(GetParent()->GetWidth() - GetWidth() - 50, GetParent()->GetHeight() - GetHeight() - 100);
+
+	m_pSizeLabel = new CLabel(0, 0, 32, 32, L"Size");
+	AddControl(m_pSizeLabel);
+
+	m_pSizeSelector = new CScrollSelector<int>();
+#ifdef _DEBUG
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(16, L"16x16"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(32, L"32x32"));
+#endif
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(64, L"64x64"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(128, L"128x128"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(256, L"256x256"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(512, L"512x512"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(1024, L"1024x1024"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(2048, L"2048x2048"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(4096, L"4096x4096"));
+	m_pSizeSelector->SetSelection(4);
+	AddControl(m_pSizeSelector);
+
+	m_pLoResLabel = new CLabel(0, 0, 32, 32, L"Low Resolution Meshes");
+	AddControl(m_pLoResLabel);
+
+	m_pLoRes = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
+	m_pLoRes->SetBackgroundColor(g_clrBox);
+	AddControl(m_pLoRes);
+
+	m_pHiResLabel = new CLabel(0, 0, 32, 32, L"High Resolution Meshes");
+	AddControl(m_pHiResLabel);
+
+	m_pHiRes = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
+	m_pHiRes->SetBackgroundColor(g_clrBox);
+	AddControl(m_pHiRes);
+
+	m_pAddLoRes = new CButton(0, 0, 100, 100, L"Add");
+	m_pAddLoRes->SetClickedListener(this, AddLoRes);
+	AddControl(m_pAddLoRes);
+
+	m_pAddHiRes = new CButton(0, 0, 100, 100, L"Add");
+	m_pAddHiRes->SetClickedListener(this, AddHiRes);
+	AddControl(m_pAddHiRes);
+
+	m_pRemoveLoRes = new CButton(0, 0, 100, 100, L"Remove");
+	m_pRemoveLoRes->SetClickedListener(this, RemoveLoRes);
+	AddControl(m_pRemoveLoRes);
+
+	m_pRemoveHiRes = new CButton(0, 0, 100, 100, L"Remove");
+	m_pRemoveHiRes->SetClickedListener(this, RemoveHiRes);
+	AddControl(m_pRemoveHiRes);
+
+	m_pAOCheckBox = new CCheckBox();
+	AddControl(m_pAOCheckBox);
+
+	m_pAOLabel = new CLabel(0, 0, 100, 100, L"Ambient Occlusion");
+	AddControl(m_pAOLabel);
+
+	m_pNormalCheckBox = new CCheckBox();
+	AddControl(m_pNormalCheckBox);
+
+	m_pNormalLabel = new CLabel(0, 0, 100, 100, L"Normal Map");
+	AddControl(m_pNormalLabel);
+
+	m_pGenerate = new CButton(0, 0, 100, 100, L"Generate");
+	m_pGenerate->SetClickedListener(this, Generate);
+	AddControl(m_pGenerate);
+
+	m_pSave = new CButton(0, 0, 100, 100, L"Save Map");
+	AddControl(m_pSave);
+
+	m_pSave->SetClickedListener(this, SaveMap);
+	m_pSave->SetVisible(false);
+
+	Layout();
+}
+
+void CComboGeneratorPanel::Layout()
+{
+	int iSpace = 20;
+
+	m_pSizeLabel->EnsureTextFits();
+
+	int iSelectorSize = m_pSizeLabel->GetHeight() - 4;
+
+	m_pSizeSelector->SetSize(GetWidth() - m_pSizeLabel->GetWidth() - iSpace, iSelectorSize);
+
+	int iControlY = HEADER_HEIGHT;
+
+	m_pSizeSelector->SetPos(GetWidth() - m_pSizeSelector->GetWidth() - iSpace/2, iControlY);
+	m_pSizeLabel->SetPos(5, iControlY);
+
+	int iTreeWidth = GetWidth()/2-15;
+
+	m_pLoResLabel->EnsureTextFits();
+	m_pLoResLabel->SetPos(10, 40);
+
+	m_pLoRes->SetSize(iTreeWidth, 150);
+	m_pLoRes->SetPos(10, 70);
+
+	m_pAddLoRes->SetSize(40, 20);
+	m_pAddLoRes->SetPos(10, 225);
+
+	m_pRemoveLoRes->SetSize(60, 20);
+	m_pRemoveLoRes->SetPos(60, 225);
+
+	m_pHiResLabel->EnsureTextFits();
+	m_pHiResLabel->SetPos(iTreeWidth+20, 40);
+
+	m_pHiRes->SetSize(iTreeWidth, 150);
+	m_pHiRes->SetPos(iTreeWidth+20, 70);
+
+	m_pAddHiRes->SetSize(40, 20);
+	m_pAddHiRes->SetPos(iTreeWidth+20, 225);
+
+	m_pRemoveHiRes->SetSize(60, 20);
+	m_pRemoveHiRes->SetPos(iTreeWidth+70, 225);
+
+	m_pAOLabel->SetPos(35, 220);
+	m_pAOLabel->EnsureTextFits();
+	m_pAOLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pAOLabel->SetWrap(false);
+	m_pAOCheckBox->SetPos(20, 220 + m_pAOLabel->GetHeight()/2 - m_pAOCheckBox->GetHeight()/2);
+
+	m_pNormalLabel->SetPos(35, 250);
+	m_pNormalLabel->EnsureTextFits();
+	m_pNormalLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pNormalLabel->SetWrap(false);
+	m_pNormalCheckBox->SetPos(20, 250 + m_pNormalLabel->GetHeight()/2 - m_pNormalCheckBox->GetHeight()/2);
+
+	m_pGenerate->SetSize(100, 33);
+	m_pGenerate->SetPos(GetWidth()/2 - m_pGenerate->GetWidth()/2, GetHeight() - (int)(m_pGenerate->GetHeight()*3));
+
+	m_pSave->SetSize(100, 33);
+	m_pSave->SetPos(GetWidth()/2 - m_pSave->GetWidth()/2, GetHeight() - (int)(m_pSave->GetHeight()*1.5f));
+	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
+
+	size_t i;
+	m_pLoRes->ClearTree();
+	if (!m_apLoResMeshes.size())
+		m_pLoRes->AddNode(L"No meshes. Click 'Add'");
+	else
+	{
+		for (i = 0; i < m_apLoResMeshes.size(); i++)
+		{
+			m_pLoRes->AddNode<CConversionMeshInstance>(m_apLoResMeshes[i]->GetMesh()->GetName(), m_apLoResMeshes[i]);
+			m_pLoRes->GetNode(i)->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
+		}
+	}
+
+	m_pHiRes->ClearTree();
+	if (!m_apHiResMeshes.size())
+		m_pHiRes->AddNode(L"No meshes. Click 'Add'");
+	else
+	{
+		for (i = 0; i < m_apHiResMeshes.size(); i++)
+		{
+			m_pHiRes->AddNode<CConversionMeshInstance>(m_apHiResMeshes[i]->GetMesh()->GetName(), m_apHiResMeshes[i]);
+			m_pHiRes->GetNode(i)->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
+		}
+	}
+
+	CMovablePanel::Layout();
+}
+
+void CComboGeneratorPanel::UpdateScene()
+{
+	m_apLoResMeshes.clear();
+	m_apHiResMeshes.clear();
+}
+
+void CComboGeneratorPanel::Think()
+{
+	bool bFoundMaterial = false;
+	for (size_t iMesh = 0; iMesh < m_apLoResMeshes.size(); iMesh++)
+	{
+		CConversionMeshInstance* pMeshInstance = m_apLoResMeshes[iMesh];
+
+		for (size_t iMaterialStub = 0; iMaterialStub < pMeshInstance->GetMesh()->GetNumMaterialStubs(); iMaterialStub++)
+		{
+			size_t iMaterial = pMeshInstance->GetMappedMaterial(iMaterialStub)->m_iMaterial;
+
+			// Materials not loaded yet?
+			if (!m_paoMaterials->size())
+				continue;
+
+			bFoundMaterial = true;
+			break;
+		}
+	}
+
+	CMovablePanel::Think();
+}
+
+void CComboGeneratorPanel::Paint(int x, int y, int w, int h)
+{
+	CMovablePanel::Paint(x, y, w, h);
+
+	if (!m_bMinimized)
+	{
+		CRootPanel::PaintRect(x+10, y+250, w-20, 1, g_clrBoxHi);
+		CRootPanel::PaintRect(x+10, y+h-110, w-20, 1, g_clrBoxHi);
+	}
+}
+
+bool CComboGeneratorPanel::KeyPressed(int iKey)
+{
+	if (iKey == 27 && m_oGenerator.IsGenerating())
+	{
+		m_pSave->SetVisible(false);
+		m_oGenerator.StopGenerating();
+		return true;
+	}
+	else
+		return CMovablePanel::KeyPressed(iKey);
+}
+
+void CComboGeneratorPanel::GenerateCallback()
+{
+	if (m_oGenerator.IsGenerating())
+	{
+		m_pSave->SetVisible(false);
+		m_oGenerator.StopGenerating();
+		return;
+	}
+
+	m_pSave->SetVisible(false);
+
+	m_pGenerate->SetText(L"Cancel");
+
+	CModelWindow::Get()->SetDisplayNormal(true);
+
+	// Disappear all of the hi-res meshes so we can see the lo res better.
+	for (size_t m = 0; m < m_apHiResMeshes.size(); m++)
+		m_apHiResMeshes[m]->SetVisible(false);
+
+	for (size_t m = 0; m < m_apLoResMeshes.size(); m++)
+	{
+		if (m_apLoResMeshes[m]->GetMesh()->GetNumFaces() > 10000)
+			continue;
+
+		m_apLoResMeshes[m]->SetVisible(true);
+	}
+
+	int iSize = m_pSizeSelector->GetSelectionValue();
+	m_oGenerator.SetSize(iSize, iSize);
+	m_oGenerator.ClearMethods();
+
+	if (m_pAOCheckBox->GetState())
+	{
+		m_oGenerator.AddAO();
+		CModelWindow::Get()->SetDisplayAO(true);
+	}
+
+	if (m_pNormalCheckBox->GetState())
+	{
+		m_oGenerator.AddNormal();
+		CModelWindow::Get()->SetDisplayNormal(true);
+	}
+
+	m_oGenerator.SetModels(m_apHiResMeshes, m_apLoResMeshes);
+	m_oGenerator.SetWorkListener(this);
+	m_oGenerator.Generate();
+
+	size_t iAO = 0;
+	size_t iNormal = 0;
+	if (m_oGenerator.DoneGenerating())
+	{
+		iAO = m_oGenerator.GenerateAO();
+		iNormal = m_oGenerator.GenerateNormal();
+	}
+
+	for (size_t i = 0; i < m_paoMaterials->size(); i++)
+	{
+		size_t& iAOTexture = (*m_paoMaterials)[i].m_iAO;
+		size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal;
+
+		if (!m_pScene->GetMaterial(i)->IsVisible())
+			continue;
+
+		if (iAOTexture)
+			glDeleteTextures(1, &iAOTexture);
+
+		if (m_oGenerator.DoneGenerating())
+			iAOTexture = iAO;
+		else
+			iAOTexture = 0;
+
+		if (iNormalTexture)
+			glDeleteTextures(1, &iNormalTexture);
+
+		if (m_oGenerator.DoneGenerating())
+			iNormalTexture = iNormal;
+		else
+			iNormalTexture = 0;
+	}
+
+	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
+
+	m_pGenerate->SetText(L"Generate");
+}
+
+void CComboGeneratorPanel::SaveMapCallback()
+{
+	if (!m_oGenerator.DoneGenerating())
+		return;
+
+	const wchar_t* pszFilename = SaveFileDialog(L"Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0");
+
+	if (!pszFilename)
+		return;
+
+//	m_oGenerator.SaveToFile(pszFilename);
+
+	for (size_t i = 0; i < m_paoMaterials->size(); i++)
+	{
+		if (!m_pScene->GetMaterial(i)->IsVisible())
+			continue;
+
+		m_pScene->GetMaterial(i)->m_sNormalTexture = pszFilename;
+	}
+
+	CRootPanel::Get()->Layout();
+}
+
+void CComboGeneratorPanel::BeginProgress()
+{
+	CProgressBar::Get()->SetVisible(true);
+}
+
+void CComboGeneratorPanel::SetAction(const wchar_t* pszAction, size_t iTotalProgress)
+{
+	CProgressBar::Get()->SetTotalProgress(iTotalProgress);
+	CProgressBar::Get()->SetAction(pszAction);
+	WorkProgress(0, true);
+}
+
+void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
+{
+	static float flLastTime = 0;
+	static float flLastGenerate = 0;
+
+	// Don't update too often or it'll slow us down just because of the updates.
+	if (!bForceDraw && CModelWindow::Get()->GetTime() - flLastTime < 0.01f)
+		return;
+
+	CProgressBar::Get()->SetProgress(iProgress);
+
+	// We need to correct the viewport size before we push any events, or else any Layout() commands during
+	// button presses and the line will use the wrong viewport size.
+	glViewport(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
+
+	if (m_oGenerator.IsGenerating() && CModelWindow::Get()->GetTime() - flLastGenerate > 0.5f)
+	{
+		size_t iAO = m_oGenerator.GenerateAO(true);
+		size_t iNormal = m_oGenerator.GenerateNormal(true);
+
+		for (size_t i = 0; i < m_paoMaterials->size(); i++)
+		{
+			size_t& iAOTexture = (*m_paoMaterials)[i].m_iAO;
+			size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal;
+
+			if (iAOTexture)
+				glDeleteTextures(1, &iAOTexture);
+
+			iAOTexture = iAO;
+
+			if (iNormalTexture)
+				glDeleteTextures(1, &iNormalTexture);
+
+			iNormalTexture = iNormal;
+		}
+
+		flLastGenerate = CModelWindow::Get()->GetTime();
+	}
+
+	CModelWindow::Get()->Render();
+	CRootPanel::Get()->Think(CModelWindow::Get()->GetTime());
+	CRootPanel::Get()->Paint(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
+	glfwSwapBuffers();
+
+	flLastTime = CModelWindow::Get()->GetTime();
+}
+
+void CComboGeneratorPanel::EndProgress()
+{
+	CProgressBar::Get()->SetVisible(false);
+}
+
+void CComboGeneratorPanel::AddLoResCallback()
+{
+	if (m_pMeshInstancePicker)
+		delete m_pMeshInstancePicker;
+
+	m_pMeshInstancePicker = new CMeshInstancePicker(this, AddLoResMesh);
+
+	int x, y, w, h, pw, ph;
+	GetAbsDimensions(x, y, w, h);
+	m_pMeshInstancePicker->GetSize(pw, ph);
+	m_pMeshInstancePicker->SetPos(x + w/2 - pw/2, y + h/2 - ph/2);
+}
+
+void CComboGeneratorPanel::AddHiResCallback()
+{
+	if (m_pMeshInstancePicker)
+		delete m_pMeshInstancePicker;
+
+	m_pMeshInstancePicker = new CMeshInstancePicker(this, AddHiResMesh);
+
+	int x, y, w, h, pw, ph;
+	GetAbsDimensions(x, y, w, h);
+	m_pMeshInstancePicker->GetSize(pw, ph);
+	m_pMeshInstancePicker->SetPos(x + w/2 - pw/2, y + h/2 - ph/2);
+}
+
+void CComboGeneratorPanel::AddLoResMeshCallback()
+{
+	CConversionMeshInstance* pMeshInstance = m_pMeshInstancePicker->GetPickedMeshInstance();
+	if (!pMeshInstance)
+		return;
+
+	size_t i;
+	for (i = 0; i < m_apLoResMeshes.size(); i++)
+		if (m_apLoResMeshes[i] == pMeshInstance)
+			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
+
+	for (i = 0; i < m_apHiResMeshes.size(); i++)
+		if (m_apHiResMeshes[i] == pMeshInstance)
+			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
+
+	m_apLoResMeshes.push_back(pMeshInstance);
+
+	delete m_pMeshInstancePicker;
+	m_pMeshInstancePicker = NULL;
+
+	Layout();
+}
+
+void CComboGeneratorPanel::AddHiResMeshCallback()
+{
+	CConversionMeshInstance* pMeshInstance = m_pMeshInstancePicker->GetPickedMeshInstance();
+	if (!pMeshInstance)
+		return;
+
+	size_t i;
+	for (i = 0; i < m_apLoResMeshes.size(); i++)
+		if (m_apLoResMeshes[i] == pMeshInstance)
+			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
+
+	for (i = 0; i < m_apHiResMeshes.size(); i++)
+		if (m_apHiResMeshes[i] == pMeshInstance)
+			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
+
+	m_apHiResMeshes.push_back(pMeshInstance);
+
+	delete m_pMeshInstancePicker;
+	m_pMeshInstancePicker = NULL;
+
+	Layout();
+}
+
+void CComboGeneratorPanel::RemoveLoResCallback()
+{
+	CTreeNode* pNode = m_pLoRes->GetSelectedNode();
+	if (!pNode)
+		return;
+
+	CTreeNodeObject<CConversionMeshInstance>* pMeshNode = dynamic_cast<CTreeNodeObject<CConversionMeshInstance>*>(pNode);
+	if (!pMeshNode)
+		return;
+
+	for (size_t i = 0; i < m_apLoResMeshes.size(); i++)
+		if (m_apLoResMeshes[i] == pMeshNode->GetObject())
+			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
+
+	Layout();
+}
+
+void CComboGeneratorPanel::RemoveHiResCallback()
+{
+	CTreeNode* pNode = m_pHiRes->GetSelectedNode();
+	if (!pNode)
+		return;
+
+	CTreeNodeObject<CConversionMeshInstance>* pMeshNode = dynamic_cast<CTreeNodeObject<CConversionMeshInstance>*>(pNode);
+	if (!pMeshNode)
+		return;
+
+	for (size_t i = 0; i < m_apHiResMeshes.size(); i++)
+		if (m_apHiResMeshes[i] == pMeshNode->GetObject())
+			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
+
+	Layout();
+}
+void CComboGeneratorPanel::Open(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+{
+	CComboGeneratorPanel* pPanel = s_pComboGeneratorPanel;
+
+	if (pPanel)
+		delete pPanel;
+
+	pPanel = s_pComboGeneratorPanel = new CComboGeneratorPanel(pScene, paoMaterials);
+
+	if (!pPanel)
+		return;
+
+	pPanel->SetVisible(true);
+	pPanel->Layout();
+}
+
+void CComboGeneratorPanel::SetVisible(bool bVisible)
+{
+	m_oGenerator.StopGenerating();
+
+	CMovablePanel::SetVisible(bVisible);
 }
 
 CNormalPanel* CNormalPanel::s_pNormalPanel = NULL;

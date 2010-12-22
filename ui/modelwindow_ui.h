@@ -121,6 +121,81 @@ protected:
 	CMinimizeButton*		m_pMinimizeButton;
 };
 
+class CComboGeneratorPanel : public CMovablePanel, public IWorkListener
+{
+public:
+								CComboGeneratorPanel(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
+
+public:
+	virtual void				SetVisible(bool bVisible);
+
+	virtual void				Layout();
+	virtual void				UpdateScene();
+
+	virtual void				Think();
+
+	virtual void				Paint(int x, int y, int w, int h);
+
+	virtual bool				KeyPressed(int iKey);
+
+	virtual void				BeginProgress();
+	virtual void				SetAction(const wchar_t* pszAction, size_t iTotalProgress);
+	virtual void				WorkProgress(size_t iProgress, bool bForceDraw = false);
+	virtual void				EndProgress();
+
+	virtual bool				IsGenerating() { return m_oGenerator.IsGenerating(); }
+	virtual bool				DoneGenerating() { return m_oGenerator.DoneGenerating(); }
+
+	EVENT_CALLBACK(CComboGeneratorPanel,	Generate);
+	EVENT_CALLBACK(CComboGeneratorPanel,	SaveMap);
+	EVENT_CALLBACK(CComboGeneratorPanel,	AddLoRes);
+	EVENT_CALLBACK(CComboGeneratorPanel,	AddHiRes);
+	EVENT_CALLBACK(CComboGeneratorPanel,	RemoveLoRes);
+	EVENT_CALLBACK(CComboGeneratorPanel,	RemoveHiRes);
+	EVENT_CALLBACK(CComboGeneratorPanel,	AddLoResMesh);
+	EVENT_CALLBACK(CComboGeneratorPanel,	AddHiResMesh);
+
+	static void					Open(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
+	static CComboGeneratorPanel*	Get() { return s_pComboGeneratorPanel; }
+
+protected:
+	CConversionScene*			m_pScene;
+	eastl::vector<CMaterial>*		m_paoMaterials;
+
+	CTexelGenerator				m_oGenerator;
+
+	CLabel*						m_pSizeLabel;
+	CScrollSelector<int>*		m_pSizeSelector;
+
+	CLabel*						m_pLoResLabel;
+	CTree*						m_pLoRes;
+
+	CLabel*						m_pHiResLabel;
+	CTree*						m_pHiRes;
+
+	eastl::vector<CConversionMeshInstance*>	m_apLoResMeshes;
+	eastl::vector<CConversionMeshInstance*>	m_apHiResMeshes;
+
+	CButton*					m_pAddLoRes;
+	CButton*					m_pAddHiRes;
+
+	CButton*					m_pRemoveLoRes;
+	CButton*					m_pRemoveHiRes;
+
+	CLabel*						m_pAOLabel;
+	CCheckBox*					m_pAOCheckBox;
+
+	CLabel*						m_pNormalLabel;
+	CCheckBox*					m_pNormalCheckBox;
+
+	CButton*					m_pGenerate;
+	CButton*					m_pSave;
+
+	class CMeshInstancePicker*	m_pMeshInstancePicker;
+
+	static CComboGeneratorPanel*	s_pComboGeneratorPanel;
+};
+
 class CAOPanel : public CMovablePanel, public IWorkListener
 {
 public:

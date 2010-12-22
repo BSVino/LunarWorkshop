@@ -90,6 +90,7 @@ public:
 	EVENT_CALLBACK(CModelWindow, UVWireframe);
 	EVENT_CALLBACK(CModelWindow, Light);
 	EVENT_CALLBACK(CModelWindow, Texture);
+	EVENT_CALLBACK(CModelWindow, Combo);
 	EVENT_CALLBACK(CModelWindow, Normal);
 	EVENT_CALLBACK(CModelWindow, AO);
 	EVENT_CALLBACK(CModelWindow, ColorAO);
@@ -98,6 +99,7 @@ public:
 	EVENT_CALLBACK(CModelWindow, NormalToggle);
 	EVENT_CALLBACK(CModelWindow, AOToggle);
 	EVENT_CALLBACK(CModelWindow, ColorAOToggle);
+	EVENT_CALLBACK(CModelWindow, GenerateCombo);
 	EVENT_CALLBACK(CModelWindow, GenerateAO);
 	EVENT_CALLBACK(CModelWindow, GenerateColorAO);
 	EVENT_CALLBACK(CModelWindow, GenerateNormal);

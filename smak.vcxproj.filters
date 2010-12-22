@@ -123,6 +123,9 @@
     <ClCompile Include="..\common\configfile.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
+    <ClCompile Include="crunch\crunch.cpp">
+      <Filter>Source Files\crunch</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="smak_version.h">
