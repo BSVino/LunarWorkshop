@@ -29,6 +29,9 @@ public:
 	virtual size_t			GenerateNormal(bool bInMedias = false) { return 0; };
 	virtual size_t			GenerateAO(bool bInMedias = false) { return 0; };
 
+	virtual eastl::string16	FileSuffix() { return L""; };
+	virtual void*			GetData() { return NULL; };
+
 protected:
 	CTexelGenerator*		m_pGenerator;
 
@@ -53,6 +56,9 @@ public:
 	void					Bleed();
 
 	virtual size_t			GenerateAO(bool bInMedias = false);
+
+	virtual eastl::string16	FileSuffix() { return L"ao"; };
+	virtual void*			GetData();
 
 protected:
 	size_t					m_iSamples;
@@ -84,6 +90,9 @@ public:
 
 	void					TexturizeValues(Vector* avecTexture);
 	virtual size_t			GenerateNormal(bool bInMedias = false);
+
+	virtual eastl::string16	FileSuffix() { return L"normal"; };
+	virtual void*			GetData();
 
 protected:
 	Vector*					m_avecNormalValues;
@@ -124,6 +133,8 @@ public:
 
 	size_t					GenerateAO(bool bInMedias = false);
 	size_t					GenerateNormal(bool bInMedias = false);
+
+	void					SaveAll(const eastl::string16& sFilename);
 
 	bool					IsGenerating() { return m_bIsGenerating; }
 	bool					DoneGenerating() { return m_bDoneGenerating; }

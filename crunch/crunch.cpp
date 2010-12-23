@@ -1,6 +1,8 @@
 #include "crunch.h"
 
 #include <assert.h>
+#include <IL/il.h>
+#include <IL/ilu.h>
 #include <GL/glew.h>
 
 #include <raytracer/raytracer.h>
@@ -462,6 +464,35 @@ size_t CTexelGenerator::GenerateNormal(bool bInMedias)
 	return 0;
 }
 
+void CTexelGenerator::SaveAll(const eastl::string16& sFilename)
+{
+	ilEnable(IL_FILE_OVERWRITE);
+
+	for (size_t i = 0; i < m_apMethods.size(); i++)
+	{
+		eastl::string16 sRealFilename = sFilename.substr(0, sFilename.length()-4) + L"-" + m_apMethods[i]->FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
+
+		ILuint iDevILId;
+		ilGenImages(1, &iDevILId);
+		ilBindImage(iDevILId);
+
+		ilTexImage((ILint)m_iWidth, (ILint)m_iHeight, 1, 3, IL_RGB, IL_FLOAT, m_apMethods[i]->GetData());
+
+		// Formats like PNG and VTF don't work unless it's in integer format.
+		ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
+
+		if (!ModelWindow()->IsRegistered() && (m_iWidth > 128 || m_iHeight > 128))
+		{
+			iluImageParameter(ILU_FILTER, ILU_BILINEAR);
+			iluScale(128, 128, 1);
+		}
+
+		ilSaveImage(sRealFilename.c_str());
+
+		ilDeleteImages(1,&iDevILId);
+	}
+}
+
 CTexelMethod::CTexelMethod(CTexelGenerator* pGenerator)
 {
 	m_pGenerator = pGenerator;
@@ -665,6 +696,9 @@ void CTexelAOMethod::PostGenerate()
 		else
 			m_avecShadowValues[i] = Vector(0,0,0);
 
+		// When exporting to png sometimes a pure white value will suffer integer overflow.
+		m_avecShadowValues[i] *= 0.99f;
+
 		if (m_pGenerator->GetWorkListener())
 			m_pGenerator->GetWorkListener()->WorkProgress(i);
 	}
@@ -810,6 +844,11 @@ size_t CTexelAOMethod::GenerateAO(bool bInMedias)
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, (GLint)m_iWidth, (GLint)m_iHeight, GL_RGB, GL_FLOAT, &avecShadowValues[0].x);
 
 	return iGLId;
+}
+
+void* CTexelAOMethod::GetData()
+{
+	return &m_avecShadowValues[0].x;
 }
 
 CTexelNormalMethod::CTexelNormalMethod(CTexelGenerator* pGenerator)
@@ -1001,4 +1040,9 @@ size_t CTexelNormalMethod::GenerateNormal(bool bInMedias)
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, (GLint)m_iWidth, (GLint)m_iHeight, GL_RGB, GL_FLOAT, &avecNormalValues[0].x);
 
 	return iGLId;
+}
+
+void* CTexelNormalMethod::GetData()
+{
+	return &m_avecNormalValues[0].x;
 }

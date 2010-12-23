@@ -1450,7 +1450,7 @@ void CComboGeneratorPanel::SaveMapCallback()
 	if (!pszFilename)
 		return;
 
-//	m_oGenerator.SaveToFile(pszFilename);
+	m_oGenerator.SaveAll(pszFilename);
 
 	for (size_t i = 0; i < m_paoMaterials->size(); i++)
 	{
