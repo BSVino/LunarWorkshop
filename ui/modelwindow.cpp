@@ -97,7 +97,7 @@ CModelWindow::CModelWindow(int argc, char** argv)
 void CModelWindow::OpenWindow()
 {
 	SetMultisampling(true);
-	BaseClass::OpenWindow(m_iWindowWidth, m_iWindowHeight, false);
+	BaseClass::OpenWindow(m_iWindowWidth, m_iWindowHeight, false, true);
 
 	CompileShaders();
 
@@ -211,8 +211,6 @@ void CModelWindow::Run()
 	while (IsOpen())
 	{
 		Render();
-		glgui::CRootPanel::Get()->Think(GetTime());
-		glgui::CRootPanel::Get()->Paint(0, 0, (int)m_iWindowWidth, (int)m_iWindowHeight);
 		SwapBuffers();
 	}
 }
@@ -426,6 +424,9 @@ void CModelWindow::Render()
 		RenderUV();
 	else
 		Render3D();
+
+	glgui::CRootPanel::Get()->Think(GetTime());
+	glgui::CRootPanel::Get()->Paint(0, 0, (int)m_iWindowWidth, (int)m_iWindowHeight);
 }
 
 void CModelWindow::Render3D()
@@ -1520,6 +1521,8 @@ void CModelWindow::WindowResize(int w, int h)
 	if (!IsOpen())
 		return;
 
+	glgui::CRootPanel::Get()->SetSize(w, h);
+	glgui::CRootPanel::Get()->Layout();
 	BaseClass::WindowResize(w, h);
 }
 

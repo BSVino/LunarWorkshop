@@ -198,9 +198,6 @@ protected:
 
 	Vector					m_vecLightPositionUV;
 
-	size_t					m_iWindowWidth;
-	size_t					m_iWindowHeight;
-
 	typedef struct
 	{
 		Vector vecStart;
