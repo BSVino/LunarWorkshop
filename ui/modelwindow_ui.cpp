@@ -1129,6 +1129,61 @@ void CAOPanel::AOMethodCallback()
 	Layout();
 }
 
+COptionsButton::COptionsButton()
+	: CButton(0, 0, 100, 100, L"", true)
+{
+	m_pPanel = new COptionsPanel(this);
+	m_pPanel->SetVisible(false);
+
+	SetClickedListener(this, Open);
+	SetUnclickedListener(this, Close);
+}
+
+void COptionsButton::OpenCallback()
+{
+	CRootPanel::Get()->AddControl(m_pPanel, true);
+
+	int iPanelWidth = m_pPanel->GetWidth();
+	int iButtonWidth = GetWidth();
+	int x, y, w, h;
+	GetAbsDimensions(x, y, w, h);
+	m_pPanel->SetPos(x + iButtonWidth/2 - iPanelWidth/2, y+h+3);
+
+	m_pPanel->Layout();
+	m_pPanel->SetVisible(true);
+}
+
+void COptionsButton::CloseCallback()
+{
+	CRootPanel::Get()->RemoveControl(m_pPanel);
+	m_pPanel->SetVisible(false);
+
+	SetState(false, false);
+}
+
+COptionsButton::COptionsPanel::COptionsPanel(COptionsButton* pButton)
+	: CPanel(0, 0, 200, 350)
+{
+	m_pOkay = new CButton(0, 0, 100, 100, L"Okay");
+	m_pOkay->SetClickedListener(pButton, Close);
+	AddControl(m_pOkay);
+}
+
+void COptionsButton::COptionsPanel::Layout()
+{
+	BaseClass::Layout();
+
+	m_pOkay->SetSize(40, 20);
+	m_pOkay->SetPos(GetWidth()/2 - 20, GetHeight() - 30);
+}
+
+void COptionsButton::COptionsPanel::Paint(int x, int y, int w, int h)
+{
+	CRootPanel::PaintRect(x, y, w, h, g_clrBox);
+
+	BaseClass::Paint(x, y, w, h);
+}
+
 CComboGeneratorPanel* CComboGeneratorPanel::s_pComboGeneratorPanel = NULL;
 
 CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
@@ -1191,12 +1246,109 @@ CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, eastl::vect
 	AddControl(m_pRemoveHiRes);
 
 	m_pAOCheckBox = new CCheckBox();
+	m_pAOCheckBox->SetState(true, false);
 	AddControl(m_pAOCheckBox);
 
 	m_pAOLabel = new CLabel(0, 0, 100, 100, L"Ambient Occlusion");
 	AddControl(m_pAOLabel);
 
+	m_pAOOptions = new COptionsButton();
+	AddControl(m_pAOOptions);
+
+	m_pBleedLabel = new CLabel(0, 0, 100, 100, L"Edge Bleed");
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pBleedLabel);
+
+	m_pBleedSelector = new CScrollSelector<int>();
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(0, L"0"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(1, L"1"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(2, L"2"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(3, L"3"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(4, L"4"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(5, L"5"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(6, L"6"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(7, L"7"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(8, L"8"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(9, L"9"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(10, L"10"));
+	m_pBleedSelector->SetSelection(1);
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pBleedSelector);
+
+	m_pSamplesLabel = new CLabel(0, 0, 100, 100, L"Samples");
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pSamplesLabel);
+
+	m_pSamplesSelector = new CScrollSelector<int>();
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(5, L"5"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(6, L"6"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(7, L"7"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(8, L"8"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(9, L"9"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(10, L"10"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(11, L"11"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(12, L"12"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(13, L"13"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(14, L"14"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(15, L"15"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(16, L"16"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(17, L"17"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(18, L"18"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(19, L"19"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(20, L"20"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(21, L"21"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(22, L"22"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(23, L"23"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(24, L"24"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(25, L"25"));
+	m_pSamplesSelector->SetSelection(15);
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pSamplesSelector);
+
+	m_pFalloffLabel = new CLabel(0, 0, 100, 100, L"Ray Falloff");
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pFalloffLabel);
+
+	m_pFalloffSelector = new CScrollSelector<float>();
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.01f, L"0.01"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.05f, L"0.05"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.1f, L"0.1"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.25f, L"0.25"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.5f, L"0.5"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.75f, L"0.75"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(1.0f, L"1.0"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(1.25f, L"1.25"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(1.5f, L"1.5"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(1.75f, L"1.75"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(2.0f, L"2.0"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(2.5f, L"2.5"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(3.0f, L"3.0"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(4.0f, L"4.0"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(5.0f, L"5.0"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(6.0f, L"6.0"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(7.5f, L"7.5"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(10.0f, L"10"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(25.0f, L"25"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(50.0f, L"50"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(100.0f, L"100"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(250.0f, L"250"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(500.0f, L"500"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(1000.0f, L"1000"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(2500.0f, L"2500"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(5000.0f, L"5000"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(10000.0f, L"10000"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(-1.0f, L"No falloff"));
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pFalloffSelector);
+
+	m_pRandomCheckBox = new CCheckBox();
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pRandomCheckBox);
+
+	m_pRandomLabel = new CLabel(0, 0, 100, 100, L"Randomize rays");
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pRandomLabel);
+
+	m_pGroundOcclusionCheckBox = new CCheckBox();
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pGroundOcclusionCheckBox);
+
+	m_pGroundOcclusionLabel = new CLabel(0, 0, 100, 100, L"Ground occlusion");
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pGroundOcclusionLabel);
+
 	m_pNormalCheckBox = new CCheckBox();
+	m_pNormalCheckBox->SetState(true, false);
 	AddControl(m_pNormalCheckBox);
 
 	m_pNormalLabel = new CLabel(0, 0, 100, 100, L"Normal Map");
@@ -1262,6 +1414,57 @@ void CComboGeneratorPanel::Layout()
 	m_pAOLabel->SetWrap(false);
 	m_pAOCheckBox->SetPos(20, 220 + m_pAOLabel->GetHeight()/2 - m_pAOCheckBox->GetHeight()/2);
 
+	m_pAOOptions->SetPos(250, 220 + m_pAOLabel->GetHeight()/2 - m_pAOOptions->GetHeight()/2);
+	m_pAOOptions->SetSize(60, 20);
+	m_pAOOptions->SetText(L"Options...");
+
+	int iControl = 3;
+
+	m_pAOOptions->GetOptionsPanel()->SetSize(200, 200);
+
+	iControlY = 10;
+
+	m_pBleedLabel->SetSize(10, 10);
+	m_pBleedLabel->EnsureTextFits();
+	m_pBleedLabel->SetPos(5, iControlY);
+
+	m_pBleedSelector->SetSize(m_pAOOptions->GetOptionsPanel()->GetWidth() - m_pBleedLabel->GetWidth() - iSpace, iSelectorSize);
+	m_pBleedSelector->SetPos(m_pAOOptions->GetOptionsPanel()->GetWidth() - m_pBleedSelector->GetWidth() - iSpace/2, iControlY);
+
+	iControlY += 30;
+
+	m_pSamplesLabel->SetSize(10, 10);
+	m_pSamplesLabel->EnsureTextFits();
+	m_pSamplesLabel->SetPos(5, iControlY);
+
+	m_pSamplesSelector->SetSize(m_pAOOptions->GetOptionsPanel()->GetWidth() - m_pSamplesLabel->GetWidth() - iSpace, iSelectorSize);
+	m_pSamplesSelector->SetPos(m_pAOOptions->GetOptionsPanel()->GetWidth() - m_pSamplesSelector->GetWidth() - iSpace/2, iControlY);
+
+	iControlY += 30;
+
+	m_pFalloffLabel->SetSize(10, 10);
+	m_pFalloffLabel->EnsureTextFits();
+	m_pFalloffLabel->SetPos(5, iControlY);
+
+	m_pFalloffSelector->SetSize(m_pAOOptions->GetOptionsPanel()->GetWidth() - m_pFalloffLabel->GetWidth() - iSpace, iSelectorSize);
+	m_pFalloffSelector->SetPos(m_pAOOptions->GetOptionsPanel()->GetWidth() - m_pFalloffSelector->GetWidth() - iSpace/2, iControlY);
+
+	iControlY += 30;
+
+	m_pRandomLabel->SetSize(10, 10);
+	m_pRandomLabel->EnsureTextFits();
+	m_pRandomLabel->SetPos(25, iControlY);
+
+	m_pRandomCheckBox->SetPos(10, iControlY + m_pRandomLabel->GetHeight()/2 - m_pRandomCheckBox->GetHeight()/2);
+
+	iControlY += 30;
+
+	m_pGroundOcclusionLabel->SetSize(10, 10);
+	m_pGroundOcclusionLabel->EnsureTextFits();
+	m_pGroundOcclusionLabel->SetPos(25, iControlY);
+
+	m_pGroundOcclusionCheckBox->SetPos(10, iControlY + m_pGroundOcclusionLabel->GetHeight()/2 - m_pGroundOcclusionCheckBox->GetHeight()/2);
+
 	m_pNormalLabel->SetPos(35, 250);
 	m_pNormalLabel->EnsureTextFits();
 	m_pNormalLabel->SetAlign(CLabel::TA_LEFTCENTER);
@@ -1307,6 +1510,9 @@ void CComboGeneratorPanel::UpdateScene()
 {
 	m_apLoResMeshes.clear();
 	m_apHiResMeshes.clear();
+
+	if (m_pScene->GetNumMeshes())
+		m_pFalloffSelector->SetSelection(m_pFalloffSelector->FindClosestSelectionValue(m_pScene->m_oExtends.Size().Length()/2));
 }
 
 void CComboGeneratorPanel::Think()
@@ -1388,7 +1594,12 @@ void CComboGeneratorPanel::GenerateCallback()
 
 	if (m_pAOCheckBox->GetState())
 	{
-		m_oGenerator.AddAO();
+		m_oGenerator.AddAO(
+			m_pSamplesSelector->GetSelectionValue(),
+			m_pRandomCheckBox->GetState(),
+			m_pFalloffSelector->GetSelectionValue(),
+			m_pGroundOcclusionCheckBox->GetState(),
+			m_pBleedSelector->GetSelectionValue());
 		CModelWindow::Get()->SetDisplayAO(true);
 	}
 
@@ -1632,6 +1843,7 @@ void CComboGeneratorPanel::RemoveHiResCallback()
 
 	Layout();
 }
+
 void CComboGeneratorPanel::Open(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
 {
 	CComboGeneratorPanel* pPanel = s_pComboGeneratorPanel;
@@ -1646,6 +1858,9 @@ void CComboGeneratorPanel::Open(CConversionScene* pScene, eastl::vector<CMateria
 
 	pPanel->SetVisible(true);
 	pPanel->Layout();
+
+	if (pScene->GetNumMeshes())
+		pPanel->m_pFalloffSelector->SetSelection(pPanel->m_pFalloffSelector->FindClosestSelectionValue(pScene->m_oExtends.Size().Length()/2));
 }
 
 void CComboGeneratorPanel::SetVisible(bool bVisible)

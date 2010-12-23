@@ -44,7 +44,7 @@ class CTexelAOMethod : public CTexelMethod
 	DECLARE_CLASS(CTexelAOMethod, CTexelMethod);
 
 public:
-							CTexelAOMethod(class CTexelGenerator* pGenerator);
+							CTexelAOMethod(class CTexelGenerator* pGenerator, size_t iSamples, bool bRandomize, float flRayFalloff, bool bGroundOcclusion, size_t iBleed);
 	virtual 				~CTexelAOMethod();
 
 public:
@@ -114,7 +114,7 @@ public:
 	void					SetModels(const eastl::vector<CConversionMeshInstance*>& apHiRes, const eastl::vector<CConversionMeshInstance*>& apLoRes);
 
 	void					ClearMethods();
-	void					AddAO();
+	void					AddAO(size_t iSamples, bool bRandomize, float flRayFalloff, bool bGroundOcclusion, size_t iBleed);
 	void					AddNormal();
 
 	void					SetWorkListener(IWorkListener* pListener) { m_pWorkListener = pListener; };

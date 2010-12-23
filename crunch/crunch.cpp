@@ -69,9 +69,9 @@ void CTexelGenerator::ClearMethods()
 	m_apMethods.clear();
 }
 
-void CTexelGenerator::AddAO()
+void CTexelGenerator::AddAO(size_t iSamples, bool bRandomize, float flRayFalloff, bool bGroundOcclusion, size_t iBleed)
 {
-	CTexelMethod* pMethod = new CTexelAOMethod(this);
+	CTexelMethod* pMethod = new CTexelAOMethod(this, iSamples, bRandomize, flRayFalloff, bGroundOcclusion, iBleed);
 	pMethod->SetSize(m_iWidth, m_iHeight);
 	m_apMethods.push_back(pMethod);
 }
@@ -508,18 +508,18 @@ void CTexelMethod::SetSize(size_t iWidth, size_t iHeight)
 	m_iHeight = iHeight;
 }
 
-CTexelAOMethod::CTexelAOMethod(CTexelGenerator* pGenerator)
+CTexelAOMethod::CTexelAOMethod(CTexelGenerator* pGenerator, size_t iSamples, bool bRandomize, float flRayFalloff, bool bGroundOcclusion, size_t iBleed)
 	: CTexelMethod(pGenerator)
 {
 	m_avecShadowValues = NULL;
 	m_avecShadowGeneratedValues = NULL;
 	m_aiShadowReads = NULL;
 
-	m_iSamples = 15;
-	m_bRandomize = false;
-	m_flRayFalloff = 1;
-	m_bGroundOcclusion = false;
-	m_iBleed = 1;
+	m_iSamples = iSamples;
+	m_bRandomize = bRandomize;
+	m_flRayFalloff = flRayFalloff;
+	m_bGroundOcclusion = bGroundOcclusion;
+	m_iBleed = iBleed;
 }
 
 CTexelAOMethod::~CTexelAOMethod()

@@ -226,7 +226,6 @@ void CModelWindow::DestroyAll()
 	m_aoMaterials.clear();
 
 	CRootPanel::Get()->UpdateScene();
-
 	CSceneTreePanel::Get()->UpdateTree();
 
 	CRootPanel::Get()->Layout();
@@ -277,6 +276,7 @@ void CModelWindow::ReadFileIntoScene(const wchar_t* pszFile)
 
 	m_flCameraDistance = m_Scene.m_oExtends.Size().Length() * 1.5f;
 
+	CRootPanel::Get()->UpdateScene();
 	CSceneTreePanel::Get()->UpdateTree();
 
 	m_bLoadingFile = false;

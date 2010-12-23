@@ -121,6 +121,37 @@ protected:
 	CMinimizeButton*		m_pMinimizeButton;
 };
 
+class COptionsButton : public CButton, public IEventListener
+{
+public:
+	class COptionsPanel : public CPanel
+	{
+		DECLARE_CLASS(COptionsPanel, CPanel);
+
+	public:
+						COptionsPanel(COptionsButton* pButton);
+
+	public:
+	virtual void		Layout();
+	virtual void		Paint(int x, int y, int w, int h);
+
+	protected:
+		CButton*		m_pOkay;
+	};
+
+public:
+						COptionsButton();
+
+public:
+	EVENT_CALLBACK(COptionsButton, Open);
+	EVENT_CALLBACK(COptionsButton, Close);
+
+	COptionsPanel*		GetOptionsPanel() { return m_pPanel; }
+
+protected:
+	COptionsPanel*		m_pPanel;
+};
+
 class CComboGeneratorPanel : public CMovablePanel, public IWorkListener
 {
 public:
@@ -187,6 +218,23 @@ protected:
 
 	CLabel*						m_pNormalLabel;
 	CCheckBox*					m_pNormalCheckBox;
+
+	COptionsButton*				m_pAOOptions;
+
+	CLabel*						m_pBleedLabel;
+	CScrollSelector<int>*		m_pBleedSelector;
+
+	CLabel*						m_pSamplesLabel;
+	CScrollSelector<int>*		m_pSamplesSelector;
+
+	CLabel*						m_pFalloffLabel;
+	CScrollSelector<float>*		m_pFalloffSelector;
+
+	CLabel*						m_pRandomLabel;
+	CCheckBox*					m_pRandomCheckBox;
+
+	CLabel*						m_pGroundOcclusionLabel;
+	CCheckBox*					m_pGroundOcclusionCheckBox;
 
 	CButton*					m_pGenerate;
 	CButton*					m_pSave;
