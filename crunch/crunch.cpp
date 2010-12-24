@@ -69,6 +69,13 @@ void CTexelGenerator::ClearMethods()
 	m_apMethods.clear();
 }
 
+void CTexelGenerator::AddDiffuse()
+{
+	CTexelMethod* pMethod = new CTexelDiffuseMethod(this);
+	pMethod->SetSize(m_iWidth, m_iHeight);
+	m_apMethods.push_back(pMethod);
+}
+
 void CTexelGenerator::AddAO(size_t iSamples, bool bRandomize, float flRayFalloff, bool bGroundOcclusion, size_t iBleed)
 {
 	CTexelMethod* pMethod = new CTexelAOMethod(this, iSamples, bRandomize, flRayFalloff, bGroundOcclusion, iBleed);
@@ -105,6 +112,9 @@ void ComputeAtTexel(void* pVoidData)
 
 void CTexelGenerator::Generate()
 {
+	for (size_t i = 0; i < m_apMethods.size(); i++)
+		m_apMethods[i]->PreGenerate();
+
 	if (m_pWorkListener)
 	{
 		m_pWorkListener->BeginProgress();
@@ -440,6 +450,18 @@ bool CTexelGenerator::Texel(size_t w, size_t h, size_t& iTexel, bool bUseMask)
 	return Texel(w, h, iTexel, m_iWidth, m_iHeight, bUseMask?m_abTexelMask:NULL);
 }
 
+size_t CTexelGenerator::GenerateDiffuse(bool bInMedias)
+{
+	for (size_t i = 0; i < m_apMethods.size(); i++)
+	{
+		size_t iTexture = m_apMethods[i]->GenerateDiffuse(bInMedias);
+		if (iTexture)
+			return iTexture;
+	}
+
+	return 0;
+}
+
 size_t CTexelGenerator::GenerateAO(bool bInMedias)
 {
 	for (size_t i = 0; i < m_apMethods.size(); i++)
@@ -506,6 +528,310 @@ void CTexelMethod::SetSize(size_t iWidth, size_t iHeight)
 {
 	m_iWidth = iWidth;
 	m_iHeight = iHeight;
+}
+
+CTexelDiffuseMethod::CTexelDiffuseMethod(CTexelGenerator* pGenerator)
+	: CTexelMethod(pGenerator)
+{
+	m_avecDiffuseValues = NULL;
+	m_avecDiffuseGeneratedValues = NULL;
+	m_aiDiffuseReads = NULL;
+}
+
+CTexelDiffuseMethod::~CTexelDiffuseMethod()
+{
+	delete[] m_avecDiffuseValues;
+	delete[] m_avecDiffuseGeneratedValues;
+	delete[] m_aiDiffuseReads;
+}
+
+void CTexelDiffuseMethod::SetSize(size_t iWidth, size_t iHeight)
+{
+	BaseClass::SetSize(iWidth, iHeight);
+
+	if (m_avecDiffuseValues)
+	{
+		delete[] m_avecDiffuseValues;
+		delete[] m_avecDiffuseGeneratedValues;
+		delete[] m_aiDiffuseReads;
+	}
+
+	// Shadow volume result buffer.
+	m_avecDiffuseValues = new Vector[iWidth*iHeight];
+	m_avecDiffuseGeneratedValues = new Vector[iWidth*iHeight];
+	m_aiDiffuseReads = new size_t[iWidth*iHeight];
+
+	// Big hack incoming!
+	memset(&m_avecDiffuseValues[0].x, 0, iWidth*iHeight*sizeof(Vector));
+	memset(&m_avecDiffuseGeneratedValues[0].x, 0, iWidth*iHeight*sizeof(Vector));
+	memset(&m_aiDiffuseReads[0], 0, iWidth*iHeight*sizeof(size_t));
+}
+
+void CTexelDiffuseMethod::PreGenerate()
+{
+	const eastl::vector<CConversionMeshInstance*>& apHiRes = m_pGenerator->GetHiResMeshInstances();
+
+	m_aiTextures.resize(m_pGenerator->GetScene()->GetNumMaterials());
+	for (size_t i = 0; i < m_aiTextures.size(); i++)
+		m_aiTextures[i] = 0;
+
+	for (size_t i = 0; i < apHiRes.size(); i++)
+	{
+		CConversionMeshInstance* pMeshInstance = apHiRes[i];
+
+		for (eastl::map<size_t, CConversionMaterialMap>::iterator j = pMeshInstance->m_aiMaterialsMap.begin(); j != pMeshInstance->m_aiMaterialsMap.end(); j++)
+		{
+			size_t iMaterial = pMeshInstance->GetMappedMaterial(j->first)->m_iMaterial;
+
+			if (m_aiTextures[iMaterial])
+				continue;
+
+			CConversionMaterial* pMaterial = m_pGenerator->GetScene()->GetMaterial(iMaterial);
+
+			m_aiTextures[iMaterial] = CModelWindow::LoadTexture(pMaterial->GetDiffuseTexture());
+		}
+	}
+}
+
+void CTexelDiffuseMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* pMeshInstance, CConversionFace* pFace, CConversionVertex* pV1, CConversionVertex* pV2, CConversionVertex* pV3, raytrace::CTraceResult* tr, const Vector& vecUVPosition, raytrace::CRaytracer* pTracer)
+{
+	size_t iTexture = m_aiTextures[tr->m_pMeshInstance->GetMappedMaterial(tr->m_pFace->m)->m_iMaterial];
+
+	if (!iTexture)
+		return;
+
+	CConversionMesh* pHitMesh = tr->m_pMeshInstance->GetMesh();
+
+	CConversionVertex* pHitV1 = tr->m_pFace->GetVertex(0);
+	CConversionVertex* pHitV2 = tr->m_pFace->GetVertex(1);
+	CConversionVertex* pHitV3 = tr->m_pFace->GetVertex(2);
+
+	Vector2D vu1 = pHitMesh->GetUV(pHitV1->vu);
+	Vector2D vu2 = pHitMesh->GetUV(pHitV2->vu);
+	Vector2D vu3 = pHitMesh->GetUV(pHitV3->vu);
+
+	Vector v1 = tr->m_pMeshInstance->GetVertex(pHitV1->v);
+	Vector v2 = tr->m_pMeshInstance->GetVertex(pHitV2->v);
+	Vector v3 = tr->m_pMeshInstance->GetVertex(pHitV3->v);
+
+	// Find where the UV is in world space.
+
+	// First build 2x2 a "matrix" of the UV values.
+	float mta = vu2.x - vu1.x;
+	float mtb = vu3.x - vu1.x;
+	float mtc = vu2.y - vu1.y;
+	float mtd = vu3.y - vu1.y;
+
+	// Now build a 2x3 "matrix" of the vertices.
+	float mva = v2.x - v1.x;
+	float mvb = v3.x - v1.x;
+	float mvc = v2.y - v1.y;
+	float mvd = v3.y - v1.y;
+	float mve = v2.z - v1.z;
+	float mvf = v3.z - v1.z;
+
+	// Multiply them together.
+	// [a b]   [a b c]   [a b c]
+	// [c d] * [d e f] = [d e f]
+	// Really wish I had a matrix math library about now!
+	float mra = mta*mva + mtb*mvd;
+	float mrb = mta*mvb + mtb*mve;
+	float mrc = mta*mvc + mtb*mvf;
+	float mrd = mtc*mva + mtd*mvd;
+	float mre = mtc*mvb + mtd*mve;
+	float mrf = mtc*mvc + mtd*mvf;
+
+	// These vectors should be the X Y and Z axis in UV space.
+	Vector2D vecXAxis(mra, mrd);
+	Vector2D vecYAxis(mrb, mre);
+	Vector2D vecZAxis(mrc, mrf);
+
+	// The world origin in (u, v) texture space
+	Vector2D vecWorldOrigin = vu1 - vecXAxis * v1.x - vecYAxis * v1.y - vecZAxis * v1.z;
+
+	// The position of the traceline's hit in (u, v) texture space
+	Vector2D vecWorldPosition = vecWorldOrigin + vecXAxis * tr->m_vecHit.x + vecYAxis * tr->m_vecHit.y + vecZAxis * tr->m_vecHit.z;
+
+	// Mutex may be dead, try to bail before.
+	if (m_pGenerator->IsStopped())
+		return;
+
+	// Lock for il texture access so multiple threads don't bind different textures and confuse each other.
+	m_pGenerator->GetParallelizer()->LockData();
+
+	ilBindImage(iTexture);
+
+	size_t iU = (size_t)((vecWorldPosition.x * ilGetInteger(IL_IMAGE_WIDTH)) - 0.5f);
+	size_t iV = (size_t)((vecWorldPosition.y * ilGetInteger(IL_IMAGE_HEIGHT)) - 0.5f);
+
+	iU %= ilGetInteger(IL_IMAGE_WIDTH);
+	iV %= ilGetInteger(IL_IMAGE_HEIGHT);
+
+	size_t iColorTexel = iU + iV*ilGetInteger(IL_IMAGE_HEIGHT);
+	Color* pclrData = ((Color*)ilGetData());
+	Color clrData = pclrData[iColorTexel];
+
+	ilBindImage(0);
+
+	m_avecDiffuseValues[iTexel] += Vector(clrData);
+	m_aiDiffuseReads[iTexel]++;
+	m_pGenerator->MarkTexelUsed(iTexel);
+
+	m_pGenerator->GetParallelizer()->UnlockData();
+}
+
+void CTexelDiffuseMethod::PostGenerate()
+{
+	for (size_t i = 0; i < m_aiTextures.size(); i++)
+	{
+		if (m_aiTextures[i])
+			ilDeleteImages(1, &m_aiTextures[i]);
+	}
+
+	if (m_pGenerator->GetWorkListener())
+		m_pGenerator->GetWorkListener()->SetAction(L"Averaging reads", m_iWidth*m_iHeight);
+
+	// Average out all of the reads.
+	for (size_t i = 0; i < m_iWidth*m_iHeight; i++)
+	{
+		// Don't immediately return, just skip this loop. We have cleanup work to do.
+		if (m_pGenerator->IsStopped())
+			break;
+
+		if (m_aiDiffuseReads[i])
+			m_avecDiffuseValues[i] /= (float)m_aiDiffuseReads[i];
+		else
+			m_avecDiffuseValues[i] = Vector(0,0,0);
+
+		// When exporting to png sometimes a pure white value will suffer integer overflow.
+		m_avecDiffuseValues[i] *= 0.99f;
+
+		if (m_pGenerator->GetWorkListener())
+			m_pGenerator->GetWorkListener()->WorkProgress(i);
+	}
+
+	if (!m_pGenerator->IsStopped())
+		Bleed();
+}
+
+void CTexelDiffuseMethod::Bleed()
+{
+	if (m_pGenerator->GetWorkListener())
+		m_pGenerator->GetWorkListener()->SetAction(L"Bleeding edges", 0);
+
+	for (size_t w = 0; w < m_iWidth; w++)
+	{
+		for (size_t h = 0; h < m_iHeight; h++)
+		{
+			Vector vecTotal(0,0,0);
+			size_t iTotal = 0;
+			size_t iTexel;
+
+			// If the texel has the mask on then it already has a value so skip it.
+			if (m_pGenerator->Texel(w, h, iTexel, true))
+				continue;
+
+			if (m_pGenerator->Texel(w-1, h-1, iTexel))
+			{
+				vecTotal += m_avecDiffuseValues[iTexel];
+				iTotal++;
+			}
+
+			if (m_pGenerator->Texel(w-1, h, iTexel))
+			{
+				vecTotal += m_avecDiffuseValues[iTexel];
+				iTotal++;
+			}
+
+			if (m_pGenerator->Texel(w-1, h+1, iTexel))
+			{
+				vecTotal += m_avecDiffuseValues[iTexel];
+				iTotal++;
+			}
+
+			if (m_pGenerator->Texel(w, h+1, iTexel))
+			{
+				vecTotal += m_avecDiffuseValues[iTexel];
+				iTotal++;
+			}
+
+			if (m_pGenerator->Texel(w+1, h+1, iTexel))
+			{
+				vecTotal += m_avecDiffuseValues[iTexel];
+				iTotal++;
+			}
+
+			if (m_pGenerator->Texel(w+1, h, iTexel))
+			{
+				vecTotal += m_avecDiffuseValues[iTexel];
+				iTotal++;
+			}
+
+			if (m_pGenerator->Texel(w+1, h-1, iTexel))
+			{
+				vecTotal += m_avecDiffuseValues[iTexel];
+				iTotal++;
+			}
+
+			if (m_pGenerator->Texel(w, h-1, iTexel))
+			{
+				vecTotal += m_avecDiffuseValues[iTexel];
+				iTotal++;
+			}
+
+			m_pGenerator->Texel(w, h, iTexel, false);
+
+			if (iTotal)
+			{
+				vecTotal /= (float)iTotal;
+				m_avecDiffuseValues[iTexel] = vecTotal;
+			}
+		}
+	}
+}
+
+size_t CTexelDiffuseMethod::GenerateDiffuse(bool bInMedias)
+{
+	Vector* avecDiffuseValues = m_avecDiffuseValues;
+
+	if (bInMedias)
+	{
+		// Use this temporary buffer so we don't clobber the original.
+		avecDiffuseValues = m_avecDiffuseGeneratedValues;
+
+		// Average out all of the reads.
+		for (size_t i = 0; i < m_iWidth*m_iHeight; i++)
+		{
+			// Don't immediately return, just skip this loop. We have cleanup work to do.
+			if (m_pGenerator->IsStopped())
+				break;
+
+			if (!m_aiDiffuseReads[i])
+			{
+				avecDiffuseValues[i] = Vector(0,0,0);
+				continue;
+			}
+
+			avecDiffuseValues[i] = m_avecDiffuseValues[i] / (float)m_aiDiffuseReads[i];
+
+			// When exporting to png sometimes a pure white value will suffer integer overflow.
+			avecDiffuseValues[i] *= 0.99f;
+		}
+	}
+
+	GLuint iGLId;
+	glGenTextures(1, &iGLId);
+	glBindTexture(GL_TEXTURE_2D, iGLId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, (GLint)m_iWidth, (GLint)m_iHeight, GL_RGB, GL_FLOAT, &avecDiffuseValues[0].x);
+
+	return iGLId;
+}
+
+void* CTexelDiffuseMethod::GetData()
+{
+	return &m_avecDiffuseValues[0].x;
 }
 
 CTexelAOMethod::CTexelAOMethod(CTexelGenerator* pGenerator, size_t iSamples, bool bRandomize, float flRayFalloff, bool bGroundOcclusion, size_t iBleed)

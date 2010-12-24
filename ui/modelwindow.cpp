@@ -294,7 +294,7 @@ void CModelWindow::LoadIntoGL()
 	ClearDebugLines();
 }
 
-size_t CModelWindow::LoadTextureIntoGL(eastl::string16 sFilename)
+size_t CModelWindow::LoadTexture(eastl::string16 sFilename)
 {
 	if (!sFilename.length())
 		return 0;
@@ -322,6 +322,20 @@ size_t CModelWindow::LoadTextureIntoGL(eastl::string16 sFilename)
 
 	if (ImageInfo.Origin == IL_ORIGIN_UPPER_LEFT)
 		iluFlipImage();
+
+	ilBindImage(0);
+
+	return iDevILId;
+}
+
+size_t CModelWindow::LoadTextureIntoGL(eastl::string16 sFilename)
+{
+	size_t iDevILId = LoadTexture(sFilename);
+
+	if (!iDevILId)
+		return 0;
+
+	ilBindImage(iDevILId);
 
 	GLuint iGLId;
 	glGenTextures(1, &iGLId);

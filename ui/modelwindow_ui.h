@@ -213,6 +213,9 @@ protected:
 	CButton*					m_pRemoveLoRes;
 	CButton*					m_pRemoveHiRes;
 
+	CLabel*						m_pDiffuseLabel;
+	CCheckBox*					m_pDiffuseCheckBox;
+
 	CLabel*						m_pAOLabel;
 	CCheckBox*					m_pAOCheckBox;
 

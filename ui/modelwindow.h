@@ -52,6 +52,7 @@ public:
 	void					ReloadFromFile();
 
 	void					LoadIntoGL();
+	static size_t			LoadTexture(eastl::string16 sFilename);
 	static size_t			LoadTextureIntoGL(eastl::string16 sFilename);
 	void					LoadTexturesIntoGL();
 

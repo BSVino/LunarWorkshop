@@ -1245,6 +1245,13 @@ CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, eastl::vect
 	m_pRemoveHiRes->SetClickedListener(this, RemoveHiRes);
 	AddControl(m_pRemoveHiRes);
 
+	m_pDiffuseCheckBox = new CCheckBox();
+	m_pDiffuseCheckBox->SetState(true, false);
+	AddControl(m_pDiffuseCheckBox);
+
+	m_pDiffuseLabel = new CLabel(0, 0, 100, 100, L"Diffuse");
+	AddControl(m_pDiffuseLabel);
+
 	m_pAOCheckBox = new CCheckBox();
 	m_pAOCheckBox->SetState(true, false);
 	AddControl(m_pAOCheckBox);
@@ -1408,13 +1415,19 @@ void CComboGeneratorPanel::Layout()
 	m_pRemoveHiRes->SetSize(60, 20);
 	m_pRemoveHiRes->SetPos(iTreeWidth+70, 225);
 
-	m_pAOLabel->SetPos(35, 220);
+	m_pDiffuseLabel->SetPos(35, 220);
+	m_pDiffuseLabel->EnsureTextFits();
+	m_pDiffuseLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pDiffuseLabel->SetWrap(false);
+	m_pDiffuseCheckBox->SetPos(20, 220 + m_pDiffuseLabel->GetHeight()/2 - m_pDiffuseCheckBox->GetHeight()/2);
+
+	m_pAOLabel->SetPos(35, 250);
 	m_pAOLabel->EnsureTextFits();
 	m_pAOLabel->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pAOLabel->SetWrap(false);
-	m_pAOCheckBox->SetPos(20, 220 + m_pAOLabel->GetHeight()/2 - m_pAOCheckBox->GetHeight()/2);
+	m_pAOCheckBox->SetPos(20, 250 + m_pAOLabel->GetHeight()/2 - m_pAOCheckBox->GetHeight()/2);
 
-	m_pAOOptions->SetPos(250, 220 + m_pAOLabel->GetHeight()/2 - m_pAOOptions->GetHeight()/2);
+	m_pAOOptions->SetPos(250, 250 + m_pAOLabel->GetHeight()/2 - m_pAOOptions->GetHeight()/2);
 	m_pAOOptions->SetSize(60, 20);
 	m_pAOOptions->SetText(L"Options...");
 
@@ -1465,11 +1478,11 @@ void CComboGeneratorPanel::Layout()
 
 	m_pGroundOcclusionCheckBox->SetPos(10, iControlY + m_pGroundOcclusionLabel->GetHeight()/2 - m_pGroundOcclusionCheckBox->GetHeight()/2);
 
-	m_pNormalLabel->SetPos(35, 250);
+	m_pNormalLabel->SetPos(35, 280);
 	m_pNormalLabel->EnsureTextFits();
 	m_pNormalLabel->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pNormalLabel->SetWrap(false);
-	m_pNormalCheckBox->SetPos(20, 250 + m_pNormalLabel->GetHeight()/2 - m_pNormalCheckBox->GetHeight()/2);
+	m_pNormalCheckBox->SetPos(20, 280 + m_pNormalLabel->GetHeight()/2 - m_pNormalCheckBox->GetHeight()/2);
 
 	m_pGenerate->SetSize(100, 33);
 	m_pGenerate->SetPos(GetWidth()/2 - m_pGenerate->GetWidth()/2, GetHeight() - (int)(m_pGenerate->GetHeight()*3));
@@ -1592,6 +1605,12 @@ void CComboGeneratorPanel::GenerateCallback()
 	m_oGenerator.SetSize(iSize, iSize);
 	m_oGenerator.ClearMethods();
 
+	if (m_pDiffuseCheckBox->GetState())
+	{
+		m_oGenerator.AddDiffuse();
+		CModelWindow::Get()->SetDisplayTexture(true);
+	}
+
 	if (m_pAOCheckBox->GetState())
 	{
 		m_oGenerator.AddAO(
@@ -1613,21 +1632,32 @@ void CComboGeneratorPanel::GenerateCallback()
 	m_oGenerator.SetWorkListener(this);
 	m_oGenerator.Generate();
 
+	size_t iDiffuse = 0;
 	size_t iAO = 0;
 	size_t iNormal = 0;
 	if (m_oGenerator.DoneGenerating())
 	{
+		iDiffuse = m_oGenerator.GenerateDiffuse();
 		iAO = m_oGenerator.GenerateAO();
 		iNormal = m_oGenerator.GenerateNormal();
 	}
 
 	for (size_t i = 0; i < m_paoMaterials->size(); i++)
 	{
+		size_t& iDiffuseTexture = (*m_paoMaterials)[i].m_iBase;
 		size_t& iAOTexture = (*m_paoMaterials)[i].m_iAO;
 		size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal;
 
 		if (!m_pScene->GetMaterial(i)->IsVisible())
 			continue;
+
+		if (iDiffuseTexture)
+			glDeleteTextures(1, &iDiffuseTexture);
+
+		if (m_oGenerator.DoneGenerating())
+			iDiffuseTexture = iDiffuse;
+		else
+			iDiffuseTexture = 0;
 
 		if (iAOTexture)
 			glDeleteTextures(1, &iAOTexture);
@@ -1703,13 +1733,20 @@ void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 
 	if (m_oGenerator.IsGenerating() && CModelWindow::Get()->GetTime() - flLastGenerate > 0.5f)
 	{
+		size_t iDiffuse = m_oGenerator.GenerateDiffuse(true);
 		size_t iAO = m_oGenerator.GenerateAO(true);
 		size_t iNormal = m_oGenerator.GenerateNormal(true);
 
 		for (size_t i = 0; i < m_paoMaterials->size(); i++)
 		{
+			size_t& iDiffuseTexture = (*m_paoMaterials)[i].m_iBase;
 			size_t& iAOTexture = (*m_paoMaterials)[i].m_iAO;
 			size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal;
+
+			if (iDiffuseTexture)
+				glDeleteTextures(1, &iDiffuseTexture);
+
+			iDiffuseTexture = iDiffuse;
 
 			if (iAOTexture)
 				glDeleteTextures(1, &iAOTexture);

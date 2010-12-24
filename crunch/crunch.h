@@ -22,10 +22,13 @@ public:
 public:
 	virtual void			SetSize(size_t iWidth, size_t iHeight);
 
+	virtual void			PreGenerate() {};
+
 	virtual void			GenerateTexel(size_t iTexel, CConversionMeshInstance* pMeshInstance, CConversionFace* pFace, CConversionVertex* pV1, CConversionVertex* pV2, CConversionVertex* pV3, class raytrace::CTraceResult* tr, const Vector& vecUVPosition, class raytrace::CRaytracer* pTracer) {};
 
 	virtual void			PostGenerate() {};
 
+	virtual size_t			GenerateDiffuse(bool bInMedias = false) { return 0; };
 	virtual size_t			GenerateNormal(bool bInMedias = false) { return 0; };
 	virtual size_t			GenerateAO(bool bInMedias = false) { return 0; };
 
@@ -37,6 +40,37 @@ protected:
 
 	size_t					m_iWidth;
 	size_t					m_iHeight;
+};
+
+class CTexelDiffuseMethod : public CTexelMethod
+{
+	DECLARE_CLASS(CTexelDiffuseMethod, CTexelMethod);
+
+public:
+							CTexelDiffuseMethod(class CTexelGenerator* pGenerator);
+	virtual 				~CTexelDiffuseMethod();
+
+public:
+	virtual void			SetSize(size_t iWidth, size_t iHeight);
+
+	virtual void			PreGenerate();
+
+	virtual void			GenerateTexel(size_t iTexel, CConversionMeshInstance* pMeshInstance, CConversionFace* pFace, CConversionVertex* pV1, CConversionVertex* pV2, CConversionVertex* pV3, class raytrace::CTraceResult* tr, const Vector& vecUVPosition, class raytrace::CRaytracer* pTracer);
+
+	virtual void			PostGenerate();
+	void					Bleed();
+
+	virtual size_t			GenerateDiffuse(bool bInMedias = false);
+
+	virtual eastl::string16	FileSuffix() { return L"diffuse"; };
+	virtual void*			GetData();
+
+protected:
+	Vector*					m_avecDiffuseValues;
+	Vector*					m_avecDiffuseGeneratedValues;
+	size_t*					m_aiDiffuseReads;
+
+	eastl::vector<size_t>	m_aiTextures;
 };
 
 class CTexelAOMethod : public CTexelMethod
@@ -114,6 +148,7 @@ public:
 	void					SetModels(const eastl::vector<CConversionMeshInstance*>& apHiRes, const eastl::vector<CConversionMeshInstance*>& apLoRes);
 
 	void					ClearMethods();
+	void					AddDiffuse();
 	void					AddAO(size_t iSamples, bool bRandomize, float flRayFalloff, bool bGroundOcclusion, size_t iBleed);
 	void					AddNormal();
 
@@ -128,9 +163,11 @@ public:
 	bool					Texel(size_t w, size_t h, size_t& iTexel, size_t tw, size_t th, bool* abMask = NULL);
 
 	CParallelizer*			GetParallelizer() { return m_pWorkParallelizer; }
+	CConversionScene*		GetScene() { return m_pScene; }
 
 	void					MarkTexelUsed(size_t iTexel) { m_abTexelMask[iTexel] = true; }
 
+	size_t					GenerateDiffuse(bool bInMedias = false);
 	size_t					GenerateAO(bool bInMedias = false);
 	size_t					GenerateNormal(bool bInMedias = false);
 
@@ -140,6 +177,8 @@ public:
 	bool					DoneGenerating() { return m_bDoneGenerating; }
 	void					StopGenerating() { m_bStopGenerating = true; }
 	bool					IsStopped() { return m_bStopGenerating; }
+
+	const eastl::vector<CConversionMeshInstance*>&	GetHiResMeshInstances() { return m_apHiRes; }
 
 protected:
 	CConversionScene*		m_pScene;
