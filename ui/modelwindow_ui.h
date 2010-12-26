@@ -317,7 +317,7 @@ protected:
 	static CAOPanel*		s_pColorAOPanel;
 };
 
-class CNormalPanel : public CMovablePanel, public IWorkListener
+class CNormalPanel : public CMovablePanel
 {
 public:
 								CNormalPanel(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
@@ -334,22 +334,12 @@ public:
 
 	virtual bool				KeyPressed(int iKey);
 
-	virtual void				BeginProgress();
-	virtual void				SetAction(const wchar_t* pszAction, size_t iTotalProgress);
-	virtual void				WorkProgress(size_t iProgress, bool bForceDraw = false);
-	virtual void				EndProgress();
-
 	virtual bool				IsGenerating() { return m_oGenerator.IsGenerating(); }
 	virtual bool				DoneGenerating() { return m_oGenerator.DoneGenerating(); }
 
 	EVENT_CALLBACK(CNormalPanel,	Generate);
 	EVENT_CALLBACK(CNormalPanel,	SaveMap);
-	EVENT_CALLBACK(CNormalPanel,	AddLoRes);
-	EVENT_CALLBACK(CNormalPanel,	AddHiRes);
-	EVENT_CALLBACK(CNormalPanel,	RemoveLoRes);
-	EVENT_CALLBACK(CNormalPanel,	RemoveHiRes);
-	EVENT_CALLBACK(CNormalPanel,	AddLoResMesh);
-	EVENT_CALLBACK(CNormalPanel,	AddHiResMesh);
+	EVENT_CALLBACK(CNormalPanel,	SetupNormal2);
 	EVENT_CALLBACK(CNormalPanel,	UpdateNormal2);
 
 	static void					Open(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
@@ -357,41 +347,30 @@ public:
 
 protected:
 	CConversionScene*			m_pScene;
-	eastl::vector<CMaterial>*		m_paoMaterials;
+	eastl::vector<CMaterial>*	m_paoMaterials;
 
 	CNormalGenerator			m_oGenerator;
 
-	CLabel*						m_pSizeLabel;
-	CScrollSelector<int>*		m_pSizeSelector;
+	CLabel*						m_pMaterialsLabel;
+	CTree*						m_pMaterials;
 
-	CLabel*						m_pLoResLabel;
-	CTree*						m_pLoRes;
+	CLabel*						m_pProgressLabel;
 
-	CLabel*						m_pHiResLabel;
-	CTree*						m_pHiRes;
-
-	eastl::vector<CConversionMeshInstance*>	m_apLoResMeshes;
-	eastl::vector<CConversionMeshInstance*>	m_apHiResMeshes;
-
-	CButton*					m_pAddLoRes;
-	CButton*					m_pAddHiRes;
-
-	CButton*					m_pRemoveLoRes;
-	CButton*					m_pRemoveHiRes;
-
-	CLabel*						m_pTextureLabel;
-	CCheckBox*					m_pTextureCheckBox;
+	CScrollSelector<float>*		m_pDepthSelector;
+	CLabel*						m_pDepthLabel;
 
 	CScrollSelector<float>*		m_pHiDepthSelector;
 	CLabel*						m_pHiDepthLabel;
 
+	CScrollSelector<float>*		m_pMidDepthSelector;
+	CLabel*						m_pMidDepthLabel;
+
 	CScrollSelector<float>*		m_pLoDepthSelector;
 	CLabel*						m_pLoDepthLabel;
 
-	CButton*					m_pGenerate;
 	CButton*					m_pSave;
 
-	class CMeshInstancePicker*	m_pMeshInstancePicker;
+	class CMaterialPicker*		m_pMaterialPicker;
 
 	static CNormalPanel*		s_pNormalPanel;
 };

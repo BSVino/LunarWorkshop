@@ -38,7 +38,7 @@ void CModelWindow::InitUI()
 	pTools->AddSubmenu(L"Generate all maps", this, GenerateCombo);
 	pTools->AddSubmenu(L"Generate AO map", this, GenerateAO);
 	pTools->AddSubmenu(L"Generate color AO map", this, GenerateColorAO);
-	pTools->AddSubmenu(L"Generate normal map", this, GenerateNormal);
+	pTools->AddSubmenu(L"Generate normal from texture", this, GenerateNormal);
 
 	pHelp->AddSubmenu(L"Help", this, Help);
 	pHelp->AddSubmenu(L"Register...", this, Register);
@@ -1915,72 +1915,59 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, eastl::vector<CMaterial>* p
 	m_pScene = pScene;
 	m_paoMaterials = paoMaterials;
 
-	m_pMeshInstancePicker = NULL;
-
 	SetSize(400, 450);
 	SetPos(GetParent()->GetWidth() - GetWidth() - 50, GetParent()->GetHeight() - GetHeight() - 100);
 
-	m_pSizeLabel = new CLabel(0, 0, 32, 32, L"Size");
-	AddControl(m_pSizeLabel);
+	m_pMaterialsLabel = new CLabel(0, 0, 32, 32, L"Choose A Material To Generate From:");
+	AddControl(m_pMaterialsLabel);
 
-	m_pSizeSelector = new CScrollSelector<int>();
-#ifdef _DEBUG
-	m_pSizeSelector->AddSelection(CScrollSelection<int>(16, L"16x16"));
-	m_pSizeSelector->AddSelection(CScrollSelection<int>(32, L"32x32"));
-#endif
-	m_pSizeSelector->AddSelection(CScrollSelection<int>(64, L"64x64"));
-	m_pSizeSelector->AddSelection(CScrollSelection<int>(128, L"128x128"));
-	m_pSizeSelector->AddSelection(CScrollSelection<int>(256, L"256x256"));
-	m_pSizeSelector->AddSelection(CScrollSelection<int>(512, L"512x512"));
-	m_pSizeSelector->AddSelection(CScrollSelection<int>(1024, L"1024x1024"));
-	m_pSizeSelector->AddSelection(CScrollSelection<int>(2048, L"2048x2048"));
-	m_pSizeSelector->AddSelection(CScrollSelection<int>(4096, L"4096x4096"));
-	m_pSizeSelector->SetSelection(4);
-	AddControl(m_pSizeSelector);
+	m_pMaterials = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
+	m_pMaterials->SetBackgroundColor(g_clrBox);
+	AddControl(m_pMaterials);
 
-	m_pLoResLabel = new CLabel(0, 0, 32, 32, L"Low Resolution Meshes");
-	AddControl(m_pLoResLabel);
+	m_pProgressLabel = new CLabel(0, 0, 100, 100, L"");
+	AddControl(m_pProgressLabel);
 
-	m_pLoRes = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
-	m_pLoRes->SetBackgroundColor(g_clrBox);
-	AddControl(m_pLoRes);
+	m_pDepthLabel = new CLabel(0, 0, 32, 32, L"Overall Depth");
+	AddControl(m_pDepthLabel);
 
-	m_pHiResLabel = new CLabel(0, 0, 32, 32, L"High Resolution Meshes");
-	AddControl(m_pHiResLabel);
-
-	m_pHiRes = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
-	m_pHiRes->SetBackgroundColor(g_clrBox);
-	AddControl(m_pHiRes);
-
-	m_pAddLoRes = new CButton(0, 0, 100, 100, L"Add");
-	m_pAddLoRes->SetClickedListener(this, AddLoRes);
-	AddControl(m_pAddLoRes);
-
-	m_pAddHiRes = new CButton(0, 0, 100, 100, L"Add");
-	m_pAddHiRes->SetClickedListener(this, AddHiRes);
-	AddControl(m_pAddHiRes);
-
-	m_pRemoveLoRes = new CButton(0, 0, 100, 100, L"Remove");
-	m_pRemoveLoRes->SetClickedListener(this, RemoveLoRes);
-	AddControl(m_pRemoveLoRes);
-
-	m_pRemoveHiRes = new CButton(0, 0, 100, 100, L"Remove");
-	m_pRemoveHiRes->SetClickedListener(this, RemoveHiRes);
-	AddControl(m_pRemoveHiRes);
-
-	m_pTextureCheckBox = new CCheckBox();
-	m_pTextureCheckBox->SetClickedListener(this, UpdateNormal2);
-	m_pTextureCheckBox->SetUnclickedListener(this, UpdateNormal2);
-	AddControl(m_pTextureCheckBox);
-
-	m_pTextureLabel = new CLabel(0, 0, 100, 100, L"Use texture");
-	AddControl(m_pTextureLabel);
+	m_pDepthSelector = new CScrollSelector<float>();
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.0f, L"0%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.025f, L"2.5%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.05f, L"5%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.075f, L"7.5%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.1f, L"10%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.2f, L"20%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.3f, L"30%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.4f, L"40%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.5f, L"50%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.6f, L"60%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.7f, L"70%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.8f, L"80%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.9f, L"90%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.0f, L"100%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.1f, L"110%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.2f, L"120%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.3f, L"130%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.4f, L"140%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.5f, L"150%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.6f, L"160%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.7f, L"170%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.8f, L"180%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.9f, L"190%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(2.0f, L"200%"));
+	m_pDepthSelector->SetSelection(13);
+	m_pDepthSelector->SetSelectedListener(this, UpdateNormal2);
+	AddControl(m_pDepthSelector);
 
 	m_pHiDepthLabel = new CLabel(0, 0, 32, 32, L"Texture Hi-Freq Depth");
 	AddControl(m_pHiDepthLabel);
 
 	m_pHiDepthSelector = new CScrollSelector<float>();
 	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.0f, L"0%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.025f, L"2.5%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.05f, L"5%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.075f, L"7.5%"));
 	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.1f, L"10%"));
 	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.2f, L"20%"));
 	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.3f, L"30%"));
@@ -2001,15 +1988,50 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, eastl::vector<CMaterial>* p
 	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(1.8f, L"180%"));
 	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(1.9f, L"190%"));
 	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(2.0f, L"200%"));
-	m_pHiDepthSelector->SetSelection(10);
+	m_pHiDepthSelector->SetSelection(13);
 	m_pHiDepthSelector->SetSelectedListener(this, UpdateNormal2);
 	AddControl(m_pHiDepthSelector);
+
+	m_pMidDepthLabel = new CLabel(0, 0, 32, 32, L"Texture Mid-Freq Depth");
+	AddControl(m_pMidDepthLabel);
+
+	m_pMidDepthSelector = new CScrollSelector<float>();
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.0f, L"0%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.025f, L"2.5%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.05f, L"5%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.075f, L"7.5%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.1f, L"10%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.2f, L"20%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.3f, L"30%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.4f, L"40%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.5f, L"50%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.6f, L"60%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.7f, L"70%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.8f, L"80%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.9f, L"90%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.0f, L"100%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.1f, L"110%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.2f, L"120%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.3f, L"130%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.4f, L"140%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.5f, L"150%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.6f, L"160%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.7f, L"170%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.8f, L"180%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.9f, L"190%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(2.0f, L"200%"));
+	m_pMidDepthSelector->SetSelection(13);
+	m_pMidDepthSelector->SetSelectedListener(this, UpdateNormal2);
+	AddControl(m_pMidDepthSelector);
 
 	m_pLoDepthLabel = new CLabel(0, 0, 32, 32, L"Texture Lo-Freq Depth");
 	AddControl(m_pLoDepthLabel);
 
 	m_pLoDepthSelector = new CScrollSelector<float>();
 	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.0f, L"0%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.025f, L"2.5%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.05f, L"5%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.075f, L"7.5%"));
 	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.1f, L"10%"));
 	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.2f, L"20%"));
 	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.3f, L"30%"));
@@ -2030,13 +2052,9 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, eastl::vector<CMaterial>* p
 	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(1.8f, L"180%"));
 	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(1.9f, L"190%"));
 	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(2.0f, L"200%"));
-	m_pLoDepthSelector->SetSelection(10);
+	m_pLoDepthSelector->SetSelection(13);
 	m_pLoDepthSelector->SetSelectedListener(this, UpdateNormal2);
 	AddControl(m_pLoDepthSelector);
-
-	m_pGenerate = new CButton(0, 0, 100, 100, L"Generate");
-	m_pGenerate->SetClickedListener(this, Generate);
-	AddControl(m_pGenerate);
 
 	m_pSave = new CButton(0, 0, 100, 100, L"Save Map");
 	AddControl(m_pSave);
@@ -2051,58 +2069,55 @@ void CNormalPanel::Layout()
 {
 	int iSpace = 20;
 
-	m_pSizeLabel->EnsureTextFits();
+	m_pMaterialsLabel->EnsureTextFits();
 
-	int iSelectorSize = m_pSizeLabel->GetHeight() - 4;
-
-	m_pSizeSelector->SetSize(GetWidth() - m_pSizeLabel->GetWidth() - iSpace, iSelectorSize);
-
+	int iSelectorSize = m_pMaterialsLabel->GetHeight() - 4;
 	int iControlY = HEADER_HEIGHT;
 
-	m_pSizeSelector->SetPos(GetWidth() - m_pSizeSelector->GetWidth() - iSpace/2, iControlY);
-	m_pSizeLabel->SetPos(5, iControlY);
+	m_pMaterialsLabel->SetPos(5, iControlY);
 
 	int iTreeWidth = GetWidth()/2-15;
 
-	m_pLoResLabel->EnsureTextFits();
-	m_pLoResLabel->SetPos(10, 40);
+	m_pMaterials->ClearTree();
+	for (size_t i = 0; i < m_pScene->GetNumMaterials(); i++)
+	{
+		m_pMaterials->AddNode<CConversionMaterial>(m_pScene->GetMaterial(i)->GetName(), m_pScene->GetMaterial(i));
 
-	m_pLoRes->SetSize(iTreeWidth, 150);
-	m_pLoRes->SetPos(10, 70);
+		if (m_paoMaterials->size() > i && !m_paoMaterials->at(i).m_iBase)
+			m_pMaterials->GetNode(i)->m_pLabel->SetAlpha(100);
 
-	m_pAddLoRes->SetSize(40, 20);
-	m_pAddLoRes->SetPos(10, 225);
+		m_pMaterials->SetSelectedListener(this, SetupNormal2);
+	}
 
-	m_pRemoveLoRes->SetSize(60, 20);
-	m_pRemoveLoRes->SetPos(60, 225);
+	m_pMaterials->SetSize(iTreeWidth, 150);
+	m_pMaterials->SetPos(GetWidth()/2-iTreeWidth/2, 50);
 
-	m_pHiResLabel->EnsureTextFits();
-	m_pHiResLabel->SetPos(iTreeWidth+20, 40);
+	m_pProgressLabel->SetSize(1, 1);
+	m_pProgressLabel->SetPos(35, 220);
+	m_pProgressLabel->EnsureTextFits();
+	m_pProgressLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pProgressLabel->SetWrap(false);
 
-	m_pHiRes->SetSize(iTreeWidth, 150);
-	m_pHiRes->SetPos(iTreeWidth+20, 70);
+	m_pDepthLabel->SetPos(10, 290);
+	m_pDepthLabel->EnsureTextFits();
+	m_pDepthLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pDepthLabel->SetWrap(false);
+	m_pDepthSelector->SetPos(m_pDepthLabel->GetRight() + 10, 290 + m_pDepthLabel->GetHeight()/2 - m_pDepthSelector->GetHeight()/2);
+	m_pDepthSelector->SetRight(GetWidth() - 10);
 
-	m_pAddHiRes->SetSize(40, 20);
-	m_pAddHiRes->SetPos(iTreeWidth+20, 225);
-
-	m_pRemoveHiRes->SetSize(60, 20);
-	m_pRemoveHiRes->SetPos(iTreeWidth+70, 225);
-
-	m_pGenerate->SetSize(100, 33);
-	m_pGenerate->SetPos(GetWidth()/2 - m_pGenerate->GetWidth()/2, 260);
-
-	m_pTextureLabel->SetPos(35, 270);
-	m_pTextureLabel->EnsureTextFits();
-	m_pTextureLabel->SetAlign(CLabel::TA_LEFTCENTER);
-	m_pTextureLabel->SetWrap(false);
-	m_pTextureCheckBox->SetPos(20, 270 + m_pTextureLabel->GetHeight()/2 - m_pTextureCheckBox->GetHeight()/2);
-
-	m_pHiDepthLabel->SetPos(10, 330);
+	m_pHiDepthLabel->SetPos(10, 310);
 	m_pHiDepthLabel->EnsureTextFits();
 	m_pHiDepthLabel->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pHiDepthLabel->SetWrap(false);
-	m_pHiDepthSelector->SetPos(m_pHiDepthLabel->GetRight() + 10, 330 + m_pHiDepthLabel->GetHeight()/2 - m_pHiDepthSelector->GetHeight()/2);
+	m_pHiDepthSelector->SetPos(m_pHiDepthLabel->GetRight() + 10, 310 + m_pHiDepthLabel->GetHeight()/2 - m_pHiDepthSelector->GetHeight()/2);
 	m_pHiDepthSelector->SetRight(GetWidth() - 10);
+
+	m_pMidDepthLabel->SetPos(10, 330);
+	m_pMidDepthLabel->EnsureTextFits();
+	m_pMidDepthLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pMidDepthLabel->SetWrap(false);
+	m_pMidDepthSelector->SetPos(m_pMidDepthLabel->GetRight() + 10, 330 + m_pMidDepthLabel->GetHeight()/2 - m_pMidDepthSelector->GetHeight()/2);
+	m_pMidDepthSelector->SetRight(GetWidth() - 10);
 
 	m_pLoDepthLabel->SetPos(10, 350);
 	m_pLoDepthLabel->EnsureTextFits();
@@ -2115,39 +2130,12 @@ void CNormalPanel::Layout()
 	m_pSave->SetPos(GetWidth()/2 - m_pSave->GetWidth()/2, GetHeight() - (int)(m_pSave->GetHeight()*1.5f));
 	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
 
-	size_t i;
-	m_pLoRes->ClearTree();
-	if (!m_apLoResMeshes.size())
-		m_pLoRes->AddNode(L"No meshes. Click 'Add'");
-	else
-	{
-		for (i = 0; i < m_apLoResMeshes.size(); i++)
-		{
-			m_pLoRes->AddNode<CConversionMeshInstance>(m_apLoResMeshes[i]->GetMesh()->GetName(), m_apLoResMeshes[i]);
-			m_pLoRes->GetNode(i)->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
-		}
-	}
-
-	m_pHiRes->ClearTree();
-	if (!m_apHiResMeshes.size())
-		m_pHiRes->AddNode(L"No meshes. Click 'Add'");
-	else
-	{
-		for (i = 0; i < m_apHiResMeshes.size(); i++)
-		{
-			m_pHiRes->AddNode<CConversionMeshInstance>(m_apHiResMeshes[i]->GetMesh()->GetName(), m_apHiResMeshes[i]);
-			m_pHiRes->GetNode(i)->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
-		}
-	}
-
 	CMovablePanel::Layout();
 }
 
 void CNormalPanel::UpdateScene()
 {
-	m_apLoResMeshes.clear();
-	m_apHiResMeshes.clear();
-	m_pTextureCheckBox->SetState(false, false);
+	Layout();
 }
 
 void CNormalPanel::Think()
@@ -2176,36 +2164,24 @@ void CNormalPanel::Think()
 			CModelWindow::Get()->SetDisplayNormal(true);
 	}
 
-	bool bFoundMaterial = false;
-	for (size_t iMesh = 0; iMesh < m_apLoResMeshes.size(); iMesh++)
+	if (m_oGenerator.IsSettingUp())
 	{
-		CConversionMeshInstance* pMeshInstance = m_apLoResMeshes[iMesh];
-
-		for (size_t iMaterialStub = 0; iMaterialStub < pMeshInstance->GetMesh()->GetNumMaterialStubs(); iMaterialStub++)
-		{
-			size_t iMaterial = pMeshInstance->GetMappedMaterial(iMaterialStub)->m_iMaterial;
-
-			// Materials not loaded yet?
-			if (!m_paoMaterials->size())
-				continue;
-
-			bFoundMaterial = true;
-			break;
-		}
+		eastl::string16 s;
+		s.sprintf(L"Setting up... %d%%", (int)(m_oGenerator.GetSetupProgress()*100));
+		m_pProgressLabel->SetText(s);
+		m_pSave->SetVisible(false);
 	}
-
-	m_pTextureLabel->SetText(L"Use texture");
-	if (!m_apLoResMeshes.size())
-		m_pTextureLabel->AppendText(L" (Add a low resolution mesh first!)");
-	else if (!bFoundMaterial)
-		m_pTextureLabel->AppendText(L" (None of those meshes have materials!)");
 	else if (m_oGenerator.IsGeneratingNewNormal2())
 	{
 		eastl::string16 s;
-		s.sprintf(L" (Generating... %d%%)", (int)(m_oGenerator.GetNormal2GenerationProgress()*100));
-		m_pTextureLabel->AppendText(s);
+		s.sprintf(L"Generating... %d%%", (int)(m_oGenerator.GetNormal2GenerationProgress()*100));
+		m_pProgressLabel->SetText(s);
 		m_pSave->SetVisible(false);
 	}
+	else
+		m_pProgressLabel->SetText(L"");
+
+	m_oGenerator.Think();
 
 	CMovablePanel::Think();
 }
@@ -2216,7 +2192,7 @@ void CNormalPanel::Paint(int x, int y, int w, int h)
 
 	if (!m_bMinimized)
 	{
-		CRootPanel::PaintRect(x+10, y+305, w-20, 1, g_clrBoxHi);
+		CRootPanel::PaintRect(x+10, y+295, w-20, 1, g_clrBoxHi);
 		CRootPanel::PaintRect(x+10, y+385, w-20, 1, g_clrBoxHi);
 	}
 }
@@ -2231,64 +2207,6 @@ bool CNormalPanel::KeyPressed(int iKey)
 	}
 	else
 		return CMovablePanel::KeyPressed(iKey);
-}
-
-void CNormalPanel::GenerateCallback()
-{
-	if (m_oGenerator.IsGenerating())
-	{
-		m_pSave->SetVisible(false);
-		m_oGenerator.StopGenerating();
-		return;
-	}
-
-	m_pSave->SetVisible(false);
-
-	m_pGenerate->SetText(L"Cancel");
-
-	CModelWindow::Get()->SetDisplayNormal(true);
-
-	// Disappear all of the hi-res meshes so we can see the lo res better.
-	for (size_t m = 0; m < m_apHiResMeshes.size(); m++)
-		m_apHiResMeshes[m]->SetVisible(false);
-
-	for (size_t m = 0; m < m_apLoResMeshes.size(); m++)
-	{
-		if (m_apLoResMeshes[m]->GetMesh()->GetNumFaces() > 10000)
-			continue;
-
-		m_apLoResMeshes[m]->SetVisible(true);
-	}
-
-	int iSize = m_pSizeSelector->GetSelectionValue();
-	m_oGenerator.SetSize(iSize, iSize);
-	m_oGenerator.SetModels(m_apHiResMeshes, m_apLoResMeshes);
-	m_oGenerator.SetWorkListener(this);
-	m_oGenerator.Generate();
-
-	size_t iNormal = 0;
-	if (m_oGenerator.DoneGenerating())
-		iNormal = m_oGenerator.GenerateTexture();
-
-	for (size_t i = 0; i < m_paoMaterials->size(); i++)
-	{
-		size_t& iNormalTexture =(*m_paoMaterials)[i].m_iNormal;
-
-		if (!m_pScene->GetMaterial(i)->IsVisible())
-			continue;
-
-		if (iNormalTexture)
-			glDeleteTextures(1, &iNormalTexture);
-
-		if (m_oGenerator.DoneGenerating())
-			iNormalTexture = iNormal;
-		else
-			iNormalTexture = 0;
-	}
-
-	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
-
-	m_pGenerate->SetText(L"Generate");
 }
 
 void CNormalPanel::SaveMapCallback()
@@ -2314,186 +2232,24 @@ void CNormalPanel::SaveMapCallback()
 	CRootPanel::Get()->Layout();
 }
 
-void CNormalPanel::BeginProgress()
+void CNormalPanel::SetupNormal2Callback()
 {
-	CProgressBar::Get()->SetVisible(true);
-}
+	m_oGenerator.SetNormalTextureDepth(m_pDepthSelector->GetSelectionValue());
+	m_oGenerator.SetNormalTextureHiDepth(m_pHiDepthSelector->GetSelectionValue());
+	m_oGenerator.SetNormalTextureMidDepth(m_pMidDepthSelector->GetSelectionValue());
+	m_oGenerator.SetNormalTextureLoDepth(m_pLoDepthSelector->GetSelectionValue());
+	m_oGenerator.SetNormalTexture(true, m_pMaterials->GetSelectedNodeId());
 
-void CNormalPanel::SetAction(const wchar_t* pszAction, size_t iTotalProgress)
-{
-	CProgressBar::Get()->SetTotalProgress(iTotalProgress);
-	CProgressBar::Get()->SetAction(pszAction);
-	WorkProgress(0, true);
-}
-
-void CNormalPanel::WorkProgress(size_t iProgress, bool bForceDraw)
-{
-	static float flLastTime = 0;
-	static float flLastGenerate = 0;
-
-	// Don't update too often or it'll slow us down just because of the updates.
-	if (!bForceDraw && CModelWindow::Get()->GetTime() - flLastTime < 0.01f)
-		return;
-
-	CProgressBar::Get()->SetProgress(iProgress);
-
-	// We need to correct the viewport size before we push any events, or else any Layout() commands during
-	// button presses and the line will use the wrong viewport size.
-	glViewport(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
-
-	if (m_oGenerator.IsGenerating() && CModelWindow::Get()->GetTime() - flLastGenerate > 0.5f)
-	{
-		size_t iNormal = m_oGenerator.GenerateTexture(true);
-
-		for (size_t i = 0; i < m_paoMaterials->size(); i++)
-		{
-			size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal;
-
-			if (iNormalTexture)
-				glDeleteTextures(1, &iNormalTexture);
-
-			iNormalTexture = iNormal;
-		}
-
-		flLastGenerate = CModelWindow::Get()->GetTime();
-	}
-
-	CModelWindow::Get()->Render();
-	CRootPanel::Get()->Think(CModelWindow::Get()->GetTime());
-	CRootPanel::Get()->Paint(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
-	glfwSwapBuffers();
-
-	flLastTime = CModelWindow::Get()->GetTime();
-}
-
-void CNormalPanel::EndProgress()
-{
-	CProgressBar::Get()->SetVisible(false);
-}
-
-void CNormalPanel::AddLoResCallback()
-{
-	if (m_pMeshInstancePicker)
-		delete m_pMeshInstancePicker;
-
-	m_pMeshInstancePicker = new CMeshInstancePicker(this, AddLoResMesh);
-
-	int x, y, w, h, pw, ph;
-	GetAbsDimensions(x, y, w, h);
-	m_pMeshInstancePicker->GetSize(pw, ph);
-	m_pMeshInstancePicker->SetPos(x + w/2 - pw/2, y + h/2 - ph/2);
-}
-
-void CNormalPanel::AddHiResCallback()
-{
-	if (m_pMeshInstancePicker)
-		delete m_pMeshInstancePicker;
-
-	m_pMeshInstancePicker = new CMeshInstancePicker(this, AddHiResMesh);
-
-	int x, y, w, h, pw, ph;
-	GetAbsDimensions(x, y, w, h);
-	m_pMeshInstancePicker->GetSize(pw, ph);
-	m_pMeshInstancePicker->SetPos(x + w/2 - pw/2, y + h/2 - ph/2);
-}
-
-void CNormalPanel::AddLoResMeshCallback()
-{
-	CConversionMeshInstance* pMeshInstance = m_pMeshInstancePicker->GetPickedMeshInstance();
-	if (!pMeshInstance)
-		return;
-
-	size_t i;
-	for (i = 0; i < m_apLoResMeshes.size(); i++)
-		if (m_apLoResMeshes[i] == pMeshInstance)
-			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
-
-	for (i = 0; i < m_apHiResMeshes.size(); i++)
-		if (m_apHiResMeshes[i] == pMeshInstance)
-			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
-
-	m_apLoResMeshes.push_back(pMeshInstance);
-
-	delete m_pMeshInstancePicker;
-	m_pMeshInstancePicker = NULL;
-
-	Layout();
-
-	UpdateNormal2Callback();
-}
-
-void CNormalPanel::AddHiResMeshCallback()
-{
-	CConversionMeshInstance* pMeshInstance = m_pMeshInstancePicker->GetPickedMeshInstance();
-	if (!pMeshInstance)
-		return;
-
-	size_t i;
-	for (i = 0; i < m_apLoResMeshes.size(); i++)
-		if (m_apLoResMeshes[i] == pMeshInstance)
-			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
-
-	for (i = 0; i < m_apHiResMeshes.size(); i++)
-		if (m_apHiResMeshes[i] == pMeshInstance)
-			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
-
-	m_apHiResMeshes.push_back(pMeshInstance);
-
-	delete m_pMeshInstancePicker;
-	m_pMeshInstancePicker = NULL;
-
-	Layout();
-}
-
-void CNormalPanel::RemoveLoResCallback()
-{
-	CTreeNode* pNode = m_pLoRes->GetSelectedNode();
-	if (!pNode)
-		return;
-
-	CTreeNodeObject<CConversionMeshInstance>* pMeshNode = dynamic_cast<CTreeNodeObject<CConversionMeshInstance>*>(pNode);
-	if (!pMeshNode)
-		return;
-
-	for (size_t i = 0; i < m_apLoResMeshes.size(); i++)
-		if (m_apLoResMeshes[i] == pMeshNode->GetObject())
-			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
-
-	Layout();
-
-	UpdateNormal2Callback();
-}
-
-void CNormalPanel::RemoveHiResCallback()
-{
-	CTreeNode* pNode = m_pHiRes->GetSelectedNode();
-	if (!pNode)
-		return;
-
-	CTreeNodeObject<CConversionMeshInstance>* pMeshNode = dynamic_cast<CTreeNodeObject<CConversionMeshInstance>*>(pNode);
-	if (!pMeshNode)
-		return;
-
-	for (size_t i = 0; i < m_apHiResMeshes.size(); i++)
-		if (m_apHiResMeshes[i] == pMeshNode->GetObject())
-			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
-
-	Layout();
+	CModelWindow::Get()->SetDisplayNormal(true);
 }
 
 void CNormalPanel::UpdateNormal2Callback()
 {
-	m_oGenerator.SetModels(m_apHiResMeshes, m_apLoResMeshes);
-
+	m_oGenerator.SetNormalTextureDepth(m_pDepthSelector->GetSelectionValue());
 	m_oGenerator.SetNormalTextureHiDepth(m_pHiDepthSelector->GetSelectionValue());
+	m_oGenerator.SetNormalTextureMidDepth(m_pMidDepthSelector->GetSelectionValue());
 	m_oGenerator.SetNormalTextureLoDepth(m_pLoDepthSelector->GetSelectionValue());
-	m_oGenerator.SetNormalTexture(m_pTextureCheckBox->GetState());
-
-	if (!m_pTextureCheckBox->GetState())
-		m_pSave->SetVisible(false);
-
-	if (m_pTextureCheckBox->GetState())
-		CModelWindow::Get()->SetDisplayNormal(true);
+	m_oGenerator.UpdateNormal2();
 }
 
 void CNormalPanel::Open(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)

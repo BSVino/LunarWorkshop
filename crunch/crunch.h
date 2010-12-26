@@ -313,18 +313,8 @@ public:
 							~CNormalGenerator();
 
 public:
-	void					SetSize(size_t iWidth, size_t iHeight);
-	void					SetModels(const eastl::vector<CConversionMeshInstance*>& apHiRes, const eastl::vector<CConversionMeshInstance*>& apLoRes);
+	void					Think();
 
-	void					SetWorkListener(IWorkListener* pListener) { m_pWorkListener = pListener; };
-
-	void					Generate();
-	void					GenerateTriangleByTexel(CConversionMeshInstance* pMeshInstance, CConversionFace* pFace, size_t v1, size_t v2, size_t v3, class raytrace::CRaytracer* pTracer, size_t& iRendered);
-	void					FindNormalAtTexel(CConversionMeshInstance* pMeshInstance, CConversionFace* pFace, CConversionVertex* pV1, CConversionVertex* pV2, CConversionVertex* pV3, size_t i, size_t j, raytrace::CRaytracer* pTracer);
-	void					Bleed();
-
-	void					TexturizeValues(Vector* avecTexture);
-	size_t					GenerateTexture(bool bInMedias = false);
 	void					SaveToFile(const wchar_t* pszFilename);
 
 	bool					Texel(size_t w, size_t h, size_t& iTexel, bool bUseMask = true);
@@ -336,12 +326,20 @@ public:
 	bool					IsStopped() { return m_bStopGenerating; }
 
 	void					NormalizeHeightValue(size_t x, size_t y);
-	float					GetLowPassValue(size_t x, size_t y);
+	void					GeneratePass(int x, int y);
+	void					Setup();
+	bool					IsSettingUp();
+	bool					IsSetupComplete();
+	float					GetSetupProgress();
+
+	void					SetNormalTextureDepth(float flDepth) { m_flNormalTextureDepth = flDepth; };
 	void					SetNormalTextureHiDepth(float flDepth) { m_flNormalTextureHiDepth = flDepth; };
+	void					SetNormalTextureMidDepth(float flDepth) { m_flNormalTextureMidDepth = flDepth; };
 	void					SetNormalTextureLoDepth(float flDepth) { m_flNormalTextureLoDepth = flDepth; };
-	void					SetNormalTexture(bool bNormalTexture);
+	void					SetNormalTexture(bool bNormalTexture, size_t iMaterial);
+	void					UpdateNormal2();
+	void					StartGenerationJobs();
 	void					RegenerateNormal2Texture();
-	void					NormalizeHeightValues(size_t w, size_t h, const float* aflTexture, float* aflNormals);
 	bool					IsNewNormal2Available();
 	bool					IsGeneratingNewNormal2();
 	float					GetNormal2GenerationProgress();
@@ -351,36 +349,30 @@ protected:
 	CConversionScene*		m_pScene;
 	eastl::vector<CMaterial>*	m_paoMaterials;
 
-	eastl::vector<CConversionMeshInstance*>	m_apHiRes;
-	eastl::vector<CConversionMeshInstance*>	m_apLoRes;
-
-	size_t					m_iWidth;
-	size_t					m_iHeight;
-
 	IWorkListener*			m_pWorkListener;
 
 	bool*					m_bPixelMask;
-
-	Vector*					m_avecNormalValues;
-	Vector*					m_avecNormalGeneratedValues;
 
 	bool					m_bIsGenerating;
 	bool					m_bDoneGenerating;
 	bool					m_bStopGenerating;
 
+	float					m_flNormalTextureDepth;
 	float					m_flNormalTextureHiDepth;
+	float					m_flNormalTextureMidDepth;
 	float					m_flNormalTextureLoDepth;
 	size_t					m_iNormal2GLId;
 	size_t					m_iNormal2Width;
 	size_t					m_iNormal2Height;
 	float*					m_aflTextureTexels;
+	float*					m_aflMidPassTexels;
 	float*					m_aflLowPassTexels;
-	bool*					m_abLowPassMask;
 	float*					m_aflNormal2Texels;
 	bool					m_bNewNormal2Available;
 	bool					m_bNormal2Generated;
+	bool					m_bNormal2Changed;
 
-	CParallelizer*			m_pNormalParallelizer;
+	CParallelizer*			m_pGenerationParallelizer;
 	CParallelizer*			m_pNormal2Parallelizer;
 };
 
