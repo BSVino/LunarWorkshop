@@ -229,9 +229,9 @@ void CTexelGenerator::Generate()
 			break;
 	}
 
-	delete pTracer;
-
 	delete m_pWorkParallelizer;
+
+	delete pTracer;
 
 	for (size_t i = 0; i < m_apMethods.size(); i++)
 		m_apMethods[i]->PostGenerate();
