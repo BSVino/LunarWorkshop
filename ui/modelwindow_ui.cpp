@@ -692,7 +692,6 @@ CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, eastl::vector<CMateria
 		m_pAOMethodSelector = new CScrollSelector<int>();
 		m_pAOMethodSelector->AddSelection(CScrollSelection<int>(AOMETHOD_SHADOWMAP, L"Shadow map (fast!)"));
 		m_pAOMethodSelector->AddSelection(CScrollSelection<int>(AOMETHOD_RAYTRACE, L"Raytraced (slow!)"));
-		m_pAOMethodSelector->AddSelection(CScrollSelection<int>(AOMETHOD_TRIDISTANCE, L"Tri distance"));
 		m_pAOMethodSelector->SetSelectedListener(this, AOMethod);
 		AddControl(m_pAOMethodSelector);
 
@@ -1220,6 +1219,7 @@ CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, eastl::vect
 
 	m_pLoRes = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
 	m_pLoRes->SetBackgroundColor(g_clrBox);
+	m_pLoRes->SetDroppedListener(this, DroppedLoResMesh);
 	AddControl(m_pLoRes);
 
 	m_pHiResLabel = new CLabel(0, 0, 32, 32, L"High Resolution Meshes");
@@ -1227,6 +1227,7 @@ CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, eastl::vect
 
 	m_pHiRes = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
 	m_pHiRes->SetBackgroundColor(g_clrBox);
+	m_pHiRes->SetDroppedListener(this, DroppedHiResMesh);
 	AddControl(m_pHiRes);
 
 	m_pAddLoRes = new CButton(0, 0, 100, 100, L"Add");
@@ -1877,6 +1878,53 @@ void CComboGeneratorPanel::RemoveHiResCallback()
 	for (size_t i = 0; i < m_apHiResMeshes.size(); i++)
 		if (m_apHiResMeshes[i] == pMeshNode->GetObject())
 			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
+
+	Layout();
+}
+
+void CComboGeneratorPanel::DroppedLoResMeshCallback()
+{
+	IDraggable* pDraggable = CRootPanel::Get()->GetCurrentDraggable();
+	CConversionMeshInstance* pMeshInstance = dynamic_cast<CTreeNodeObject<CConversionMeshInstance>*>(pDraggable)->GetObject();
+
+	if (!pMeshInstance)
+		return;
+
+	size_t i;
+	for (i = 0; i < m_apLoResMeshes.size(); i++)
+		if (m_apLoResMeshes[i] == pMeshInstance)
+			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
+
+	for (i = 0; i < m_apHiResMeshes.size(); i++)
+		if (m_apHiResMeshes[i] == pMeshInstance)
+			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
+
+	m_apLoResMeshes.push_back(pMeshInstance);
+
+	Layout();
+}
+
+void CComboGeneratorPanel::DroppedHiResMeshCallback()
+{
+	IDraggable* pDraggable = CRootPanel::Get()->GetCurrentDraggable();
+	CConversionMeshInstance* pMeshInstance = dynamic_cast<CTreeNodeObject<CConversionMeshInstance>*>(pDraggable)->GetObject();
+
+	if (!pMeshInstance)
+		return;
+
+	size_t i;
+	for (i = 0; i < m_apLoResMeshes.size(); i++)
+		if (m_apLoResMeshes[i] == pMeshInstance)
+			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
+
+	for (i = 0; i < m_apHiResMeshes.size(); i++)
+		if (m_apHiResMeshes[i] == pMeshInstance)
+			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
+
+	m_apHiResMeshes.push_back(pMeshInstance);
+
+	delete m_pMeshInstancePicker;
+	m_pMeshInstancePicker = NULL;
 
 	Layout();
 }

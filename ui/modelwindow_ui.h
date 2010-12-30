@@ -185,6 +185,8 @@ public:
 	EVENT_CALLBACK(CComboGeneratorPanel,	RemoveHiRes);
 	EVENT_CALLBACK(CComboGeneratorPanel,	AddLoResMesh);
 	EVENT_CALLBACK(CComboGeneratorPanel,	AddHiResMesh);
+	EVENT_CALLBACK(CComboGeneratorPanel,	DroppedLoResMesh);
+	EVENT_CALLBACK(CComboGeneratorPanel,	DroppedHiResMesh);
 
 	static void					Open(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
 	static CComboGeneratorPanel*	Get() { return s_pComboGeneratorPanel; }

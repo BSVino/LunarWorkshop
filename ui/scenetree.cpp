@@ -107,6 +107,7 @@ void CSceneTreePanel::AddNodeToTree(glgui::CTreeNode* pTreeNode, CConversionScen
 		CTreeNode* pMeshInstanceNode = pTreeNode->GetNode(iNode)->GetNode(iMeshInstanceNode);
 		pMeshInstanceNode->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
 		pMeshInstanceNode->AddVisibilityButton();
+		pMeshInstanceNode->SetDraggable(true);
 
 		for (size_t s = 0; s < pSceneNode->GetMeshInstance(m)->GetMesh()->GetNumMaterialStubs(); s++)
 		{
