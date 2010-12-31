@@ -100,6 +100,7 @@
     <ClCompile Include="..\common\configfile.cpp" />
     <ClCompile Include="..\common\eastl.cpp" />
     <ClCompile Include="..\common\mtrand.cpp" />
+    <ClCompile Include="..\common\sockets\sockets.cpp" />
     <ClCompile Include="..\EASTL\src\allocator.cpp" />
     <ClCompile Include="..\EASTL\src\assert.cpp" />
     <ClCompile Include="..\EASTL\src\fixed_pool.cpp" />
@@ -129,6 +130,7 @@
   <ItemGroup>
     <ClInclude Include="..\common\configfile.h" />
     <ClInclude Include="..\common\mtrand.h" />
+    <ClInclude Include="..\common\sockets\sockets.h" />
     <ClInclude Include="..\glgui\glgui.h" />
     <ClInclude Include="..\license\license.h" />
     <ClInclude Include="..\tinker\application.h" />

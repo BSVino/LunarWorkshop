@@ -126,6 +126,9 @@
     <ClCompile Include="crunch\crunch.cpp">
       <Filter>Source Files\crunch</Filter>
     </ClCompile>
+    <ClCompile Include="..\common\sockets\sockets.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="smak_version.h">
@@ -174,6 +177,9 @@
       <Filter>Source Files\common</Filter>
     </ClInclude>
     <ClInclude Include="..\common\configfile.h">
+      <Filter>Source Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\sockets\sockets.h">
       <Filter>Source Files\common</Filter>
     </ClInclude>
   </ItemGroup>
