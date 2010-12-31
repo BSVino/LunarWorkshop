@@ -20,7 +20,7 @@ CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
 
 	// Infinite height so that scene objects are always clickable.
 	SetSize(GetWidth(), 10000);
-	SetPos(50, 100);
+	SetPos(50, 150);
 
 	m_pMaterialEditor = NULL;
 }
