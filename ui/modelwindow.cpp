@@ -1605,6 +1605,122 @@ void CModelWindow::SetDisplayColorAO(bool bColorAO)
 	m_pColorAO->SetState(bColorAO, false);
 }
 
+void CModelWindow::SaveNormal(size_t iMaterial, const eastl::string16& sFilename)
+{
+	CMaterial* pMaterial = &m_aoMaterials[iMaterial];
+
+	if (pMaterial->m_iNormalIL == 0 && pMaterial->m_iNormal2IL == 0)
+		return;
+
+	ilEnable(IL_FILE_OVERWRITE);
+
+	if (pMaterial->m_iNormalIL == 0 || pMaterial->m_iNormal2IL == 0)
+	{
+		ILuint iSaveId;
+
+		ilGenImages(1, &iSaveId);
+		ilBindImage(iSaveId);
+
+		// Heh. Nice hack
+		ILuint iNormalId = pMaterial->m_iNormalIL + pMaterial->m_iNormal2IL;
+		ilCopyImage(iNormalId);
+
+		ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
+
+		if (!IsRegistered() && (ilGetInteger(IL_IMAGE_WIDTH) > 128 || ilGetInteger(IL_IMAGE_HEIGHT) > 128))
+		{
+			iluImageParameter(ILU_FILTER, ILU_BILINEAR);
+			iluScale(128, 128, 1);
+		}
+
+		ilSaveImage(sFilename.c_str());
+
+		ilDeleteImage(iSaveId);
+		ilBindImage(0);
+
+		return;
+	}
+
+	ILuint iNormalId;
+	ilGenImages(1, &iNormalId);
+	ilBindImage(iNormalId);
+	ilCopyImage(pMaterial->m_iNormalIL);
+	ilConvertImage(IL_RGB, IL_FLOAT);
+
+	int iWidth = ilGetInteger(IL_IMAGE_WIDTH);
+	int iHeight = ilGetInteger(IL_IMAGE_HEIGHT);
+
+	ILuint iNormal2Id;
+	ilGenImages(1, &iNormal2Id);
+	ilBindImage(iNormal2Id);
+	ilCopyImage(pMaterial->m_iNormal2IL);
+	ilConvertImage(IL_RGB, IL_FLOAT);
+
+	int iWidth2 = ilGetInteger(IL_IMAGE_WIDTH);
+	int iHeight2 = ilGetInteger(IL_IMAGE_HEIGHT);
+
+	size_t iTotalWidth = iWidth > iWidth2 ? iWidth : iWidth2;
+	size_t iTotalHeight = iHeight > iHeight2 ? iHeight : iHeight2;
+
+	Vector* avecResizedNormals = new Vector[iTotalWidth*iTotalHeight];
+	Vector* avecResizedNormals2 = new Vector[iTotalWidth*iTotalHeight];
+
+	ilBindImage(iNormalId);
+	iluImageParameter(ILU_FILTER, ILU_BILINEAR);
+	iluScale((ILint)iTotalWidth, (ILint)iTotalHeight, 1);
+	ilCopyPixels(0, 0, 0, (ILint)iTotalWidth, (ILint)iTotalHeight, 1, IL_RGB, IL_FLOAT, &avecResizedNormals[0].x);
+	ilDeleteImage(iNormalId);
+
+	ilBindImage(iNormal2Id);
+	iluImageParameter(ILU_FILTER, ILU_BILINEAR);
+	iluScale((ILint)iTotalWidth, (ILint)iTotalHeight, 1);
+	ilCopyPixels(0, 0, 0, (ILint)iTotalWidth, (ILint)iTotalHeight, 1, IL_RGB, IL_FLOAT, &avecResizedNormals2[0].x);
+	ilDeleteImage(iNormal2Id);
+
+	Vector* avecMergedNormalValues = new Vector[iTotalWidth*iTotalHeight];
+
+	for (size_t i = 0; i < iTotalWidth; i++)
+	{
+		for (size_t j = 0; j < iTotalHeight; j++)
+		{
+			size_t iTexel = iTotalHeight*j + i;
+
+			Vector vecNormal = (avecResizedNormals[iTexel]*2 - Vector(1.0f, 1.0f, 1.0f));
+			Vector vecNormal2 = (avecResizedNormals2[iTexel]*2 - Vector(1.0f, 1.0f, 1.0f));
+
+			Vector vecBitangent = vecNormal.Cross(Vector(1, 0, 0)).Normalized();
+			Vector vecTangent = vecBitangent.Cross(vecNormal).Normalized();
+
+			Matrix4x4 mTBN;
+			mTBN.SetColumn(0, vecTangent);
+			mTBN.SetColumn(1, vecBitangent);
+			mTBN.SetColumn(2, vecNormal);
+
+			avecMergedNormalValues[iTexel] = (mTBN * vecNormal2)*0.99f/2 + Vector(0.5f, 0.5f, 0.5f);
+		}
+	}
+
+	delete[] avecResizedNormals;
+	delete[] avecResizedNormals2;
+
+	ilGenImages(1, &iNormalId);
+	ilBindImage(iNormalId);
+	ilTexImage((ILint)iTotalWidth, (ILint)iTotalHeight, 1, 3, IL_RGB, IL_FLOAT, &avecMergedNormalValues[0].x);
+	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
+
+	if (!IsRegistered() && (iTotalWidth > 128 || iTotalHeight > 128))
+	{
+		iluImageParameter(ILU_FILTER, ILU_BILINEAR);
+		iluScale(128, 128, 1);
+	}
+
+	ilSaveImage(sFilename.c_str());
+
+	ilDeleteImages(1, &iNormalId);
+
+	delete[] avecMergedNormalValues;
+}
+
 void CModelWindow::ClearDebugLines()
 {
 	m_aDebugLines.clear();

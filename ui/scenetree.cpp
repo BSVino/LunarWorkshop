@@ -1,6 +1,8 @@
 #include "scenetree.h"
 
 #include <gl/glew.h>
+#include <IL/il.h>
+#include <IL/ilu.h>
 
 #include <platform.h>
 
@@ -511,6 +513,14 @@ void CMaterialEditor::ChooseNormalCallback()
 		glDeleteTextures(1, &pMaterial->m_iNormal2);
 	pMaterial->m_iNormal2 = 0;
 
+	if (pMaterial->m_iNormal2IL)
+		ilDeleteImages(1, &pMaterial->m_iNormal2IL);
+	if (pMaterial->m_iNormalIL)
+		ilDeleteImages(1, &pMaterial->m_iNormalIL);
+
+	pMaterial->m_iNormal2IL = 0;
+	pMaterial->m_iNormalIL = 0;
+
 	Layout();
 }
 
@@ -540,6 +550,14 @@ void CMaterialEditor::RemoveNormalCallback()
 	if (pMaterial->m_iNormal2)
 		glDeleteTextures(1, &pMaterial->m_iNormal2);
 	pMaterial->m_iNormal2 = 0;
+
+	if (pMaterial->m_iNormal2IL)
+		ilDeleteImages(1, &pMaterial->m_iNormal2IL);
+	if (pMaterial->m_iNormalIL)
+		ilDeleteImages(1, &pMaterial->m_iNormalIL);
+
+	pMaterial->m_iNormal2IL = 0;
+	pMaterial->m_iNormalIL = 0;
 
 	Layout();
 }

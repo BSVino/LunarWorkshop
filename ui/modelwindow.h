@@ -14,14 +14,18 @@ public:
 	{
 		m_iBase = iBase;
 		m_iNormal = 0;
+		m_iNormalIL = 0;
 		m_iNormal2 = 0;
+		m_iNormal2IL = 0;
 		m_iAO = 0;
 		m_iColorAO = 0;
 	}
 
 	size_t		m_iBase;
 	size_t		m_iNormal;
+	size_t		m_iNormalIL;
 	size_t		m_iNormal2;
+	size_t		m_iNormal2IL;
 	size_t		m_iAO;
 	size_t		m_iColorAO;
 };
@@ -124,6 +128,8 @@ public:
 	void					SetDisplayNormal(bool bNormal);
 	void					SetDisplayAO(bool bAO);
 	void					SetDisplayColorAO(bool bAO);
+
+	void					SaveNormal(size_t iMaterial, const eastl::string16& sFilename);
 
 	int						GetWindowWidth() { return (int)m_iWindowWidth; };
 	int						GetWindowHeight() { return (int)m_iWindowHeight; };

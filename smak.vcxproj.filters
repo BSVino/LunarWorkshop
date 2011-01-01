@@ -60,9 +60,6 @@
     <ClCompile Include="ui\scenetree.cpp">
       <Filter>Source Files\ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\glew\src\glew.c">
-      <Filter>Source Files\glew</Filter>
-    </ClCompile>
     <ClCompile Include="shaders\shaders.cpp">
       <Filter>Source Files\shaders</Filter>
     </ClCompile>
@@ -87,24 +84,6 @@
     <ClCompile Include="..\tinker\application.cpp">
       <Filter>Source Files\tinker</Filter>
     </ClCompile>
-    <ClCompile Include="..\EASTL\src\allocator.cpp">
-      <Filter>Source Files\eastl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EASTL\src\assert.cpp">
-      <Filter>Source Files\eastl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EASTL\src\fixed_pool.cpp">
-      <Filter>Source Files\eastl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EASTL\src\hashtable.cpp">
-      <Filter>Source Files\eastl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EASTL\src\red_black_tree.cpp">
-      <Filter>Source Files\eastl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EASTL\src\string.cpp">
-      <Filter>Source Files\eastl</Filter>
-    </ClCompile>
     <ClCompile Include="..\common\eastl.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
@@ -128,6 +107,27 @@
     </ClCompile>
     <ClCompile Include="..\common\sockets\sockets.cpp">
       <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-deps\EASTL\src\fixed_pool.cpp">
+      <Filter>Source Files\eastl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-deps\EASTL\src\hashtable.cpp">
+      <Filter>Source Files\eastl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-deps\EASTL\src\red_black_tree.cpp">
+      <Filter>Source Files\eastl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-deps\EASTL\src\string.cpp">
+      <Filter>Source Files\eastl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-deps\EASTL\src\allocator.cpp">
+      <Filter>Source Files\eastl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-deps\EASTL\src\assert.cpp">
+      <Filter>Source Files\eastl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ext-deps\glew\src\glew.c">
+      <Filter>Source Files\glew</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

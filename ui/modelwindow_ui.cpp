@@ -1635,19 +1635,21 @@ void CComboGeneratorPanel::GenerateCallback()
 
 	size_t iDiffuse = 0;
 	size_t iAO = 0;
-	size_t iNormal = 0;
+	size_t iNormalGL = 0;
+	size_t iNormalIL = 0;
 	if (m_oGenerator.DoneGenerating())
 	{
 		iDiffuse = m_oGenerator.GenerateDiffuse();
 		iAO = m_oGenerator.GenerateAO();
-		iNormal = m_oGenerator.GenerateNormal();
+		m_oGenerator.GenerateNormal(iNormalGL, iNormalIL);
 	}
 
 	for (size_t i = 0; i < m_paoMaterials->size(); i++)
 	{
 		size_t& iDiffuseTexture = (*m_paoMaterials)[i].m_iBase;
 		size_t& iAOTexture = (*m_paoMaterials)[i].m_iAO;
-		size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal;
+		size_t& iNormalGLTexture = (*m_paoMaterials)[i].m_iNormal;
+		size_t& iNormalILTexture = (*m_paoMaterials)[i].m_iNormalIL;
 
 		if (!m_pScene->GetMaterial(i)->IsVisible())
 			continue;
@@ -1668,13 +1670,21 @@ void CComboGeneratorPanel::GenerateCallback()
 		else
 			iAOTexture = 0;
 
-		if (iNormalTexture)
-			glDeleteTextures(1, &iNormalTexture);
+		if (iNormalGLTexture)
+			glDeleteTextures(1, &iNormalGLTexture);
 
 		if (m_oGenerator.DoneGenerating())
-			iNormalTexture = iNormal;
+			iNormalGLTexture = iNormalGL;
 		else
-			iNormalTexture = 0;
+			iNormalGLTexture = 0;
+
+		if (iNormalILTexture)
+			glDeleteTextures(1, &iNormalILTexture);
+
+		if (m_oGenerator.DoneGenerating())
+			iNormalILTexture = iNormalIL;
+		else
+			iNormalILTexture = 0;
 	}
 
 	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
@@ -1736,7 +1746,8 @@ void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 	{
 		size_t iDiffuse = m_oGenerator.GenerateDiffuse(true);
 		size_t iAO = m_oGenerator.GenerateAO(true);
-		size_t iNormal = m_oGenerator.GenerateNormal(true);
+		size_t iNormal, iNormalIL;
+		m_oGenerator.GenerateNormal(iNormal, iNormalIL, true);
 
 		for (size_t i = 0; i < m_paoMaterials->size(); i++)
 		{
@@ -2190,11 +2201,13 @@ void CNormalPanel::Think()
 {
 	if (m_oGenerator.IsNewNormal2Available())
 	{
-		size_t iNormal2 = m_oGenerator.GetNormalMap2();
+		size_t iNormal2, iNormal2IL;
+		m_oGenerator.GetNormalMap2(iNormal2, iNormal2IL);
 
 		for (size_t i = 0; i < m_paoMaterials->size(); i++)
 		{
 			size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal2;
+			size_t& iNormalIL = (*m_paoMaterials)[i].m_iNormal2IL;
 
 			if (!m_pScene->GetMaterial(i)->IsVisible())
 				continue;
@@ -2202,7 +2215,11 @@ void CNormalPanel::Think()
 			if (iNormalTexture)
 				glDeleteTextures(1, &iNormalTexture);
 
+			if (iNormalIL)
+				ilDeleteImages(1, &iNormalIL);
+
 			iNormalTexture = iNormal2;
+			iNormalIL = iNormal2IL;
 			break;
 		}
 
@@ -2267,15 +2284,7 @@ void CNormalPanel::SaveMapCallback()
 	if (!pszFilename)
 		return;
 
-	m_oGenerator.SaveToFile(pszFilename);
-
-	for (size_t i = 0; i < m_paoMaterials->size(); i++)
-	{
-		if (!m_pScene->GetMaterial(i)->IsVisible())
-			continue;
-
-		m_pScene->GetMaterial(i)->m_sNormalTexture = pszFilename;
-	}
+	ModelWindow()->SaveNormal(m_oGenerator.GetGenerationMaterial(), pszFilename);
 
 	CRootPanel::Get()->Layout();
 }

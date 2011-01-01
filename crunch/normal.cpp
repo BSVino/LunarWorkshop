@@ -29,7 +29,9 @@ CNormalGenerator::CNormalGenerator(CConversionScene* pScene, eastl::vector<CMate
 	m_bDoneGenerating = false;
 	m_bStopGenerating = false;
 
+	m_iMaterial = 0;
 	m_iNormal2GLId = 0;
+	m_iNormal2ILId = 0;
 	m_aflTextureTexels = NULL;
 	m_aflMidPassTexels = NULL;
 	m_aflLowPassTexels = NULL;
@@ -77,66 +79,7 @@ void CNormalGenerator::SaveToFile(const wchar_t *pszFilename)
 	ilBindImage(iDevILId);
 
 	if (m_aflNormal2Texels)
-	{
-/*		if (DoneGenerating())
-		{
-			size_t iTotalWidth = m_iWidth > m_iNormal2Width ? m_iWidth : m_iNormal2Width;
-			size_t iTotalHeight = m_iHeight > m_iNormal2Height ? m_iHeight : m_iNormal2Height;
-
-			Vector* avecResizedNormals = new Vector[iTotalWidth*iTotalHeight];
-			Vector* avecResizedNormals2 = new Vector[iTotalWidth*iTotalHeight];
-
-			ILuint iNormalId;
-			ilGenImages(1, &iNormalId);
-			ilBindImage(iNormalId);
-			ilTexImage((ILint)m_iWidth, (ILint)m_iHeight, 1, 3, IL_RGB, IL_FLOAT, &m_avecNormalValues[0].x);
-			iluImageParameter(ILU_FILTER, ILU_BILINEAR);
-			iluScale((ILint)iTotalWidth, (ILint)iTotalHeight, 1);
-			ilCopyPixels(0, 0, 0, (ILint)iTotalWidth, (ILint)iTotalHeight, 3, IL_RGB, IL_FLOAT, &avecResizedNormals[0].x);
-			ilDeleteImage(iNormalId);
-
-			ILuint iNormal2Id;
-			ilGenImages(1, &iNormal2Id);
-			ilBindImage(iNormal2Id);
-			ilTexImage((ILint)m_iNormal2Width, (ILint)m_iNormal2Height, 1, 3, IL_RGB, IL_FLOAT, &m_aflNormal2Texels[0]);
-			iluImageParameter(ILU_FILTER, ILU_BILINEAR);
-			iluScale((ILint)iTotalWidth, (ILint)iTotalHeight, 1);
-			ilCopyPixels(0, 0, 0, (ILint)iTotalWidth, (ILint)iTotalHeight, 3, IL_RGB, IL_FLOAT, &avecResizedNormals2[0].x);
-			ilDeleteImage(iNormal2Id);
-
-			Vector* avecMergedNormalValues = new Vector[iTotalWidth*iTotalHeight];
-
-			for (size_t i = 0; i < iTotalWidth; i++)
-			{
-				for (size_t j = 0; j < iTotalHeight; j++)
-				{
-					size_t iTexel;
-					Texel(i, j, iTexel, iTotalWidth, iTotalHeight, false);
-					Vector vecNormal = (avecResizedNormals[iTexel]*2 - Vector(1.0f, 1.0f, 1.0f));
-					Vector vecNormal2 = (avecResizedNormals2[iTexel]*2 - Vector(1.0f, 1.0f, 1.0f));
-
-					Vector vecBitangent = vecNormal.Cross(Vector(1, 0, 0)).Normalized();
-					Vector vecTangent = vecBitangent.Cross(vecNormal).Normalized();
-
-					Matrix4x4 mTBN;
-					mTBN.SetColumn(0, vecTangent);
-					mTBN.SetColumn(1, vecBitangent);
-					mTBN.SetColumn(2, vecNormal);
-
-					avecMergedNormalValues[iTexel] = (mTBN * vecNormal2)*0.99f/2 + Vector(0.5f, 0.5f, 0.5f);
-				}
-			}
-
-			delete[] avecResizedNormals;
-			delete[] avecResizedNormals2;
-
-			ilTexImage((ILint)iTotalWidth, (ILint)iTotalHeight, 1, 3, IL_RGB, IL_FLOAT, &avecMergedNormalValues[0].x);
-
-			delete[] avecMergedNormalValues;
-		}
-		else*/
-			ilTexImage((ILint)m_iNormal2Width, (ILint)m_iNormal2Height, 1, 3, IL_RGB, IL_FLOAT, &m_aflNormal2Texels[0]);
-	}
+		ilTexImage((ILint)m_iNormal2Width, (ILint)m_iNormal2Height, 1, 3, IL_RGB, IL_FLOAT, &m_aflNormal2Texels[0]);
 
 	// Formats like PNG and VTF don't work unless it's in integer format.
 	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
@@ -380,6 +323,8 @@ void CNormalGenerator::SetNormalTexture(bool bNormalTexture, size_t iMaterial)
 	if (!pMaterial->m_iBase)
 		return;
 
+	m_iMaterial = iMaterial;
+
 	if (m_iNormal2GLId)
 		glDeleteTextures(1, &m_iNormal2GLId);
 	m_iNormal2GLId = 0;
@@ -491,6 +436,17 @@ void CNormalGenerator::RegenerateNormal2Texture()
 
 	m_iNormal2GLId = iGLId;
 
+	if (m_iNormal2ILId)
+		ilDeleteImages(1, &m_iNormal2ILId);
+
+	ILuint iILId;
+	ilGenImages(1, &iILId);
+	ilBindImage(iILId);
+	ilTexImage((ILint)m_iNormal2Width, (ILint)m_iNormal2Height, 1, 3, IL_RGB, IL_FLOAT, &m_aflNormal2Texels[0]);
+	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
+
+	m_iNormal2ILId = iILId;
+
 	m_bNewNormal2Available = true;
 	m_bNormal2Generated = true;
 }
@@ -532,10 +488,11 @@ float CNormalGenerator::GetNormal2GenerationProgress()
 	return (float)m_pNormal2Parallelizer->GetJobsDone() / (float)m_pNormal2Parallelizer->GetJobsTotal();
 }
 
-size_t CNormalGenerator::GetNormalMap2()
+void CNormalGenerator::GetNormalMap2(size_t& iNormal2, size_t& iNormal2IL)
 {
-	size_t iNormal2 = m_iNormal2GLId;
+	iNormal2 = m_iNormal2GLId;
+	iNormal2IL = m_iNormal2ILId;
 	m_iNormal2GLId = 0;
+	m_iNormal2ILId = 0;
 	m_bNewNormal2Available = false;
-	return iNormal2;
 }

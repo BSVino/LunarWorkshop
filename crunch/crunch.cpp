@@ -474,16 +474,13 @@ size_t CTexelGenerator::GenerateAO(bool bInMedias)
 	return 0;
 }
 
-size_t CTexelGenerator::GenerateNormal(bool bInMedias)
+void CTexelGenerator::GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias)
 {
 	for (size_t i = 0; i < m_apMethods.size(); i++)
 	{
-		size_t iNormal = m_apMethods[i]->GenerateNormal(bInMedias);
-		if (iNormal)
-			return iNormal;
+		if (m_apMethods[i]->GenerateNormal(iGLId, iILId, bInMedias))
+			return;
 	}
-
-	return 0;
 }
 
 void CTexelGenerator::SaveAll(const eastl::string16& sFilename)
@@ -491,28 +488,7 @@ void CTexelGenerator::SaveAll(const eastl::string16& sFilename)
 	ilEnable(IL_FILE_OVERWRITE);
 
 	for (size_t i = 0; i < m_apMethods.size(); i++)
-	{
-		eastl::string16 sRealFilename = sFilename.substr(0, sFilename.length()-4) + L"-" + m_apMethods[i]->FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
-
-		ILuint iDevILId;
-		ilGenImages(1, &iDevILId);
-		ilBindImage(iDevILId);
-
-		ilTexImage((ILint)m_iWidth, (ILint)m_iHeight, 1, 3, IL_RGB, IL_FLOAT, m_apMethods[i]->GetData());
-
-		// Formats like PNG and VTF don't work unless it's in integer format.
-		ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
-
-		if (!ModelWindow()->IsRegistered() && (m_iWidth > 128 || m_iHeight > 128))
-		{
-			iluImageParameter(ILU_FILTER, ILU_BILINEAR);
-			iluScale(128, 128, 1);
-		}
-
-		ilSaveImage(sRealFilename.c_str());
-
-		ilDeleteImages(1,&iDevILId);
-	}
+		m_apMethods[i]->SaveToFile(sFilename);
 }
 
 CTexelMethod::CTexelMethod(CTexelGenerator* pGenerator)
@@ -528,6 +504,30 @@ void CTexelMethod::SetSize(size_t iWidth, size_t iHeight)
 {
 	m_iWidth = iWidth;
 	m_iHeight = iHeight;
+}
+
+void CTexelMethod::SaveToFile(const eastl::string16& sFilename)
+{
+	eastl::string16 sRealFilename = sFilename.substr(0, sFilename.length()-4) + L"-" + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
+
+	ILuint iDevILId;
+	ilGenImages(1, &iDevILId);
+	ilBindImage(iDevILId);
+
+	ilTexImage((ILint)m_iWidth, (ILint)m_iHeight, 1, 3, IL_RGB, IL_FLOAT, GetData());
+
+	// Formats like PNG and VTF don't work unless it's in integer format.
+	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
+
+	if (!ModelWindow()->IsRegistered() && (m_iWidth > 128 || m_iHeight > 128))
+	{
+		iluImageParameter(ILU_FILTER, ILU_BILINEAR);
+		iluScale(128, 128, 1);
+	}
+
+	ilSaveImage(sRealFilename.c_str());
+
+	ilDeleteImages(1,&iDevILId);
 }
 
 CTexelDiffuseMethod::CTexelDiffuseMethod(CTexelGenerator* pGenerator)
@@ -1347,7 +1347,7 @@ void CTexelNormalMethod::TexturizeValues(Vector* avecTexture)
 	}
 }
 
-size_t CTexelNormalMethod::GenerateNormal(bool bInMedias)
+bool CTexelNormalMethod::GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias)
 {
 	Vector* avecNormalValues = m_avecNormalValues;
 
@@ -1358,14 +1358,45 @@ size_t CTexelNormalMethod::GenerateNormal(bool bInMedias)
 		TexturizeValues(avecNormalValues);
 	}
 
-	GLuint iGLId;
 	glGenTextures(1, &iGLId);
 	glBindTexture(GL_TEXTURE_2D, iGLId);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, (GLint)m_iWidth, (GLint)m_iHeight, GL_RGB, GL_FLOAT, &avecNormalValues[0].x);
 
-	return iGLId;
+	if (!bInMedias)
+	{
+		ilGenImages(1, &iILId);
+		ilBindImage(iILId);
+		ilTexImage((ILint)m_iWidth, (ILint)m_iHeight, 1, 3, IL_RGB, IL_FLOAT, &avecNormalValues[0].x);
+		ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
+	}
+
+	return true;
+}
+
+void CTexelNormalMethod::SaveToFile(const eastl::string16& sFilename)
+{
+	eastl::string16 sRealFilename = sFilename.substr(0, sFilename.length()-4) + L"-" + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
+
+	eastl::vector<bool> abMaterialSaved((bool)false);
+	abMaterialSaved.resize(m_pGenerator->GetScene()->GetNumMaterials());
+
+	for (size_t i = 0; i < m_pGenerator->GetLoResMeshInstances().size(); i++)
+	{
+		CConversionMeshInstance* pMeshInstance = m_pGenerator->GetLoResMeshInstances()[i];
+		for (eastl::map<size_t, CConversionMaterialMap>::iterator j = pMeshInstance->m_aiMaterialsMap.begin(); j != pMeshInstance->m_aiMaterialsMap.end(); j++)
+		{
+			size_t iMaterial = pMeshInstance->GetMappedMaterial(j->first)->m_iMaterial;
+
+			if (abMaterialSaved[iMaterial])
+				continue;
+
+			ModelWindow()->SaveNormal(iMaterial, sRealFilename);
+
+			abMaterialSaved[iMaterial] = true;
+		}
+	}
 }
 
 void* CTexelNormalMethod::GetData()

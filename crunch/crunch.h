@@ -29,8 +29,10 @@ public:
 	virtual void			PostGenerate() {};
 
 	virtual size_t			GenerateDiffuse(bool bInMedias = false) { return 0; };
-	virtual size_t			GenerateNormal(bool bInMedias = false) { return 0; };
+	virtual bool			GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias = false) { return false; };
 	virtual size_t			GenerateAO(bool bInMedias = false) { return 0; };
+
+	virtual void			SaveToFile(const eastl::string16& sFilename);
 
 	virtual eastl::string16	FileSuffix() { return L""; };
 	virtual void*			GetData() { return NULL; };
@@ -123,7 +125,9 @@ public:
 	void					Bleed();
 
 	void					TexturizeValues(Vector* avecTexture);
-	virtual size_t			GenerateNormal(bool bInMedias = false);
+	virtual bool			GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias = false);
+
+	virtual void			SaveToFile(const eastl::string16& sFilename);
 
 	virtual eastl::string16	FileSuffix() { return L"normal"; };
 	virtual void*			GetData();
@@ -169,7 +173,7 @@ public:
 
 	size_t					GenerateDiffuse(bool bInMedias = false);
 	size_t					GenerateAO(bool bInMedias = false);
-	size_t					GenerateNormal(bool bInMedias = false);
+	void					GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias = false);
 
 	void					SaveAll(const eastl::string16& sFilename);
 
@@ -179,6 +183,7 @@ public:
 	bool					IsStopped() { return m_bStopGenerating; }
 
 	const eastl::vector<CConversionMeshInstance*>&	GetHiResMeshInstances() { return m_apHiRes; }
+	const eastl::vector<CConversionMeshInstance*>&	GetLoResMeshInstances() { return m_apLoRes; }
 
 protected:
 	CConversionScene*		m_pScene;
@@ -337,13 +342,14 @@ public:
 	void					SetNormalTextureMidDepth(float flDepth) { m_flNormalTextureMidDepth = flDepth; };
 	void					SetNormalTextureLoDepth(float flDepth) { m_flNormalTextureLoDepth = flDepth; };
 	void					SetNormalTexture(bool bNormalTexture, size_t iMaterial);
+	size_t					GetGenerationMaterial() { return m_iMaterial; }
 	void					UpdateNormal2();
 	void					StartGenerationJobs();
 	void					RegenerateNormal2Texture();
 	bool					IsNewNormal2Available();
 	bool					IsGeneratingNewNormal2();
 	float					GetNormal2GenerationProgress();
-	size_t					GetNormalMap2();
+	void					GetNormalMap2(size_t& iNormal2, size_t& iNormal2IL);
 
 protected:
 	CConversionScene*		m_pScene;
@@ -357,11 +363,13 @@ protected:
 	bool					m_bDoneGenerating;
 	bool					m_bStopGenerating;
 
+	size_t					m_iMaterial;
 	float					m_flNormalTextureDepth;
 	float					m_flNormalTextureHiDepth;
 	float					m_flNormalTextureMidDepth;
 	float					m_flNormalTextureLoDepth;
 	size_t					m_iNormal2GLId;
+	size_t					m_iNormal2ILId;
 	size_t					m_iNormal2Width;
 	size_t					m_iNormal2Height;
 	float*					m_aflTextureTexels;
