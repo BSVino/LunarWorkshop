@@ -1,5 +1,5 @@
 !define PRODUCT_NAME "SMAK - Super Model Army Knife"
-!define PRODUCT_VERSION "Beta"
+!define PRODUCT_VERSION ""
 
 !define LOCALDIR "install"
 ;This value should be set depending on the PC this will be compiled under

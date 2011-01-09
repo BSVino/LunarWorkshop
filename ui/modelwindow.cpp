@@ -1167,7 +1167,6 @@ void CModelWindow::RenderUV()
 	glDisable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
 	glDisable(GL_CULL_FACE);
-	glDisable(GL_COLOR);
 
 	glShadeModel(GL_FLAT);
 
