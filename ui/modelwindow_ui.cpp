@@ -2604,7 +2604,7 @@ void CRegisterPanel::WebsiteCallback()
 void CRegisterPanel::RegisterCallback()
 {
 	eastl::string16 sError;
-	bool bSucceeded = ModelWindow()->QueryRegistrationKey(L"getsmak.net", L"/reg/reg.php", m_pRegistrationKey->GetText(), sError);
+	bool bSucceeded = ModelWindow()->QueryRegistrationKey(L"reg.lunarworkshop.net", L"/reg/reg.php", m_pRegistrationKey->GetText(), "smak", sError);
 	m_pRegisterResult->SetText(sError.c_str());
 
 	if (bSucceeded)
