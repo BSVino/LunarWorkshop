@@ -103,10 +103,7 @@ void CMeshInstancePicker::PopulateTreeNode(glgui::CTreeNode* pTreeNode, CConvers
 	// Child never got any nodes, remove it and get on with our lives.
 	if (!pChildNode->GetNumNodes() && !pSceneNode->GetNumMeshInstances())
 	{
-		if (pTreeNode)
-			pTreeNode->RemoveNode(pChildNode);
-		else
-			m_pTree->RemoveNode(pChildNode);
+		m_pTree->RemoveNode(pChildNode);
 		return;
 	}
 
