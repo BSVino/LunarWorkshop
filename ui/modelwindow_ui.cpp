@@ -41,7 +41,9 @@ void CModelWindow::InitUI()
 	pTools->AddSubmenu(L"Generate normal from texture", this, GenerateNormal);
 
 	pHelp->AddSubmenu(L"Help", this, Help);
+#if !defined(TINKER_NO_REGISTRATION)
 	pHelp->AddSubmenu(L"Register...", this, Register);
+#endif
 	pHelp->AddSubmenu(L"About SMAK", this, About);
 
 	CButtonPanel* pTopButtons = new CButtonPanel(BA_TOP);
