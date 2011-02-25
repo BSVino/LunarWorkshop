@@ -2428,7 +2428,7 @@ void CAboutPanel::Layout()
 
 	m_pInfo->SetText(L"SMAK - The Super Model Army Knife\n");
 	m_pInfo->AppendText(L"Version " SMAK_VERSION L"\n");
-	m_pInfo->AppendText(L"Copyright © 2010, Jorge Rodriguez <jorge@lunarworkshop.net>\n");
+	m_pInfo->AppendText(L"Copyright © 2010, Jorge Rodriguez <jorge@lunarworkshop.com>\n");
 	m_pInfo->AppendText(L" \n");
 	m_pInfo->AppendText(L"FCollada copyright © 2006, Feeling Software\n");
 	m_pInfo->AppendText(L"DevIL copyright © 2001-2009, Denton Woods\n");
@@ -2731,7 +2731,7 @@ void CPiratesPanel::Layout()
 	m_pInfo->AppendText(L" \n");
 	m_pInfo->AppendText(L"So please, when you pirate this software, think of the dog.\n");
 	m_pInfo->AppendText(L" \n");
-	m_pInfo->AppendText(L"Jorge Rodriguez <jorge@lunarworkshop.net>\n");
+	m_pInfo->AppendText(L"Jorge Rodriguez <jorge@lunarworkshop.com>\n");
 
 	CMovablePanel::Layout();
 }
