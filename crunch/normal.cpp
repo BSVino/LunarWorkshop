@@ -1,6 +1,5 @@
 #include "crunch.h"
 
-#include <assert.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <GL/glew.h>
@@ -102,7 +101,7 @@ bool CNormalGenerator::Texel(size_t w, size_t h, size_t& iTexel, size_t tw, size
 
 	iTexel = th*h + w;
 
-	assert(iTexel >= 0 && iTexel < tw * th);
+	TAssert(iTexel >= 0 && iTexel < tw * th);
 
 	if (abMask && !abMask[iTexel])
 		return false;

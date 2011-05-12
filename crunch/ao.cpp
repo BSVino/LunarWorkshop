@@ -1,6 +1,5 @@
 #include "crunch.h"
 
-#include <assert.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <GL/glew.h>
@@ -1718,7 +1717,7 @@ bool CAOGenerator::Texel(size_t w, size_t h, size_t& iTexel, bool bUseMask)
 
 	iTexel = m_iHeight*h + w;
 
-	assert(iTexel >= 0 && iTexel < m_iWidth * m_iHeight);
+	TAssert(iTexel >= 0 && iTexel < m_iWidth * m_iHeight);
 
 	if (bUseMask && !m_bPixelMask[iTexel])
 		return false;

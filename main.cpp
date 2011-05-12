@@ -2,7 +2,6 @@
 #include <Windows.h>
 #endif
 
-#include <assert.h>
 #include <GL/glew.h>
 #include <GL/glfw.h>
 #include <IL/il.h>
@@ -262,7 +261,7 @@ int CreateApplication(int argc, char** argv)
 
 					aMaterials.push_back(CMaterial(0));
 
-					assert(aMaterials.size()-1 == i);
+					TAssert(aMaterials.size()-1 == i);
 
 					size_t iTexture = CModelWindow::LoadTextureIntoGL(pMaterial->GetDiffuseTexture());
 
