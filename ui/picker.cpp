@@ -1,7 +1,5 @@
 #include "picker.h"
 
-#include <assert.h>
-
 #include "modelwindow.h"
 #include <modelconverter/convmesh.h>
 
