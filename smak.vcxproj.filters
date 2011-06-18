@@ -129,6 +129,15 @@
     <ClCompile Include="..\ext-deps\glew\src\glew.c">
       <Filter>Source Files\glew</Filter>
     </ClCompile>
+    <ClCompile Include="..\tinker\portals\portal_stubs.cpp">
+      <Filter>Source Files\tinker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinker\console.cpp">
+      <Filter>Source Files\tinker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinker\cvar.cpp">
+      <Filter>Source Files\tinker</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="smak_version.h">
@@ -181,6 +190,12 @@
     </ClInclude>
     <ClInclude Include="..\common\sockets\sockets.h">
       <Filter>Source Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tinker\console.h">
+      <Filter>Source Files\tinker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tinker\cvar.h">
+      <Filter>Source Files\tinker</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

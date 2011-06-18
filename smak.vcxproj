@@ -156,6 +156,9 @@
     <ClCompile Include="..\glgui\glgui.cpp" />
     <ClCompile Include="..\license\license.cpp" />
     <ClCompile Include="..\tinker\application.cpp" />
+    <ClCompile Include="..\tinker\console.cpp" />
+    <ClCompile Include="..\tinker\cvar.cpp" />
+    <ClCompile Include="..\tinker\portals\portal_stubs.cpp" />
     <ClCompile Include="..\tinker\register.cpp" />
     <ClCompile Include="crunch\crunch.cpp" />
     <ClCompile Include="main.cpp" />
@@ -179,6 +182,8 @@
     <ClInclude Include="..\glgui\glgui.h" />
     <ClInclude Include="..\license\license.h" />
     <ClInclude Include="..\tinker\application.h" />
+    <ClInclude Include="..\tinker\console.h" />
+    <ClInclude Include="..\tinker\cvar.h" />
     <ClInclude Include="..\tinker\keys.h" />
     <ClInclude Include="smak_version.h" />
     <ClInclude Include="ui\modelwindow.h" />

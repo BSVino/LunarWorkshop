@@ -2500,7 +2500,7 @@ CRegisterPanel::CRegisterPanel()
 	AddControl(m_pRegisterResult);
 
 	m_pRegisterOffline = new CButton(0, 0, 100, 100, L"Register Offline");
-	m_pRegisterOffline->SetFontFaceSize(11);
+	m_pRegisterOffline->SetFont(L"sans-serif", 11);
 	m_pRegisterOffline->SetClickedListener(this, RegisterOffline);
 	AddControl(m_pRegisterOffline);
 

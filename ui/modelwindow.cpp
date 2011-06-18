@@ -1432,32 +1432,19 @@ void CModelWindow::RenderUV()
 		static char szFont[1024];
 		sprintf(szFont, "%s\\Fonts\\Arial.ttf", getenv("windir"));
 
-		static FTTextureFont* pDemoFont = NULL;
-		if (!pDemoFont)
-		{
-			pDemoFont = new FTTextureFont(szFont);
-			pDemoFont->FaceSize(48);
-		}
-
 		if (m_bDisplayAO || m_bDisplayColorAO)
 		{
 			glColor4ubv(Color(155, 155, 255, 100));
 
-			pDemoFont->Render("DEMO", -1, FTPoint(100.0f, 150.0f));
-			pDemoFont->Render("DEMO", -1, FTPoint(-200.0f, 150.0f));
-			pDemoFont->Render("DEMO", -1, FTPoint(100.0f, -150.0f));
-			pDemoFont->Render("DEMO", -1, FTPoint(-200.0f, -150.0f));
-		}
-
-		static FTTextureFont* pNoticeFont = NULL;
-		if (!pNoticeFont)
-		{
-			pNoticeFont = new FTTextureFont(szFont);
-			pNoticeFont->FaceSize(16);
+			CLabel::PaintText(L"DEMO", 4, L"sans-serif", 48, 100, 150);
+			CLabel::PaintText(L"DEMO", 4, L"sans-serif", 48, -200, 150);
+			CLabel::PaintText(L"DEMO", 4, L"sans-serif", 48, 100, -150);
+			CLabel::PaintText(L"DEMO", 4, L"sans-serif", 48, -200, -150);
 		}
 
 		glColor4ubv(Color(255, 255, 255, 255));
-		pNoticeFont->Render("This demo version will generate all map sizes, but will downsample to 128x128 when saving.", -1, FTPoint(-300.0f, 260.0f));
+		eastl::string16 sDemoText = L"This demo version will generate all map sizes, but will downsample to 128x128 when saving.";
+		CLabel::PaintText(sDemoText, sDemoText.length(), L"sans-serif", 16, -300.0f, 260.0f);
 
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
