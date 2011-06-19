@@ -2428,15 +2428,15 @@ void CAboutPanel::Layout()
 
 	m_pInfo->SetText(L"SMAK - The Super Model Army Knife\n");
 	m_pInfo->AppendText(L"Version " SMAK_VERSION L"\n");
-	m_pInfo->AppendText(L"Copyright © 2010, Jorge Rodriguez <jorge@lunarworkshop.com>\n");
+	m_pInfo->AppendText(L"Copyright Â© 2010, Jorge Rodriguez <jorge@lunarworkshop.com>\n");
 	m_pInfo->AppendText(L" \n");
-	m_pInfo->AppendText(L"FCollada copyright © 2006, Feeling Software\n");
-	m_pInfo->AppendText(L"DevIL copyright © 2001-2009, Denton Woods\n");
-	m_pInfo->AppendText(L"FTGL copyright © 2001-2003, Henry Maddocks\n");
-	m_pInfo->AppendText(L"GLFW copyright © 2002-2007, Camilla Berglund\n");
-	m_pInfo->AppendText(L"pthreads-win32 copyright © 2001, 2006 Ross P. Johnson\n");
-	m_pInfo->AppendText(L"GLEW copyright © 2002-2007, Milan Ikits, Marcelo E. Magallon, Lev Povalahev\n");
-	m_pInfo->AppendText(L"Freetype copyright © 1996-2002, 2006 by David Turner, Robert Wilhelm, and Werner Lemberg\n");
+	m_pInfo->AppendText(L"FCollada copyright Â© 2006, Feeling Software\n");
+	m_pInfo->AppendText(L"DevIL copyright Â© 2001-2009, Denton Woods\n");
+	m_pInfo->AppendText(L"FTGL copyright Â© 2001-2003, Henry Maddocks\n");
+	m_pInfo->AppendText(L"GLFW copyright Â© 2002-2007, Camilla Berglund\n");
+	m_pInfo->AppendText(L"pthreads-win32 copyright Â© 2001, 2006 Ross P. Johnson\n");
+	m_pInfo->AppendText(L"GLEW copyright Â© 2002-2007, Milan Ikits, Marcelo E. Magallon, Lev Povalahev\n");
+	m_pInfo->AppendText(L"Freetype copyright Â© 1996-2002, 2006 by David Turner, Robert Wilhelm, and Werner Lemberg\n");
 
 	CMovablePanel::Layout();
 }

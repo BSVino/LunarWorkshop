@@ -19,6 +19,11 @@
 #endif
 #endif
 
+// Some compilers don't need it, make sure it still exists though.
+#ifndef CALLBACK
+#define CALLBACK
+#endif
+
 #ifdef AO_DEBUG
 #include "ui/modelwindow.h"
 

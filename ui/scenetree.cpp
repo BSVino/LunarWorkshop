@@ -1,6 +1,6 @@
 #include "scenetree.h"
 
-#include <gl/glew.h>
+#include <GL/glew.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 

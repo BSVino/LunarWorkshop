@@ -7,6 +7,7 @@
 #include <IL/il.h>
 
 #include <platform.h>
+#include <strutils.h>
 
 #include <modelconverter/modelconverter.h>
 #include "ui/modelwindow.h"
@@ -86,110 +87,109 @@ int CreateApplication(int argc, char** argv)
 	{
 		for (int i = 1; i < argc; i++)
 		{
-			wchar_t szToken[1024];
-			mbstowcs(szToken, argv[i], strlen(argv[i])+1);
+			eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
 
-			if (szToken[0] == L'-')
+			if (sToken[0] == L'-')
 			{
 				// It's an argument
-				if (wcscmp(szToken, L"--command") == 0)
+				if (sToken == L"--command")
 				{
 					i++;
-					mbstowcs(szToken, argv[i], strlen(argv[i])+1);
-					if (wcscmp(szToken, L"ao") == 0)
+					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					if (sToken == L"ao")
 						eCommand = COMMAND_AO;
 				}
-				else if (wcscmp(szToken, L"--method") == 0)
+				else if (sToken == L"--method")
 				{
 					i++;
-					mbstowcs(szToken, argv[i], strlen(argv[i])+1);
-					if (wcscmp(szToken, L"shadowmap") == 0)
+					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					if (sToken == L"shadowmap")
 						eMethod = AOMETHOD_SHADOWMAP;
-					else if (wcscmp(szToken, L"raytrace") == 0)
+					else if (sToken == L"raytrace")
 						eMethod = AOMETHOD_RAYTRACE;
-					else if (wcscmp(szToken, L"tridistance") == 0)
+					else if (sToken == L"tridistance")
 						eMethod = AOMETHOD_TRIDISTANCE;
-					else if (wcscmp(szToken, L"color") == 0)
+					else if (sToken == L"color")
 						eMethod = AOMETHOD_RENDER;
 					else
 						printf("ERROR: Unrecognized method.\n");
 				}
-				else if (wcscmp(szToken, L"--size") == 0)
+				else if (sToken == L"--size")
 				{
 					i++;
-					mbstowcs(szToken, argv[i], strlen(argv[i])+1);
-					iSize = _wtoi(szToken);
+					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					iSize = stoi(sToken);
 					if (iSize < 64)
 						iSize = 64;
 					else if (iSize > 2048)
 						iSize = 2048;
 				}
-				else if (wcscmp(szToken, L"--bleed") == 0)
+				else if (sToken == L"--bleed")
 				{
 					i++;
-					mbstowcs(szToken, argv[i], strlen(argv[i])+1);
-					iBleed = _wtoi(szToken);
+					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					iBleed = stoi(sToken);
 					if (iBleed < 0)
 						iBleed = 0;
 					else if (iBleed > 10)
 						iBleed = 10;
 				}
-				else if (wcscmp(szToken, L"--lights") == 0)
+				else if (sToken == L"--lights")
 				{
 					i++;
-					mbstowcs(szToken, argv[i], strlen(argv[i])+1);
-					iLights = _wtoi(szToken);
+					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					iLights = stoi(sToken);
 					if (iLights < 500)
 						iLights = 500;
 					else if (iSize > 3000)
 						iLights = 3000;
 				}
-				else if (wcscmp(szToken, L"--samples") == 0)
+				else if (sToken == L"--samples")
 				{
 					i++;
-					mbstowcs(szToken, argv[i], strlen(argv[i])+1);
-					iSamples = _wtoi(szToken);
+					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					iSamples = stoi(sToken);
 					if (iSamples < 5)
 						iSamples = 5;
 					else if (iSamples > 25)
 						iSamples = 25;
 				}
-				else if (wcscmp(szToken, L"--falloff") == 0)
+				else if (sToken == L"--falloff")
 				{
 					i++;
-					mbstowcs(szToken, argv[i], strlen(argv[i])+1);
-					if (wcscmp(szToken, L"none") == 0)
+					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					if (sToken == L"none")
 						flRayFalloff = -1.0f;
 					else
 					{
-						flRayFalloff = (float)_wtof(szToken);
+						flRayFalloff = stof(sToken);
 						if (flRayFalloff < 0.0001f)
 							flRayFalloff = 0.0001f;
 					}
 				}
-				else if (wcscmp(szToken, L"--randomize") == 0)
+				else if (sToken == L"--randomize")
 				{
 					bRandomize = true;
 				}
-				else if (wcscmp(szToken, L"--crease") == 0)
+				else if (sToken == L"--crease")
 				{
 					bCrease = true;
 				}
-				else if (wcscmp(szToken, L"--groundocclusion") == 0)
+				else if (sToken == L"--groundocclusion")
 				{
 					bGroundOcclusion = true;
 				}
-				else if (wcscmp(szToken, L"--output") == 0)
+				else if (sToken == L"--output")
 				{
 					i++;
-					mbstowcs(szToken, argv[i], strlen(argv[i])+1);
-					sOutput = eastl::string16(szToken);
+					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					sOutput = sToken;
 				}
 			}
 			else
 			{
 				// It's a file
-				sFile = eastl::string16(szToken);
+				sFile = sToken;
 			}
 		}
 

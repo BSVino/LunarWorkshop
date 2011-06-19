@@ -21,6 +21,11 @@
 #include <raytracer/raytracer.h>
 #endif
 
+// Some compilers don't need it, make sure it still exists though.
+#ifndef CALLBACK
+#define CALLBACK
+#endif
+
 extern "C" {
 static void CALLBACK RenderTesselateBegin(GLenum ePrim);
 static void CALLBACK RenderTesselateVertex(void* pVertexData, void* pPolygonData);
