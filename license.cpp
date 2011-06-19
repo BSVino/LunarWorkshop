@@ -2,7 +2,7 @@
 #include <EASTL/vector.h>
 #include <string.h>
 
-#include <strutils.h>
+#include <tstring.h>
 #include <platform.h>
 #include <mtrand.h>
 
