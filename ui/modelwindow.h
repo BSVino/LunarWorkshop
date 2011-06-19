@@ -40,7 +40,7 @@ public:
 
 public:
 	virtual eastl::string	WindowTitle() { return "SMAK - Super Model Army Knife"; }
-	virtual eastl::string16	AppDirectory() { return L"SMAK"; }
+	virtual tstring	AppDirectory() { return _T("SMAK"); }
 
 	void					OpenWindow();
 
@@ -51,16 +51,16 @@ public:
 	void					Run();	// Doesn't return
 
 	void					DestroyAll();
-	void					ReadFile(const wchar_t* pszFile);
-	void					ReadFileIntoScene(const wchar_t* pszFile);
+	void					ReadFile(const tchar* pszFile);
+	void					ReadFileIntoScene(const tchar* pszFile);
 	void					ReloadFromFile();
 
 	void					LoadIntoGL();
-	static size_t			LoadTexture(eastl::string16 sFilename);
-	static size_t			LoadTextureIntoGL(eastl::string16 sFilename);
+	static size_t			LoadTexture(tstring sFilename);
+	static size_t			LoadTextureIntoGL(tstring sFilename);
 	void					LoadTexturesIntoGL();
 
-	void					SaveFile(const wchar_t* pszFile);
+	void					SaveFile(const tchar* pszFile);
 
 	void					Layout();
 
@@ -129,7 +129,7 @@ public:
 	void					SetDisplayAO(bool bAO);
 	void					SetDisplayColorAO(bool bAO);
 
-	void					SaveNormal(size_t iMaterial, const eastl::string16& sFilename);
+	void					SaveNormal(size_t iMaterial, const tstring& sFilename);
 
 	int						GetWindowWidth() { return (int)m_iWindowWidth; };
 	int						GetWindowHeight() { return (int)m_iWindowHeight; };
@@ -151,14 +151,14 @@ public:
 	void					AddDebugLine(Vector vecStart, Vector vecEnd, Color clrLine = Color(150, 150, 150));
 
 	void					BeginProgress();
-	void					SetAction(const wchar_t* pszAction, size_t iTotalProgress);
+	void					SetAction(const tstring& sAction, size_t iTotalProgress);
 	void					WorkProgress(size_t iProgress, bool bForceDraw = false);
 	void					EndProgress();
 
 protected:
 	CConversionScene		m_Scene;
 	bool					m_bLoadingFile;
-	wchar_t					m_szFileLoaded[1024];
+	tchar					m_szFileLoaded[1024];
 
 	eastl::vector<size_t>		m_aiObjects;
 	size_t					m_iObjectsCreated;

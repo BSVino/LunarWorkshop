@@ -23,10 +23,10 @@ class CPrintingWorkListener : public IWorkListener
 {
 public:
 	virtual void BeginProgress() {};
-	virtual void SetAction(const wchar_t* pszAction, size_t iTotalProgress)
+	virtual void SetAction(const tstring& sAction, size_t iTotalProgress)
 	{
 		printf("\n");
-		wprintf(pszAction);
+		puts(convertstring<tchar, char>(sAction).c_str());
 		if (!iTotalProgress)
 			printf("...");
 
@@ -70,7 +70,7 @@ public:
 
 int CreateApplication(int argc, char** argv)
 {
-	eastl::string16 sFile;
+	tstring sFile;
 	command_t eCommand = COMMAND_NONE;
 	aomethod_t eMethod = AOMETHOD_SHADOWMAP;
 	size_t iSize = 1024;
@@ -81,84 +81,84 @@ int CreateApplication(int argc, char** argv)
 	bool bRandomize = false;
 	bool bCrease = false;
 	bool bGroundOcclusion = false;
-	eastl::string16 sOutput;
+	tstring sOutput;
 
 	if (argc >= 2)
 	{
 		for (int i = 1; i < argc; i++)
 		{
-			eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+			tstring sToken = convertstring<char, tchar>(argv[i]);
 
 			if (sToken[0] == L'-')
 			{
 				// It's an argument
-				if (sToken == L"--command")
+				if (sToken == _T("--command"))
 				{
 					i++;
-					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
-					if (sToken == L"ao")
+					tstring sToken = convertstring<char, tchar>(argv[i]);
+					if (sToken == _T("ao"))
 						eCommand = COMMAND_AO;
 				}
-				else if (sToken == L"--method")
+				else if (sToken == _T("--method"))
 				{
 					i++;
-					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
-					if (sToken == L"shadowmap")
+					tstring sToken = convertstring<char, tchar>(argv[i]);
+					if (sToken == _T("shadowmap"))
 						eMethod = AOMETHOD_SHADOWMAP;
-					else if (sToken == L"raytrace")
+					else if (sToken == _T("raytrace"))
 						eMethod = AOMETHOD_RAYTRACE;
-					else if (sToken == L"tridistance")
+					else if (sToken == _T("tridistance"))
 						eMethod = AOMETHOD_TRIDISTANCE;
-					else if (sToken == L"color")
+					else if (sToken == _T("color"))
 						eMethod = AOMETHOD_RENDER;
 					else
 						printf("ERROR: Unrecognized method.\n");
 				}
-				else if (sToken == L"--size")
+				else if (sToken == _T("--size"))
 				{
 					i++;
-					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					tstring sToken = convertstring<char, tchar>(argv[i]);
 					iSize = stoi(sToken);
 					if (iSize < 64)
 						iSize = 64;
 					else if (iSize > 2048)
 						iSize = 2048;
 				}
-				else if (sToken == L"--bleed")
+				else if (sToken == _T("--bleed"))
 				{
 					i++;
-					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					tstring sToken = convertstring<char, tchar>(argv[i]);
 					iBleed = stoi(sToken);
 					if (iBleed < 0)
 						iBleed = 0;
 					else if (iBleed > 10)
 						iBleed = 10;
 				}
-				else if (sToken == L"--lights")
+				else if (sToken == _T("--lights"))
 				{
 					i++;
-					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					tstring sToken = convertstring<char, tchar>(argv[i]);
 					iLights = stoi(sToken);
 					if (iLights < 500)
 						iLights = 500;
 					else if (iSize > 3000)
 						iLights = 3000;
 				}
-				else if (sToken == L"--samples")
+				else if (sToken == _T("--samples"))
 				{
 					i++;
-					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					tstring sToken = convertstring<char, tchar>(argv[i]);
 					iSamples = stoi(sToken);
 					if (iSamples < 5)
 						iSamples = 5;
 					else if (iSamples > 25)
 						iSamples = 25;
 				}
-				else if (sToken == L"--falloff")
+				else if (sToken == _T("--falloff"))
 				{
 					i++;
-					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
-					if (sToken == L"none")
+					tstring sToken = convertstring<char, tchar>(argv[i]);
+					if (sToken == _T("none"))
 						flRayFalloff = -1.0f;
 					else
 					{
@@ -167,22 +167,22 @@ int CreateApplication(int argc, char** argv)
 							flRayFalloff = 0.0001f;
 					}
 				}
-				else if (sToken == L"--randomize")
+				else if (sToken == _T("--randomize"))
 				{
 					bRandomize = true;
 				}
-				else if (sToken == L"--crease")
+				else if (sToken == _T("--crease"))
 				{
 					bCrease = true;
 				}
-				else if (sToken == L"--groundocclusion")
+				else if (sToken == _T("--groundocclusion"))
 				{
 					bGroundOcclusion = true;
 				}
-				else if (sToken == L"--output")
+				else if (sToken == _T("--output"))
 				{
 					i++;
-					eastl::string16 sToken = convertstring<char, char16_t>(argv[i]);
+					tstring sToken = convertstring<char, tchar>(argv[i]);
 					sOutput = sToken;
 				}
 			}
@@ -197,7 +197,7 @@ int CreateApplication(int argc, char** argv)
 		{
 		case COMMAND_AO:
 		{
-			wprintf(L"Generating ambient occlusion map for %s\n", sFile.c_str());
+			puts(convertstring<tchar, char>(tstring(_T("Generating ambient occlusion map for ")) + sFile + _T("\n")).c_str());
 			switch (eMethod)
 			{
 			case AOMETHOD_RENDER:
@@ -222,7 +222,7 @@ int CreateApplication(int argc, char** argv)
 				printf("Lights: %d\n", iLights);
 			else if (eMethod == AOMETHOD_RAYTRACE)
 				printf("Samples: %d\n", iSamples);
-			wprintf(L"Output file: %s\n", sOutput.c_str());
+			puts(convertstring<tchar, char>(tstring(_T("Output file: ")) + sOutput + _T("\n")).c_str());
 
 			CConversionScene s;
 			CModelConverter c(&s);
@@ -294,10 +294,10 @@ int CreateApplication(int argc, char** argv)
 			ao.Generate();
 
 			printf("Saving results...\n");
-			if (wcslen(sOutput.c_str()))
+			if (sOutput.length())
 				ao.SaveToFile(sOutput.c_str());
 			else
-				ao.SaveToFile(L"ao-output.png");
+				ao.SaveToFile(_T("ao-output.png"));
 
 			printf("Done.\n");
 			return 0;
@@ -332,7 +332,7 @@ int main(int argc, char** argv)
 
 #if defined(_WIN32) && !defined(_DEBUG)
 	}
-	__except (CreateMinidump(GetExceptionInformation(), L"SMAK"), EXCEPTION_EXECUTE_HANDLER)
+	__except (CreateMinidump(GetExceptionInformation(), _T("SMAK")), EXCEPTION_EXECUTE_HANDLER)
 	{
 	}
 #endif

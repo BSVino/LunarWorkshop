@@ -202,7 +202,7 @@ void CAOGenerator::RaytraceJoinThreads()
 	m_pRaytraceParallelizer->FinishJobs();
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(L"Rendering", m_pRaytraceParallelizer->GetJobsTotal());
+		m_pWorkListener->SetAction(_T("Rendering"), m_pRaytraceParallelizer->GetJobsTotal());
 
 	while (true)
 	{

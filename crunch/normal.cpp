@@ -66,7 +66,7 @@ void CNormalGenerator::Think()
 	}
 }
 
-void CNormalGenerator::SaveToFile(const wchar_t *pszFilename)
+void CNormalGenerator::SaveToFile(const tchar *pszFilename)
 {
 	if (!pszFilename)
 		return;
@@ -89,7 +89,7 @@ void CNormalGenerator::SaveToFile(const wchar_t *pszFilename)
 		iluScale(128, 128, 1);
 	}
 
-	ilSaveImage(pszFilename);
+	ilSaveImage(convertstring<tchar, ILchar>(pszFilename).c_str());
 
 	ilDeleteImages(1,&iDevILId);
 }

@@ -19,7 +19,7 @@ public:
 
 	virtual void			Layout();
 
-	virtual void			AddButton(CButton* pButton, const eastl::string16& sHints, bool bNewSection, IEventListener* pListener = NULL, IEventListener::Callback pfnCallback = NULL);
+	virtual void			AddButton(CButton* pButton, const tstring& sHints, bool bNewSection, IEventListener* pListener = NULL, IEventListener::Callback pfnCallback = NULL);
 
 	virtual void			Think();
 	virtual void			Paint(int x, int y, int w, int h);
@@ -42,8 +42,8 @@ public:
 	void					Paint(int x, int y, int w, int h);
 
 	void					SetTotalProgress(size_t iProgress);
-	void					SetProgress(size_t iProgress, const eastl::string16& sAction = L"");
-	void					SetAction(const eastl::string16& sAction);
+	void					SetProgress(size_t iProgress, const tstring& sAction = _T(""));
+	void					SetAction(const tstring& sAction);
 
 	static CProgressBar*	Get();
 
@@ -52,7 +52,7 @@ protected:
 	size_t					m_iCurrentProgress;
 
 	CLabel*					m_pAction;
-	eastl::string16			m_sAction;
+	tstring			m_sAction;
 
 	static CProgressBar*	s_pProgressBar;
 };
@@ -62,7 +62,7 @@ protected:
 class CCloseButton : public CButton
 {
 public:
-							CCloseButton() : CButton(0, 0, 10, 10, L"") {};
+							CCloseButton() : CButton(0, 0, 10, 10, _T("")) {};
 
 public:
 	virtual void			Paint() { CButton::Paint(); };
@@ -72,7 +72,7 @@ public:
 class CMinimizeButton : public CButton
 {
 public:
-							CMinimizeButton() : CButton(0, 0, 10, 10, L"") {};
+							CMinimizeButton() : CButton(0, 0, 10, 10, _T("")) {};
 
 public:
 	virtual void			Paint() { CButton::Paint(); };
@@ -82,7 +82,7 @@ public:
 class CMovablePanel : public CPanel, public IEventListener
 {
 public:
-							CMovablePanel(const eastl::string16& sName);
+							CMovablePanel(const tstring& sName);
 							~CMovablePanel();
 
 	virtual void			Layout();
@@ -170,7 +170,7 @@ public:
 	virtual bool				KeyPressed(int iKey);
 
 	virtual void				BeginProgress();
-	virtual void				SetAction(const wchar_t* pszAction, size_t iTotalProgress);
+	virtual void				SetAction(const tstring& sAction, size_t iTotalProgress);
 	virtual void				WorkProgress(size_t iProgress, bool bForceDraw = false);
 	virtual void				EndProgress();
 
@@ -261,7 +261,7 @@ public:
 	virtual bool			KeyPressed(int iKey);
 
 	virtual void			BeginProgress();
-	virtual void			SetAction(const wchar_t* pszAction, size_t iTotalProgress);
+	virtual void			SetAction(const tstring& sAction, size_t iTotalProgress);
 	virtual void			WorkProgress(size_t iProgress, bool bForceDraw = false);
 	virtual void			EndProgress();
 

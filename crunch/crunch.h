@@ -32,9 +32,9 @@ public:
 	virtual bool			GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias = false) { return false; };
 	virtual size_t			GenerateAO(bool bInMedias = false) { return 0; };
 
-	virtual void			SaveToFile(const eastl::string16& sFilename);
+	virtual void			SaveToFile(const tstring& sFilename);
 
-	virtual eastl::string16	FileSuffix() { return L""; };
+	virtual tstring	FileSuffix() { return _T(""); };
 	virtual void*			GetData() { return NULL; };
 
 protected:
@@ -64,7 +64,7 @@ public:
 
 	virtual size_t			GenerateDiffuse(bool bInMedias = false);
 
-	virtual eastl::string16	FileSuffix() { return L"diffuse"; };
+	virtual tstring	FileSuffix() { return _T("diffuse"); };
 	virtual void*			GetData();
 
 protected:
@@ -93,7 +93,7 @@ public:
 
 	virtual size_t			GenerateAO(bool bInMedias = false);
 
-	virtual eastl::string16	FileSuffix() { return L"ao"; };
+	virtual tstring	FileSuffix() { return _T("ao"); };
 	virtual void*			GetData();
 
 protected:
@@ -127,9 +127,9 @@ public:
 	void					TexturizeValues(Vector* avecTexture);
 	virtual bool			GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias = false);
 
-	virtual void			SaveToFile(const eastl::string16& sFilename);
+	virtual void			SaveToFile(const tstring& sFilename);
 
-	virtual eastl::string16	FileSuffix() { return L"normal"; };
+	virtual tstring	FileSuffix() { return _T("normal"); };
 	virtual void*			GetData();
 
 protected:
@@ -175,7 +175,7 @@ public:
 	size_t					GenerateAO(bool bInMedias = false);
 	void					GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias = false);
 
-	void					SaveAll(const eastl::string16& sFilename);
+	void					SaveAll(const tstring& sFilename);
 
 	bool					IsGenerating() { return m_bIsGenerating; }
 	bool					DoneGenerating() { return m_bDoneGenerating; }
@@ -259,7 +259,7 @@ public:
 	void					RaytraceJoinThreads();
 
 	size_t					GenerateTexture(bool bInMedias = false);
-	void					SaveToFile(const wchar_t* pszFilename);
+	void					SaveToFile(const tchar* pszFilename);
 
 	bool					Texel(size_t w, size_t h, size_t& iTexel, bool bUseMask = true);
 
@@ -320,7 +320,7 @@ public:
 public:
 	void					Think();
 
-	void					SaveToFile(const wchar_t* pszFilename);
+	void					SaveToFile(const tchar* pszFilename);
 
 	bool					Texel(size_t w, size_t h, size_t& iTexel, bool bUseMask = true);
 	bool					Texel(size_t w, size_t h, size_t& iTexel, size_t tw, size_t th, bool* abMask = NULL);

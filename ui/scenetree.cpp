@@ -11,7 +11,7 @@ using namespace glgui;
 CSceneTreePanel* CSceneTreePanel::s_pSceneTreePanel = NULL;
 
 CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
-	: CMovablePanel(L"Scene Tree")
+	: CMovablePanel(_T("Scene Tree"))
 {
 	m_pScene = pScene;
 	m_pTree = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
@@ -59,7 +59,7 @@ void CSceneTreePanel::Paint(int x, int y, int w, int h)
 
 void CSceneTreePanel::AddAllToTree()
 {
-	size_t iMaterialsNode = m_pTree->AddNode(L"Materials");
+	size_t iMaterialsNode = m_pTree->AddNode(_T("Materials"));
 	CTreeNode* pMaterialsNode = m_pTree->GetNode(iMaterialsNode);
 	pMaterialsNode->SetIcon(CModelWindow::Get()->GetMaterialsNodeTexture());
 
@@ -76,7 +76,7 @@ void CSceneTreePanel::AddAllToTree()
 	if (pMaterialsNode->m_apNodes.size() > 10)
 		pMaterialsNode->SetExpanded(false);
 
-	size_t iMeshesNode = m_pTree->AddNode(L"Meshes");
+	size_t iMeshesNode = m_pTree->AddNode(_T("Meshes"));
 	CTreeNode* pMeshesNode = m_pTree->GetNode(iMeshesNode);
 	pMeshesNode->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
 
@@ -86,7 +86,7 @@ void CSceneTreePanel::AddAllToTree()
 	if (pMeshesNode->m_apNodes.size() > 10)
 		pMeshesNode->SetExpanded(false);
 
-	size_t iScenesNode = m_pTree->AddNode(L"Scenes");
+	size_t iScenesNode = m_pTree->AddNode(_T("Scenes"));
 	CTreeNode* pScenesNode = m_pTree->GetNode(iScenesNode);
 	pScenesNode->SetIcon(CModelWindow::Get()->GetScenesNodeTexture());
 
@@ -167,7 +167,7 @@ CSceneTreePanel* CSceneTreePanel::Get()
 }
 
 CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel* pSceneTree)
-	: CMovablePanel(L"Material Properties")
+	: CMovablePanel(_T("Material Properties"))
 {
 	m_pMaterial = pMaterial;
 	m_pSceneTree = pSceneTree;
@@ -189,32 +189,32 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 	SetPos(x + m_pSceneTree->GetWidth(), y);
 	SetSize(500, 300);
 
-	m_pName->AppendText(L" - ");
+	m_pName->AppendText(_T(" - "));
 	m_pName->AppendText(pMaterial->GetName().c_str());
 
-	m_pDiffuseLabel = new CLabel(0, 0, 1, 1, L"Diffuse map: ");
+	m_pDiffuseLabel = new CLabel(0, 0, 1, 1, _T("Diffuse map: "));
 	AddControl(m_pDiffuseLabel);
-	m_pDiffuseFile = new CButton(0, 0, 1, 1, L"");
+	m_pDiffuseFile = new CButton(0, 0, 1, 1, _T(""));
 	m_pDiffuseFile->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pDiffuseFile->SetWrap(false);
 	m_pDiffuseFile->SetClickedListener(this, ChooseDiffuse);
 	AddControl(m_pDiffuseFile);
-	m_pDiffuseRemove = new CButton(0, 0, 70, 20, L"Remove");
+	m_pDiffuseRemove = new CButton(0, 0, 70, 20, _T("Remove"));
 	m_pDiffuseRemove->SetClickedListener(this, RemoveDiffuse);
 	AddControl(m_pDiffuseRemove);
 
-	m_pNormalLabel = new CLabel(0, 0, 1, 1, L"Normal map: ");
+	m_pNormalLabel = new CLabel(0, 0, 1, 1, _T("Normal map: "));
 	AddControl(m_pNormalLabel);
-	m_pNormalFile = new CButton(0, 0, 1, 1, L"");
+	m_pNormalFile = new CButton(0, 0, 1, 1, _T(""));
 	m_pNormalFile->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pNormalFile->SetWrap(false);
 	m_pNormalFile->SetClickedListener(this, ChooseNormal);
 	AddControl(m_pNormalFile);
-	m_pNormalRemove = new CButton(0, 0, 70, 20, L"Remove");
+	m_pNormalRemove = new CButton(0, 0, 70, 20, _T("Remove"));
 	m_pNormalRemove->SetClickedListener(this, RemoveNormal);
 	AddControl(m_pNormalRemove);
 
-	m_pAmbientLabel = new CLabel(0, 0, 1, 1, L"Ambient: ");
+	m_pAmbientLabel = new CLabel(0, 0, 1, 1, _T("Ambient: "));
 	AddControl(m_pAmbientLabel);
 	m_pAmbientRedSelector = new CScrollSelector<float>();
 	SetupSelector(m_pAmbientRedSelector, 1);
@@ -229,7 +229,7 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 	m_pAmbientBlueSelector->SetSelectedListener(this, SetAmbientBlue);
 	AddControl(m_pAmbientBlueSelector);
 
-	m_pDiffuseSelectorLabel = new CLabel(0, 0, 1, 1, L"Diffuse: ");
+	m_pDiffuseSelectorLabel = new CLabel(0, 0, 1, 1, _T("Diffuse: "));
 	AddControl(m_pDiffuseSelectorLabel);
 	m_pDiffuseRedSelector = new CScrollSelector<float>();
 	SetupSelector(m_pDiffuseRedSelector, 1);
@@ -244,7 +244,7 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 	m_pDiffuseBlueSelector->SetSelectedListener(this, SetDiffuseBlue);
 	AddControl(m_pDiffuseBlueSelector);
 
-	m_pSpecularLabel = new CLabel(0, 0, 1, 1, L"Specular: ");
+	m_pSpecularLabel = new CLabel(0, 0, 1, 1, _T("Specular: "));
 	AddControl(m_pSpecularLabel);
 	m_pSpecularRedSelector = new CScrollSelector<float>();
 	SetupSelector(m_pSpecularRedSelector, 1);
@@ -259,7 +259,7 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 	m_pSpecularBlueSelector->SetSelectedListener(this, SetSpecularBlue);
 	AddControl(m_pSpecularBlueSelector);
 
-	m_pEmissiveLabel = new CLabel(0, 0, 1, 1, L"Emissive: ");
+	m_pEmissiveLabel = new CLabel(0, 0, 1, 1, _T("Emissive: "));
 	AddControl(m_pEmissiveLabel);
 	m_pEmissiveRedSelector = new CScrollSelector<float>();
 	SetupSelector(m_pEmissiveRedSelector, 1);
@@ -274,7 +274,7 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 	m_pEmissiveBlueSelector->SetSelectedListener(this, SetEmissiveBlue);
 	AddControl(m_pEmissiveBlueSelector);
 
-	m_pShininessLabel = new CLabel(0, 0, 1, 1, L"Shininess: ");
+	m_pShininessLabel = new CLabel(0, 0, 1, 1, _T("Shininess: "));
 	AddControl(m_pShininessLabel);
 	m_pShininessSelector = new CScrollSelector<float>();
 	SetupSelector(m_pShininessSelector, 128);
@@ -286,27 +286,27 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 
 void CMaterialEditor::SetupSelector(CScrollSelector<float>* pSelector, float flMaxValue)
 {
-	pSelector->AddSelection(CScrollSelection<float>(0*flMaxValue/20, L"0%"));
-	pSelector->AddSelection(CScrollSelection<float>(1*flMaxValue/20, L"5%"));
-	pSelector->AddSelection(CScrollSelection<float>(2*flMaxValue/20, L"10%"));
-	pSelector->AddSelection(CScrollSelection<float>(3*flMaxValue/20, L"15%"));
-	pSelector->AddSelection(CScrollSelection<float>(4*flMaxValue/20, L"20%"));
-	pSelector->AddSelection(CScrollSelection<float>(5*flMaxValue/20, L"25%"));
-	pSelector->AddSelection(CScrollSelection<float>(6*flMaxValue/20, L"30%"));
-	pSelector->AddSelection(CScrollSelection<float>(7*flMaxValue/20, L"35%"));
-	pSelector->AddSelection(CScrollSelection<float>(8*flMaxValue/20, L"40%"));
-	pSelector->AddSelection(CScrollSelection<float>(9*flMaxValue/20, L"45%"));
-	pSelector->AddSelection(CScrollSelection<float>(10*flMaxValue/20, L"50%"));
-	pSelector->AddSelection(CScrollSelection<float>(11*flMaxValue/20, L"55%"));
-	pSelector->AddSelection(CScrollSelection<float>(12*flMaxValue/20, L"60%"));
-	pSelector->AddSelection(CScrollSelection<float>(13*flMaxValue/20, L"65%"));
-	pSelector->AddSelection(CScrollSelection<float>(14*flMaxValue/20, L"70%"));
-	pSelector->AddSelection(CScrollSelection<float>(15*flMaxValue/20, L"75%"));
-	pSelector->AddSelection(CScrollSelection<float>(16*flMaxValue/20, L"80%"));
-	pSelector->AddSelection(CScrollSelection<float>(17*flMaxValue/20, L"85%"));
-	pSelector->AddSelection(CScrollSelection<float>(18*flMaxValue/20, L"90%"));
-	pSelector->AddSelection(CScrollSelection<float>(19*flMaxValue/20, L"95%"));
-	pSelector->AddSelection(CScrollSelection<float>(20*flMaxValue/20, L"100%"));
+	pSelector->AddSelection(CScrollSelection<float>(0*flMaxValue/20, _T("0%")));
+	pSelector->AddSelection(CScrollSelection<float>(1*flMaxValue/20, _T("5%")));
+	pSelector->AddSelection(CScrollSelection<float>(2*flMaxValue/20, _T("10%")));
+	pSelector->AddSelection(CScrollSelection<float>(3*flMaxValue/20, _T("15%")));
+	pSelector->AddSelection(CScrollSelection<float>(4*flMaxValue/20, _T("20%")));
+	pSelector->AddSelection(CScrollSelection<float>(5*flMaxValue/20, _T("25%")));
+	pSelector->AddSelection(CScrollSelection<float>(6*flMaxValue/20, _T("30%")));
+	pSelector->AddSelection(CScrollSelection<float>(7*flMaxValue/20, _T("35%")));
+	pSelector->AddSelection(CScrollSelection<float>(8*flMaxValue/20, _T("40%")));
+	pSelector->AddSelection(CScrollSelection<float>(9*flMaxValue/20, _T("45%")));
+	pSelector->AddSelection(CScrollSelection<float>(10*flMaxValue/20, _T("50%")));
+	pSelector->AddSelection(CScrollSelection<float>(11*flMaxValue/20, _T("55%")));
+	pSelector->AddSelection(CScrollSelection<float>(12*flMaxValue/20, _T("60%")));
+	pSelector->AddSelection(CScrollSelection<float>(13*flMaxValue/20, _T("65%")));
+	pSelector->AddSelection(CScrollSelection<float>(14*flMaxValue/20, _T("70%")));
+	pSelector->AddSelection(CScrollSelection<float>(15*flMaxValue/20, _T("75%")));
+	pSelector->AddSelection(CScrollSelection<float>(16*flMaxValue/20, _T("80%")));
+	pSelector->AddSelection(CScrollSelection<float>(17*flMaxValue/20, _T("85%")));
+	pSelector->AddSelection(CScrollSelection<float>(18*flMaxValue/20, _T("90%")));
+	pSelector->AddSelection(CScrollSelection<float>(19*flMaxValue/20, _T("95%")));
+	pSelector->AddSelection(CScrollSelection<float>(20*flMaxValue/20, _T("100%")));
 }
 
 void CMaterialEditor::Layout()
@@ -327,7 +327,7 @@ void CMaterialEditor::Layout()
 	if (m_pMaterial->GetDiffuseTexture().length())
 		m_pDiffuseFile->SetText(m_pMaterial->GetDiffuseTexture().c_str());
 	else
-		m_pDiffuseFile->SetText(L"Choose...");
+		m_pDiffuseFile->SetText(_T("Choose..."));
 	m_pDiffuseFile->SetSize(0, 0);
 	m_pDiffuseFile->EnsureTextFits();
 	if (m_pDiffuseFile->GetWidth() + m_pDiffuseLabel->GetWidth() + 10 > GetWidth())
@@ -349,7 +349,7 @@ void CMaterialEditor::Layout()
 	if (m_pMaterial->GetNormalTexture().length())
 		m_pNormalFile->SetText(m_pMaterial->GetNormalTexture().c_str());
 	else
-		m_pNormalFile->SetText(L"Choose...");
+		m_pNormalFile->SetText(_T("Choose..."));
 	m_pNormalFile->SetSize(0, 0);
 	m_pNormalFile->EnsureTextFits();
 	if (m_pNormalFile->GetWidth() + m_pNormalLabel->GetWidth() + 10 > GetWidth())
@@ -468,12 +468,12 @@ void CMaterialEditor::Layout()
 
 void CMaterialEditor::ChooseDiffuseCallback()
 {
-	wchar_t* pszOpen = OpenFileDialog(L"All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0");
+	tchar* pszOpen = OpenFileDialog(_T("All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0"));
 
 	if (!pszOpen)
 		return;
 
-	size_t iTexture = CModelWindow::LoadTextureIntoGL(eastl::string16(pszOpen));
+	size_t iTexture = CModelWindow::LoadTextureIntoGL(tstring(pszOpen));
 
 	if (!iTexture)
 		return;
@@ -491,12 +491,12 @@ void CMaterialEditor::ChooseDiffuseCallback()
 
 void CMaterialEditor::ChooseNormalCallback()
 {
-	wchar_t* pszOpen = OpenFileDialog(L"All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0");
+	tchar* pszOpen = OpenFileDialog(_T("All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0"));
 
 	if (!pszOpen)
 		return;
 
-	size_t iTexture = CModelWindow::LoadTextureIntoGL(eastl::string16(pszOpen));
+	size_t iTexture = CModelWindow::LoadTextureIntoGL(tstring(pszOpen));
 
 	if (!iTexture)
 		return;
@@ -532,7 +532,7 @@ void CMaterialEditor::RemoveDiffuseCallback()
 		glDeleteTextures(1, &pMaterial->m_iBase);
 
 	pMaterial->m_iBase = 0;
-	m_pMaterial->m_sDiffuseTexture = L"";
+	m_pMaterial->m_sDiffuseTexture = _T("");
 
 	Layout();
 }
@@ -545,7 +545,7 @@ void CMaterialEditor::RemoveNormalCallback()
 		glDeleteTextures(1, &pMaterial->m_iNormal);
 
 	pMaterial->m_iNormal = 0;
-	m_pMaterial->m_sNormalTexture = L"";
+	m_pMaterial->m_sNormalTexture = _T("");
 
 	if (pMaterial->m_iNormal2)
 		glDeleteTextures(1, &pMaterial->m_iNormal2);

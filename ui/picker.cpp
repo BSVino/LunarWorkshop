@@ -5,7 +5,7 @@
 
 using namespace glgui;
 
-CPicker::CPicker(const eastl::string16& sName, IEventListener* pCallback, IEventListener::Callback pfnCallback)
+CPicker::CPicker(const tstring& sName, IEventListener* pCallback, IEventListener::Callback pfnCallback)
 	: CMovablePanel(sName)
 {
 	m_pCallback = pCallback;
@@ -64,7 +64,7 @@ void CPicker::Close()
 }
 
 CMeshInstancePicker::CMeshInstancePicker(IEventListener* pCallback, IEventListener::Callback pfnCallback)
-	: CPicker(L"Pick a mesh", pCallback, pfnCallback)
+	: CPicker(_T("Pick a mesh"), pCallback, pfnCallback)
 {
 	m_pPickedMeshInstance = NULL;
 }

@@ -107,26 +107,26 @@ void CModelWindow::OpenWindow()
 
 	ilInit();
 
-	size_t iTexture = LoadTextureIntoGL(L"lighthalo.png");
+	size_t iTexture = LoadTextureIntoGL(_T("lighthalo.png"));
 	if (iTexture)
 		m_pLightHalo = new CMaterial(iTexture);
 
-	iTexture = LoadTextureIntoGL(L"lightbeam.png");
+	iTexture = LoadTextureIntoGL(_T("lightbeam.png"));
 	if (iTexture)
 		m_pLightBeam = new CMaterial(iTexture);
 
-	m_iWireframeTexture = LoadTextureIntoGL(L"wireframe.png");
-	m_iSmoothTexture = LoadTextureIntoGL(L"smooth.png");
-	m_iUVTexture = LoadTextureIntoGL(L"uv.png");
-	m_iLightTexture = LoadTextureIntoGL(L"light.png");
-	m_iTextureTexture = LoadTextureIntoGL(L"texture.png");
-	m_iNormalTexture = LoadTextureIntoGL(L"normal.png");
-	m_iAOTexture = LoadTextureIntoGL(L"ao.png");
-	m_iCAOTexture = LoadTextureIntoGL(L"aocolor.png");
-	m_iArrowTexture = LoadTextureIntoGL(L"arrow.png");
-	m_iEditTexture = LoadTextureIntoGL(L"pencil.png");
-	m_iVisibilityTexture = LoadTextureIntoGL(L"eye.png");
-	m_iBarretTexture = LoadTextureIntoGL(L"barret.png");
+	m_iWireframeTexture = LoadTextureIntoGL(_T("wireframe.png"));
+	m_iSmoothTexture = LoadTextureIntoGL(_T("smooth.png"));
+	m_iUVTexture = LoadTextureIntoGL(_T("uv.png"));
+	m_iLightTexture = LoadTextureIntoGL(_T("light.png"));
+	m_iTextureTexture = LoadTextureIntoGL(_T("texture.png"));
+	m_iNormalTexture = LoadTextureIntoGL(_T("normal.png"));
+	m_iAOTexture = LoadTextureIntoGL(_T("ao.png"));
+	m_iCAOTexture = LoadTextureIntoGL(_T("aocolor.png"));
+	m_iArrowTexture = LoadTextureIntoGL(_T("arrow.png"));
+	m_iEditTexture = LoadTextureIntoGL(_T("pencil.png"));
+	m_iVisibilityTexture = LoadTextureIntoGL(_T("eye.png"));
+	m_iBarretTexture = LoadTextureIntoGL(_T("barret.png"));
 
 	InitUI();
 
@@ -235,7 +235,7 @@ void CModelWindow::DestroyAll()
 	CRootPanel::Get()->Layout();
 }
 
-void CModelWindow::ReadFile(const wchar_t* pszFile)
+void CModelWindow::ReadFile(const tchar* pszFile)
 {
 	if (!pszFile)
 		return;
@@ -244,14 +244,14 @@ void CModelWindow::ReadFile(const wchar_t* pszFile)
 		return;
 
 	// Save it in here in case m_szFileLoaded was passed into ReadFile, in which case it would be destroyed by DestroyAll.
-	eastl::string16 sFile = pszFile;
+	tstring sFile = pszFile;
 
 	DestroyAll();
 
 	ReadFileIntoScene(sFile.c_str());
 }
 
-void CModelWindow::ReadFileIntoScene(const wchar_t* pszFile)
+void CModelWindow::ReadFileIntoScene(const tchar* pszFile)
 {
 	if (!pszFile)
 		return;
@@ -271,10 +271,10 @@ void CModelWindow::ReadFileIntoScene(const wchar_t* pszFile)
 		return;
 	}
 
-	wcscpy(m_szFileLoaded, pszFile);
+	tstrncpy(m_szFileLoaded, pszFile, 1023);
 
 	BeginProgress();
-	SetAction(L"Loading into video hardware", 0);
+	SetAction(_T("Loading into video hardware"), 0);
 	LoadIntoGL();
 	EndProgress();
 
@@ -298,7 +298,7 @@ void CModelWindow::LoadIntoGL()
 	ClearDebugLines();
 }
 
-size_t CModelWindow::LoadTexture(eastl::string16 sFilename)
+size_t CModelWindow::LoadTexture(tstring sFilename)
 {
 	if (!sFilename.length())
 		return 0;
@@ -307,10 +307,10 @@ size_t CModelWindow::LoadTexture(eastl::string16 sFilename)
 	ilGenImages(1, &iDevILId);
 	ilBindImage(iDevILId);
 
-	ILboolean bSuccess = ilLoadImage(sFilename.c_str());
+	ILboolean bSuccess = ilLoadImage(convertstring<tchar, ILchar>(sFilename).c_str());
 
 	if (!bSuccess)
-		bSuccess = ilLoadImage(sFilename.c_str());
+		bSuccess = ilLoadImage(convertstring<tchar, ILchar>(sFilename).c_str());
 
 	ILenum iError = ilGetError();
 
@@ -332,7 +332,7 @@ size_t CModelWindow::LoadTexture(eastl::string16 sFilename)
 	return iDevILId;
 }
 
-size_t CModelWindow::LoadTextureIntoGL(eastl::string16 sFilename)
+size_t CModelWindow::LoadTextureIntoGL(tstring sFilename)
 {
 	size_t iDevILId = LoadTexture(sFilename);
 
@@ -382,7 +382,7 @@ void CModelWindow::LoadTexturesIntoGL()
 	}
 }
 
-void CModelWindow::SaveFile(const wchar_t* pszFile)
+void CModelWindow::SaveFile(const tchar* pszFile)
 {
 	if (!pszFile)
 		return;
@@ -1441,15 +1441,15 @@ void CModelWindow::RenderUV()
 		{
 			glColor4ubv(Color(155, 155, 255, 100));
 
-			CLabel::PaintText(L"DEMO", 4, L"sans-serif", 48, 100, 150);
-			CLabel::PaintText(L"DEMO", 4, L"sans-serif", 48, -200, 150);
-			CLabel::PaintText(L"DEMO", 4, L"sans-serif", 48, 100, -150);
-			CLabel::PaintText(L"DEMO", 4, L"sans-serif", 48, -200, -150);
+			CLabel::PaintText(_T("DEMO"), 4, _T("sans-serif"), 48, 100, 150);
+			CLabel::PaintText(_T("DEMO"), 4, _T("sans-serif"), 48, -200, 150);
+			CLabel::PaintText(_T("DEMO"), 4, _T("sans-serif"), 48, 100, -150);
+			CLabel::PaintText(_T("DEMO"), 4, _T("sans-serif"), 48, -200, -150);
 		}
 
 		glColor4ubv(Color(255, 255, 255, 255));
-		eastl::string16 sDemoText = L"This demo version will generate all map sizes, but will downsample to 128x128 when saving.";
-		CLabel::PaintText(sDemoText, sDemoText.length(), L"sans-serif", 16, -300.0f, 260.0f);
+		tstring sDemoText = _T("This demo version will generate all map sizes, but will downsample to 128x128 when saving.");
+		CLabel::PaintText(sDemoText, sDemoText.length(), _T("sans-serif"), 16, -300.0f, 260.0f);
 
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
@@ -1595,7 +1595,7 @@ void CModelWindow::SetDisplayColorAO(bool bColorAO)
 	m_pColorAO->SetState(bColorAO, false);
 }
 
-void CModelWindow::SaveNormal(size_t iMaterial, const eastl::string16& sFilename)
+void CModelWindow::SaveNormal(size_t iMaterial, const tstring& sFilename)
 {
 	CMaterial* pMaterial = &m_aoMaterials[iMaterial];
 
@@ -1623,7 +1623,7 @@ void CModelWindow::SaveNormal(size_t iMaterial, const eastl::string16& sFilename
 			iluScale(128, 128, 1);
 		}
 
-		ilSaveImage(sFilename.c_str());
+		ilSaveImage(convertstring<tchar, ILchar>(sFilename).c_str());
 
 		ilDeleteImage(iSaveId);
 		ilBindImage(0);
@@ -1704,7 +1704,7 @@ void CModelWindow::SaveNormal(size_t iMaterial, const eastl::string16& sFilename
 		iluScale(128, 128, 1);
 	}
 
-	ilSaveImage(sFilename.c_str());
+	ilSaveImage(convertstring<tchar, ILchar>(sFilename).c_str());
 
 	ilDeleteImages(1, &iNormalId);
 

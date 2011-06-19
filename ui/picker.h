@@ -6,7 +6,7 @@
 class CPicker : public CMovablePanel
 {
 public:
-								CPicker(const eastl::string16& sName, IEventListener* pCallback, IEventListener::Callback pfnCallback);
+								CPicker(const tstring& sName, IEventListener* pCallback, IEventListener::Callback pfnCallback);
 
 public:
 	virtual void				Delete() { delete this; };

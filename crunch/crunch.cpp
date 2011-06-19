@@ -117,7 +117,7 @@ void CTexelGenerator::Generate()
 	if (m_pWorkListener)
 	{
 		m_pWorkListener->BeginProgress();
-		m_pWorkListener->SetAction(L"Building tree", 0);
+		m_pWorkListener->SetAction(_T("Building tree"), 0);
 	}
 
 #ifdef _DEBUG
@@ -156,7 +156,7 @@ void CTexelGenerator::Generate()
 	}
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(L"Dispatching jobs", (size_t)(flTotalArea*m_iWidth*m_iHeight));
+		m_pWorkListener->SetAction(_T("Dispatching jobs"), (size_t)(flTotalArea*m_iWidth*m_iHeight));
 
 	size_t iRendered = 0;
 
@@ -214,7 +214,7 @@ void CTexelGenerator::Generate()
 	m_pWorkParallelizer->FinishJobs();
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(L"Rendering", m_pWorkParallelizer->GetJobsTotal());
+		m_pWorkListener->SetAction(_T("Rendering"), m_pWorkParallelizer->GetJobsTotal());
 
 	while (true)
 	{
@@ -482,7 +482,7 @@ void CTexelGenerator::GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedia
 	}
 }
 
-void CTexelGenerator::SaveAll(const eastl::string16& sFilename)
+void CTexelGenerator::SaveAll(const tstring& sFilename)
 {
 	ilEnable(IL_FILE_OVERWRITE);
 
@@ -505,9 +505,9 @@ void CTexelMethod::SetSize(size_t iWidth, size_t iHeight)
 	m_iHeight = iHeight;
 }
 
-void CTexelMethod::SaveToFile(const eastl::string16& sFilename)
+void CTexelMethod::SaveToFile(const tstring& sFilename)
 {
-	eastl::string16 sRealFilename = sFilename.substr(0, sFilename.length()-4) + L"-" + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
+	tstring sRealFilename = sFilename.substr(0, sFilename.length()-4) + _T("-") + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
 
 	ILuint iDevILId;
 	ilGenImages(1, &iDevILId);
@@ -524,7 +524,7 @@ void CTexelMethod::SaveToFile(const eastl::string16& sFilename)
 		iluScale(128, 128, 1);
 	}
 
-	ilSaveImage(sRealFilename.c_str());
+	ilSaveImage(convertstring<tchar, ILchar>(sRealFilename).c_str());
 
 	ilDeleteImages(1,&iDevILId);
 }
@@ -688,7 +688,7 @@ void CTexelDiffuseMethod::PostGenerate()
 	}
 
 	if (m_pGenerator->GetWorkListener())
-		m_pGenerator->GetWorkListener()->SetAction(L"Averaging reads", m_iWidth*m_iHeight);
+		m_pGenerator->GetWorkListener()->SetAction(_T("Averaging reads"), m_iWidth*m_iHeight);
 
 	// Average out all of the reads.
 	for (size_t i = 0; i < m_iWidth*m_iHeight; i++)
@@ -716,7 +716,7 @@ void CTexelDiffuseMethod::PostGenerate()
 void CTexelDiffuseMethod::Bleed()
 {
 	if (m_pGenerator->GetWorkListener())
-		m_pGenerator->GetWorkListener()->SetAction(L"Bleeding edges", 0);
+		m_pGenerator->GetWorkListener()->SetAction(_T("Bleeding edges"), 0);
 
 	for (size_t w = 0; w < m_iWidth; w++)
 	{
@@ -1007,7 +1007,7 @@ void CTexelAOMethod::PostGenerate()
 	size_t i;
 
 	if (m_pGenerator->GetWorkListener())
-		m_pGenerator->GetWorkListener()->SetAction(L"Averaging reads", m_iWidth*m_iHeight);
+		m_pGenerator->GetWorkListener()->SetAction(_T("Averaging reads"), m_iWidth*m_iHeight);
 
 	// Average out all of the reads.
 	for (i = 0; i < m_iWidth*m_iHeight; i++)
@@ -1038,7 +1038,7 @@ void CTexelAOMethod::Bleed()
 	bool* abPixelMask = (bool*)malloc(m_iWidth*m_iHeight*sizeof(bool));
 
 	if (m_pGenerator->GetWorkListener())
-		m_pGenerator->GetWorkListener()->SetAction(L"Bleeding edges", m_iBleed);
+		m_pGenerator->GetWorkListener()->SetAction(_T("Bleeding edges"), m_iBleed);
 
 	for (size_t i = 0; i < m_iBleed; i++)
 	{
@@ -1245,7 +1245,7 @@ void CTexelNormalMethod::Bleed()
 	bool* abPixelMask = (bool*)malloc(m_iWidth*m_iHeight*sizeof(bool));
 
 	if (m_pGenerator->GetWorkListener())
-		m_pGenerator->GetWorkListener()->SetAction(L"Bleeding edges", 0);
+		m_pGenerator->GetWorkListener()->SetAction(_T("Bleeding edges"), 0);
 
 	// This is for pixels that have been set this frame.
 	memset(&abPixelMask[0], 0, m_iWidth*m_iHeight*sizeof(bool));
@@ -1374,9 +1374,9 @@ bool CTexelNormalMethod::GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMe
 	return true;
 }
 
-void CTexelNormalMethod::SaveToFile(const eastl::string16& sFilename)
+void CTexelNormalMethod::SaveToFile(const tstring& sFilename)
 {
-	eastl::string16 sRealFilename = sFilename.substr(0, sFilename.length()-4) + L"-" + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
+	tstring sRealFilename = sFilename.substr(0, sFilename.length()-4) + _T("-") + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
 
 	eastl::vector<bool> abMaterialSaved((bool)false);
 	abMaterialSaved.resize(m_pGenerator->GetScene()->GetNumMaterials());
