@@ -1,3 +1,14 @@
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	find_package(Freetype REQUIRED)
+	include_directories(${FREETYPE_INCLUDE_DIRS})
+
+	find_package(DevIL REQUIRED)
+	include_directories(${IL_INCLUDE_DIR})
+
+	find_package(GTK2 REQUIRED)
+	include_directories(${GTK2_INCLUDE_DIRS})
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
 include_directories (
 	${PROJECT_SOURCE_DIR}/ext-deps/EASTL/include
 	.
@@ -82,5 +93,6 @@ if (WIN32)
 endif (WIN32)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	target_link_libraries (smak glfw GLEW IL ILU freetype ftgl)
+	target_link_libraries (smak glfw GLEW ftgl)
+	target_link_libraries (smak ${FREETYPE_LIBRARY} ${IL_LIBRARIES} ${ILU_LIBRARIES} ${GTK2_LIBRARIES})
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
