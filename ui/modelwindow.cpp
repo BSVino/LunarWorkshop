@@ -271,7 +271,7 @@ void CModelWindow::ReadFileIntoScene(const tchar* pszFile)
 		return;
 	}
 
-	tstrncpy(m_szFileLoaded, pszFile, 1023);
+	tstrncpy(m_szFileLoaded, 1023, pszFile, tstrlen(pszFile));
 
 	BeginProgress();
 	SetAction(_T("Loading into video hardware"), 0);
