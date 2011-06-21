@@ -4,9 +4,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 	find_package(DevIL REQUIRED)
 	include_directories(${IL_INCLUDE_DIR})
-
-	find_package(GTK2 REQUIRED)
-	include_directories(${GTK2_INCLUDE_DIRS})
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 include_directories (
@@ -39,36 +36,11 @@ set (SMAK_SOURCES
 	ui/picker.cpp
 	ui/scenetree.cpp
 
-	../ext-deps/EASTL/src/allocator.cpp
-	../ext-deps/EASTL/src/assert.cpp
-	../ext-deps/EASTL/src/fixed_pool.cpp
-	../ext-deps/EASTL/src/hashtable.cpp
-	../ext-deps/EASTL/src/red_black_tree.cpp
-	../ext-deps/EASTL/src/string.cpp
-
 	../glgui/glgui.cpp
 
 	../license/license.cpp
 
-	../common/configfile.cpp
-	../common/eastl.cpp
-	../common/mempool.cpp
-	../common/mtrand.cpp
-	../common/parallelize.cpp
-	../common/sockets/sockets.cpp
 )
-
-if (WIN32)
-	set (SMAK_SOURCES ${SMAK_SOURCES}
-		../common/platform_win32.cpp
-	)
-endif (WIN32)
-
-if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	set (SMAK_SOURCES ${SMAK_SOURCES}
-		../common/platform_linux.cpp
-	)
-endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 add_executable(smak ${SMAK_SOURCES})
 target_link_libraries (smak tinker modelconverter raytracer)
@@ -94,5 +66,5 @@ endif (WIN32)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	target_link_libraries (smak glfw GLEW ftgl)
-	target_link_libraries (smak ${FREETYPE_LIBRARY} ${IL_LIBRARIES} ${ILU_LIBRARIES} ${GTK2_LIBRARIES})
+	target_link_libraries (smak ${FREETYPE_LIBRARY} ${IL_LIBRARIES} ${ILU_LIBRARIES})
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
