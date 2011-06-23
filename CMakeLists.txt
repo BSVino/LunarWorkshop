@@ -1,7 +1,4 @@
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	find_package(Freetype REQUIRED)
-	include_directories(${FREETYPE_INCLUDE_DIRS})
-
 	find_package(DevIL REQUIRED)
 	include_directories(${IL_INCLUDE_DIR})
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -35,11 +32,6 @@ set (SMAK_SOURCES
 	ui/modelwindow_ui.cpp
 	ui/picker.cpp
 	ui/scenetree.cpp
-
-	../glgui/glgui.cpp
-
-	../license/license.cpp
-
 )
 
 add_executable(smak ${SMAK_SOURCES})
@@ -65,6 +57,5 @@ if (WIN32)
 endif (WIN32)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	target_link_libraries (smak glfw GLEW ftgl)
-	target_link_libraries (smak ${FREETYPE_LIBRARY} ${IL_LIBRARIES} ${ILU_LIBRARIES})
+	target_link_libraries (smak ${IL_LIBRARIES} ${ILU_LIBRARIES})
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
