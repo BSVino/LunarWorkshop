@@ -451,7 +451,7 @@ void CProgressBar::SetAction(const tstring& sAction)
 	if (m_iTotalProgress)
 	{
 		tstring sProgress;
-		sProgress.sprintf(_T(" %d%%"), m_iCurrentProgress*100/m_iTotalProgress);
+		sProgress = sprintf(tstring(" %d%%"), m_iCurrentProgress*100/m_iTotalProgress);
 		m_pAction->AppendText(sProgress);
 	}
 }
@@ -2234,14 +2234,14 @@ void CNormalPanel::Think()
 	if (m_oGenerator.IsSettingUp())
 	{
 		tstring s;
-		s.sprintf(_T("Setting up... %d%%"), (int)(m_oGenerator.GetSetupProgress()*100));
+		s = sprintf(tstring("Setting up... %d%%"), (int)(m_oGenerator.GetSetupProgress()*100));
 		m_pProgressLabel->SetText(s);
 		m_pSave->SetVisible(false);
 	}
 	else if (m_oGenerator.IsGeneratingNewNormal2())
 	{
 		tstring s;
-		s.sprintf(_T("Generating... %d%%"), (int)(m_oGenerator.GetNormal2GenerationProgress()*100));
+		s = sprintf(tstring("Generating... %d%%"), (int)(m_oGenerator.GetNormal2GenerationProgress()*100));
 		m_pProgressLabel->SetText(s);
 		m_pSave->SetVisible(false);
 	}
