@@ -89,7 +89,7 @@ int CreateApplication(int argc, char** argv)
 		{
 			tstring sToken = convertstring<char, tchar>(argv[i]);
 
-			if (sToken[0] == L'-')
+			if (sToken[0] == _T('-'))
 			{
 				// It's an argument
 				if (sToken == _T("--command"))
