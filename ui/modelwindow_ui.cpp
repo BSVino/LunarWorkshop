@@ -91,7 +91,7 @@ void CModelWindow::OpenCallback()
 	if (m_bLoadingFile)
 		return;
 
-	ReadFile(OpenFileDialog(_T("All *.obj;*.sia;*.dae\0*.obj;*.sia;*.dae\0")));
+	ReadFile(OpenFileDialog(_T("All *.obj;*.sia;*.dae\0*.obj;*.sia;*.dae\0")).c_str());
 }
 
 void CModelWindow::OpenIntoCallback()
@@ -99,7 +99,7 @@ void CModelWindow::OpenIntoCallback()
 	if (m_bLoadingFile)
 		return;
 
-	ReadFileIntoScene(OpenFileDialog(_T("All *.obj;*.sia;*.dae\0*.obj;*.sia;*.dae\0")));
+	ReadFileIntoScene(OpenFileDialog(_T("All *.obj;*.sia;*.dae\0*.obj;*.sia;*.dae\0")).c_str());
 }
 
 void CModelWindow::ReloadCallback()
@@ -112,7 +112,7 @@ void CModelWindow::ReloadCallback()
 
 void CModelWindow::SaveCallback()
 {
-	SaveFile(SaveFileDialog(_T("Wavefront .obj\0*.obj\0Silo ASCII .sia\0*.sia\0Collada .dae\0*.dae\0")));
+	SaveFile(SaveFileDialog(_T("Wavefront .obj\0*.obj\0Silo ASCII .sia\0*.sia\0Collada .dae\0*.dae\0")).c_str());
 }
 
 void CModelWindow::CloseCallback()
@@ -1019,7 +1019,7 @@ void CAOPanel::SaveMapCallback()
 	if (!m_oGenerator.DoneGenerating())
 		return;
 
-	m_oGenerator.SaveToFile(SaveFileDialog(_T("Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0")));
+	m_oGenerator.SaveToFile(SaveFileDialog(_T("Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0")).c_str());
 }
 
 void CAOPanel::BeginProgress()
@@ -1699,19 +1699,19 @@ void CComboGeneratorPanel::SaveMapCallback()
 	if (!m_oGenerator.DoneGenerating())
 		return;
 
-	const tchar* pszFilename = SaveFileDialog(_T("Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0"));
+	tstring sFilename = SaveFileDialog(_T("Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0")).c_str();
 
-	if (!pszFilename)
+	if (!sFilename.length())
 		return;
 
-	m_oGenerator.SaveAll(pszFilename);
+	m_oGenerator.SaveAll(sFilename);
 
 	for (size_t i = 0; i < m_paoMaterials->size(); i++)
 	{
 		if (!m_pScene->GetMaterial(i)->IsVisible())
 			continue;
 
-		m_pScene->GetMaterial(i)->m_sNormalTexture = pszFilename;
+		m_pScene->GetMaterial(i)->m_sNormalTexture = sFilename;
 	}
 
 	CRootPanel::Get()->Layout();
@@ -2281,12 +2281,12 @@ void CNormalPanel::SaveMapCallback()
 	if (!m_oGenerator.DoneGenerating())
 		return;
 
-	const tchar* pszFilename = SaveFileDialog(_T("Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0"));
+	tstring sFilename = SaveFileDialog(_T("Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0"));
 
-	if (!pszFilename)
+	if (!sFilename.length())
 		return;
 
-	ModelWindow()->SaveNormal(m_oGenerator.GetGenerationMaterial(), pszFilename);
+	ModelWindow()->SaveNormal(m_oGenerator.GetGenerationMaterial(), sFilename);
 
 	CRootPanel::Get()->Layout();
 }

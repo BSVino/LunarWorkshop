@@ -468,12 +468,12 @@ void CMaterialEditor::Layout()
 
 void CMaterialEditor::ChooseDiffuseCallback()
 {
-	tchar* pszOpen = OpenFileDialog(_T("All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0"));
+	tstring sOpen = OpenFileDialog(_T("All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0"));
 
-	if (!pszOpen)
+	if (!sOpen.length())
 		return;
 
-	size_t iTexture = CModelWindow::LoadTextureIntoGL(tstring(pszOpen));
+	size_t iTexture = CModelWindow::LoadTextureIntoGL(sOpen);
 
 	if (!iTexture)
 		return;
@@ -484,19 +484,19 @@ void CMaterialEditor::ChooseDiffuseCallback()
 		glDeleteTextures(1, &pMaterial->m_iBase);
 
 	pMaterial->m_iBase = iTexture;
-	m_pMaterial->m_sDiffuseTexture = pszOpen;
+	m_pMaterial->m_sDiffuseTexture = sOpen;
 
 	Layout();
 }
 
 void CMaterialEditor::ChooseNormalCallback()
 {
-	tchar* pszOpen = OpenFileDialog(_T("All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0"));
+	tstring sOpen = OpenFileDialog(_T("All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0"));
 
-	if (!pszOpen)
+	if (!sOpen.length())
 		return;
 
-	size_t iTexture = CModelWindow::LoadTextureIntoGL(tstring(pszOpen));
+	size_t iTexture = CModelWindow::LoadTextureIntoGL(sOpen);
 
 	if (!iTexture)
 		return;
@@ -507,7 +507,7 @@ void CMaterialEditor::ChooseNormalCallback()
 		glDeleteTextures(1, &pMaterial->m_iNormal);
 
 	pMaterial->m_iNormal = iTexture;
-	m_pMaterial->m_sNormalTexture = pszOpen;
+	m_pMaterial->m_sNormalTexture = sOpen;
 
 	if (pMaterial->m_iNormal2)
 		glDeleteTextures(1, &pMaterial->m_iNormal2);
