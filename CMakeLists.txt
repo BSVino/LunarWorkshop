@@ -34,6 +34,12 @@ set (SMAK_SOURCES
 	ui/scenetree.cpp
 )
 
+if (WIN32)
+	set (SMAK_SOURCES ${SMAK_SOURCES}
+		smak.rc
+	)
+endif (WIN32)
+
 add_executable(smak ${SMAK_SOURCES})
 target_link_libraries (smak tinker modelconverter raytracer)
 
