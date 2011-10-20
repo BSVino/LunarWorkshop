@@ -41,4 +41,4 @@ add_subdirectory (modelconverter)
 add_subdirectory (tinker)
 add_subdirectory (tengine)
 
-add_subdirectory (sp)
+add_subdirectory (tack)

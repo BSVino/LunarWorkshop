@@ -2,6 +2,7 @@
 #define DT_CAMERA_H
 
 #include "tengine_config.h"
+#include "vector.h"
 
 class CCamera
 {

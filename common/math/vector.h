@@ -66,6 +66,11 @@ public:
 	unit_t	Dot(const TemplateVector<unit_t>& v) const;
 	TemplateVector<unit_t>	Cross(const TemplateVector<unit_t>& v) const;
 
+	bool	IsZero() const
+	{
+		return x == 0 && y == 0 && z == 0;
+	}
+
 	operator unit_t*()
 	{
 		return(&x);

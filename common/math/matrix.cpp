@@ -385,6 +385,15 @@ Vector Matrix4x4::operator*(const Vector& v) const
 	return vecResult;
 }
 
+Vector Matrix4x4::TransformNoTranslate(const Vector& v) const
+{
+	Vector vecResult;
+	vecResult.x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z;
+	vecResult.y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z;
+	vecResult.z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z;
+	return vecResult;
+}
+
 Vector4D Matrix4x4::GetRow(int i)
 {
 	return Vector4D(m[i][0], m[i][1], m[i][2], m[i][3]);

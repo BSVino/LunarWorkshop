@@ -57,6 +57,8 @@ public:
 	// Transform a vector
 	Vector		operator*(const Vector& v) const;
 
+	Vector		TransformNoTranslate(const Vector& v) const;
+
 	Vector4D	GetRow(int i);
 	Vector4D	GetColumn(int i) const;
 	void		SetColumn(int i, const Vector4D& vecColumn);

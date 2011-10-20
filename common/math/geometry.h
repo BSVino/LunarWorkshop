@@ -448,7 +448,7 @@ inline bool LineSegmentIntersectsTriangle(Vector s0, Vector s1, Vector v0, Vecto
 	return true;
 }
 
-inline bool LineSegmentIntersectsSphere(const Vector& v1, const Vector& v2, const Vector& s, float flRadius, Vector& vecPoint)
+inline bool LineSegmentIntersectsSphere(const Vector& v1, const Vector& v2, const Vector& s, float flRadius, Vector& vecPoint, Vector& vecNormal)
 {
 	Vector vecLine = v2 - v1;
 	Vector vecSphere = v1 - s;

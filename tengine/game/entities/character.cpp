@@ -78,8 +78,16 @@ void CCharacter::StopMove(movetype_t eMoveType)
 
 void CCharacter::MoveThink()
 {
+	float flSimulationFrameTime = 0.01f;
+
 	if (!GetGroundEntity())
+	{
+		// Keep the sim time current
+		for (; m_flMoveSimulationTime < GameServer()->GetGameTime(); m_flMoveSimulationTime += flSimulationFrameTime)
+			m_flMoveSimulationTime += flSimulationFrameTime;
+
 		return;
+	}
 
 	if (m_vecGoalVelocity.LengthSqr())
 		m_vecGoalVelocity.Normalize();
@@ -142,8 +150,6 @@ void CCharacter::MoveThink()
 		mGlobalToLocalRotation = GetMoveParent()->GetGlobalToLocalTransform();
 		mGlobalToLocalRotation.SetTranslation(TVector());
 	}
-
-	float flSimulationFrameTime = 0.01f;
 
 	// Break simulations up into consistent small steps to preserve accuracy.
 	for (; m_flMoveSimulationTime < GameServer()->GetGameTime(); m_flMoveSimulationTime += flSimulationFrameTime)
