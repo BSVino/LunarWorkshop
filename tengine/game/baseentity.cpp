@@ -5,12 +5,13 @@
 
 #include <raytracer/raytracer.h>
 #include <models/models.h>
-#include <renderer/renderer.h>
+#include <renderer/renderingcontext.h>
 #include <renderer/particles.h>
 #include <sound/sound.h>
 #include <tinker/application.h>
 #include <tinker/profiler.h>
 #include <network/commands.h>
+#include <models/texturelibrary.h>
 
 #include "game.h"
 
@@ -22,10 +23,12 @@ size_t CBaseEntity::s_iNextEntityListIndex = 0;
 REGISTER_ENTITY(CBaseEntity);
 
 NETVAR_TABLE_BEGIN(CBaseEntity);
-	NETVAR_DEFINE_INTERVAL(Vector, m_vecOrigin, 0.15f);
-	NETVAR_DEFINE_INTERVAL(EAngle, m_angAngles, 0.15f);
-	NETVAR_DEFINE_INTERVAL(Vector, m_vecVelocity, 0.15f);
-	NETVAR_DEFINE(Vector, m_vecGravity);
+	NETVAR_DEFINE(CEntityHandle<CBaseEntity>, m_hMoveParent);
+	NETVAR_DEFINE(CEntityHandle<CBaseEntity>, m_ahMoveChildren);
+	NETVAR_DEFINE(TVector, m_vecGlobalGravity);
+	NETVAR_DEFINE_INTERVAL(TVector, m_vecLocalOrigin, 0.15f);
+	NETVAR_DEFINE_INTERVAL(EAngle, m_angLocalAngles, 0.15f);
+	NETVAR_DEFINE_INTERVAL(TVector, m_vecLocalVelocity, 0.15f);
 	NETVAR_DEFINE(bool, m_bTakeDamage);
 	NETVAR_DEFINE(float, m_flTotalHealth);
 	NETVAR_DEFINE(float, m_flHealth);
@@ -44,13 +47,17 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_OUTPUT(OnDeactivated);
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, eastl::string, m_sName);
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sClassName);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mTransformation);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Quaternion, m_qRotation);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, Vector, m_vecOrigin);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecLastOrigin);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, EAngle, m_angAngles);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, Vector, m_vecVelocity);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, Vector, m_vecGravity);
+	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hMoveParent);
+	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_ahMoveChildren);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bGlobalTransformsDirty);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TMatrix, m_mGlobalTransform);
+	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, TVector, m_vecGlobalGravity);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TMatrix, m_mLocalTransform);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Quaternion, m_qLocalRotation);
+	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, TVector, m_vecLocalOrigin);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TVector, m_vecLastLocalOrigin);
+	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, EAngle, m_angLocalAngles);
+	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, TVector, m_vecLocalVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iHandle);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, bool, m_bTakeDamage);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, float, m_flTotalHealth);
@@ -111,6 +118,8 @@ CBaseEntity::CBaseEntity()
 	m_iSpawnSeed = 0;
 
 	m_bClientSpawn = false;
+
+	m_bGlobalTransformsDirty = true;
 }
 
 CBaseEntity::~CBaseEntity()
@@ -151,43 +160,286 @@ void CBaseEntity::SetModel(size_t iModel)
 	}
 }
 
-void CBaseEntity::SetTransformation(const Matrix4x4& m)
+void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 {
-	SetOrigin(m.GetTranslation());
-	SetAngles(m.GetAngles());
-
-	m_mTransformation = m;
-	m_qRotation = Quaternion(m);
-}
-
-void CBaseEntity::SetRotation(const Quaternion& q)
-{
-	SetAngles(q.GetAngles());
-	m_mTransformation.SetRotation(q);
-
-	m_qRotation = q;
-}
-
-void CBaseEntity::SetOrigin(const Vector& vecOrigin)
-{
-	if (!m_vecOrigin.IsInitialized())
-		m_vecOrigin = vecOrigin;
-
-	if ((vecOrigin - m_vecOrigin).LengthSqr() == 0)
+	if (m_hMoveParent.GetPointer() == pParent)
 		return;
 
-	OnSetOrigin(vecOrigin);
-	m_vecOrigin = vecOrigin;
+	if (m_hMoveParent != NULL)
+	{
+		TMatrix mPreviousGlobal = GetGlobalTransform();
+		TVector vecPreviousVelocity = GetGlobalVelocity();
+		TVector vecPreviousLastOrigin = mPreviousGlobal * GetLastLocalOrigin();
 
-	m_mTransformation.SetTranslation(vecOrigin);
+		for (size_t i = 0; i < m_hMoveParent->m_ahMoveChildren.size(); i++)
+		{
+			if (m_hMoveParent->m_ahMoveChildren[i]->GetHandle() == GetHandle())
+			{
+				m_hMoveParent->m_ahMoveChildren.erase(i);
+				break;
+			}
+		}
+		m_hMoveParent = NULL;
+
+		m_vecLocalVelocity = vecPreviousVelocity;
+		m_mLocalTransform = mPreviousGlobal;
+		m_vecLastLocalOrigin = vecPreviousLastOrigin;
+		m_vecLocalOrigin = mPreviousGlobal.GetTranslation();
+		m_qLocalRotation = Quaternion(mPreviousGlobal);
+		m_angLocalAngles = mPreviousGlobal.GetAngles();
+
+		InvalidateGlobalTransforms();
+	}
+
+	TVector vecPreviousVelocity = GetLocalVelocity();
+	TVector vecPreviousLastOrigin = GetLastLocalOrigin();
+	TMatrix mPreviousTransform = GetLocalTransform();
+
+	m_hMoveParent = pParent;
+
+	if (!pParent)
+		return;
+
+	pParent->m_ahMoveChildren.push_back(this);
+
+	TMatrix mGlobalToLocal = m_hMoveParent->GetGlobalToLocalTransform();
+
+	m_vecLastLocalOrigin = mGlobalToLocal * vecPreviousLastOrigin;
+	m_mLocalTransform = mGlobalToLocal * mPreviousTransform;
+	m_vecLocalOrigin = m_mLocalTransform.GetTranslation();
+	m_qLocalRotation = Quaternion(m_mLocalTransform);
+	m_angLocalAngles = m_mLocalTransform.GetAngles();
+
+	TFloat flVelocityLength = vecPreviousVelocity.Length();
+	if (flVelocityLength > TFloat(0))
+	{
+		mGlobalToLocal.SetTranslation(TVector(0, 0, 0));
+		m_vecLocalVelocity = (mGlobalToLocal * (vecPreviousVelocity/flVelocityLength))*flVelocityLength;
+	}
+	else
+		m_vecLocalVelocity = TVector(0, 0, 0);
+
+	InvalidateGlobalTransforms();
+}
+
+void CBaseEntity::InvalidateGlobalTransforms()
+{
+	m_bGlobalTransformsDirty = true;
+
+	for (size_t i = 0; i < m_ahMoveChildren.size(); i++)
+		m_ahMoveChildren[i]->InvalidateGlobalTransforms();
+}
+
+const TMatrix& CBaseEntity::GetGlobalTransform()
+{
+	if (!m_bGlobalTransformsDirty)
+		return m_mGlobalTransform;
+
+	if (m_hMoveParent == NULL)
+		m_mGlobalTransform = m_mLocalTransform;
+	else
+		m_mGlobalTransform = m_hMoveParent->GetGlobalTransform() * m_mLocalTransform;
+
+	m_bGlobalTransformsDirty = false;
+
+	return m_mGlobalTransform;
+}
+
+TMatrix CBaseEntity::GetGlobalTransform() const
+{
+	if (!m_bGlobalTransformsDirty)
+		return m_mGlobalTransform;
+
+	if (m_hMoveParent == NULL)
+		return m_mLocalTransform;
+	else
+		return m_hMoveParent->GetGlobalTransform() * m_mLocalTransform;
+}
+
+void CBaseEntity::SetGlobalTransform(const TMatrix& m)
+{
+	m_hMoveParent = NULL;
+	m_mGlobalTransform = m_mLocalTransform = m;
+	m_bGlobalTransformsDirty = false;
+}
+
+TMatrix CBaseEntity::GetGlobalToLocalTransform()
+{
+	TMatrix mInverse;
+	if (HasMoveParent())
+		mInverse = GetMoveParent()->GetGlobalTransform();
+	else
+		mInverse = GetGlobalTransform();
+
+	mInverse.InvertTR();
+	return mInverse;
+}
+
+TMatrix CBaseEntity::GetGlobalToLocalTransform() const
+{
+	TMatrix mInverse;
+	if (HasMoveParent())
+		mInverse = GetMoveParent()->GetGlobalTransform();
+	else
+		mInverse = GetGlobalTransform();
+
+	mInverse.InvertTR();
+	return mInverse;
+}
+
+TVector CBaseEntity::GetGlobalOrigin()
+{
+	return GetGlobalTransform().GetTranslation();
+}
+
+EAngle CBaseEntity::GetGlobalAngles()
+{
+	return GetGlobalTransform().GetAngles();
+}
+
+TVector CBaseEntity::GetGlobalOrigin() const
+{
+	return GetGlobalTransform().GetTranslation();
+}
+
+EAngle CBaseEntity::GetGlobalAngles() const
+{
+	return GetGlobalTransform().GetAngles();
+}
+
+void CBaseEntity::SetGlobalOrigin(const TVector& vecOrigin)
+{
+	if (m_hMoveParent == NULL)
+		SetLocalOrigin(vecOrigin);
+	else
+	{
+		TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
+		SetLocalOrigin(mGlobalToLocal * vecOrigin);
+	}
+}
+
+void CBaseEntity::SetGlobalAngles(const EAngle& angAngles)
+{
+	if (m_hMoveParent == NULL)
+		SetLocalAngles(angAngles);
+	else
+	{
+		TMatrix mGlobalToLocal = m_hMoveParent->GetGlobalToLocalTransform();
+		mGlobalToLocal.SetTranslation(TVector(0,0,0));
+		TMatrix mGlobalAngles;
+		mGlobalAngles.SetAngles(angAngles);
+		TMatrix mLocalAngles = mGlobalToLocal * mGlobalAngles;
+		SetLocalAngles(mLocalAngles.GetAngles());
+	}
+}
+
+TVector CBaseEntity::GetGlobalVelocity()
+{
+	if (HasMoveParent())
+	{
+		TMatrix mParentGlobal = GetMoveParent()->GetGlobalTransform();
+
+		if (m_vecLocalVelocity.Get().LengthSqr() > TFloat(0))
+		{
+			TFloat flLength = m_vecLocalVelocity.Get().Length();
+			return (mParentGlobal.TransformNoTranslate(m_vecLocalVelocity/flLength))*flLength;
+		}
+		else
+			return TVector(0, 0, 0);
+	}
+	else
+		return GetLocalVelocity();
+}
+
+TVector CBaseEntity::GetGlobalVelocity() const
+{
+	if (HasMoveParent())
+	{
+		TMatrix mParentGlobal = GetMoveParent()->GetGlobalTransform();
+
+		if (m_vecLocalVelocity.Get().LengthSqr() > TFloat(0))
+		{
+			TFloat flLength = m_vecLocalVelocity.Get().Length();
+			return (mParentGlobal.TransformNoTranslate(m_vecLocalVelocity/flLength))*flLength;
+		}
+		else
+			return TVector(0, 0, 0);
+	}
+	else
+		return GetLocalVelocity();
+}
+
+void CBaseEntity::SetLocalTransform(const TMatrix& m)
+{
+	SetLocalOrigin(m.GetTranslation());
+	SetLocalAngles(m.GetAngles());
+
+	m_mLocalTransform = m;
+	m_qLocalRotation = Quaternion(m);
+
+	InvalidateGlobalTransforms();
+}
+
+void CBaseEntity::SetLocalRotation(const Quaternion& q)
+{
+	SetLocalAngles(q.GetAngles());
+	m_mLocalTransform.SetRotation(q);
+
+	m_qLocalRotation = q;
+
+	InvalidateGlobalTransforms();
+}
+
+void CBaseEntity::SetLocalOrigin(const TVector& vecOrigin)
+{
+	if (!m_vecLocalOrigin.IsInitialized())
+		m_vecLocalOrigin = vecOrigin;
+
+	if ((vecOrigin - m_vecLocalOrigin).LengthSqr() == TFloat(0))
+		return;
+
+	OnSetLocalOrigin(vecOrigin);
+	m_vecLocalOrigin = vecOrigin;
+
+	m_mLocalTransform.SetTranslation(vecOrigin);
+
+	InvalidateGlobalTransforms();
 };
 
-void CBaseEntity::SetAngles(const EAngle& angAngles)
+TVector CBaseEntity::GetLastGlobalOrigin() const
 {
-	m_angAngles = angAngles;
+	if (GetMoveParent())
+		return GetMoveParent()->GetGlobalTransform() * GetLastLocalOrigin();
+	else
+		return GetLastLocalOrigin();
+}
 
-	m_mTransformation.SetRotation(angAngles);
-	m_qRotation.SetAngles(angAngles);
+void CBaseEntity::SetLocalVelocity(const TVector& vecVelocity)
+{
+	if (!m_vecLocalVelocity.IsInitialized())
+		m_vecLocalVelocity = vecVelocity;
+
+	if ((vecVelocity - m_vecLocalVelocity).LengthSqr() == TFloat(0))
+		return;
+
+	m_vecLocalVelocity = vecVelocity;
+}
+
+void CBaseEntity::SetLocalAngles(const EAngle& angAngles)
+{
+	if (!m_angLocalAngles.IsInitialized())
+		m_angLocalAngles = angAngles;
+
+	EAngle angDifference = angAngles - m_angLocalAngles;
+	if (fabs(angDifference.p) < 0.001f && fabs(angDifference.y) < 0.001f && fabs(angDifference.r) < 0.001f)
+		return;
+
+	m_angLocalAngles = angAngles;
+
+	m_mLocalTransform.SetAngles(angAngles);
+	m_qLocalRotation.SetAngles(angAngles);
+
+	InvalidateGlobalTransforms();
 }
 
 CBaseEntity* CBaseEntity::GetEntity(size_t iHandle)
@@ -297,13 +549,7 @@ void CBaseEntity::Render(bool bTransparent) const
 
 	do {
 		CRenderingContext r(GameServer()->GetRenderer());
-		r.Translate(GetRenderOrigin());
-
-		EAngle angRender = GetRenderAngles();
-
-		r.Rotate(-angRender.y, Vector(0, 1, 0));
-		r.Rotate(angRender.p, Vector(0, 0, 1));
-		r.Rotate(angRender.r, Vector(1, 0, 0));
+		r.Transform(GetRenderTransform());
 
 		ModifyContext(&r, bTransparent);
 
@@ -503,38 +749,62 @@ void CBaseEntity::SetSoundVolume(const tstring& sFilename, float flVolume)
 	CSoundLibrary::SetSoundVolume(this, sFilename, flVolume);
 }
 
-float CBaseEntity::Distance(Vector vecSpot) const
+TFloat CBaseEntity::Distance(const TVector& vecSpot) const
 {
-	float flDistance = (GetOrigin() - vecSpot).Length();
+	TFloat flDistance = (GetGlobalOrigin() - vecSpot).Length();
 	if (flDistance < GetBoundingRadius())
 		return 0;
 
 	return flDistance - GetBoundingRadius();
 }
 
-bool CBaseEntity::Collide(const Vector& v1, const Vector& v2, Vector& vecPoint)
+bool CBaseEntity::CollideLocal(const TVector& v1, const TVector& v2, TVector& vecPoint, TVector& vecNormal)
 {
-	if (m_pTracer)
-	{
-		// Got to translate from world space to object space and back again. The collision mesh is in object space!
-		Matrix4x4 m;
-		m.SetTranslation(GetOrigin());
-		m.SetRotation(GetAngles());
-
-		Matrix4x4 i(m);
-		i.InvertTR();
-
-		raytrace::CTraceResult tr;
-		bool bHit = m_pTracer->Raytrace(i*v1, i*v2, &tr);
-		if (bHit)
-			vecPoint = m*tr.m_vecHit;
-		return bHit;
-	}
-
-	if (GetBoundingRadius() == 0)
+	if (!ShouldCollide())
 		return false;
 
-	return LineSegmentIntersectsSphere(v1, v2, GetOrigin(), GetBoundingRadius(), vecPoint);
+	if (GetBoundingRadius() == TFloat(0))
+		return false;
+
+	if (v1 == v2)
+	{
+		vecPoint = v1;
+		TFloat flLength = v1.Length();
+		vecNormal = v1/flLength;
+
+		bool bLess = flLength < GetBoundingRadius();
+		if (bLess)
+			vecPoint += vecNormal * ((GetBoundingRadius()-flLength) + TFloat(0.0001f));
+
+		return bLess;
+	}
+
+	return LineSegmentIntersectsSphere(v1, v2, TVector(), GetBoundingRadius(), vecPoint, vecNormal);
+}
+
+bool CBaseEntity::Collide(const TVector& v1, const TVector& v2, TVector& vecPoint, TVector& vecNormal)
+{
+	if (!ShouldCollide())
+		return false;
+
+	if (GetBoundingRadius() == TFloat(0))
+		return false;
+
+	if (v1 == v2)
+	{
+		vecPoint = v1;
+		TVector vecPosition = v1-GetGlobalOrigin();
+		TFloat flLength = vecPosition.Length();
+		vecNormal = vecPosition/flLength;
+
+		bool bLess = flLength < GetBoundingRadius();
+		if (bLess)
+			vecPoint += vecNormal * ((GetBoundingRadius()-flLength) + TFloat(0.0001f));
+
+		return bLess;
+	}
+
+	return LineSegmentIntersectsSphere(v1, v2, GetGlobalOrigin(), GetBoundingRadius(), vecPoint, vecNormal);
 }
 
 void CBaseEntity::SetSpawnSeed(size_t iSpawnSeed)
@@ -667,7 +937,7 @@ void CBaseEntity::CheckSaveDataSize(CEntityRegistration* pRegistration)
 
 		// This can help you find where missing stuff is, if all of the save data is in order.
 		// On GCC there's also a problem where a boolean at the end of a parent class can make the beginning address of any child classes be not a multiple of 4, which can cause this to trip. Solution: Keep your booleans near the center of your class definitions. (Really should rewrite this function but meh.)
-		TAssert(pData->m_iOffset - iFirstOffset == iSaveTableSize);
+//		TAssert(pData->m_iOffset - iFirstOffset == iSaveTableSize);
 
 		iSaveTableSize += pData->m_iSizeOfVariable;
 	}
@@ -681,8 +951,8 @@ void CBaseEntity::CheckSaveDataSize(CEntityRegistration* pRegistration)
 	// If you're getting this assert it probably means you forgot to add a savedata entry for some variable that you added to a class.
 	if (iSaveTableSize != iSizeOfThis)
 	{
-		TMsg(sprintf(tstring("Save table for class '%s' doesn't match the class's size.\n"), convertstring<char, tchar>(GetClassName()).c_str()));
-		TAssert(!_T("Save table size doesn't match class size.\n"));
+		TMsg(sprintf(tstring("Save table for class '%s' doesn't match the class's size, %d != %d.\n"), convertstring<char, tchar>(GetClassName()).c_str(), iSaveTableSize, iSizeOfThis));
+//		TAssert(!"Save table size doesn't match class size.\n");
 	}
 }
 
@@ -931,6 +1201,11 @@ void CBaseEntity::PrecacheParticleSystem(const tstring& sSystem)
 void CBaseEntity::PrecacheSound(const tstring& sSound)
 {
 	CSoundLibrary::Get()->AddSound(sSound);
+}
+
+void CBaseEntity::PrecacheTexture(const tstring& sTexture)
+{
+	CTextureLibrary::AddTexture(sTexture);
 }
 
 eastl::map<tstring, CEntityRegistration>& CBaseEntity::GetEntityRegistration()

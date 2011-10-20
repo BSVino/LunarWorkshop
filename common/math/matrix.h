@@ -32,7 +32,7 @@ public:
 
 	// Set a transformation
 	void		SetTranslation(const Vector& vecPos);
-	void		SetRotation(const EAngle& angDir);
+	void		SetAngles(const EAngle& angDir);
 	void		SetRotation(float flAngle, const Vector& vecAxis);
 	void		SetRotation(const Quaternion& q);
 	void		SetOrientation(const Vector& vecDir);
@@ -45,7 +45,7 @@ public:
 	Matrix4x4	operator+=(const EAngle& a);
 
 	// Add a transformation
-	Matrix4x4	operator*(const Matrix4x4& t);
+	Matrix4x4	operator*(const Matrix4x4& t) const;
 	Matrix4x4	operator*=(const Matrix4x4& t);
 
 	// Add a transformation
@@ -61,6 +61,9 @@ public:
 	Vector4D	GetColumn(int i) const;
 	void		SetColumn(int i, const Vector4D& vecColumn);
 	void		SetColumn(int i, const Vector& vecColumn);
+	Vector		GetForwardVector() const { return Vector(GetColumn(0)); }
+	Vector		GetUpVector() const { return Vector(GetColumn(1)); }
+	Vector		GetRightVector() const { return Vector(GetColumn(2)); }
 
 	void		InvertTR();
 

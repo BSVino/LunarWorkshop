@@ -149,7 +149,7 @@ void Matrix4x4::SetTranslation(const Vector& vecPos)
 	m[2][3] = vecPos.z;
 }
 
-void Matrix4x4::SetRotation(const EAngle& angDir)
+void Matrix4x4::SetAngles(const EAngle& angDir)
 {
 	float sp = sin(angDir.p * M_PI/180);
 	float sy = sin(angDir.y * M_PI/180);
@@ -302,13 +302,13 @@ Matrix4x4 Matrix4x4::operator+=(const Vector& v)
 Matrix4x4 Matrix4x4::operator+=(const EAngle& a)
 {
 	Matrix4x4 r;
-	r.SetRotation(a);
+	r.SetAngles(a);
 	(*this) *= r;
 
 	return *this;
 }
 
-Matrix4x4 Matrix4x4::operator*(const Matrix4x4& t)
+Matrix4x4 Matrix4x4::operator*(const Matrix4x4& t) const
 {
 	Matrix4x4 r;
 
@@ -361,9 +361,9 @@ Vector Matrix4x4::GetTranslation() const
 
 EAngle Matrix4x4::GetAngles() const
 {
-	if (m[1][0] > 0.99f)
+	if (m[1][0] > 0.999999f)
 		return EAngle(90, atan2(m[0][2], m[2][2]) * 180/M_PI, 0);
-	else if (m[1][0] < -0.99f)
+	else if (m[1][0] < -0.999999f)
 		return EAngle(-90, atan2(m[0][2], m[2][2]) * 180/M_PI, 0);
 
 	// Clamp to [-1, 1] looping

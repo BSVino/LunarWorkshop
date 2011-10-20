@@ -47,14 +47,9 @@ set (TENGINE_SOURCES
 	renderer/dissolver.cpp
 	renderer/particles.cpp
 	renderer/renderer.cpp
-
-	shaders/blur.cpp
-	shaders/explosion.cpp
-	shaders/filters.cpp
-	shaders/model.cpp
-	shaders/prop.cpp
-	shaders/shaders.cpp
-	shaders/terrain.cpp
+	renderer/renderingcontext.cpp
+	renderer/roperenderer.cpp
+	renderer/shaders.cpp
 
 	sound/sound.cpp
 

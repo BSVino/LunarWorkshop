@@ -3,13 +3,14 @@
 #include <maths.h>
 #include <mtrand.h>
 #include <game/game.h>
-#include <shaders/shaders.h>
+#include <renderer/shaders.h>
 #include <tinker/cvar.h>
 #include <tinker/profiler.h>
 #include <models/models.h>
 #include <models/texturelibrary.h>
 
 #include "renderer.h"
+#include "renderingcontext.h"
 
 CParticleSystemLibrary* CParticleSystemLibrary::s_pParticleSystemLibrary = NULL;
 static CParticleSystemLibrary g_pParticleSystemLibrary = CParticleSystemLibrary();
@@ -103,7 +104,7 @@ void CParticleSystemLibrary::Render()
 		CRenderingContext c(GameServer()->GetRenderer());
 		if (GameServer()->GetRenderer()->ShouldUseShaders())
 		{
-			c.UseProgram(CShaderLibrary::GetModelProgram());
+			c.UseProgram("model");
 			c.SetUniform("bDiffuse", true);
 			c.SetUniform("iDiffuse", 0);
 			c.SetUniform("bColorSwapInAlpha", false);
@@ -122,7 +123,7 @@ void CParticleSystemLibrary::Render()
 		CRenderingContext c(GameServer()->GetRenderer());
 		if (GameServer()->GetRenderer()->ShouldUseShaders())
 		{
-			c.UseProgram(CShaderLibrary::GetModelProgram());
+			c.UseProgram("model");
 			c.SetUniform("bDiffuse", true);
 			c.SetUniform("iDiffuse", 0);
 			c.SetUniform("bColorSwapInAlpha", false);
@@ -329,7 +330,7 @@ void CSystemInstance::Simulate()
 	if (m_hFollow != NULL)
 	{
 		m_vecOrigin = m_hFollow->GetRenderOrigin();
-		m_vecInheritedVelocity = m_hFollow->GetVelocity();
+		m_vecInheritedVelocity = m_hFollow->GetGlobalVelocity();
 	}
 
 	for (size_t i = 0; i < m_aParticles.size(); i++)
@@ -542,13 +543,13 @@ void CSystemInstance::Render(CRenderingContext* c)
 
 			c->BeginRenderQuads();
 
-			c->TexCoord(0, 1);
+			c->TexCoord(0.0f, 1.0f);
 			c->Vertex(vecTL);
-			c->TexCoord(0, 0);
+			c->TexCoord(0.0f, 0.0f);
 			c->Vertex(vecBL);
-			c->TexCoord(1, 0);
+			c->TexCoord(1.0f, 0.0f);
 			c->Vertex(vecBR);
-			c->TexCoord(1, 1);
+			c->TexCoord(1.0f, 1.0f);
 			c->Vertex(vecTR);
 
 			c->EndRender();

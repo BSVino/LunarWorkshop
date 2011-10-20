@@ -17,12 +17,13 @@ public:
 	void						OpenWindow();
 
 	void						Run();
-	virtual void				PreFrame() {};
+	virtual void				PreFrame();
+	virtual void				PostFrame();
 	virtual void				RenderLoading() {};
 
 	virtual void				Render();
 
-	virtual void				KeyPress(int c);
+	virtual bool				KeyPress(int c);
 	virtual void				KeyRelease(int c);
 
 	virtual void				MouseMotion(int x, int y);

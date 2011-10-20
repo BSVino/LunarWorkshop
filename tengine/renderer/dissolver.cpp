@@ -5,10 +5,11 @@
 
 #include <game/baseentity.h>
 #include <models/models.h>
-#include <shaders/shaders.h>
+#include <renderer/shaders.h>
 #include <game/game.h>
 
 #include "renderer.h"
+#include "renderingcontext.h"
 
 CModelDissolver* CModelDissolver::s_pModelDissolver = NULL;
 static CModelDissolver g_pModelDissolver = CModelDissolver();
@@ -38,7 +39,7 @@ void CModelDissolver::AddModel(CBaseEntity* pEntity, Color* pclrSwap, Vector* pv
 
 	Matrix4x4 mTransform;
 	mTransform.SetTranslation(pEntity->GetRenderOrigin());
-	mTransform.SetRotation(pEntity->GetRenderAngles());
+	mTransform.SetAngles(pEntity->GetRenderAngles());
 
 	if (pvecScale)
 	{
@@ -137,7 +138,7 @@ void CModelDissolver::AddTriangle(CConversionMeshInstance* pMeshInstance, CConve
 
 	Vector vecVelocity = vecAverage - pMeshInstance->m_pScene->m_oExtends.Center();
 	pNewTri->m_mVelocity.SetTranslation(vecVelocity);
-	pNewTri->m_mVelocity.SetRotation(EAngle(
+	pNewTri->m_mVelocity.SetAngles(EAngle(
 		RandomFloat(-90, 90),
 		RandomFloat(-180, 180),
 		RandomFloat(-90, 90)
@@ -201,7 +202,7 @@ void CModelDissolver::Render()
 	c.SetColor(Color(255, 255, 255, 255));
 	if (pRenderer->ShouldUseShaders())
 	{
-		c.UseProgram(CShaderLibrary::GetModelProgram());
+		c.UseProgram("model");
 		c.SetUniform("bDiffuse", true);
 		c.SetUniform("iDiffuse", 0);
 	}

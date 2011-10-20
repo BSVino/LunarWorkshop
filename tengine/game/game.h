@@ -20,6 +20,9 @@ public:
 public:
 	virtual void								Spawn();
 
+	virtual void								Simulate() {};
+	virtual bool								ShouldRunSimulation() { return true; };
+
 	virtual void								RegisterNetworkFunctions();
 
 	virtual void								OnClientConnect(int iClient);
@@ -36,7 +39,7 @@ public:
 	virtual void								OnTakeDamage(class CBaseEntity* pVictim, class CBaseEntity* pAttacker, class CBaseEntity* pInflictor, float flDamage, bool bDirectHit, bool bKilled) {};
 	virtual void								OnDeleted(class CBaseEntity* pEntity);
 
-	virtual bool								TraceLine(const Vector& s1, const Vector& s2, Vector& vecHit, CBaseEntity** pHit, int iCollisionGroup = 0);
+	virtual bool								TraceLine(const TVector& s1, const TVector& s2, TVector& vecHit, TVector& vecNormal, CBaseEntity** pHit);
 
 	size_t										GetNumPlayers() const { return m_ahPlayers.size(); };
 	CPlayer*									GetPlayer(size_t i) const;

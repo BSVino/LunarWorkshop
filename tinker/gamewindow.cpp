@@ -21,9 +21,9 @@ void CGameWindow::OpenWindow()
 	GetScreenSize(iScreenWidth, iScreenHeight);
 
 #ifdef _DEBUG
-	BaseClass::OpenWindow(iScreenWidth/2, iScreenHeight/2, false, false);
+	BaseClass::OpenWindow(iScreenWidth*2/3, iScreenHeight*2/3, false, false);
 #else
-	BaseClass::OpenWindow(iScreenWidth, iScreenHeight, true, false);
+	BaseClass::OpenWindow(iScreenWidth*2/3, iScreenHeight*2/3, false, false);
 #endif
 
 	RenderLoading();
@@ -82,11 +82,23 @@ void CGameWindow::Run()
 					Render();
 				}
 			}
+
+			PostFrame();
 		}
 
 		CProfiler::Render();
 		SwapBuffers();
 	}
+}
+
+void CGameWindow::PreFrame()
+{
+	GameServer()->GetRenderer()->PreFrame();
+}
+
+void CGameWindow::PostFrame()
+{
+	GameServer()->GetRenderer()->PostFrame();
 }
 
 void CGameWindow::Render()
@@ -106,9 +118,10 @@ void CGameWindow::Render()
 	}
 }
 
-void CGameWindow::KeyPress(int c)
+bool CGameWindow::KeyPress(int c)
 {
-	BaseClass::KeyPress(c);
+	if (BaseClass::KeyPress(c))
+		return true;
 
 	if (GameServer() && GameServer()->GetCamera())
 		GameServer()->GetCamera()->KeyDown(c);
@@ -121,6 +134,8 @@ void CGameWindow::KeyPress(int c)
 			pPlayer->KeyPress(c);
 		}
 	}
+
+	return false;
 }
 
 void CGameWindow::KeyRelease(int c)
@@ -142,6 +157,12 @@ void CGameWindow::KeyRelease(int c)
 
 void CGameWindow::MouseMotion(int x, int y)
 {
+	if (!HasFocus())
+	{
+		m_bHaveLastMouse = false;
+		return;
+	}
+
 	BaseClass::MouseMotion(x, y);
 
 	if (GameServer() && GameServer()->GetCamera())

@@ -9,696 +9,19 @@
 
 #include <modelconverter/convmesh.h>
 #include <models/models.h>
-#include <shaders/shaders.h>
+#include <renderer/shaders.h>
 #include <tinker/application.h>
 #include <tinker/cvar.h>
 #include <tinker/profiler.h>
 #include <game/gameserver.h>
+#include <models/texturelibrary.h>
+#include <game/camera.h>
 
-CRenderingContext::CRenderingContext(CRenderer* pRenderer)
-{
-	m_pRenderer = pRenderer;
-
-	m_bMatrixTransformations = false;
-	m_bBoundTexture = false;
-	m_bFBO = false;
-	m_iProgram = 0;
-	m_bAttribs = false;
-
-	m_bColorSwap = false;
-
-	m_eBlend = BLEND_NONE;
-	m_flAlpha = 1;
-}
-
-CRenderingContext::~CRenderingContext()
-{
-	if (m_bMatrixTransformations)
-		glPopMatrix();
-
-	if (m_bBoundTexture)
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-	if (m_bFBO)
-	{
-		glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)m_pRenderer->GetSceneBuffer()->m_iFB);
-		glViewport(0, 0, (GLsizei)m_pRenderer->GetSceneBuffer()->m_iWidth, (GLsizei)m_pRenderer->GetSceneBuffer()->m_iHeight);
-	}
-
-	if (m_iProgram)
-		glUseProgram(0);
-
-	if (m_bAttribs)
-		glPopAttrib();
-}
-
-void CRenderingContext::Transform(const Matrix4x4& m)
-{
-	if (!m_bMatrixTransformations)
-	{
-		m_bMatrixTransformations = true;
-		glPushMatrix();
-	}
-
-	glMultMatrixf(m.Transposed());	// GL uses column major.
-}
-
-void CRenderingContext::Translate(Vector vecTranslate)
-{
-	if (!m_bMatrixTransformations)
-	{
-		m_bMatrixTransformations = true;
-		glPushMatrix();
-	}
-
-	glTranslatef(vecTranslate.x, vecTranslate.y, vecTranslate.z);
-}
-
-void CRenderingContext::Rotate(float flAngle, Vector vecAxis)
-{
-	if (!m_bMatrixTransformations)
-	{
-		m_bMatrixTransformations = true;
-		glPushMatrix();
-	}
-
-	glRotatef(flAngle, vecAxis.x, vecAxis.y, vecAxis.z);
-}
-
-void CRenderingContext::Scale(float flX, float flY, float flZ)
-{
-	if (!m_bMatrixTransformations)
-	{
-		m_bMatrixTransformations = true;
-		glPushMatrix();
-	}
-
-	glScalef(flX, flY, flZ);
-}
-
-void CRenderingContext::ResetTransformations()
-{
-	if (m_bMatrixTransformations)
-	{
-		m_bMatrixTransformations = false;
-		glPopMatrix();
-	}
-}
-
-void CRenderingContext::SetBlend(blendtype_t eBlend)
-{
-	if (!m_bAttribs)
-		PushAttribs();
-
-	if (eBlend)
-	{
-		glEnable(GL_BLEND);
-
-		if (eBlend == BLEND_ALPHA)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	}
-	else
-	{
-		glDisable(GL_BLEND);
-	}
-
-	m_eBlend = eBlend;
-}
-
-void CRenderingContext::SetDepthMask(bool bDepthMask)
-{
-	if (!m_bAttribs)
-		PushAttribs();
-
-	glDepthMask(bDepthMask);
-}
-
-void CRenderingContext::SetDepthTest(bool bDepthTest)
-{
-	if (!m_bAttribs)
-		PushAttribs();
-
-	if (bDepthTest)
-		glEnable(GL_DEPTH_TEST);
-	else
-		glDisable(GL_DEPTH_TEST);
-}
-
-void CRenderingContext::SetBackCulling(bool bCull)
-{
-	if (!m_bAttribs)
-		PushAttribs();
-
-	if (bCull)
-		glEnable(GL_CULL_FACE);
-	else
-		glDisable(GL_CULL_FACE);
-}
-
-void CRenderingContext::SetColorSwap(Color clrSwap)
-{
-	m_bColorSwap = true;
-	m_clrSwap = clrSwap;
-}
-
-void CRenderingContext::RenderModel(size_t iModel, CModel* pCompilingModel)
-{
-	CModel* pModel = CModelLibrary::Get()->GetModel(iModel);
-
-	if (!pModel)
-		return;
-
-	if (pModel->m_bStatic && !pCompilingModel)
-	{
-		if (m_pRenderer->IsBatching())
-		{
-			TAssert(m_eBlend == BLEND_NONE);
-
-			Matrix4x4 mTransformations;
-			glGetFloatv(GL_MODELVIEW_MATRIX, mTransformations);
-
-			m_pRenderer->AddToBatch(pModel, mTransformations, m_bColorSwap, m_clrSwap);
-		}
-		else
-		{
-			glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT|GL_LIGHTING_BIT|GL_TEXTURE_BIT);
-
-			TAssert(pModel->m_iCallListTexture);
-			glBindTexture(GL_TEXTURE_2D, pModel->m_iCallListTexture);
-
-			if (m_pRenderer->ShouldUseShaders())
-			{
-				GLuint iProgram = (GLuint)CShaderLibrary::GetModelProgram();
-				glUseProgram(iProgram);
-
-				GLuint bDiffuse = glGetUniformLocation(iProgram, "bDiffuse");
-				glUniform1i(bDiffuse, true);
-
-				GLuint iDiffuse = glGetUniformLocation(iProgram, "iDiffuse");
-				glUniform1i(iDiffuse, 0);
-
-				GLuint flAlpha = glGetUniformLocation(iProgram, "flAlpha");
-				glUniform1f(flAlpha, m_flAlpha);
-
-				GLuint bColorSwapInAlpha = glGetUniformLocation(iProgram, "bColorSwapInAlpha");
-				glUniform1i(bColorSwapInAlpha, m_bColorSwap);
-
-				if (m_bColorSwap)
-				{
-					GLuint vecColorSwap = glGetUniformLocation(iProgram, "vecColorSwap");
-					Vector vecColor((float)m_clrSwap.r()/255, (float)m_clrSwap.g()/255, (float)m_clrSwap.b()/255);
-					glUniform3fv(vecColorSwap, 1, vecColor);
-				}
-
-				glColor4f(1, 1, 1, 1);
-
-				glCallList((GLuint)pModel->m_iCallList);
-
-				glUseProgram(0);
-			}
-			else
-			{
-				if (m_bColorSwap)
-					glColor4f(((float)m_clrSwap.r())/255, ((float)m_clrSwap.g())/255, ((float)m_clrSwap.b())/255, m_flAlpha);
-				else
-					glColor4f(1, 1, 1, m_flAlpha);
-
-				glCallList((GLuint)pModel->m_iCallList);
-			}
-
-			glPopAttrib();
-		}
-	}
-	else
-	{
-		for (size_t i = 0; i < pModel->m_pScene->GetNumScenes(); i++)
-			RenderSceneNode(pModel, pModel->m_pScene, pModel->m_pScene->GetScene(i), pCompilingModel);
-	}
-
-	if (!pCompilingModel && m_pRenderer->ShouldUseShaders() && !m_pRenderer->IsBatching())
-		m_pRenderer->ClearProgram();
-}
-
-void CRenderingContext::RenderSceneNode(CModel* pModel, CConversionScene* pScene, CConversionSceneNode* pNode, CModel* pCompilingModel)
-{
-	if (!pNode)
-		return;
-
-	if (!pNode->IsVisible())
-		return;
-
-	bool bTransformationsIdentity = false;
-	if (pNode->m_mTransformations.IsIdentity())
-		bTransformationsIdentity = true;
-
-	if (!bTransformationsIdentity)
-	{
-		glPushMatrix();
-
-		glMultMatrixf(pNode->m_mTransformations.Transposed());	// GL uses column major.
-	}
-
-	for (size_t i = 0; i < pNode->GetNumChildren(); i++)
-		RenderSceneNode(pModel, pScene, pNode->GetChild(i), pCompilingModel);
-
-	for (size_t m = 0; m < pNode->GetNumMeshInstances(); m++)
-		RenderMeshInstance(pModel, pScene, pNode->GetMeshInstance(m), pCompilingModel);
-
-	if (!bTransformationsIdentity)
-		glPopMatrix();
-}
-
-void CRenderingContext::RenderMeshInstance(CModel* pModel, CConversionScene* pScene, CConversionMeshInstance* pMeshInstance, CModel* pCompilingModel)
-{
-	if (!pMeshInstance->IsVisible())
-		return;
-
-	if (!pCompilingModel)
-		glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT|GL_LIGHTING_BIT|GL_TEXTURE_BIT);
-
-	CConversionMesh* pMesh = pMeshInstance->GetMesh();
-
-	for (size_t j = 0; j < pMesh->GetNumFaces(); j++)
-	{
-		size_t k;
-		CConversionFace* pFace = pMesh->GetFace(j);
-
-		if (pFace->m == ~0)
-			continue;
-
-		CConversionMaterial* pMaterial = NULL;
-		CConversionMaterialMap* pConversionMaterialMap = pMeshInstance->GetMappedMaterial(pFace->m);
-
-		if (pConversionMaterialMap)
-		{
-			if (!pConversionMaterialMap->IsVisible())
-				continue;
-
-			pMaterial = pScene->GetMaterial(pConversionMaterialMap->m_iMaterial);
-			if (pMaterial && !pMaterial->IsVisible())
-				continue;
-		}
-
-		if (pCompilingModel)
-		{
-			if (pMaterial)
-			{
-				GLuint iTexture = (GLuint)pModel->m_aiTextures[pConversionMaterialMap->m_iMaterial];
-
-				if (!pModel->m_iCallListTexture)
-					pModel->m_iCallListTexture = iTexture;
-				else
-					// If you hit this you have more than one texture in a call list that's building.
-					// That's a no-no because these call lists are batched.
-					TAssert(pModel->m_iCallListTexture == iTexture);
-			}
-		}
-
-		if (!pCompilingModel)
-		{
-			bool bTexture = false;
-			if (pMaterial)
-			{
-				GLuint iTexture = (GLuint)pModel->m_aiTextures[pConversionMaterialMap->m_iMaterial];
-				glBindTexture(GL_TEXTURE_2D, iTexture);
-
-				bTexture = !!iTexture;
-			}
-			else
-				glBindTexture(GL_TEXTURE_2D, 0);
-
-			if (m_pRenderer->ShouldUseShaders())
-			{
-				GLuint iProgram = (GLuint)CShaderLibrary::GetModelProgram();
-				glUseProgram(iProgram);
-
-				GLuint bDiffuse = glGetUniformLocation(iProgram, "bDiffuse");
-				glUniform1i(bDiffuse, bTexture);
-
-				GLuint iDiffuse = glGetUniformLocation(iProgram, "iDiffuse");
-				glUniform1i(iDiffuse, 0);
-
-				GLuint flAlpha = glGetUniformLocation(iProgram, "flAlpha");
-				glUniform1f(flAlpha, m_flAlpha);
-
-				GLuint bColorSwapInAlpha = glGetUniformLocation(iProgram, "bColorSwapInAlpha");
-				glUniform1i(bColorSwapInAlpha, m_bColorSwap);
-
-				if (m_bColorSwap)
-				{
-					GLuint vecColorSwap = glGetUniformLocation(iProgram, "vecColorSwap");
-					Vector vecColor((float)m_clrSwap.r()/255, (float)m_clrSwap.g()/255, (float)m_clrSwap.b()/255);
-					glUniform3fv(vecColorSwap, 1, vecColor);
-				}
-			}
-			else
-			{
-				if (m_bColorSwap)
-					glColor4f(((float)m_clrSwap.r())/255, ((float)m_clrSwap.g())/255, ((float)m_clrSwap.b())/255, m_flAlpha);
-				else
-					glColor4f(pMaterial->m_vecDiffuse.x, pMaterial->m_vecDiffuse.y, pMaterial->m_vecDiffuse.z, m_flAlpha);
-			}
-		}
-
-		glBegin(GL_POLYGON);
-
-		for (k = 0; k < pFace->GetNumVertices(); k++)
-		{
-			CConversionVertex* pVertex = pFace->GetVertex(k);
-
-			glTexCoord2fv(pMesh->GetUV(pVertex->vu));
-			glVertex3fv(pMesh->GetVertex(pVertex->v));
-		}
-
-		glEnd();
-	}
-
-	if (!pCompilingModel)
-		glPopAttrib();
-}
-
-void CRenderingContext::RenderSphere()
-{
-	static size_t iSphereCallList = 0;
-
-	if (iSphereCallList == 0)
-	{
-		GLUquadricObj* pQuadric = gluNewQuadric();
-		iSphereCallList = glGenLists(1);
-		glNewList((GLuint)iSphereCallList, GL_COMPILE);
-		gluSphere(pQuadric, 1, 20, 10);
-		glEndList();
-		gluDeleteQuadric(pQuadric);
-	}
-
-	glCallList(iSphereCallList);
-}
-
-void CRenderingContext::UseFrameBuffer(const CFrameBuffer* pBuffer)
-{
-	TAssert(m_pRenderer->ShouldUseFramebuffers());
-
-	m_bFBO = true;
-	glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)pBuffer->m_iFB);
-	glViewport(0, 0, (GLsizei)pBuffer->m_iWidth, (GLsizei)pBuffer->m_iHeight);
-}
-
-void CRenderingContext::UseProgram(size_t iProgram)
-{
-	TAssert(m_pRenderer->ShouldUseShaders());
-
-	if (!m_pRenderer->ShouldUseShaders())
-		return;
-
-	m_iProgram = iProgram;
-	glUseProgram((GLuint)iProgram);
-}
-
-void CRenderingContext::SetUniform(const char* pszName, int iValue)
-{
-	TAssert(m_pRenderer->ShouldUseShaders());
-
-	if (!m_pRenderer->ShouldUseShaders())
-		return;
-
-	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
-	glUniform1i(iUniform, iValue);
-}
-
-void CRenderingContext::SetUniform(const char* pszName, float flValue)
-{
-	TAssert(m_pRenderer->ShouldUseShaders());
-
-	if (!m_pRenderer->ShouldUseShaders())
-		return;
-
-	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
-	glUniform1f(iUniform, flValue);
-}
-
-void CRenderingContext::SetUniform(const char* pszName, const Vector& vecValue)
-{
-	TAssert(m_pRenderer->ShouldUseShaders());
-
-	if (!m_pRenderer->ShouldUseShaders())
-		return;
-
-	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
-	glUniform3fv(iUniform, 1, vecValue);
-}
-
-void CRenderingContext::SetUniform(const char* pszName, const Color& clrValue)
-{
-	TAssert(m_pRenderer->ShouldUseShaders());
-
-	if (!m_pRenderer->ShouldUseShaders())
-		return;
-
-	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
-	glUniform3fv(iUniform, 1, Vector(clrValue));
-}
-
-void CRenderingContext::BindTexture(size_t iTexture)
-{
-	glBindTexture(GL_TEXTURE_2D, (GLuint)iTexture);
-	m_bBoundTexture = true;
-}
-
-void CRenderingContext::SetColor(Color c)
-{
-	if (!m_bAttribs)
-		PushAttribs();
-
-	glColor4ub(c.r(), c.g(), c.b(), (unsigned char)(c.a()*m_flAlpha));
-}
-
-void CRenderingContext::BeginRenderTris()
-{
-	glBegin(GL_TRIANGLES);
-}
-
-void CRenderingContext::BeginRenderQuads()
-{
-	glBegin(GL_QUADS);
-}
-
-void CRenderingContext::TexCoord(float s, float t)
-{
-	glTexCoord2f(s, t);
-}
-
-void CRenderingContext::TexCoord(const Vector& v)
-{
-	glTexCoord2fv(v);
-}
-
-void CRenderingContext::Vertex(const Vector& v)
-{
-	glVertex3fv(v);
-}
-
-void CRenderingContext::RenderCallList(size_t iCallList)
-{
-	glCallList((GLuint)iCallList);
-}
-
-void CRenderingContext::EndRender()
-{
-	glEnd();
-}
-
-void CRenderingContext::PushAttribs()
-{
-	m_bAttribs = true;
-	// Push all the attribs we'll ever need. I don't want to have to worry about popping them in order.
-	glPushAttrib(GL_ENABLE_BIT|GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_CURRENT_BIT);
-}
+#include "renderingcontext.h"
 
 CFrameBuffer::CFrameBuffer()
 {
 	m_iMap = m_iDepth = m_iFB = 0;
-}
-
-CRopeRenderer::CRopeRenderer(CRenderer *pRenderer, size_t iTexture, Vector vecStart, float flWidth)
-	: m_oContext(pRenderer)
-{
-	m_pRenderer = pRenderer;
-
-	m_oContext.BindTexture(iTexture);
-	m_vecLastLink = vecStart;
-	m_bFirstLink = true;
-
-	m_flWidth = m_flLastLinkWidth = flWidth;
-
-	m_flTextureScale = 1;
-	m_flTextureOffset = 0;
-
-	m_bUseForward = false;
-
-	m_oContext.SetBlend(BLEND_ADDITIVE);
-	m_oContext.SetDepthMask(false);
-
-	m_clrRope = Color(255, 255, 255, 255);
-	m_oContext.BeginRenderQuads();
-}
-
-void CRopeRenderer::AddLink(Vector vecLink)
-{
-	Vector vecForward;
-	if (m_bUseForward)
-		vecForward = m_vecForward;
-	else
-		vecForward = m_pRenderer->GetCameraVector();
-
-	Vector vecUp = (vecLink - m_vecLastLink).Normalized();
-	Vector vecLastRight = vecForward.Cross(vecUp)*(m_flLastLinkWidth/2);
-	Vector vecRight = vecForward.Cross(vecUp)*(m_flWidth/2);
-
-	float flAddV = (1/m_flTextureScale);
-
-	m_oContext.SetColor(m_clrRope);
-
-	if (!m_bFirstLink)
-	{
-		// Finish the previous link
-		m_oContext.TexCoord(1, m_flTextureOffset+flAddV);
-		m_oContext.Vertex(m_vecLastLink+vecLastRight);
-		m_oContext.TexCoord(0, m_flTextureOffset+flAddV);
-		m_oContext.Vertex(m_vecLastLink-vecLastRight);
-
-		m_flTextureOffset += flAddV;
-	}
-
-	m_bFirstLink = false;
-
-	// Start this link
-	m_oContext.TexCoord(0, m_flTextureOffset);
-	m_oContext.Vertex(m_vecLastLink-vecLastRight);
-	m_oContext.TexCoord(1, m_flTextureOffset);
-	m_oContext.Vertex(m_vecLastLink+vecLastRight);
-
-	m_vecLastLink = vecLink;
-	m_flLastLinkWidth = m_flWidth;
-}
-
-void CRopeRenderer::FinishSegment(Vector vecLink, Vector vecNextSegmentStart, float flNextSegmentWidth)
-{
-	Vector vecForward;
-	if (m_bUseForward)
-		vecForward = m_vecForward;
-	else
-		vecForward = m_pRenderer->GetCameraVector();
-
-	Vector vecUp = (vecLink - m_vecLastLink).Normalized();
-	Vector vecLastRight = vecForward.Cross(vecUp)*(m_flLastLinkWidth/2);
-	Vector vecRight = vecForward.Cross(vecUp)*(m_flWidth/2);
-
-	float flAddV = (1/m_flTextureScale);
-
-	if (m_bFirstLink)
-	{
-		// Start the previous link
-		m_oContext.TexCoord(0, m_flTextureOffset);
-		m_oContext.Vertex(m_vecLastLink-vecLastRight);
-		m_oContext.TexCoord(1, m_flTextureOffset);
-		m_oContext.Vertex(m_vecLastLink+vecLastRight);
-
-		m_flTextureOffset += flAddV;
-
-		m_oContext.TexCoord(1, m_flTextureOffset);
-		m_oContext.Vertex(vecLink+vecRight);
-		m_oContext.TexCoord(0, m_flTextureOffset);
-		m_oContext.Vertex(vecLink-vecRight);
-	}
-	else
-	{
-		m_flTextureOffset += flAddV;
-
-		// Finish the last link
-		m_oContext.TexCoord(1, m_flTextureOffset);
-		m_oContext.Vertex(m_vecLastLink+vecLastRight);
-		m_oContext.TexCoord(0, m_flTextureOffset);
-		m_oContext.Vertex(m_vecLastLink-vecLastRight);
-
-		m_oContext.TexCoord(0, m_flTextureOffset);
-		m_oContext.Vertex(m_vecLastLink-vecLastRight);
-		m_oContext.TexCoord(1, m_flTextureOffset);
-		m_oContext.Vertex(m_vecLastLink+vecLastRight);
-
-		m_flTextureOffset += flAddV;
-
-		m_oContext.TexCoord(1, m_flTextureOffset);
-		m_oContext.Vertex(vecLink+vecRight);
-		m_oContext.TexCoord(0, m_flTextureOffset);
-		m_oContext.Vertex(vecLink-vecRight);
-	}
-
-	m_bFirstLink = true;
-	m_vecLastLink = vecNextSegmentStart;
-	m_flLastLinkWidth = flNextSegmentWidth;
-}
-
-void CRopeRenderer::Finish(Vector vecLink)
-{
-	Vector vecForward;
-	if (m_bUseForward)
-		vecForward = m_vecForward;
-	else
-		vecForward = m_pRenderer->GetCameraVector();
-
-	Vector vecUp = (vecLink - m_vecLastLink).Normalized();
-	Vector vecLastRight = vecForward.Cross(vecUp)*(m_flLastLinkWidth/2);
-	Vector vecRight = vecForward.Cross(vecUp)*(m_flWidth/2);
-
-	float flAddV = (1/m_flTextureScale);
-
-	if (m_bFirstLink)
-	{
-		// Start the previous link
-		m_oContext.TexCoord(0, m_flTextureOffset);
-		m_oContext.Vertex(m_vecLastLink-vecLastRight);
-		m_oContext.TexCoord(1, m_flTextureOffset);
-		m_oContext.Vertex(m_vecLastLink+vecLastRight);
-
-		m_flTextureOffset += flAddV;
-
-		m_oContext.TexCoord(1, m_flTextureOffset);
-		m_oContext.Vertex(vecLink+vecRight);
-		m_oContext.TexCoord(0, m_flTextureOffset);
-		m_oContext.Vertex(vecLink-vecRight);
-	}
-	else
-	{
-		m_flTextureOffset += flAddV;
-
-		// Finish the last link
-		m_oContext.TexCoord(1, m_flTextureOffset);
-		m_oContext.Vertex(m_vecLastLink+vecLastRight);
-		m_oContext.TexCoord(0, m_flTextureOffset);
-		m_oContext.Vertex(m_vecLastLink-vecLastRight);
-
-		m_oContext.TexCoord(0, m_flTextureOffset);
-		m_oContext.Vertex(m_vecLastLink-vecLastRight);
-		m_oContext.TexCoord(1, m_flTextureOffset);
-		m_oContext.Vertex(m_vecLastLink+vecLastRight);
-
-		m_flTextureOffset += flAddV;
-
-		m_oContext.TexCoord(1, m_flTextureOffset);
-		m_oContext.Vertex(vecLink+vecRight);
-		m_oContext.TexCoord(0, m_flTextureOffset);
-		m_oContext.Vertex(vecLink-vecRight);
-	}
-
-	m_oContext.EndRender();
-}
-
-void CRopeRenderer::SetForward(Vector vecForward)
-{
-	m_bUseForward = true;
-	m_vecForward = vecForward;
 }
 
 CVar r_batch("r_batch", "1");
@@ -731,29 +54,26 @@ CRenderer::CRenderer(size_t iWidth, size_t iHeight)
 
 	if (!HardwareSupportsShaders())
 		m_bUseShaders = false;
-	else
-		CShaderLibrary::CompileShaders();
-
-	if (!CShaderLibrary::IsCompiled())
-		m_bUseShaders = false;
 #endif
 
-	if (m_bUseShaders)
-		TMsg(_T("* Using shaders\n"));
-	if (m_bUseFramebuffers)
-		TMsg(_T("* Using framebuffers\n"));
-
-	m_iWidth = iWidth;
-	m_iHeight = iHeight;
+	SetSize(iWidth, iHeight);
 
 	m_bFrustumOverride = false;
 	m_bBatching = false;
 
 	m_bBatchThisFrame = r_batch.GetBool();
+
+	DisableSkybox();
 }
 
 void CRenderer::Initialize()
 {
+	if (ShouldUseShaders())
+	{
+		LoadShaders();
+		CShaderLibrary::CompileShaders();
+	}
+
 	if (ShouldUseFramebuffers())
 	{
 		m_oSceneBuffer = CreateFrameBuffer(m_iWidth, m_iHeight, true, true);
@@ -778,6 +98,14 @@ void CRenderer::Initialize()
 
 		CreateNoise();
 	}
+
+	if (!CShaderLibrary::IsCompiled())
+		m_bUseShaders = false;
+
+	if (m_bUseShaders)
+		TMsg(_T("* Using shaders\n"));
+	if (m_bUseFramebuffers)
+		TMsg(_T("* Using framebuffers\n"));
 }
 
 CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, bool bDepth, bool bLinear)
@@ -839,21 +167,24 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, bool bD
 	oBuffer.m_iWidth = iWidth;
 	oBuffer.m_iHeight = iHeight;
 
-	oBuffer.m_iCallList = glGenLists(1);
-	glNewList(oBuffer.m_iCallList, GL_COMPILE);
-	glBegin(GL_QUADS);
-		glTexCoord2i(0, 1); glVertex2i(0, 0);
-		glTexCoord2i(0, 0); glVertex2i(0, (GLint)iHeight);
-		glTexCoord2i(1, 0); glVertex2i((GLint)iWidth, (GLint)iHeight);
-		glTexCoord2i(1, 1); glVertex2i((GLint)iWidth, 0);
-	glEnd();
-	glEndList();
+	oBuffer.m_vecTexCoords[0] = Vector2D(0, 1);
+	oBuffer.m_vecTexCoords[1] = Vector2D(0, 0);
+	oBuffer.m_vecTexCoords[2] = Vector2D(1, 0);
+	oBuffer.m_vecTexCoords[3] = Vector2D(1, 1);
+
+	oBuffer.m_vecVertices[0] = Vector2D(0, 0);
+	oBuffer.m_vecVertices[1] = Vector2D(0, (float)iHeight);
+	oBuffer.m_vecVertices[2] = Vector2D((float)iWidth, (float)iHeight);
+	oBuffer.m_vecVertices[3] = Vector2D((float)iWidth, 0);
 
 	return oBuffer;
 }
 
 void CRenderer::CreateNoise()
 {
+	if (!WantNoise())
+		return;
+
 	CSimplexNoise n1(mtrand()+0);
 	CSimplexNoise n2(mtrand()+1);
 	CSimplexNoise n3(mtrand()+2);
@@ -911,6 +242,14 @@ void CRenderer::CreateNoise()
 	glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
 }
 
+void CRenderer::PreFrame()
+{
+}
+
+void CRenderer::PostFrame()
+{
+}
+
 void CRenderer::SetupFrame()
 {
 	TPROF("CRenderer::SetupFrame");
@@ -932,11 +271,15 @@ void CRenderer::SetupFrame()
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glColor4f(1, 1, 1, 1);
+
+	if (m_iSkyboxFT == ~0)
+		DrawBackground();
+	else
+		DrawSkybox();
 }
 
 void CRenderer::DrawBackground()
 {
-	// First draw a nice faded gray background.
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -976,12 +319,110 @@ void CRenderer::DrawBackground()
 	glPopMatrix();
 }
 
-#define FRUSTUM_NEAR	0
-#define FRUSTUM_FAR		1
-#define FRUSTUM_LEFT	2
-#define FRUSTUM_RIGHT	3
-#define FRUSTUM_UP		4
-#define FRUSTUM_DOWN	5
+void CRenderer::DrawSkybox()
+{
+	TPROF("CRenderer::RenderSkybox");
+
+	CCamera* pCamera = GameServer()->GetCamera();
+
+	SetCameraPosition(pCamera->GetCameraPosition());
+	SetCameraTarget(pCamera->GetCameraTarget());
+	SetCameraUp(pCamera->GetCameraUp());
+	SetCameraFOV(pCamera->GetCameraFOV());
+	SetCameraNear(pCamera->GetCameraNear());
+	SetCameraFar(pCamera->GetCameraFar());
+
+	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT|GL_CURRENT_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	gluPerspective(
+			m_flCameraFOV,
+			(float)m_iWidth/(float)m_iHeight,
+			m_flCameraNear,
+			m_flCameraFar
+		);
+
+	glMatrixMode(GL_MODELVIEW);
+
+	glPushMatrix();
+	glLoadIdentity();
+
+	gluLookAt(m_vecCameraPosition.x, m_vecCameraPosition.y, m_vecCameraPosition.z,
+		m_vecCameraTarget.x, m_vecCameraTarget.y, m_vecCameraTarget.z,
+		m_vecCameraUp.x, m_vecCameraUp.y, m_vecCameraUp.z);
+
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_TEXTURE_2D);
+
+	if (true)
+	{
+		CRenderingContext c(this);
+
+		glPushAttrib(GL_CURRENT_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT);
+		glPushMatrix();
+		glTranslatef(m_vecCameraPosition.x, m_vecCameraPosition.y, m_vecCameraPosition.z);
+
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
+
+		if (GLEW_ARB_multitexture || GLEW_VERSION_1_3)
+			glActiveTexture(GL_TEXTURE0);
+		glEnable(GL_TEXTURE_2D);
+
+		ModifySkyboxContext(&c);
+
+		glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+
+		glEnableClientState(GL_VERTEX_ARRAY);
+
+		glClientActiveTexture(GL_TEXTURE0);
+		glTexCoordPointer(2, GL_FLOAT, 0, m_avecSkyboxTexCoords);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+		glActiveTexture(GL_TEXTURE0);
+		glEnable(GL_TEXTURE_2D);
+
+		glVertexPointer(3, GL_FLOAT, 0, m_avecSkyboxFT);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)m_iSkyboxFT);
+		glDrawArrays(GL_QUADS, 0, 4);
+
+		glVertexPointer(3, GL_FLOAT, 0, m_avecSkyboxBK);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)m_iSkyboxBK);
+		glDrawArrays(GL_QUADS, 0, 4);
+
+		glVertexPointer(3, GL_FLOAT, 0, m_avecSkyboxLF);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)m_iSkyboxLF);
+		glDrawArrays(GL_QUADS, 0, 4);
+
+		glVertexPointer(3, GL_FLOAT, 0, m_avecSkyboxRT);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)m_iSkyboxRT);
+		glDrawArrays(GL_QUADS, 0, 4);
+
+		glVertexPointer(3, GL_FLOAT, 0, m_avecSkyboxUP);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)m_iSkyboxUP);
+		glDrawArrays(GL_QUADS, 0, 4);
+
+		glVertexPointer(3, GL_FLOAT, 0, m_avecSkyboxDN);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)m_iSkyboxDN);
+		glDrawArrays(GL_QUADS, 0, 4);
+
+		glPopClientAttrib();
+
+		glPopMatrix();
+		glPopAttrib();
+	}
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	glPopMatrix();
+	glPopAttrib();
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+}
 
 void CRenderer::StartRendering()
 {
@@ -1048,46 +489,7 @@ void CRenderer::StartRendering()
 		glPopMatrix();
 	}
 
-	Matrix4x4 mFrustum = mModelView * mProjection;
-
-	float* pflFrustum = mFrustum;
-
-	m_aoFrustum[FRUSTUM_RIGHT].n.x = mFrustum.m[0][3] - mFrustum.m[0][0];
-	m_aoFrustum[FRUSTUM_RIGHT].n.y = mFrustum.m[1][3] - mFrustum.m[1][0];
-	m_aoFrustum[FRUSTUM_RIGHT].n.z = mFrustum.m[2][3] - mFrustum.m[2][0];
-	m_aoFrustum[FRUSTUM_RIGHT].d = mFrustum.m[3][3] - mFrustum.m[3][0];
-
-	m_aoFrustum[FRUSTUM_LEFT].n.x = mFrustum.m[0][3] + mFrustum.m[0][0];
-	m_aoFrustum[FRUSTUM_LEFT].n.y = mFrustum.m[1][3] + mFrustum.m[1][0];
-	m_aoFrustum[FRUSTUM_LEFT].n.z = mFrustum.m[2][3] + mFrustum.m[2][0];
-	m_aoFrustum[FRUSTUM_LEFT].d = mFrustum.m[3][3] + mFrustum.m[3][0];
-
-	m_aoFrustum[FRUSTUM_DOWN].n.x = mFrustum.m[0][3] + mFrustum.m[0][1];
-	m_aoFrustum[FRUSTUM_DOWN].n.y = mFrustum.m[1][3] + mFrustum.m[1][1];
-	m_aoFrustum[FRUSTUM_DOWN].n.z = mFrustum.m[2][3] + mFrustum.m[2][1];
-	m_aoFrustum[FRUSTUM_DOWN].d = mFrustum.m[3][3] + mFrustum.m[3][1];
-
-	m_aoFrustum[FRUSTUM_UP].n.x = mFrustum.m[0][3] - mFrustum.m[0][1];
-	m_aoFrustum[FRUSTUM_UP].n.y = mFrustum.m[1][3] - mFrustum.m[1][1];
-	m_aoFrustum[FRUSTUM_UP].n.z = mFrustum.m[2][3] - mFrustum.m[2][1];
-	m_aoFrustum[FRUSTUM_UP].d = mFrustum.m[3][3] - mFrustum.m[3][1];
-
-	m_aoFrustum[FRUSTUM_FAR].n.x = mFrustum.m[0][3] - mFrustum.m[0][2];
-	m_aoFrustum[FRUSTUM_FAR].n.y = mFrustum.m[1][3] - mFrustum.m[1][2];
-	m_aoFrustum[FRUSTUM_FAR].n.z = mFrustum.m[2][3] - mFrustum.m[2][2];
-	m_aoFrustum[FRUSTUM_FAR].d = mFrustum.m[3][3] - mFrustum.m[3][2];
-
-	m_aoFrustum[FRUSTUM_NEAR].n.x = mFrustum.m[0][3] + mFrustum.m[0][2];
-	m_aoFrustum[FRUSTUM_NEAR].n.y = mFrustum.m[1][3] + mFrustum.m[1][2];
-	m_aoFrustum[FRUSTUM_NEAR].n.z = mFrustum.m[2][3] + mFrustum.m[2][2];
-	m_aoFrustum[FRUSTUM_NEAR].d = mFrustum.m[3][3] + mFrustum.m[3][2];
-
-	// Normalize all plane normals
-	for(int i = 0; i < 6; i++)
-	{
-		m_aoFrustum[i].d = -m_aoFrustum[i].d; // Why? I don't know.
-		m_aoFrustum[i].Normalize();
-	}
+	m_oFrustum.CreateFrom(mModelView * mProjection);
 
 	// Momentarily return the viewport to the window size. This is because if the scene buffer is not the same as the window size,
 	// the viewport here will be the scene buffer size, but we need it to be the window size so we can do world/screen transformations.
@@ -1110,10 +512,10 @@ void CRenderer::FinishRendering()
 	{
 		for (size_t i = 0; i < 6; i++)
 		{
-			Vector vecForward = m_aoFrustum[i].n;
+			Vector vecForward = m_oFrustum.p[i].n;
 			Vector vecRight = vecForward.Cross(Vector(0, 1, 0)).Normalized();
 			Vector vecUp = vecRight.Cross(vecForward).Normalized();
-			Vector vecCenter = vecForward * m_aoFrustum[i].d;
+			Vector vecCenter = vecForward * m_oFrustum.p[i].d;
 
 			vecForward *= 100;
 			vecRight *= 100;
@@ -1133,7 +535,10 @@ void CRenderer::FinishRendering()
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
+}
 
+void CRenderer::FinishFrame()
+{
 	if (ShouldUseFramebuffers())
 		glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
 
@@ -1179,14 +584,16 @@ void CRenderer::FinishRendering()
 	glPopAttrib();
 }
 
+CVar r_bloom("r_bloom", "1");
+
 void CRenderer::RenderOffscreenBuffers()
 {
-	if (ShouldUseFramebuffers() && ShouldUseShaders())
+	if (ShouldUseFramebuffers() && ShouldUseShaders() && r_bloom.GetBool())
 	{
 		TPROF("Bloom");
 
 		// Use a bright-pass filter to catch only the bright areas of the image
-		GLuint iBrightPass = (GLuint)CShaderLibrary::GetBrightPassProgram();
+		GLuint iBrightPass = (GLuint)CShaderLibrary::GetProgram("brightpass");
 		UseProgram(iBrightPass);
 
 		GLint iSource = glGetUniformLocation(iBrightPass, "iSource");
@@ -1199,7 +606,7 @@ void CRenderer::RenderOffscreenBuffers()
 
 		for (size_t i = 0; i < BLOOM_FILTERS; i++)
 		{
-			glUniform1f(flBrightness, 0.6f - 0.1f*i);
+			glUniform1f(flBrightness, BloomBrightnessCutoff() - 0.1f*i);
 			RenderMapToBuffer(m_oSceneBuffer.m_iMap, &m_oBloom1Buffers[i]);
 		}
 
@@ -1219,7 +626,7 @@ void CRenderer::RenderFullscreenBuffers()
 
 	glEnable(GL_BLEND);
 
-	if (ShouldUseFramebuffers())
+	if (ShouldUseFramebuffers() && r_bloom.GetBool())
 	{
 		glBlendFunc(GL_ONE, GL_ONE);
 		for (size_t i = 0; i < BLOOM_FILTERS; i++)
@@ -1229,13 +636,63 @@ void CRenderer::RenderFullscreenBuffers()
 	glDisable(GL_BLEND);
 }
 
+void CRenderer::SetSkybox(size_t ft, size_t bk, size_t lf, size_t rt, size_t up, size_t dn)
+{
+	m_iSkyboxFT = ft;
+	m_iSkyboxLF = lf;
+	m_iSkyboxBK = bk;
+	m_iSkyboxRT = rt;
+	m_iSkyboxDN = dn;
+	m_iSkyboxUP = up;
+
+	m_avecSkyboxTexCoords[0] = Vector2D(0, 1);
+	m_avecSkyboxTexCoords[1] = Vector2D(0, 0);
+	m_avecSkyboxTexCoords[2] = Vector2D(1, 0);
+	m_avecSkyboxTexCoords[3] = Vector2D(1, 1);
+
+	m_avecSkyboxFT[0] = Vector(100, 100, -100);
+	m_avecSkyboxFT[1] = Vector(100, -100, -100);
+	m_avecSkyboxFT[2] = Vector(100, -100, 100);
+	m_avecSkyboxFT[3] = Vector(100, 100, 100);
+
+	m_avecSkyboxBK[0] = Vector(-100, 100, 100);
+	m_avecSkyboxBK[1] = Vector(-100, -100, 100);
+	m_avecSkyboxBK[2] = Vector(-100, -100, -100);
+	m_avecSkyboxBK[3] = Vector(-100, 100, -100);
+
+	m_avecSkyboxLF[0] = Vector(-100, 100, -100);
+	m_avecSkyboxLF[1] = Vector(-100, -100, -100);
+	m_avecSkyboxLF[2] = Vector(100, -100, -100);
+	m_avecSkyboxLF[3] = Vector(100, 100, -100);
+
+	m_avecSkyboxRT[0] = Vector(100, 100, 100);
+	m_avecSkyboxRT[1] = Vector(100, -100, 100);
+	m_avecSkyboxRT[2] = Vector(-100, -100, 100);
+	m_avecSkyboxRT[3] = Vector(-100, 100, 100);
+
+	m_avecSkyboxUP[0] = Vector(-100, 100, -100);
+	m_avecSkyboxUP[1] = Vector(100, 100, -100);
+	m_avecSkyboxUP[2] = Vector(100, 100, 100);
+	m_avecSkyboxUP[3] = Vector(-100, 100, 100);
+
+	m_avecSkyboxDN[0] = Vector(100, -100, -100);
+	m_avecSkyboxDN[1] = Vector(-100, -100, -100);
+	m_avecSkyboxDN[2] = Vector(-100, -100, 100);
+	m_avecSkyboxDN[3] = Vector(100, -100, 100);
+}
+
+void CRenderer::DisableSkybox()
+{
+	m_iSkyboxFT = ~0;
+}
+
 #define KERNEL_SIZE   3
 //float aflKernel[KERNEL_SIZE] = { 5, 6, 5 };
 float aflKernel[KERNEL_SIZE] = { 0.3125f, 0.375f, 0.3125f };
 
 void CRenderer::RenderBloomPass(CFrameBuffer* apSources, CFrameBuffer* apTargets, bool bHorizontal)
 {
-	GLuint iBlur = (GLuint)CShaderLibrary::GetBlurProgram();
+	GLuint iBlur = (GLuint)CShaderLibrary::GetProgram("blur");
 	UseProgram(iBlur);
 
 	GLint iSource = glGetUniformLocation(iBlur, "iSource");
@@ -1275,12 +732,35 @@ void CRenderer::RenderMapFullscreen(size_t iMap)
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 
-	glBegin(GL_QUADS);
-		glTexCoord2i(0, 1); glVertex2d(0, 0);
-		glTexCoord2i(0, 0); glVertex2d(0, m_iHeight);
-		glTexCoord2i(1, 0); glVertex2d(m_iWidth, m_iHeight);
-		glTexCoord2i(1, 1); glVertex2d(m_iWidth, 0);
-	glEnd();
+	glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+
+	glClientActiveTexture(GL_TEXTURE0);
+
+	int iProgram;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &iProgram);
+	if (iProgram == 0)
+	{
+		glTexCoordPointer(2, GL_FLOAT, 0, m_vecFullscreenTexCoords);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	}
+	else
+	{
+		int iTexCoordAttribute = glGetAttribLocation(iProgram, "vecTexCoord0");
+
+		glEnableVertexAttribArray(iTexCoordAttribute);
+		glVertexAttribPointer(iTexCoordAttribute, 2, GL_FLOAT, false, 0, m_vecFullscreenTexCoords);
+	}
+
+	glActiveTexture(GL_TEXTURE0);
+	glEnable(GL_TEXTURE_2D);
+
+	glVertexPointer(2, GL_FLOAT, 0, m_vecFullscreenVertices);
+	glBindTexture(GL_TEXTURE_2D, (GLuint)iMap);
+	glDrawArrays(GL_QUADS, 0, 4);
+
+	glPopClientAttrib();
 }
 
 void CRenderer::RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer)
@@ -1296,14 +776,38 @@ void CRenderer::RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer)
 	glPushMatrix();
 	glLoadIdentity();
 
-	glActiveTexture(GL_TEXTURE0);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, (GLuint)iMap);
-
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, (GLuint)pBuffer->m_iFB);
 	glViewport(0, 0, (GLsizei)pBuffer->m_iWidth, (GLsizei)pBuffer->m_iHeight);
 
-	glCallList(pBuffer->m_iCallList);
+	glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+
+	glClientActiveTexture(GL_TEXTURE0);
+
+	int iProgram;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &iProgram);
+	if (iProgram == 0)
+	{
+		glTexCoordPointer(2, GL_FLOAT, 0, pBuffer->m_vecTexCoords);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	}
+	else
+	{
+		int iTexCoordAttribute = glGetAttribLocation(iProgram, "vecTexCoord0");
+
+		glEnableVertexAttribArray(iTexCoordAttribute);
+		glVertexAttribPointer(iTexCoordAttribute, 2, GL_FLOAT, false, 0, m_vecFullscreenTexCoords);
+	}
+
+	glActiveTexture(GL_TEXTURE0);
+	glEnable(GL_TEXTURE_2D);
+
+	glVertexPointer(2, GL_FLOAT, 0, pBuffer->m_vecVertices);
+	glBindTexture(GL_TEXTURE_2D, (GLuint)iMap);
+	glDrawArrays(GL_QUADS, 0, 4);
+
+	glPopClientAttrib();
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -1372,7 +876,7 @@ void CRenderer::RenderBatches()
 	GLuint iProgram = 0;
 	if (ShouldUseShaders())
 	{
-		iProgram = (GLuint)CShaderLibrary::GetModelProgram();
+		iProgram = (GLuint)CShaderLibrary::GetProgram("model");
 		glUseProgram(iProgram);
 
 		GLuint bDiffuse = glGetUniformLocation(iProgram, "bDiffuse");
@@ -1441,7 +945,7 @@ void CRenderer::GetCameraVectors(Vector* pvecForward, Vector* pvecRight, Vector*
 		(*pvecForward) = vecForward;
 
 	if (pvecRight || pvecUp)
-		vecRight = vecForward.Cross(Vector(0, 1, 0)).Normalized();
+		vecRight = vecForward.Cross(m_vecCameraUp).Normalized();
 
 	if (pvecRight)
 		(*pvecRight) = vecRight;
@@ -1450,23 +954,25 @@ void CRenderer::GetCameraVectors(Vector* pvecForward, Vector* pvecRight, Vector*
 		(*pvecUp) = vecRight.Cross(vecForward).Normalized();
 }
 
-bool CRenderer::IsSphereInFrustum(Vector vecCenter, float flRadius)
+bool CRenderer::IsSphereInFrustum(const Vector& vecCenter, float flRadius)
 {
-	for (size_t i = 0; i < 6; i++)
-	{
-		// Why does it subtract d and not add like it should be? Don't know, don't care, it works.
-		float flDistance = m_aoFrustum[i].n.x*vecCenter.x + m_aoFrustum[i].n.y*vecCenter.y + m_aoFrustum[i].n.z*vecCenter.z - m_aoFrustum[i].d;
-		if (flDistance + flRadius < 0)
-			return false;
-	}
-
-	return true;
+	return m_oFrustum.TouchesSphere(vecCenter, flRadius);
 }
 
 void CRenderer::SetSize(int w, int h)
 {
 	m_iWidth = w;
 	m_iHeight = h;
+
+	m_vecFullscreenTexCoords[0] = Vector2D(0, 1);
+	m_vecFullscreenTexCoords[1] = Vector2D(0, 0);
+	m_vecFullscreenTexCoords[2] = Vector2D(1, 0);
+	m_vecFullscreenTexCoords[3] = Vector2D(1, 1);
+
+	m_vecFullscreenVertices[0] = Vector2D(0, 0);
+	m_vecFullscreenVertices[1] = Vector2D(0, (float)m_iHeight);
+	m_vecFullscreenVertices[2] = Vector2D((float)m_iWidth, (float)m_iHeight);
+	m_vecFullscreenVertices[3] = Vector2D((float)m_iWidth, 0);
 }
 
 void CRenderer::ClearProgram()

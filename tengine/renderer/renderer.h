@@ -1,120 +1,16 @@
-#ifndef DT_RENDERER_H
-#define DT_RENDERER_H
+#ifndef TINKER_RENDERER_H
+#define TINKER_RENDERER_H
 
 #include <EASTL/map.h>
 #include <EASTL/vector.h>
 
 #include <tstring.h>
 #include <vector.h>
-#include <plane.h>
 #include <matrix.h>
 #include <color.h>
+#include <frustum.h>
 
-typedef enum
-{
-	BLEND_NONE = 0,
-	BLEND_ALPHA,
-	BLEND_ADDITIVE,
-} blendtype_t;
-
-class CRenderingContext
-{
-public:
-				CRenderingContext(class CRenderer* pRenderer);
-				~CRenderingContext();
-
-public:
-	void		Transform(const Matrix4x4& m);
-	void		Translate(Vector vecTranslate);
-	void		Rotate(float flAngle, Vector vecAxis);
-	void		Scale(float flX, float flY, float flZ);
-	void		ResetTransformations();
-
-	void		SetBlend(blendtype_t eBlend);
-	void		SetAlpha(float flAlpha) { m_flAlpha = flAlpha; };
-	void		SetDepthMask(bool bDepthMask);
-	void		SetDepthTest(bool bDepthTest);
-	void		SetBackCulling(bool bCull);
-	void		SetColorSwap(Color clrSwap);
-
-	float		GetAlpha() { return m_flAlpha; };
-	blendtype_t	GetBlend() { return m_eBlend; };
-
-	void		RenderModel(size_t iModel, class CModel* pCompilingModel = NULL);
-	void		RenderSceneNode(class CModel* pModel, class CConversionScene* pScene, class CConversionSceneNode* pNode, class CModel* pCompilingModel);
-	void		RenderMeshInstance(class CModel* pModel, class CConversionScene* pScene, class CConversionMeshInstance* pMeshInstance, class CModel* pCompilingModel);
-
-	void		RenderSphere();
-
-	void		UseFrameBuffer(const class CFrameBuffer* pBuffer);
-	void		UseProgram(size_t iProgram);
-	void		SetUniform(const char* pszName, int iValue);
-	void		SetUniform(const char* pszName, float flValue);
-	void		SetUniform(const char* pszName, const Vector& vecValue);
-	void		SetUniform(const char* pszName, const Color& vecValue);
-	void		BindTexture(size_t iTexture);
-	void		SetColor(Color c);
-	void		BeginRenderTris();
-	void		BeginRenderQuads();
-	void		TexCoord(float s, float t);
-	void		TexCoord(const Vector& v);
-	void		Vertex(const Vector& v);
-	void		RenderCallList(size_t iCallList);
-	void		EndRender();
-
-protected:
-	void		PushAttribs();
-
-public:
-	CRenderer*	m_pRenderer;
-
-	bool		m_bMatrixTransformations;
-	bool		m_bBoundTexture;
-	bool		m_bFBO;
-	size_t		m_iProgram;
-	bool		m_bAttribs;
-
-	bool		m_bColorSwap;
-	Color		m_clrSwap;
-
-	blendtype_t	m_eBlend;
-	float		m_flAlpha;
-};
-
-class CRopeRenderer
-{
-public:
-						CRopeRenderer(class CRenderer* pRenderer, size_t iTexture, Vector vecStart, float flWidth);
-
-public:
-	void				AddLink(Vector vecLink);
-	void				FinishSegment(Vector vecLink, Vector vecNextSegmentStart, float flNextSegmentWidth);
-	void				Finish(Vector vecLink);
-
-	void				SetWidth(float flWidth) { m_flWidth = flWidth; };
-	void				SetColor(Color c) { m_clrRope = c; };
-	void				SetTextureScale(float flTextureScale) { m_flTextureScale = flTextureScale; };
-	void				SetTextureOffset(float flTextureOffset) { m_flTextureOffset = flTextureOffset; };
-
-	void				SetForward(Vector vecForward);
-
-protected:
-	CRenderer*			m_pRenderer;
-	CRenderingContext	m_oContext;
-
-	size_t				m_iTexture;
-	Vector				m_vecLastLink;
-	float				m_flLastLinkWidth;
-	bool				m_bFirstLink;
-
-	float				m_flWidth;
-	Color				m_clrRope;
-	float				m_flTextureScale;
-	float				m_flTextureOffset;
-
-	bool				m_bUseForward;
-	Vector				m_vecForward;
-};
+#include "render_common.h"
 
 class CFrameBuffer
 {
@@ -129,7 +25,8 @@ public:
 	size_t		m_iDepth;
 	size_t		m_iFB;
 
-	size_t		m_iCallList;
+	Vector2D	m_vecTexCoords[4];
+	Vector2D	m_vecVertices[4];
 };
 
 class CRenderBatch
@@ -149,20 +46,32 @@ public:
 					CRenderer(size_t iWidth, size_t iHeight);
 
 public:
-	virtual void	Initialize();
+	void			Initialize();
+	virtual void	LoadShaders() {};
 
 	CFrameBuffer	CreateFrameBuffer(size_t iWidth, size_t iHeight, bool bDepth, bool bLinear);
 
 	void			CreateNoise();
+	virtual bool	WantNoise() { return false; };
+
+	virtual void	PreFrame();
+	virtual void	PostFrame();
 
 	virtual void	SetupFrame();
 	virtual void	DrawBackground();
+	virtual void	DrawSkybox();
+	virtual void	ModifySkyboxContext(class CRenderingContext* c) {};
 	virtual void	StartRendering();
 	virtual void	FinishRendering();
+	virtual void	FinishFrame();
 	virtual void	RenderOffscreenBuffers();
 	virtual void	RenderFullscreenBuffers();
 	virtual void	SetupSceneShader() {};
 
+	void			SetSkybox(size_t ft, size_t bk, size_t lf, size_t rt, size_t up, size_t dn);
+	void			DisableSkybox();
+
+	virtual float	BloomBrightnessCutoff() const { return 0.6f; }
 	void			RenderBloomPass(CFrameBuffer* apSources, CFrameBuffer* apTargets, bool bHorizontal);
 
 	void			RenderMapFullscreen(size_t iMap);
@@ -193,7 +102,7 @@ public:
 	Vector			GetCameraVector();
 	void			GetCameraVectors(Vector* pvecForward, Vector* pvecRight, Vector* pvecUp);
 
-	bool			IsSphereInFrustum(Vector vecCenter, float flRadius);
+	bool			IsSphereInFrustum(const Vector& vecCenter, float flRadius);
 
 	void			SetSize(int w, int h);
 
@@ -247,7 +156,25 @@ protected:
 	double			m_aiProjection[16];
 	int				m_aiViewport[4];
 
-	Plane			m_aoFrustum[6];
+	Frustum			m_oFrustum;
+
+	Vector2D		m_vecFullscreenTexCoords[4];
+	Vector2D		m_vecFullscreenVertices[4];
+
+	size_t			m_iSkyboxFT;
+	size_t			m_iSkyboxLF;
+	size_t			m_iSkyboxBK;
+	size_t			m_iSkyboxRT;
+	size_t			m_iSkyboxDN;
+	size_t			m_iSkyboxUP;
+
+	Vector2D		m_avecSkyboxTexCoords[4];
+	Vector			m_avecSkyboxFT[4];
+	Vector			m_avecSkyboxBK[4];
+	Vector			m_avecSkyboxLF[4];
+	Vector			m_avecSkyboxRT[4];
+	Vector			m_avecSkyboxUP[4];
+	Vector			m_avecSkyboxDN[4];
 
 	bool			m_bBatchThisFrame;
 	bool			m_bBatching;

@@ -30,6 +30,8 @@ CConsole::CConsole()
 	AddControl(m_pInput);
 
 	m_bBackground = true;
+
+	m_iAutoComplete = -1;
 }
 
 void CConsole::Destructor()
@@ -106,9 +108,9 @@ void CConsole::Paint(int x, int y, int w, int h)
 	tstring sInput = m_pInput->GetText();
 	if (sInput.length() && sInput.find(_T(' ')) == ~0)
 	{
-		eastl::vector<tstring> sCommands = CCommand::GetCommandsBeginningWith(sInput);
+		eastl::vector<tstring> asCommands = CCommand::GetCommandsBeginningWith(sInput);
 
-		size_t iCommandsToShow = sCommands.size();
+		size_t iCommandsToShow = asCommands.size();
 		bool bAbbreviated = false;
 
 		if (iCommandsToShow > 5)
@@ -122,9 +124,26 @@ void CConsole::Paint(int x, int y, int w, int h)
 		else
 			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, iCommandsToShow*13+3, Color(0, 0, 0, 200));
 
+		int iCommandsToSkip = 0;
+		if (m_iAutoComplete >= 0 && asCommands.size())
+		{
+			int iAutoComplete = m_iAutoComplete % asCommands.size();
+
+			if (iAutoComplete < 5)
+				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*iAutoComplete, w, 13+3, Color(100, 100, 100, 200));
+			else
+			{
+				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*4, w, 13+3, Color(100, 100, 100, 200));
+				iCommandsToSkip = iAutoComplete - 4;
+			}
+
+			if (iAutoComplete == asCommands.size()-1)
+				bAbbreviated = false;
+		}
+
 		int iCommandsPainted = 0;
-		for (size_t i = 0; i < iCommandsToShow; i++)
-			glgui::CLabel::PaintText(sCommands[i], sCommands[i].length(), _T("sans-serif"), 13, (float)(x + 5), (float)(y + h + 13 + iCommandsPainted++*13));
+		for (size_t i = iCommandsToSkip; i < iCommandsToShow+iCommandsToSkip; i++)
+			glgui::CLabel::PaintText(asCommands[i], asCommands[i].length(), _T("sans-serif"), 13, (float)(x + 5), (float)(y + h + 13 + iCommandsPainted++*13));
 
 		if (bAbbreviated)
 		{
@@ -160,6 +179,34 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 		return true;
 	}
 
+	if (m_iAutoComplete >= 0)
+	{
+		if (code == TINKER_KEY_BACKSPACE || code == TINKER_KEY_LEFT || code == TINKER_KEY_RIGHT || code == TINKER_KEY_DEL || code == TINKER_KEY_HOME || code == TINKER_KEY_END)
+		{
+			// Let the text field handle it.
+			m_iAutoComplete = -1;
+			return BaseClass::KeyPressed(code, bCtrlDown);
+		}
+		else if (code != TINKER_KEY_TAB)
+		{
+			tstring sInput = m_pInput->GetText();
+			if (sInput.length() && sInput.find(_T(' ')) == ~0)
+			{
+				eastl::vector<tstring> asCommands = CCommand::GetCommandsBeginningWith(sInput);
+
+				if (asCommands.size())
+				{
+					m_pInput->SetText(asCommands[m_iAutoComplete % asCommands.size()] + (code == ' '?"":" "));
+					m_pInput->SetCursorPosition(-1);
+				}
+			}
+
+			m_iAutoComplete = -1;
+
+			return true;
+		}
+	}
+
 	if (code == TINKER_KEY_ENTER || code == TINKER_KEY_KP_ENTER)
 	{
 		tstring sText = m_pInput->GetText();
@@ -174,16 +221,8 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 
 	if (code == TINKER_KEY_TAB)
 	{
-		tstring sInput = m_pInput->GetText();
-		if (sInput.length() && sInput.find(_T(' ')) == ~0)
-		{
-			eastl::vector<tstring> aCommands = CCommand::GetCommandsBeginningWith(sInput);
-			if (aCommands.size())
-			{
-				m_pInput->SetText(aCommands[0] + _T(" "));
-				m_pInput->SetCursorPosition(-1);
-			}
-		}
+		m_iAutoComplete++;
+		return true;
 	}
 
 	bool bReturn = BaseClass::KeyPressed(code, bCtrlDown);
@@ -203,6 +242,11 @@ bool CConsole::CharPressed(int iKey)
 	{
 		CApplication::Get()->CloseConsole();
 		return true;
+	}
+
+	if (m_iAutoComplete >= 0)
+	{
+		m_iAutoComplete = -1;
 	}
 
 	return BaseClass::CharPressed(iKey);
