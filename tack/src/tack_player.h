@@ -9,6 +9,7 @@ class CTackPlayer : public CPlayer
 
 public:
 	virtual void					MouseMotion(int x, int y);
+	virtual void					KeyPress(int c);
 
 	class CPlayerCharacter*			GetPlayerCharacter();
 };

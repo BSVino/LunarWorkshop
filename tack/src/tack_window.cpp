@@ -17,10 +17,11 @@
 #include <game/camera.h>
 
 #include "tack_player.h"
-#include "tack_playercharacter.h"
+#include "characters/tack_playercharacter.h"
 #include "tack_renderer.h"
 #include "world.h"
 #include "ui/hud.h"
+#include "characters/zombie.h"
 
 CTackWindow::CTackWindow(int argc, char** argv)
 	: CGameWindow(argc, argv)
@@ -51,8 +52,26 @@ void CTackWindow::SetupTack()
 	Game()->AddPlayer(pPlayer);
 
 	CPlayerCharacter* pCharacter = GameServer()->Create<CPlayerCharacter>("CPlayerCharacter");
-	pCharacter->SetGlobalOrigin(Vector());
+	pCharacter->SetGlobalOrigin(Vector(-2, 0, -2));
 	pPlayer->SetCharacter(pCharacter);
+
+	CZombie* pZombie = GameServer()->Create<CZombie>("CZombie");
+	pZombie->SetGlobalOrigin(Vector(5, 0, 0));
+
+	pZombie = GameServer()->Create<CZombie>("CZombie");
+	pZombie->SetGlobalOrigin(Vector(6, 0, 2));
+
+	pZombie = GameServer()->Create<CZombie>("CZombie");
+	pZombie->SetGlobalOrigin(Vector(-4, 0, -2));
+
+	pZombie = GameServer()->Create<CZombie>("CZombie");
+	pZombie->SetGlobalOrigin(Vector(3, 0, 1));
+
+	pZombie = GameServer()->Create<CZombie>("CZombie");
+	pZombie->SetGlobalOrigin(Vector(-3, 0, -3));
+
+	pZombie = GameServer()->Create<CZombie>("CZombie");
+	pZombie->SetGlobalOrigin(Vector(-6, 0, 2));
 }
 
 void CTackWindow::RenderLoading()

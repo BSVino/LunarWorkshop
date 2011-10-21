@@ -34,7 +34,10 @@ size_t CModelLibrary::AddModel(const tstring& sModel, bool bStatic)
 	m_apModels.push_back(new CModel(sModel));
 
 	iModel = m_apModels.size()-1;
-	m_apModels[iModel]->m_iCallList = CRenderer::CreateCallList(iModel);
+	if (bStatic)
+		m_apModels[iModel]->m_iCallList = CRenderer::CreateCallList(iModel);
+	else
+		m_apModels[iModel]->m_iCallList = -1;
 	m_apModels[iModel]->m_bStatic = bStatic;
 	return iModel;
 }

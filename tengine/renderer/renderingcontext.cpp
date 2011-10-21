@@ -299,6 +299,9 @@ void CRenderingContext::RenderMeshInstance(CModel* pModel, CConversionScene* pSc
 
 	CConversionMesh* pMesh = pMeshInstance->GetMesh();
 
+	CShader* pShader = CShaderLibrary::Get()->GetShader("model");
+	GLuint iProgram = (GLuint)CShaderLibrary::GetProgram("model");
+
 	for (size_t j = 0; j < pMesh->GetNumFaces(); j++)
 	{
 		size_t k;
@@ -350,7 +353,6 @@ void CRenderingContext::RenderMeshInstance(CModel* pModel, CConversionScene* pSc
 
 			if (m_pRenderer->ShouldUseShaders())
 			{
-				GLuint iProgram = (GLuint)CShaderLibrary::GetProgram("model");
 				glUseProgram(iProgram);
 
 				GLuint bDiffuse = glGetUniformLocation(iProgram, "bDiffuse");
@@ -389,7 +391,6 @@ void CRenderingContext::RenderMeshInstance(CModel* pModel, CConversionScene* pSc
 
 			if (m_pRenderer && m_pRenderer->ShouldUseShaders())
 			{
-				CShader* pShader = CShaderLibrary::Get()->GetShader("model");
 				if (pShader && pShader->m_aiTexCoordAttributes[0])
 					glVertexAttrib2fv(pShader->m_aiTexCoordAttributes[0], pMesh->GetUV(pVertex->vu));
 			}

@@ -12,14 +12,18 @@ if (WIN32)
 	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/include)
 endif (WIN32)
 
+set (TACK_CHARACTERS_SOURCES
+	characters/tack_character.cpp
+	characters/tack_playercharacter.cpp
+	characters/zombie.cpp
+)
+
 set (TACK_SOURCES
 	main.cpp
 
 	world.cpp
 
-	tack_character.cpp
 	tack_player.cpp
-	tack_playercharacter.cpp
 
 	tack_camera.cpp
 	tack_game.cpp
@@ -28,6 +32,11 @@ set (TACK_SOURCES
 	tack_window.cpp
 
 	ui/hud.cpp
+
+	${TACK_CHARACTERS_SOURCES}
 )
+
+source_group(Characters FILES ${TACK_CHARACTERS_SOURCES})
+
 add_executable (tack ${TACK_SOURCES})
 target_link_libraries (tack tinker tengine)

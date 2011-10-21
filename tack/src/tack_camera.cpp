@@ -6,7 +6,7 @@
 #include <tengine/game/game.h>
 #include <tinker/cvar.h>
 
-#include "tack_character.h"
+#include "characters/tack_character.h"
 #include "tack_game.h"
 #include "tack_renderer.h"
 

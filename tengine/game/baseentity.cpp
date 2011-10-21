@@ -49,6 +49,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sClassName);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hMoveParent);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_ahMoveChildren);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, AABB, m_aabbBoundingBox);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bGlobalTransformsDirty);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TMatrix, m_mGlobalTransform);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, TVector, m_vecGlobalGravity);
@@ -63,6 +64,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, float, m_flTotalHealth);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, float, m_flHealth);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flTimeKilled);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLastTakeDamage);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, bool, m_bActive);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CTeam>, m_hTeam);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bSimulated);
@@ -108,6 +110,7 @@ CBaseEntity::CBaseEntity()
 	m_flTotalHealth = 1;
 	m_flHealth = 1;
 	m_flTimeKilled = 0;
+	m_flLastTakeDamage = -1;
 
 	m_bDeleted = false;
 	m_bActive = true;
@@ -137,6 +140,21 @@ void CBaseEntity::Spawn()
 {
 }
 
+TVector CBaseEntity::GetLocalCenter() const
+{
+	return m_aabbBoundingBox.Center();
+}
+
+TVector CBaseEntity::GetGlobalCenter() const
+{
+	return GetGlobalOrigin() + GetLocalCenter();
+}
+
+TFloat CBaseEntity::GetBoundingRadius() const
+{
+	return (m_aabbBoundingBox.Size()/2).Length();
+}
+
 void CBaseEntity::SetModel(const tstring& sModel)
 {
 	SetModel(CModelLibrary::Get()->FindModel(sModel));
@@ -158,6 +176,10 @@ void CBaseEntity::SetModel(size_t iModel)
 		m_pTracer->AddMeshesFromNode(CModelLibrary::Get()->GetModel(m_iModel)->m_pScene->GetScene(0));
 		m_pTracer->BuildTree();
 	}
+
+	CModel* pModel = CModelLibrary::Get()->GetModel(iModel);
+	if (pModel)
+		m_aabbBoundingBox = pModel->m_pScene->m_oExtends;
 }
 
 void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
@@ -369,6 +391,16 @@ TVector CBaseEntity::GetGlobalVelocity() const
 		return GetLocalVelocity();
 }
 
+void CBaseEntity::SetGlobalVelocity(const TVector& vecVelocity)
+{
+	if (m_hMoveParent == NULL)
+		SetLocalVelocity(vecVelocity);
+	else
+	{
+		TAssert(!"Unimplemented");
+	}
+}
+
 void CBaseEntity::SetLocalTransform(const TMatrix& m)
 {
 	SetLocalOrigin(m.GetTranslation());
@@ -477,9 +509,12 @@ void CBaseEntity::TakeDamage(CBaseEntity* pAttacker, CBaseEntity* pInflictor, da
 
 	bool bWasAlive = IsAlive();
 
+	m_flLastTakeDamage = GameServer()->GetGameTime();
+
 	if (GameNetwork()->IsHost())
 		m_flHealth -= flDamage;
 
+	OnTakeDamage(pAttacker, pInflictor, eDamageType, flDamage, bDirectHit);
 	CallOutput("OnTakeDamage");
 
 	Game()->OnTakeDamage(this, pAttacker, pInflictor, flDamage, bDirectHit, !IsAlive() && bWasAlive);
@@ -751,7 +786,7 @@ void CBaseEntity::SetSoundVolume(const tstring& sFilename, float flVolume)
 
 TFloat CBaseEntity::Distance(const TVector& vecSpot) const
 {
-	TFloat flDistance = (GetGlobalOrigin() - vecSpot).Length();
+	TFloat flDistance = (GetGlobalCenter() - vecSpot).Length();
 	if (flDistance < GetBoundingRadius())
 		return 0;
 
@@ -769,8 +804,9 @@ bool CBaseEntity::CollideLocal(const TVector& v1, const TVector& v2, TVector& ve
 	if (v1 == v2)
 	{
 		vecPoint = v1;
-		TFloat flLength = v1.Length();
-		vecNormal = v1/flLength;
+		TVector vecToV1 = v1-GetLocalCenter();
+		TFloat flLength = vecToV1.Length();
+		vecNormal = vecToV1/flLength;
 
 		bool bLess = flLength < GetBoundingRadius();
 		if (bLess)
@@ -779,7 +815,7 @@ bool CBaseEntity::CollideLocal(const TVector& v1, const TVector& v2, TVector& ve
 		return bLess;
 	}
 
-	return LineSegmentIntersectsSphere(v1, v2, TVector(), GetBoundingRadius(), vecPoint, vecNormal);
+	return LineSegmentIntersectsSphere(v1, v2, GetLocalCenter(), GetBoundingRadius(), vecPoint, vecNormal);
 }
 
 bool CBaseEntity::Collide(const TVector& v1, const TVector& v2, TVector& vecPoint, TVector& vecNormal)
@@ -793,7 +829,7 @@ bool CBaseEntity::Collide(const TVector& v1, const TVector& v2, TVector& vecPoin
 	if (v1 == v2)
 	{
 		vecPoint = v1;
-		TVector vecPosition = v1-GetGlobalOrigin();
+		TVector vecPosition = v1-GetGlobalCenter();
 		TFloat flLength = vecPosition.Length();
 		vecNormal = vecPosition/flLength;
 
@@ -804,7 +840,7 @@ bool CBaseEntity::Collide(const TVector& v1, const TVector& v2, TVector& vecPoin
 		return bLess;
 	}
 
-	return LineSegmentIntersectsSphere(v1, v2, GetGlobalOrigin(), GetBoundingRadius(), vecPoint, vecNormal);
+	return LineSegmentIntersectsSphere(v1, v2, GetGlobalCenter(), GetBoundingRadius(), vecPoint, vecNormal);
 }
 
 void CBaseEntity::SetSpawnSeed(size_t iSpawnSeed)

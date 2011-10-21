@@ -18,6 +18,9 @@ class CCharacter : public CBaseEntity
 	REGISTER_ENTITY_CLASS(CCharacter, CBaseEntity);
 
 public:
+									CCharacter();
+
+public:
 	virtual void					Spawn();
 	virtual void					Think();
 
@@ -26,6 +29,10 @@ public:
 	virtual void					MoveThink();
 	virtual void					Jump();
 
+	virtual bool					CanAttack() const;
+	virtual void					Attack();
+	virtual bool					IsAttacking() const;
+
 	virtual bool					ShouldRender() const { return true; };
 	virtual void					PostRender(bool bTransparent) const;
 	virtual void					ShowPlayerVectors() const;
@@ -33,11 +40,13 @@ public:
 	void							SetControllingPlayer(CPlayer* pCharacter);
 	CPlayer*						GetControllingPlayer() const;
 
-	virtual TFloat					GetBoundingRadius() const { return 200.0f; };
 	virtual TFloat					EyeHeight() const { return 180.0f; }
 	virtual TFloat					CharacterSpeed() { return 80.0f; }
 	virtual TFloat					JumpStrength() { return 150.0f; }
 	virtual inline TVector			GetGlobalGravity() const;
+
+	virtual float					AttackTime() const { return 0.3f; }
+	virtual float					AttackDamage() const { return 50; }
 
 	virtual bool					ShouldCollide() const { return true; }
 
@@ -50,8 +59,11 @@ protected:
 
 	CNetworkedHandle<CBaseEntity>	m_hGround;
 
+	bool							m_bTransformMoveByView;
 	Vector							m_vecGoalVelocity;
 	Vector							m_vecMoveVelocity;
+
+	float							m_flLastAttack;
 
 	float							m_flMoveSimulationTime;	// This is a higher resolution of game time for physics
 	TFloat							m_flMaxStepSize;

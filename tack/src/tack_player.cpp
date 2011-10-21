@@ -5,7 +5,7 @@
 #include <tinker/application.h>
 #include <tinker/keys.h>
 
-#include "tack_playercharacter.h"
+#include "characters/tack_playercharacter.h"
 
 REGISTER_ENTITY(CTackPlayer);
 
@@ -20,6 +20,14 @@ INPUTS_TABLE_END();
 
 void CTackPlayer::MouseMotion(int x, int y)
 {
+}
+
+void CTackPlayer::KeyPress(int c)
+{
+	if (c == ' ')
+		GetPlayerCharacter()->Attack();
+	else
+		BaseClass::KeyPress(c);
 }
 
 CPlayerCharacter* CTackPlayer::GetPlayerCharacter()

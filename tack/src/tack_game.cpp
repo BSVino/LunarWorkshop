@@ -5,7 +5,7 @@
 #include <game/level.h>
 
 #include "tack_player.h"
-#include "tack_character.h"
+#include "characters/tack_character.h"
 #include "tack_camera.h"
 #include "tack_renderer.h"
 

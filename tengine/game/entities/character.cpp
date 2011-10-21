@@ -20,8 +20,10 @@ NETVAR_TABLE_END();
 SAVEDATA_TABLE_BEGIN(CCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_hControllingPlayer);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_hGround);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bTransformMoveByView);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecGoalVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecMoveVelocity);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLastAttack);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flMoveSimulationTime);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TFloat, m_flMaxStepSize);
 SAVEDATA_TABLE_END();
@@ -29,18 +31,28 @@ SAVEDATA_TABLE_END();
 INPUTS_TABLE_BEGIN(CCharacter);
 INPUTS_TABLE_END();
 
+CCharacter::CCharacter()
+{
+	m_bTransformMoveByView = true;
+}
+
 void CCharacter::Spawn()
 {
 	BaseClass::Spawn();
 
 	SetSimulated(false);
+	SetTotalHealth(100);
 
 	m_vecMoveVelocity = Vector(0,0,0);
 	m_vecGoalVelocity = Vector(0,0,0);
 
+	m_flLastAttack = -1;
+
 	m_flMoveSimulationTime = 0;
 
 	m_flMaxStepSize = 10;
+
+	m_bTakeDamage = true;
 }
 
 void CCharacter::Think()
@@ -91,30 +103,43 @@ void CCharacter::MoveThink()
 	if (m_vecGoalVelocity.LengthSqr())
 		m_vecGoalVelocity.Normalize();
 
-	m_vecMoveVelocity.x = Approach(m_vecGoalVelocity.x, m_vecMoveVelocity.x, GameServer()->GetFrameTime()*4);
+	Vector vecGoalVelocity = m_vecGoalVelocity;
+
+	if (IsAttacking())
+		vecGoalVelocity = TVector();
+
+	m_vecMoveVelocity.x = Approach(vecGoalVelocity.x, m_vecMoveVelocity.x, GameServer()->GetFrameTime()*4);
 	m_vecMoveVelocity.y = 0;
-	m_vecMoveVelocity.z = Approach(m_vecGoalVelocity.z, m_vecMoveVelocity.z, GameServer()->GetFrameTime()*4);
+	m_vecMoveVelocity.z = Approach(vecGoalVelocity.z, m_vecMoveVelocity.z, GameServer()->GetFrameTime()*4);
 
 	if (m_vecMoveVelocity.LengthSqr() > 0)
 	{
-		TMatrix m = GetLocalTransform();
-
-		Vector vecUp = GetUpVector();
-		
-		if (HasMoveParent())
-		{
-			TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
-			vecUp = mGlobalToLocal.TransformNoTranslate(vecUp);
-		}
-
-		Vector vecRight = m.GetForwardVector().Cross(vecUp).Normalized();
-		Vector vecForward = vecUp.Cross(vecRight).Normalized();
-		m.SetColumn(0, vecForward);
-		m.SetColumn(1, vecUp);
-		m.SetColumn(2, vecRight);
-
 		TVector vecMove = m_vecMoveVelocity * CharacterSpeed();
-		TVector vecLocalVelocity = m.TransformNoTranslate(vecMove);
+		TVector vecLocalVelocity;
+
+		if (m_bTransformMoveByView)
+		{
+			Vector vecUp = GetUpVector();
+		
+			if (HasMoveParent())
+			{
+				TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
+				vecUp = mGlobalToLocal.TransformNoTranslate(vecUp);
+			}
+
+			TMatrix m = GetLocalTransform();
+
+			Vector vecRight = m.GetForwardVector().Cross(vecUp).Normalized();
+			Vector vecForward = vecUp.Cross(vecRight).Normalized();
+
+			m.SetColumn(0, vecForward);
+			m.SetColumn(1, vecUp);
+			m.SetColumn(2, vecRight);
+
+			vecLocalVelocity = m.TransformNoTranslate(vecMove);
+		}
+		else
+			vecLocalVelocity = vecMove;
 
 		SetLocalVelocity(vecLocalVelocity);
 	}
@@ -280,6 +305,59 @@ void CCharacter::Jump()
 	SetLocalVelocity(GetLocalVelocity() + vecLocalUp * JumpStrength());
 }
 
+bool CCharacter::CanAttack() const
+{
+	if (m_flLastAttack >= 0 && GameServer()->GetGameTime() - m_flLastAttack < AttackTime())
+		return false;
+
+	return true;
+}
+
+void CCharacter::Attack()
+{
+	if (!CanAttack())
+		return;
+
+	m_flLastAttack = GameServer()->GetGameTime();
+	m_vecMoveVelocity = TVector();
+
+	TFloat flAttackSphereRadius = 0.3f;
+	TVector vecDamageSphereCenter = GetGlobalOrigin() + GetUpVector()*EyeHeight() + GetGlobalTransform().GetForwardVector() * flAttackSphereRadius;
+
+	size_t iMaxEntities = GameServer()->GetMaxEntities();
+	for (size_t j = 0; j < iMaxEntities; j++)
+	{
+		CBaseEntity* pEntity = CBaseEntity::GetEntity(j);
+
+		if (!pEntity)
+			continue;
+
+		if (pEntity->IsDeleted())
+			continue;
+
+		if (!pEntity->TakesDamage())
+			continue;
+
+		if (pEntity == this)
+			continue;
+
+		TFloat flRadius = pEntity->GetBoundingRadius() + flAttackSphereRadius;
+		flRadius = flRadius*flRadius;
+		if ((vecDamageSphereCenter - pEntity->GetGlobalCenter()).LengthSqr() > flRadius)
+			continue;
+
+		pEntity->TakeDamage(this, this, DAMAGE_GENERIC, AttackDamage());
+	}
+}
+
+bool CCharacter::IsAttacking() const
+{
+	if (m_flLastAttack < 0)
+		return false;
+
+	return (GameServer()->GetGameTime() - m_flLastAttack < AttackTime());
+}
+
 CVar debug_showplayervectors("debug_showplayervectors", "off");
 
 void CCharacter::PostRender(bool bTransparent) const
@@ -305,7 +383,7 @@ void CCharacter::ShowPlayerVectors() const
 
 	CRenderingContext c(GameServer()->GetRenderer());
 
-	c.Translate((GetGlobalOrigin() - pLocalCharacter->GetGlobalOrigin()));
+	c.Translate((GetGlobalOrigin()));
 	c.SetColor(Color(255, 255, 255));
 	c.BeginRenderDebugLines();
 	c.Vertex(Vector(0,0,0));

@@ -5,6 +5,7 @@
 #include <EASTL/vector.h>
 
 #include <vector.h>
+#include <geometry.h>
 #include <matrix.h>
 #include <quaternion.h>
 #include <common.h>
@@ -22,6 +23,7 @@ typedef enum
 	DAMAGE_COLLISION,
 	DAMAGE_BURN,
 	DAMAGE_LASER,
+	DAMAGE_MELEE,
 } damagetype_t;
 
 namespace raytrace
@@ -310,7 +312,11 @@ public:
 	void									SetName(const eastl::string& sName) { m_sName = sName; };
 	eastl::string							GetName() { return m_sName; };
 
-	virtual TFloat							GetBoundingRadius() const { return 0; };
+	virtual const AABB&						GetBoundingBox() const { return m_aabbBoundingBox; }
+	virtual TVector							GetLocalCenter() const;
+	virtual TVector							GetGlobalCenter() const;
+	virtual TFloat							GetBoundingRadius() const;
+
 	virtual TFloat							GetRenderRadius() const { return GetBoundingRadius(); };
 
 	void									SetModel(const tstring& sModel);
@@ -344,6 +350,7 @@ public:
 
 	virtual TVector							GetGlobalVelocity();
 	virtual TVector							GetGlobalVelocity() const;
+	void									SetGlobalVelocity(const TVector& vecVelocity);
 
 	virtual inline TVector					GetGlobalGravity() const { return m_vecGlobalGravity; };
 	void									SetGlobalGravity(const TVector& vecGravity) { m_vecGlobalGravity = vecGravity; };
@@ -389,6 +396,7 @@ public:
 	virtual void							ClientEnterGame();
 
 	virtual void							TakeDamage(CBaseEntity* pAttacker, CBaseEntity* pInflictor, damagetype_t eDamageType, float flDamage, bool bDirectHit = true);
+	virtual void							OnTakeDamage(CBaseEntity* pAttacker, CBaseEntity* pInflictor, damagetype_t eDamageType, float flDamage, bool bDirectHit = true) {};
 	virtual bool							TakesDamage() const { return m_bTakeDamage; };
 	DECLARE_ENTITY_OUTPUT(OnTakeDamage);
 	void									Kill();
@@ -510,6 +518,8 @@ protected:
 	CNetworkedHandle<CBaseEntity>			m_hMoveParent;
 	CNetworkedSTLVector<CEntityHandle<CBaseEntity>>	m_ahMoveChildren;
 
+	AABB									m_aabbBoundingBox;
+
 	bool									m_bGlobalTransformsDirty;
 	TMatrix									m_mGlobalTransform;
 	CNetworkedVector						m_vecGlobalGravity;
@@ -527,6 +537,7 @@ protected:
 	CNetworkedVariable<float>				m_flTotalHealth;
 	CNetworkedVariable<float>				m_flHealth;
 	float									m_flTimeKilled;
+	float									m_flLastTakeDamage;
 
 	CNetworkedVariable<bool>				m_bActive;
 
