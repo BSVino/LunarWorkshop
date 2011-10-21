@@ -13,7 +13,14 @@ SAVEDATA_TABLE_END();
 INPUTS_TABLE_BEGIN(CPlayerCharacter);
 INPUTS_TABLE_END();
 
-CPlayerCharacter::CPlayerCharacter()
+void CPlayerCharacter::Precache()
 {
+	PrecacheModel("models/characters/tack.obj", false);
 }
 
+void CPlayerCharacter::Spawn()
+{
+	BaseClass::Spawn();
+
+	SetModel("models/characters/tack.obj");
+}

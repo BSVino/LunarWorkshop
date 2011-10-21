@@ -11,6 +11,18 @@ SAVEDATA_TABLE_END();
 INPUTS_TABLE_BEGIN(CWorld);
 INPUTS_TABLE_END();
 
+void CWorld::Precache()
+{
+	PrecacheModel("levels/test.obj", false);
+}
+
+void CWorld::Spawn()
+{
+	BaseClass::Spawn();
+
+	SetModel("levels/test.obj");
+}
+
 bool CWorld::CollideLocal(const TVector& v1, const TVector& v2, TVector& vecPoint, TVector& vecNormal)
 {
 	if (v1 == v2)
@@ -41,6 +53,12 @@ bool CWorld::CollideLocal(const TVector& v1, const TVector& v2, TVector& vecPoin
 	{
 		vecPoint = v1 + (v2-v1)*flFraction;
 		vecNormal = Vector(0, 1, 0);
+
+		// Don't get stuck slightly inside.
+		if (vecPoint.y < 0)
+			vecPoint -= vecNormal * vecPoint.y;
+
+		TAssert(vecPoint.y >= 0);
 		return true;
 	}
 

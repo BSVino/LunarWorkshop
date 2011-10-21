@@ -387,6 +387,13 @@ void CRenderingContext::RenderMeshInstance(CModel* pModel, CConversionScene* pSc
 		{
 			CConversionVertex* pVertex = pFace->GetVertex(k);
 
+			if (m_pRenderer && m_pRenderer->ShouldUseShaders())
+			{
+				CShader* pShader = CShaderLibrary::Get()->GetShader("model");
+				if (pShader && pShader->m_aiTexCoordAttributes[0])
+					glVertexAttrib2fv(pShader->m_aiTexCoordAttributes[0], pMesh->GetUV(pVertex->vu));
+			}
+
 			glTexCoord2fv(pMesh->GetUV(pVertex->vu));
 			glNormal3fv(pMesh->GetNormal(pVertex->vn));
 			glVertex3fv(pMesh->GetVertex(pVertex->v));

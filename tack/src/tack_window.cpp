@@ -41,8 +41,6 @@ void CTackWindow::SetupEngine()
 	SetupTack();
 
 	GameServer()->SetLoading(false);
-
-	CApplication::Get()->SetMouseCursorEnabled(false);
 }
 
 void CTackWindow::SetupTack()

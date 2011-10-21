@@ -83,8 +83,7 @@ void CCharacter::MoveThink()
 	if (!GetGroundEntity())
 	{
 		// Keep the sim time current
-		for (; m_flMoveSimulationTime < GameServer()->GetGameTime(); m_flMoveSimulationTime += flSimulationFrameTime)
-			m_flMoveSimulationTime += flSimulationFrameTime;
+		for (; m_flMoveSimulationTime < GameServer()->GetGameTime(); m_flMoveSimulationTime += flSimulationFrameTime);
 
 		return;
 	}
@@ -261,8 +260,6 @@ void CCharacter::MoveThink()
 		bool bHit = Game()->TraceLine(vecStart, vecEnd, vecHit, vecNormal, NULL);
 		if (bHit && vecNormal.y >= TFloat(0.7f))
 			SetGlobalOrigin(vecHit);*/
-
-		m_flMoveSimulationTime += flSimulationFrameTime;
 	}
 }
 

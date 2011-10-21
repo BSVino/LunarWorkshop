@@ -318,8 +318,8 @@ public:
 	size_t									GetModel() const { return m_iModel; };
 
 	virtual Matrix4x4						GetRenderTransform() const { return Matrix4x4(GetGlobalTransform()); };
-	virtual Vector							GetRenderOrigin() const { return Vector(GetGlobalOrigin()); };
-	virtual EAngle							GetRenderAngles() const { return GetGlobalAngles(); };
+	virtual Vector							GetRenderOrigin() const { return GetRenderTransform().GetTranslation(); };
+	EAngle									GetRenderAngles() const { return GetRenderTransform().GetAngles(); };
 
 	void									SetMoveParent(CBaseEntity* pParent);
 	CBaseEntity*							GetMoveParent() const { return m_hMoveParent; };

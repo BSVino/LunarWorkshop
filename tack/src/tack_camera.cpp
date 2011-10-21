@@ -14,7 +14,7 @@ CTackCamera::CTackCamera()
 {
 }
 
-CVar cam_distance("cam_distance", "8");
+CVar cam_distance("cam_distance", "12");
 CVar cam_pitch("cam_pitch", "45");
 
 Vector CTackCamera::GetCameraPosition()
