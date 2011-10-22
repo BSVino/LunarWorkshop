@@ -846,7 +846,7 @@ void CRenderer::BeginBatching()
 		it->second.clear();
 }
 
-void CRenderer::AddToBatch(class CModel* pModel, const Matrix4x4& mTransformations, bool bClrSwap, const Color& clrSwap)
+void CRenderer::AddToBatch(class CModel* pModel, const Matrix4x4& mTransformations, const Color& clrRender, bool bClrSwap, const Color& clrSwap)
 {
 	TAssert(pModel);
 
@@ -861,6 +861,7 @@ void CRenderer::AddToBatch(class CModel* pModel, const Matrix4x4& mTransformatio
 		pBatch->mTransformation = mTransformations;
 		pBatch->bSwap = bClrSwap;
 		pBatch->clrSwap = clrSwap;
+		pBatch->clrRender = clrRender;
 		pBatch->iMaterial = i;
 	}
 }
@@ -894,8 +895,8 @@ void CRenderer::RenderBatches()
 			if (pBatch->bSwap)
 				c.SetUniform("vecColorSwap", pBatch->clrSwap);
 
-			c.SetColor(Color(255, 255, 255, 255));
-
+			c.SetUniform("vecColor", pBatch->clrRender);
+	
 			c.ResetTransformations();
 			c.LoadTransform(pBatch->mTransformation);
 

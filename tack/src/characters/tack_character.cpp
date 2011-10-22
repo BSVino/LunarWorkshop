@@ -35,6 +35,17 @@ void CTackCharacter::Spawn()
 	m_flGoalYaw = m_flRenderYaw = 0;
 }
 
+TVector CTackCharacter::GetGoalVelocity()
+{
+	if (IsAttacking())
+		return TVector();
+
+	if (IsInDamageRecoveryTime())
+		return TVector();
+
+	return BaseClass::GetGoalVelocity();
+}
+
 CVar anim_yawspeed("anim_yawspeed", "1000");
 
 void CTackCharacter::Think()
@@ -82,11 +93,9 @@ bool CTackCharacter::CanAttack() const
 	return BaseClass::CanAttack();
 }
 
-CVar game_damagerecoverytime("game_damagerecoverytime", "0.5f");
-
 bool CTackCharacter::IsInDamageRecoveryTime() const
 {
-	if (m_flLastTakeDamage >= 0 && GameServer()->GetGameTime() - m_flLastTakeDamage < game_damagerecoverytime.GetFloat())
+	if (m_flLastTakeDamage >= 0 && GameServer()->GetGameTime() - m_flLastTakeDamage < DamageRecoveryTime())
 		return true;
 
 	return false;
@@ -97,7 +106,7 @@ bool CTackCharacter::TakesDamage() const
 	if (m_flLastTakeDamage < 0)
 		return BaseClass::TakesDamage();
 
-	if (GameServer()->GetGameTime() - m_flLastTakeDamage < game_damagerecoverytime.GetFloat())
+	if (GameServer()->GetGameTime() - m_flLastTakeDamage < DamageRecoveryTime())
 		return false;
 
 	return BaseClass::TakesDamage();

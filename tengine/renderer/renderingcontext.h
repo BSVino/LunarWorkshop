@@ -79,6 +79,8 @@ public:
 	bool					m_bColorSwap;
 	Color					m_clrSwap;
 
+	Color					m_clrRender;
+
 	blendtype_t				m_eBlend;
 	float					m_flAlpha;
 

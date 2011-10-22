@@ -31,6 +31,8 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer)
 
 	m_bColorSwap = false;
 
+	m_clrRender = Color(255, 255, 255, 255);
+
 	m_eBlend = BLEND_NONE;
 	m_flAlpha = 1;
 }
@@ -209,7 +211,7 @@ void CRenderingContext::RenderModel(size_t iModel)
 		Matrix4x4 mTransformations;
 		glGetFloatv(GL_MODELVIEW_MATRIX, mTransformations);
 
-		m_pRenderer->AddToBatch(pModel, mTransformations.Transposed(), m_bColorSwap, m_clrSwap);
+		m_pRenderer->AddToBatch(pModel, mTransformations.Transposed(), m_clrRender, m_bColorSwap, m_clrSwap);
 	}
 	else
 	{
@@ -224,6 +226,9 @@ void CRenderingContext::RenderModel(size_t iModel)
 		GLuint iDiffuse = glGetUniformLocation(iProgram, "iDiffuse");
 		glUniform1i(iDiffuse, 0);
 
+		GLuint vecColor = glGetUniformLocation(iProgram, "vecColor");
+		glUniform4fv(vecColor, 1, Vector4D(m_clrRender));
+
 		GLuint flAlpha = glGetUniformLocation(iProgram, "flAlpha");
 		glUniform1f(flAlpha, m_flAlpha);
 
@@ -236,8 +241,6 @@ void CRenderingContext::RenderModel(size_t iModel)
 			Vector vecColor((float)m_clrSwap.r()/255, (float)m_clrSwap.g()/255, (float)m_clrSwap.b()/255);
 			glUniform3fv(vecColorSwap, 1, vecColor);
 		}
-
-		glColor4f(1, 1, 1, 1);
 
 		CShader* pShader = CShaderLibrary::GetShader("model");
 
@@ -403,7 +406,7 @@ void CRenderingContext::SetUniform(const char* pszName, const Color& clrValue)
 		return;
 
 	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
-	glUniform3fv(iUniform, 1, Vector(clrValue));
+	glUniform4fv(iUniform, 1, Vector4D(clrValue));
 }
 
 void CRenderingContext::BindTexture(const tstring& sName, int iChannel)
@@ -427,10 +430,7 @@ void CRenderingContext::BindTexture(size_t iTexture, int iChannel)
 
 void CRenderingContext::SetColor(Color c)
 {
-	if (!m_bAttribs)
-		PushAttribs();
-
-	glColor4ub(c.r(), c.g(), c.b(), (unsigned char)(c.a()*m_flAlpha));
+	m_clrRender = c;
 }
 
 void CRenderingContext::BeginRenderTris()

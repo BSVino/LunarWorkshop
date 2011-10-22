@@ -10,6 +10,8 @@ class CPlayerCharacter : public CTackCharacter
 public:
 	void						Precache();
 	void						Spawn();
+
+	virtual float				DamageRecoveryTime() const { return 0.3f; }
 };
 
 #endif

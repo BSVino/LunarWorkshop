@@ -29,6 +29,9 @@ void CZombie::Spawn()
 
 void CZombie::ZombieThink()
 {
+	if (IsInDamageRecoveryTime())
+		return;
+
 	m_vecGoalVelocity = Vector();
 
 	CTackCharacter* pPlayerCharacter = TackGame()->GetLocalPlayerCharacter();

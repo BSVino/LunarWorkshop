@@ -88,6 +88,14 @@ void CCharacter::StopMove(movetype_t eMoveType)
 		m_vecGoalVelocity.z = 0;
 }
 
+TVector CCharacter::GetGoalVelocity()
+{
+	if (m_vecGoalVelocity.LengthSqr())
+		m_vecGoalVelocity.Normalize();
+
+	return m_vecGoalVelocity;
+}
+
 void CCharacter::MoveThink()
 {
 	float flSimulationFrameTime = 0.01f;
@@ -100,13 +108,7 @@ void CCharacter::MoveThink()
 		return;
 	}
 
-	if (m_vecGoalVelocity.LengthSqr())
-		m_vecGoalVelocity.Normalize();
-
-	Vector vecGoalVelocity = m_vecGoalVelocity;
-
-	if (IsAttacking())
-		vecGoalVelocity = TVector();
+	TVector vecGoalVelocity = GetGoalVelocity();
 
 	m_vecMoveVelocity.x = Approach(vecGoalVelocity.x, m_vecMoveVelocity.x, GameServer()->GetFrameTime()*4);
 	m_vecMoveVelocity.y = 0;
@@ -321,7 +323,7 @@ void CCharacter::Attack()
 	m_flLastAttack = GameServer()->GetGameTime();
 	m_vecMoveVelocity = TVector();
 
-	TFloat flAttackSphereRadius = 0.3f;
+	TFloat flAttackSphereRadius = 0.4f;
 	TVector vecDamageSphereCenter = GetGlobalOrigin() + GetUpVector()*EyeHeight() + GetGlobalTransform().GetForwardVector() * flAttackSphereRadius;
 
 	size_t iMaxEntities = GameServer()->GetMaxEntities();

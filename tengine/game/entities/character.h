@@ -26,6 +26,7 @@ public:
 
 	void							Move(movetype_t);
 	void							StopMove(movetype_t);
+	virtual TVector					GetGoalVelocity();
 	virtual void					MoveThink();
 	virtual void					Jump();
 
