@@ -24,7 +24,7 @@ if (WIN32)
 	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/SDL_mixer-1.2.11/include)
 endif (WIN32)
 
-set (TENGINE_SOURCES
+set (TENGINE_GAME_SOURCES
 	game/baseentity.cpp
 	game/camera.cpp
 	game/game.cpp
@@ -35,24 +35,34 @@ set (TENGINE_SOURCES
 	game/entities/counter.cpp
 	game/entities/character.cpp
 	game/entities/player.cpp
+)
 
+set (TENGINE_MODELS_SOURCES
 	models/models.cpp
 	models/texturelibrary.cpp
 	models/texturesheet.cpp
+)
 
+set (TENGINE_NETWORK_SOURCES
 	network/commands.cpp
 	network/network.cpp
 	network/replication.cpp
+)
 
+set (TENGINE_RENDERER_SOURCES
 	renderer/dissolver.cpp
 	renderer/particles.cpp
 	renderer/renderer.cpp
 	renderer/renderingcontext.cpp
 	renderer/roperenderer.cpp
 	renderer/shaders.cpp
+)
 
+set (TENGINE_SOUND_SOURCES
 	sound/sound.cpp
+)
 
+set (TENGINE_TINKER_SOURCES
 	../tinker/lobby/lobby_client.cpp
 	../tinker/lobby/lobby_server.cpp
 	../tinker/portals/portal_steam.cpp
@@ -60,6 +70,17 @@ set (TENGINE_SOURCES
 	../tinker/profiler.cpp
 	../tinker/chatbox.cpp
 )
+
+set (TENGINE_SOURCES
+	${TENGINE_GAME_SOURCES} ${TENGINE_MODELS_SOURCES} ${TENGINE_NETWORK_SOURCES} ${TENGINE_RENDERER_SOURCES} ${TENGINE_SOUND_SOURCES} ${TENGINE_TINKER_SOURCES}
+)
+
+source_group(Game FILES ${TENGINE_GAME_SOURCES})
+source_group(Models FILES ${TENGINE_MODELS_SOURCES})
+source_group(Network FILES ${TENGINE_NETWORK_SOURCES})
+source_group(Renderer FILES ${TENGINE_RENDERER_SOURCES})
+source_group(Sound FILES ${TENGINE_SOUND_SOURCES})
+source_group(Tinker FILES ${TENGINE_TINKER_SOURCES})
 
 add_library(tengine STATIC ${TENGINE_SOURCES})
 target_link_libraries (tengine tinker modelconverter raytracer)

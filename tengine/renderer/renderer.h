@@ -10,6 +10,8 @@
 #include <color.h>
 #include <frustum.h>
 
+#include <models/models.h>
+
 #include "render_common.h"
 
 class CFrameBuffer
@@ -36,6 +38,7 @@ public:
 	Matrix4x4		mTransformation;
 	bool			bSwap;
 	Color			clrSwap;
+	size_t			iMaterial;
 };
 
 #define BLOOM_FILTERS 3
@@ -121,7 +124,7 @@ public:
 	bool			HardwareSupportsShaders();
 
 public:
-	static size_t	CreateCallList(size_t iModel);
+	static size_t	LoadVertexDataIntoGL(const eastl::vector<Vertex_t>& aVertices);
 	static size_t	LoadTextureIntoGL(tstring sFilename, int iClamp = 0);
 	static size_t	LoadTextureIntoGL(size_t iImageID, int iClamp = 0);
 	static size_t	LoadTextureIntoGL(Color* pclrData, int iClamp = 0);

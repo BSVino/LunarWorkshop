@@ -5,6 +5,13 @@
 #include <EASTL/string.h>
 #include <modelconverter/convmesh.h>
 
+typedef struct
+{
+	Vector		vecPosition;
+	Vector		vecNormal;
+	Vector2D	vecUV;
+} Vertex_t;
+
 class CModel
 {
 public:
@@ -12,17 +19,24 @@ public:
 							~CModel();
 
 public:
+	void					LoadSceneIntoBuffer();
+	void					LoadSceneNodeIntoBuffer(CConversionSceneNode* pNode, const Matrix4x4& mTransformations = Matrix4x4());
+	void					LoadMeshInstanceIntoBuffer(CConversionMeshInstance* pMeshInstance, const Matrix4x4& mTransformations);
+	size_t					LoadBufferIntoGL(size_t iMaterial);
 	size_t					LoadTextureIntoGL(size_t iMaterial);
 
 public:
-	tstring			m_sFilename;
+	tstring					m_sFilename;
 	CConversionScene*		m_pScene;
 
-	bool					m_bStatic;
-	size_t					m_iCallList;
-	size_t					m_iCallListTexture;
+	eastl::vector< eastl::vector<Vertex_t> >	m_aaVertices;
 
+	// Graphics library handles.
 	eastl::vector<size_t>	m_aiTextures;
+	eastl::vector<size_t>	m_aiVertexBuffers;
+	eastl::vector<size_t>	m_aiVertexBufferSizes;	// How many vertices in this vertex buffer?
+
+	AABB					m_aabbBoundingBox;
 };
 
 class CModelLibrary
@@ -34,7 +48,7 @@ public:
 public:
 	static size_t			GetNumModels() { return Get()->m_apModels.size(); }
 
-	size_t					AddModel(const tstring& sModel, bool bStatic = true);
+	size_t					AddModel(const tstring& sModel);
 	size_t					FindModel(const tstring& sModel);
 	CModel*					GetModel(size_t i);
 

@@ -38,20 +38,24 @@ public:
 	void				WriteSMDs(const tstring& sFilename = _T(""));
 	void				WriteSMD(size_t iMesh, const tstring& sFilename = _T(""));
 
-	tstring		GetFilename(const tstring& sFilename);
-	tstring		GetDirectory(const tstring& sFilename);
+	tstring				GetFilename(const tstring& sFilename);
+	tstring				GetDirectory(const tstring& sFilename);
 	bool				IsWhitespace(tstring::value_type cChar);
-	tstring		StripWhitespace(tstring sLine);
+	tstring				StripWhitespace(tstring sLine);
 
 	void				SetScene(CConversionScene* pScene) { m_pScene = pScene; };
 	CConversionScene*	GetScene() { return m_pScene; };
 
 	void				SetWorkListener(IWorkListener* pWorkListener) { m_pWorkListener = pWorkListener; }
 
+	void				SetWantEdges(bool bWantEdges) { m_bWantEdges = bWantEdges; }
+
 protected:
 	CConversionScene*	m_pScene;
 
 	IWorkListener*		m_pWorkListener;
+
+	bool				m_bWantEdges;
 };
 
 #endif

@@ -487,7 +487,7 @@ public:
 
 	static size_t							GetNumEntities();
 
-	static void								PrecacheModel(const tstring& sModel, bool bStatic = true);
+	static void								PrecacheModel(const tstring& sModel);
 	static void								PrecacheParticleSystem(const tstring& sSystem);
 	static void								PrecacheSound(const tstring& sSound);
 	static void								PrecacheTexture(const tstring& sTexture);

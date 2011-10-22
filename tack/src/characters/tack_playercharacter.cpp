@@ -15,7 +15,7 @@ INPUTS_TABLE_END();
 
 void CPlayerCharacter::Precache()
 {
-	PrecacheModel("models/characters/tack.obj", false);
+	PrecacheModel("models/characters/tack.obj");
 }
 
 void CPlayerCharacter::Spawn()

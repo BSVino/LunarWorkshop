@@ -8,6 +8,8 @@ CModelConverter::CModelConverter(CConversionScene* pScene)
 {
 	m_pScene = pScene;
 	m_pWorkListener = NULL;
+
+	m_bWantEdges = true;
 }
 
 bool CModelConverter::ReadModel(const tstring& sFilename)

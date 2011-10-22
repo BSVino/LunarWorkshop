@@ -17,6 +17,8 @@
 #include <models/texturelibrary.h>
 #include <renderer/renderer.h>
 
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
+
 CRenderingContext::CRenderingContext(CRenderer* pRenderer)
 {
 	m_pRenderer = pRenderer;
@@ -113,6 +115,17 @@ void CRenderingContext::ResetTransformations()
 	}
 }
 
+void CRenderingContext::LoadTransform(const Matrix4x4& m)
+{
+	if (!m_bMatrixTransformations)
+	{
+		m_bMatrixTransformations = true;
+		glPushMatrix();
+	}
+
+	glLoadMatrixf(m.Transposed());	// GL uses column major.
+}
+
 void CRenderingContext::SetBlend(blendtype_t eBlend)
 {
 	if (!m_bAttribs)
@@ -182,229 +195,106 @@ void CRenderingContext::SetLighting(bool bLighting)
 		glDisable(GL_LIGHTING);
 }
 
-void CRenderingContext::RenderModel(size_t iModel, CModel* pCompilingModel)
+void CRenderingContext::RenderModel(size_t iModel)
 {
 	CModel* pModel = CModelLibrary::Get()->GetModel(iModel);
 
 	if (!pModel)
 		return;
 
-	if (pModel->m_bStatic && !pCompilingModel)
+	if (m_pRenderer->IsBatching())
 	{
-		if (m_pRenderer->IsBatching())
-		{
-			TAssert(m_eBlend == BLEND_NONE);
+		TAssert(m_eBlend == BLEND_NONE);
 
-			Matrix4x4 mTransformations;
-			glGetFloatv(GL_MODELVIEW_MATRIX, mTransformations);
+		Matrix4x4 mTransformations;
+		glGetFloatv(GL_MODELVIEW_MATRIX, mTransformations);
 
-			m_pRenderer->AddToBatch(pModel, mTransformations, m_bColorSwap, m_clrSwap);
-		}
-		else
-		{
-			glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT|GL_LIGHTING_BIT|GL_TEXTURE_BIT);
-
-			TAssert(pModel->m_iCallListTexture);
-			glBindTexture(GL_TEXTURE_2D, pModel->m_iCallListTexture);
-
-			if (m_pRenderer->ShouldUseShaders())
-			{
-				GLuint iProgram = (GLuint)CShaderLibrary::GetProgram("model");
-				glUseProgram(iProgram);
-
-				GLuint bDiffuse = glGetUniformLocation(iProgram, "bDiffuse");
-				glUniform1i(bDiffuse, true);
-
-				GLuint iDiffuse = glGetUniformLocation(iProgram, "iDiffuse");
-				glUniform1i(iDiffuse, 0);
-
-				GLuint flAlpha = glGetUniformLocation(iProgram, "flAlpha");
-				glUniform1f(flAlpha, m_flAlpha);
-
-				GLuint bColorSwapInAlpha = glGetUniformLocation(iProgram, "bColorSwapInAlpha");
-				glUniform1i(bColorSwapInAlpha, m_bColorSwap);
-
-				if (m_bColorSwap)
-				{
-					GLuint vecColorSwap = glGetUniformLocation(iProgram, "vecColorSwap");
-					Vector vecColor((float)m_clrSwap.r()/255, (float)m_clrSwap.g()/255, (float)m_clrSwap.b()/255);
-					glUniform3fv(vecColorSwap, 1, vecColor);
-				}
-
-				glColor4f(1, 1, 1, 1);
-
-				glCallList((GLuint)pModel->m_iCallList);
-
-				glUseProgram(0);
-			}
-			else
-			{
-				if (m_bColorSwap)
-					glColor4f(((float)m_clrSwap.r())/255, ((float)m_clrSwap.g())/255, ((float)m_clrSwap.b())/255, m_flAlpha);
-				else
-					glColor4f(1, 1, 1, m_flAlpha);
-
-				glCallList((GLuint)pModel->m_iCallList);
-			}
-
-			glPopAttrib();
-		}
+		m_pRenderer->AddToBatch(pModel, mTransformations.Transposed(), m_bColorSwap, m_clrSwap);
 	}
 	else
 	{
-		for (size_t i = 0; i < pModel->m_pScene->GetNumScenes(); i++)
-			RenderSceneNode(pModel, pModel->m_pScene, pModel->m_pScene->GetScene(i), pCompilingModel);
-	}
-
-	if (!pCompilingModel && m_pRenderer->ShouldUseShaders() && !m_pRenderer->IsBatching())
-		m_pRenderer->ClearProgram();
-}
-
-void CRenderingContext::RenderSceneNode(CModel* pModel, CConversionScene* pScene, CConversionSceneNode* pNode, CModel* pCompilingModel)
-{
-	if (!pNode)
-		return;
-
-	if (!pNode->IsVisible())
-		return;
-
-	bool bTransformationsIdentity = false;
-	if (pNode->m_mTransformations.IsIdentity())
-		bTransformationsIdentity = true;
-
-	if (!bTransformationsIdentity)
-	{
-		glPushMatrix();
-
-		glMultMatrixf(pNode->m_mTransformations.Transposed());	// GL uses column major.
-	}
-
-	for (size_t i = 0; i < pNode->GetNumChildren(); i++)
-		RenderSceneNode(pModel, pScene, pNode->GetChild(i), pCompilingModel);
-
-	for (size_t m = 0; m < pNode->GetNumMeshInstances(); m++)
-		RenderMeshInstance(pModel, pScene, pNode->GetMeshInstance(m), pCompilingModel);
-
-	if (!bTransformationsIdentity)
-		glPopMatrix();
-}
-
-void CRenderingContext::RenderMeshInstance(CModel* pModel, CConversionScene* pScene, CConversionMeshInstance* pMeshInstance, CModel* pCompilingModel)
-{
-	if (!pMeshInstance->IsVisible())
-		return;
-
-	if (!pCompilingModel)
 		glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT|GL_LIGHTING_BIT|GL_TEXTURE_BIT);
 
-	CConversionMesh* pMesh = pMeshInstance->GetMesh();
+		GLuint iProgram = (GLuint)CShaderLibrary::GetProgram("model");
+		glUseProgram(iProgram);
 
-	CShader* pShader = CShaderLibrary::Get()->GetShader("model");
-	GLuint iProgram = (GLuint)CShaderLibrary::GetProgram("model");
+		GLuint bDiffuse = glGetUniformLocation(iProgram, "bDiffuse");
+		glUniform1i(bDiffuse, true);
 
-	for (size_t j = 0; j < pMesh->GetNumFaces(); j++)
-	{
-		size_t k;
-		CConversionFace* pFace = pMesh->GetFace(j);
+		GLuint iDiffuse = glGetUniformLocation(iProgram, "iDiffuse");
+		glUniform1i(iDiffuse, 0);
 
-		if (pFace->m == ~0)
-			continue;
+		GLuint flAlpha = glGetUniformLocation(iProgram, "flAlpha");
+		glUniform1f(flAlpha, m_flAlpha);
 
-		CConversionMaterial* pMaterial = NULL;
-		CConversionMaterialMap* pConversionMaterialMap = pMeshInstance->GetMappedMaterial(pFace->m);
+		GLuint bColorSwapInAlpha = glGetUniformLocation(iProgram, "bColorSwapInAlpha");
+		glUniform1i(bColorSwapInAlpha, m_bColorSwap);
 
-		if (pConversionMaterialMap)
+		if (m_bColorSwap)
 		{
-			if (!pConversionMaterialMap->IsVisible())
+			GLuint vecColorSwap = glGetUniformLocation(iProgram, "vecColorSwap");
+			Vector vecColor((float)m_clrSwap.r()/255, (float)m_clrSwap.g()/255, (float)m_clrSwap.b()/255);
+			glUniform3fv(vecColorSwap, 1, vecColor);
+		}
+
+		glColor4f(1, 1, 1, 1);
+
+		CShader* pShader = CShaderLibrary::GetShader("model");
+
+		TAssert(pShader->m_iPositionAttribute != ~0);
+		TAssert(pShader->m_iTexCoordAttribute != ~0);
+
+		for (size_t m = 0; m < pModel->m_aiVertexBuffers.size(); m++)
+		{
+			if (!pModel->m_aiVertexBufferSizes[m])
 				continue;
 
-			pMaterial = pScene->GetMaterial(pConversionMaterialMap->m_iMaterial);
-			if (pMaterial && !pMaterial->IsVisible())
-				continue;
+			glActiveTexture(GL_TEXTURE0);
+
+			glBindTexture(GL_TEXTURE_2D, (GLuint)pModel->m_aiTextures[m]);
+			glEnable(GL_TEXTURE_2D);
+
+			RenderModel(pModel, m, pShader);
 		}
 
-		if (pCompilingModel)
-		{
-			if (pMaterial)
-			{
-				GLuint iTexture = (GLuint)pModel->m_aiTextures[pConversionMaterialMap->m_iMaterial];
-
-				if (!pModel->m_iCallListTexture)
-					pModel->m_iCallListTexture = iTexture;
-				else
-					// If you hit this you have more than one texture in a call list that's building.
-					// That's a no-no because these call lists are batched.
-					TAssert(pModel->m_iCallListTexture == iTexture);
-			}
-		}
-
-		if (!pCompilingModel)
-		{
-			bool bTexture = false;
-			if (pMaterial)
-			{
-				GLuint iTexture = (GLuint)pModel->m_aiTextures[pConversionMaterialMap->m_iMaterial];
-				glBindTexture(GL_TEXTURE_2D, iTexture);
-
-				bTexture = !!iTexture;
-			}
-			else
-				glBindTexture(GL_TEXTURE_2D, 0);
-
-			if (m_pRenderer->ShouldUseShaders())
-			{
-				glUseProgram(iProgram);
-
-				GLuint bDiffuse = glGetUniformLocation(iProgram, "bDiffuse");
-				glUniform1i(bDiffuse, bTexture);
-
-				GLuint iDiffuse = glGetUniformLocation(iProgram, "iDiffuse");
-				glUniform1i(iDiffuse, 0);
-
-				GLuint flAlpha = glGetUniformLocation(iProgram, "flAlpha");
-				glUniform1f(flAlpha, m_flAlpha);
-
-				GLuint bColorSwapInAlpha = glGetUniformLocation(iProgram, "bColorSwapInAlpha");
-				glUniform1i(bColorSwapInAlpha, m_bColorSwap);
-
-				if (m_bColorSwap)
-				{
-					GLuint vecColorSwap = glGetUniformLocation(iProgram, "vecColorSwap");
-					Vector vecColor((float)m_clrSwap.r()/255, (float)m_clrSwap.g()/255, (float)m_clrSwap.b()/255);
-					glUniform3fv(vecColorSwap, 1, vecColor);
-				}
-			}
-			else
-			{
-				if (m_bColorSwap)
-					glColor4f(((float)m_clrSwap.r())/255, ((float)m_clrSwap.g())/255, ((float)m_clrSwap.b())/255, m_flAlpha);
-				else
-					glColor4f(pMaterial->m_vecDiffuse.x, pMaterial->m_vecDiffuse.y, pMaterial->m_vecDiffuse.z, m_flAlpha);
-			}
-		}
-
-		glBegin(GL_POLYGON);
-
-		for (k = 0; k < pFace->GetNumVertices(); k++)
-		{
-			CConversionVertex* pVertex = pFace->GetVertex(k);
-
-			if (m_pRenderer && m_pRenderer->ShouldUseShaders())
-			{
-				if (pShader && pShader->m_aiTexCoordAttributes[0])
-					glVertexAttrib2fv(pShader->m_aiTexCoordAttributes[0], pMesh->GetUV(pVertex->vu));
-			}
-
-			glTexCoord2fv(pMesh->GetUV(pVertex->vu));
-			glNormal3fv(pMesh->GetNormal(pVertex->vn));
-			glVertex3fv(pMesh->GetVertex(pVertex->v));
-		}
-
-		glEnd();
-	}
-
-	if (!pCompilingModel)
+		glUseProgram(0);
 		glPopAttrib();
+	}
+}
+
+void CRenderingContext::RenderModel(CModel* pModel, size_t iMaterial, CShader* pShader)
+{
+	if (!pShader)
+		pShader = m_pShader;
+
+	if (!pModel || !pShader)
+		return;
+
+	Vertex_t v;
+
+	glBindBuffer(GL_ARRAY_BUFFER, pModel->m_aiVertexBuffers[iMaterial]);
+
+	if (pShader->m_iNormalAttribute != ~0)
+		glEnableVertexAttribArray(pShader->m_iNormalAttribute);
+
+	glEnableVertexAttribArray(pShader->m_iTexCoordAttribute);
+	glEnableVertexAttribArray(pShader->m_iPositionAttribute);
+
+	if (pShader->m_iNormalAttribute != ~0)
+		glVertexAttribPointer(pShader->m_iNormalAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecNormal) - ((size_t)&v)));
+
+	glVertexAttribPointer(pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecUV) - ((size_t)&v)));
+	glVertexAttribPointer(pShader->m_iPositionAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecPosition) - ((size_t)&v)));
+
+	glDrawArrays(GL_TRIANGLES, 0, pModel->m_aiVertexBufferSizes[iMaterial]);
+
+	if (pShader->m_iNormalAttribute != ~0)
+		glDisableVertexAttribArray(pShader->m_iNormalAttribute);
+
+	glDisableVertexAttribArray(pShader->m_iTexCoordAttribute);
+	glDisableVertexAttribArray(pShader->m_iPositionAttribute);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void CRenderingContext::RenderSphere()
@@ -671,21 +561,19 @@ void CRenderingContext::EndRender()
 {
 	if (m_bTexCoord)
 	{
-		for (size_t i = 0; i < m_aavecTexCoords.size(); i++)
-		{
-			int iTexCoordAttribute = m_pShader->m_aiTexCoordAttributes[i];
-			if (iTexCoordAttribute == ~0)
-				continue;
-
-			glEnableVertexAttribArray(iTexCoordAttribute);
-			glVertexAttribPointer(iTexCoordAttribute, 2, GL_FLOAT, false, 0, m_aavecTexCoords[i].data());
-		}
+		glEnableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
+		glVertexAttribPointer(m_pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, 0, m_aavecTexCoords[0].data());
 	}
 
 	if (m_bNormal)
-		glNormalPointer(GL_FLOAT, 0, m_avecNormals.data());
+	{
+		glEnableVertexAttribArray(m_pShader->m_iNormalAttribute);
+		glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, 0, m_avecNormals.data());
+	}
 
-	glVertexPointer(3, GL_FLOAT, 0, m_avecVertices.data());
+	glEnableVertexAttribArray(m_pShader->m_iPositionAttribute);
+	glVertexAttribPointer(m_pShader->m_iPositionAttribute, 3, GL_FLOAT, false, 0, m_avecVertices.data());
+
 	glDrawArrays(m_iDrawMode, 0, m_avecVertices.size());
 
 	glPopClientAttrib();

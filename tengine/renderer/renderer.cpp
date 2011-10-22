@@ -8,7 +8,6 @@
 #include <simplex.h>
 
 #include <modelconverter/convmesh.h>
-#include <models/models.h>
 #include <renderer/shaders.h>
 #include <tinker/application.h>
 #include <tinker/cvar.h>
@@ -280,6 +279,9 @@ void CRenderer::SetupFrame()
 
 void CRenderer::DrawBackground()
 {
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glUseProgram(0);
+
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -851,14 +853,16 @@ void CRenderer::AddToBatch(class CModel* pModel, const Matrix4x4& mTransformatio
 	if (!pModel)
 		return;
 
-	TAssert(pModel->m_iCallListTexture);
+	for (size_t i = 0; i < pModel->m_aiTextures.size(); i++)
+	{
+		CRenderBatch* pBatch = &m_aBatches[pModel->m_aiTextures[i]].push_back();
 
-	CRenderBatch* pBatch = &m_aBatches[pModel->m_iCallListTexture].push_back();
-
-	pBatch->pModel = pModel;
-	pBatch->mTransformation = mTransformations;
-	pBatch->bSwap = bClrSwap;
-	pBatch->clrSwap = clrSwap;
+		pBatch->pModel = pModel;
+		pBatch->mTransformation = mTransformations;
+		pBatch->bSwap = bClrSwap;
+		pBatch->clrSwap = clrSwap;
+		pBatch->iMaterial = i;
+	}
 }
 
 void CRenderer::RenderBatches()
@@ -870,65 +874,34 @@ void CRenderer::RenderBatches()
 	if (!ShouldBatchThisFrame())
 		return;
 
-	glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT|GL_LIGHTING_BIT|GL_TEXTURE_BIT);
-	glPushMatrix();
+	CRenderingContext c(this);
 
-	GLuint iProgram = 0;
-	if (ShouldUseShaders())
-	{
-		iProgram = (GLuint)CShaderLibrary::GetProgram("model");
-		glUseProgram(iProgram);
-
-		GLuint bDiffuse = glGetUniformLocation(iProgram, "bDiffuse");
-		glUniform1i(bDiffuse, true);
-
-		GLuint iDiffuse = glGetUniformLocation(iProgram, "iDiffuse");
-		glUniform1i(iDiffuse, 0);
-
-		GLuint flAlpha = glGetUniformLocation(iProgram, "flAlpha");
-		glUniform1f(flAlpha, 1);
-	}
+	c.UseProgram("model");
+	c.SetUniform("bDiffuse", true);
+	c.SetUniform("iDiffuse", 0);
+	c.SetUniform("flAlpha", 1.0f);
 
 	for (eastl::map<size_t, eastl::vector<CRenderBatch> >::iterator it = m_aBatches.begin(); it != m_aBatches.end(); it++)
 	{
-		glBindTexture(GL_TEXTURE_2D, (GLuint)it->first);
+		c.BindTexture(it->first);
 
 		for (size_t i = 0; i < it->second.size(); i++)
 		{
 			CRenderBatch* pBatch = &it->second[i];
 
-			if (ShouldUseShaders())
-			{
-				GLuint bColorSwapInAlpha = glGetUniformLocation(iProgram, "bColorSwapInAlpha");
-				glUniform1i(bColorSwapInAlpha, pBatch->bSwap);
+			c.SetUniform("bColorSwapInAlpha", pBatch->bSwap);
 
-				if (pBatch->bSwap)
-				{
-					GLuint vecColorSwap = glGetUniformLocation(iProgram, "vecColorSwap");
-					Vector vecColor((float)pBatch->clrSwap.r()/255, (float)pBatch->clrSwap.g()/255, (float)pBatch->clrSwap.b()/255);
-					glUniform3fv(vecColorSwap, 1, vecColor);
-				}
+			if (pBatch->bSwap)
+				c.SetUniform("vecColorSwap", pBatch->clrSwap);
 
-				glColor4f(1, 1, 1, 1);
-			}
-			else
-			{
-				if (pBatch->bSwap)
-					glColor4f(((float)pBatch->clrSwap.r())/255, ((float)pBatch->clrSwap.g())/255, ((float)pBatch->clrSwap.b())/255, 1);
-				else
-					glColor4f(1, 1, 1, 1);
-			}
+			c.SetColor(Color(255, 255, 255, 255));
 
-			glLoadMatrixf(pBatch->mTransformation);
-			glCallList((GLuint)pBatch->pModel->m_iCallList);
+			c.ResetTransformations();
+			c.LoadTransform(pBatch->mTransformation);
+
+			c.RenderModel(pBatch->pModel, pBatch->iMaterial);
 		}
 	}
-
-	if (ShouldUseShaders())
-		glUseProgram(0);
-
-	glPopMatrix();
-	glPopAttrib();
 }
 
 Vector CRenderer::GetCameraVector()
@@ -1146,16 +1119,16 @@ bool CRenderer::HardwareSupportsShaders()
 	return m_bHardwareSupportsShaders;
 }
 
-size_t CRenderer::CreateCallList(size_t iModel)
+size_t CRenderer::LoadVertexDataIntoGL(const eastl::vector<Vertex_t>& aVertices)
 {
-	size_t iCallList = glGenLists(1);
+	GLuint iVBO;
+	glGenBuffersARB(1, &iVBO);
+	glBindBufferARB(GL_ARRAY_BUFFER, iVBO);
 
-	glNewList((GLuint)iCallList, GL_COMPILE);
-	CRenderingContext c(NULL);
-	c.RenderModel(iModel, CModelLibrary::Get()->GetModel(iModel));
-	glEndList();
+	size_t iTotalSize = sizeof(Vertex_t)*aVertices.size();
+	glBufferDataARB(GL_ARRAY_BUFFER, iTotalSize, &aVertices[0], GL_STATIC_DRAW);
 
-	return iCallList;
+	return iVBO;
 }
 
 size_t CRenderer::LoadTextureIntoGL(tstring sFilename, int iClamp)

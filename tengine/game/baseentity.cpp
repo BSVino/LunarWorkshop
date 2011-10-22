@@ -179,7 +179,7 @@ void CBaseEntity::SetModel(size_t iModel)
 
 	CModel* pModel = CModelLibrary::Get()->GetModel(iModel);
 	if (pModel)
-		m_aabbBoundingBox = pModel->m_pScene->m_oExtends;
+		m_aabbBoundingBox = pModel->m_aabbBoundingBox;
 }
 
 void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
@@ -1223,9 +1223,9 @@ bool CBaseEntity::Unserialize(std::istream& i, const char* pszClassName, void* p
 	return true;
 }
 
-void CBaseEntity::PrecacheModel(const tstring& sModel, bool bStatic)
+void CBaseEntity::PrecacheModel(const tstring& sModel)
 {
-	CModelLibrary::Get()->AddModel(sModel, bStatic);
+	CModelLibrary::Get()->AddModel(sModel);
 }
 
 void CBaseEntity::PrecacheParticleSystem(const tstring& sSystem)

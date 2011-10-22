@@ -13,7 +13,7 @@ INPUTS_TABLE_END();
 
 void CWorld::Precache()
 {
-	PrecacheModel("levels/test.obj", false);
+	PrecacheModel("levels/test.obj");
 }
 
 void CWorld::Spawn()

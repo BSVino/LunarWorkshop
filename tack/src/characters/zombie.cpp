@@ -17,7 +17,7 @@ INPUTS_TABLE_END();
 
 void CZombie::Precache()
 {
-	PrecacheModel("models/characters/zombie.obj", false);
+	PrecacheModel("models/characters/zombie.obj");
 }
 
 void CZombie::Spawn()

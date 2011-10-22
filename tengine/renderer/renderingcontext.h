@@ -21,6 +21,7 @@ public:
 	void					Rotate(float flAngle, Vector vecAxis);
 	void					Scale(float flX, float flY, float flZ);
 	void					ResetTransformations();
+	void					LoadTransform(const Matrix4x4& m);
 
 	void					SetBlend(blendtype_t eBlend);
 	void					SetAlpha(float flAlpha) { m_flAlpha = flAlpha; };
@@ -33,9 +34,8 @@ public:
 	float					GetAlpha() { return m_flAlpha; };
 	blendtype_t				GetBlend() { return m_eBlend; };
 
-	void					RenderModel(size_t iModel, class CModel* pCompilingModel = NULL);
-	void					RenderSceneNode(class CModel* pModel, class CConversionScene* pScene, class CConversionSceneNode* pNode, class CModel* pCompilingModel);
-	void					RenderMeshInstance(class CModel* pModel, class CConversionScene* pScene, class CConversionMeshInstance* pMeshInstance, class CModel* pCompilingModel);
+	void					RenderModel(size_t iModel);
+	void					RenderModel(class CModel* pModel, size_t iMaterial, class CShader* pShader = NULL);
 
 	void					RenderSphere();
 

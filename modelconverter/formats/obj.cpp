@@ -98,13 +98,13 @@ void CModelConverter::ReadOBJ(const tstring& sFilename)
 			// ZBrush is kind enough to notate exactly how many vertices and faces we have in the comments at the top of the file.
 			if (tstrncmp(pszLine, _T("#Vertex Count"), 13) == 0)
 			{
-				iTotalVertices = stoi(pszLine+13);
+				iTotalVertices = atoi(pszLine+13);
 				pMesh->SetTotalVertices(iTotalVertices);
 			}
 
 			if (tstrncmp(pszLine, _T("#Face Count"), 11) == 0)
 			{
-				iTotalFaces = stoi(pszLine+11);
+				iTotalFaces = atoi(pszLine+11);
 				pMesh->SetTotalFaces(iTotalFaces);
 
 				// Don't kill the video card while we're loading the faces.
@@ -153,7 +153,7 @@ void CModelConverter::ReadOBJ(const tstring& sFilename)
 				while (pszToken[0] == _T(' '))
 					pszToken++;
 
-				v[iDimension++] = (float)stof(pszToken);
+				v[iDimension++] = (float)atof(pszToken);
 				if (iDimension >= 3)
 					break;
 
@@ -179,9 +179,9 @@ void CModelConverter::ReadOBJ(const tstring& sFilename)
 			tstrtok(pszLine, asTokens, _T(" "));
 			if (asTokens.size() == 4)
 			{
-				x = stof(asTokens[1]);
-				y = stof(asTokens[2]);
-				z = stof(asTokens[3]);
+				x = (float)atof(asTokens[1].c_str());
+				y = (float)atof(asTokens[2].c_str());
+				z = (float)atof(asTokens[3].c_str());
 				pMesh->AddNormal(x, y, z);
 			}
 		}
@@ -202,8 +202,8 @@ void CModelConverter::ReadOBJ(const tstring& sFilename)
 			tstrtok(pszLine, asTokens, _T(" "));
 			if (asTokens.size() == 3)
 			{
-				u = stof(asTokens[1]);
-				v = stof(asTokens[2]);
+				u = (float)atof(asTokens[1].c_str());
+				v = (float)atof(asTokens[2].c_str());
 				pMesh->AddUV(u, v);
 			}
 		}
@@ -244,7 +244,7 @@ void CModelConverter::ReadOBJ(const tstring& sFilename)
 				eastl::vector<tstring> asTokens;
 				tstrtok(pszLine, asTokens, _T(" "));
 				if (asTokens.size() == 2)
-					iSmoothingGroup = stoi(asTokens[1]);
+					iSmoothingGroup = atoi(asTokens[1].c_str());
 			}
 		}
 		else if (tstrncmp(pszToken, _T("f"), 1) == 0)
@@ -298,7 +298,7 @@ void CModelConverter::ReadOBJ(const tstring& sFilename)
 							pszValues++;
 
 						bValues[iValue] = true;
-						f[iValue++] = (long)stoi(pszValues);
+						f[iValue++] = (long)atoi(pszValues);
 						if (iValue >= 3)
 							break;
 					}
@@ -354,7 +354,8 @@ void CModelConverter::ReadOBJ(const tstring& sFilename)
 
 	for (size_t i = 0; i < m_pScene->GetNumMeshes(); i++)
 	{
-		m_pScene->GetMesh(i)->CalculateEdgeData();
+		if (m_bWantEdges)
+			m_pScene->GetMesh(i)->CalculateEdgeData();
 
 		if (bSmoothingGroups || m_pScene->GetMesh(i)->GetNumNormals() == 0)
 			m_pScene->GetMesh(i)->CalculateVertexNormals();
@@ -410,9 +411,9 @@ void CModelConverter::ReadMTL(const tstring& sFilename)
 			tstrtok(sLine, asTokens, _T(" "));
 			if (asTokens.size() == 4)
 			{
-				pMaterial->m_vecAmbient.x = stof(asTokens[1]);
-				pMaterial->m_vecAmbient.y = stof(asTokens[2]);
-				pMaterial->m_vecAmbient.z = stof(asTokens[3]);
+				pMaterial->m_vecAmbient.x = (float)atof(asTokens[1].c_str());
+				pMaterial->m_vecAmbient.y = (float)atof(asTokens[2].c_str());
+				pMaterial->m_vecAmbient.z = (float)atof(asTokens[3].c_str());
 			}
 		}
 		else if (tstrncmp(pszToken, _T("Kd"), 2) == 0)
@@ -421,9 +422,9 @@ void CModelConverter::ReadMTL(const tstring& sFilename)
 			tstrtok(sLine, asTokens, _T(" "));
 			if (asTokens.size() == 4)
 			{
-				pMaterial->m_vecDiffuse.x = stof(asTokens[1]);
-				pMaterial->m_vecDiffuse.y = stof(asTokens[2]);
-				pMaterial->m_vecDiffuse.z = stof(asTokens[3]);
+				pMaterial->m_vecDiffuse.x = (float)atof(asTokens[1].c_str());
+				pMaterial->m_vecDiffuse.y = (float)atof(asTokens[2].c_str());
+				pMaterial->m_vecDiffuse.z = (float)atof(asTokens[3].c_str());
 			}
 		}
 		else if (tstrncmp(pszToken, _T("Ks"), 2) == 0)
@@ -432,22 +433,22 @@ void CModelConverter::ReadMTL(const tstring& sFilename)
 			tstrtok(sLine, asTokens, _T(" "));
 			if (asTokens.size() == 4)
 			{
-				pMaterial->m_vecSpecular.x = stof(asTokens[1]);
-				pMaterial->m_vecSpecular.y = stof(asTokens[2]);
-				pMaterial->m_vecSpecular.z = stof(asTokens[3]);
+				pMaterial->m_vecSpecular.x = (float)atof(asTokens[1].c_str());
+				pMaterial->m_vecSpecular.y = (float)atof(asTokens[2].c_str());
+				pMaterial->m_vecSpecular.z = (float)atof(asTokens[3].c_str());
 			}
 		}
 		else if (tstrncmp(pszToken, _T("d"), 1) == 0 || tstrncmp(pszToken, _T("Tr"), 2) == 0)
 		{
-			pMaterial->m_flTransparency = (float)stof(asTokens[1]);
+			pMaterial->m_flTransparency = (float)atof(asTokens[1].c_str());
 		}
 		else if (tstrncmp(pszToken, _T("Ns"), 2) == 0)
 		{
-			pMaterial->m_flShininess = (float)stof(asTokens[1])*128/1000;
+			pMaterial->m_flShininess = (float)atof(asTokens[1].c_str())*128/1000;
 		}
 		else if (tstrncmp(pszToken, _T("illum"), 5) == 0)
 		{
-			pMaterial->m_eIllumType = (IllumType_t)stoi(asTokens[1]);
+			pMaterial->m_eIllumType = (IllumType_t)atoi(asTokens[1].c_str());
 		}
 		else if (tstrncmp(pszToken, _T("map_Kd"), 6) == 0)
 		{

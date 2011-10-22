@@ -19,6 +19,18 @@ CShaderLibrary::CShaderLibrary()
 	s_pShaderLibrary = this;
 
 	m_bCompiled = false;
+
+	FILE* f = tfopen("shaders/functions.si", "r");
+
+	TAssert(f);
+	if (f)
+	{
+		tstring sLine;
+		while (fgetts(sLine, f))
+			m_sFunctions += sLine;
+
+		fclose(f);
+	}
 }
 
 CShaderLibrary::~CShaderLibrary()
@@ -155,113 +167,26 @@ CShader::CShader(const tstring& sName, const tstring& sVertexFile, const tstring
 
 bool CShader::Compile()
 {
-	tstring sFunctions =
-	"float RemapVal(float flInput, float flInLo, float flInHi, float flOutLo, float flOutHi)"
-	"{"
-	"	return (((flInput-flInLo) / (flInHi-flInLo)) * (flOutHi-flOutLo)) + flOutLo;"
-	"}"
-
-	"float RemapValClamped(float flInput, float flInLo, float flInHi, float flOutLo, float flOutHi)"
-	"{"
-	"	if (flInput < flInLo)"
-	"		return flOutLo;"
-	"	if (flInput > flInHi)"
-	"		return flOutHi;"
-	"	return (((flInput-flInLo) / (flInHi-flInLo)) * (flOutHi-flOutLo)) + flOutLo;"
-	"}"
-
-	"float Clamped(float flInput, float flLo, float flHi)"
-	"{"
-	"	if (flInput < flLo)"
-	"		return flLo;"
-	"	if (flInput > flHi)"
-	"		return flHi;"
-	"	return flInput;"
-	"}"
-
-	"float LengthSqr(vec3 v)"
-	"{"
-	"	return v.x*v.x + v.y*v.y + v.z*v.z;"
-	"}"
-
-	"float LengthSqr(vec2 v)"
-	"{"
-	"	return v.x*v.x + v.y*v.y;"
-	"}"
-
-	"float Length2DSqr(vec3 v)"
-	"{"
-	"	return v.x*v.x + v.z*v.z;"
-	"}"
-
-	"float Lerp(float x, float flLerp)"
-	"{"
-		"if (flLerp == 0.5)"
-			"return x;"
-		"return pow(x, log(flLerp) * -1.4427);"
-	"}"
-
-	"float DistanceToLineSegmentSqr(vec3 p, vec3 v1, vec3 v2)"
-	"{"
-		"float flResult;"
-		"vec3 v = v2 - v1;"
-		"vec3 w = p - v1;"
-		"float c1 = dot(w, v);"
-		"if (c1 < 0.0)"
-		"	flResult = LengthSqr(v1-p);"
-		"else"
-		"{"
-		"	float c2 = dot(v, v);"
-		"	if (c2 < c1)"
-		"		flResult = LengthSqr(v2-p);"
-		"	else"
-		"	{"
-		"		float b = c1/c2;"
-		"		vec3 vb = v1 + v*b;"
-		"		flResult = LengthSqr(vb - p);"
-		"	}"
-		"}"
-		"return flResult;"
-	"}"
-
-	"float AngleDifference(float a, float b)"
-	"{"
-		"float flYawDifference = a - b;"
-		"if ( a > b )"
-		"	while ( flYawDifference >= 180.0 )"
-		"		flYawDifference -= 360.0;"
-		"else"
-		"	while ( flYawDifference <= -180.0 )"
-		"		flYawDifference += 360.0;"
-		"return flYawDifference;"
-	"}";
-
-	tstring sVertexShader = sFunctions;
-	if (m_sVertexFile == "pass")
-		sVertexShader = CShaderLibrary::GetVSPassShader();
-	else
-	{
-		FILE* f = tfopen("shaders/" + m_sVertexFile + ".vs", "r");
-
-		TAssert(f);
-		if (!f)
-			return false;
-
-		tstring sLine;
-		while (fgetts(sLine, f))
-			sVertexShader += sLine;
-
-		fclose(f);
-	}
-
-	FILE* f = tfopen("shaders/" + m_sFragmentFile + ".fs", "r");
+	tstring sVertexShader = CShaderLibrary::GetShaderFunctions();
+	FILE* f = tfopen("shaders/" + m_sVertexFile + ".vs", "r");
 
 	TAssert(f);
 	if (!f)
 		return false;
 
-	tstring sFragmentShader = sFunctions;
 	tstring sLine;
+	while (fgetts(sLine, f))
+		sVertexShader += sLine;
+
+	fclose(f);
+
+	f = tfopen("shaders/" + m_sFragmentFile + ".fs", "r");
+
+	TAssert(f);
+	if (!f)
+		return false;
+
+	tstring sFragmentShader = CShaderLibrary::GetShaderFunctions();
 	while (fgetts(sLine, f))
 		sFragmentShader += sLine;
 
@@ -310,16 +235,9 @@ bool CShader::Compile()
 	if (iVertexCompiled != GL_TRUE || iFragmentCompiled != GL_TRUE || iProgramLinked != GL_TRUE)
 		return false;
 
-	size_t iTexCoordAttribute;
-	int i = 0;
-	do
-	{
-		tstring sCoord = sprintf("vecTexCoord%d", i++);
-		iTexCoordAttribute = glGetAttribLocation(m_iProgram, sCoord.c_str());
-		if (iTexCoordAttribute != ~0)
-			m_aiTexCoordAttributes.push_back(iTexCoordAttribute);
-	}
-	while (iTexCoordAttribute != ~0);
+	m_iPositionAttribute = glGetAttribLocation(m_iProgram, "vecPosition");
+	m_iNormalAttribute = glGetAttribLocation(m_iProgram, "vecNormal");
+	m_iTexCoordAttribute = glGetAttribLocation(m_iProgram, "vecTexCoord0");
 
 	return true;
 }

@@ -270,7 +270,7 @@ void CParticleSystem::Load()
 		SetTexture(CTextureLibrary::AddTextureID(GetTextureName()));
 
 	if (GetModelName().length() > 0)
-		SetModel(CModelLibrary::Get()->AddModel(GetModelName(), true));
+		SetModel(CModelLibrary::Get()->AddModel(GetModelName()));
 
 	for (size_t i = 0; i < GetNumChildren(); i++)
 		CParticleSystemLibrary::Get()->GetParticleSystem(GetChild(i))->Load();

@@ -23,7 +23,10 @@ public:
 	size_t					m_iVShader;
 	size_t					m_iFShader;
 	size_t					m_iProgram;
-	eastl::vector<int>		m_aiTexCoordAttributes;
+
+	size_t					m_iPositionAttribute;
+	size_t					m_iNormalAttribute;
+	size_t					m_iTexCoordAttribute;
 };
 
 class CShaderLibrary
@@ -44,12 +47,12 @@ public:
 
 	static size_t			GetProgram(const tstring& sName);
 
-	static const char*		GetVSPassShader();
-
 	static void				CompileShaders();
 	static void				DestroyShaders();
 
 	static bool				IsCompiled() { return Get()->m_bCompiled; };
+
+	static tstring			GetShaderFunctions() { return Get()->m_sFunctions; }
 
 	static CShaderLibrary*	Get() { return s_pShaderLibrary; };
 
@@ -75,97 +78,11 @@ protected:
 
 	bool					m_bLogNeedsClearing;
 
+	tstring					m_sFunctions;
+
 private:
 	static CShaderLibrary*	s_pShaderLibrary;
 };
-
-inline const char* CShaderLibrary::GetVSPassShader()
-{
-	return
-		"attribute vec2 vecTexCoord0;"
-		"attribute vec2 vecTexCoord1;"
-
-		"varying vec2 vecFragmentTexCoord0;"
-		"varying vec2 vecFragmentTexCoord1;"
-
-		"void main()"
-		"{"
-		"	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;"
-		"	vecFragmentTexCoord0 = vecTexCoord0;"
-		"	vecFragmentTexCoord1 = vecTexCoord1;"
-		"	gl_FrontColor = gl_Color;"
-		"}";
-}
-
-#define ENDL "\n"
-
-#define REMAPVAL \
-	"float RemapVal(float flInput, float flInLo, float flInHi, float flOutLo, float flOutHi)" \
-	"{" \
-	"	return (((flInput-flInLo) / (flInHi-flInLo)) * (flOutHi-flOutLo)) + flOutLo;" \
-	"}" \
-
-#define LENGTHSQR \
-	"float LengthSqr(vec3 v)" \
-	"{" \
-	"	return v.x*v.x + v.y*v.y + v.z*v.z;" \
-	"}" \
-	"float LengthSqr(vec2 v)" \
-	"{" \
-	"	return v.x*v.x + v.y*v.y;" \
-	"}" \
-
-#define LENGTH2DSQR \
-	"float Length2DSqr(vec3 v)" \
-	"{" \
-	"	return v.x*v.x + v.z*v.z;" \
-	"}" \
-
-#define LERP \
-	"float Lerp(float x, float flLerp)" \
-	"{" \
-		"if (flLerp == 0.5)" \
-			"return x;" \
-		"return pow(x, log(flLerp) * -1.4427);" \
-	"}" \
-
-// Depends on LENGTHSQR
-#define DISTANCE_TO_SEGMENT_SQR \
-	"float DistanceToLineSegmentSqr(vec3 p, vec3 v1, vec3 v2)" \
-	"{" \
-		"float flResult;" \
-		"vec3 v = v2 - v1;" \
-		"vec3 w = p - v1;" \
-		"float c1 = dot(w, v);" \
-		"if (c1 < 0.0)" \
-		"	flResult = LengthSqr(v1-p);" \
-		"else" \
-		"{" \
-		"	float c2 = dot(v, v);" \
-		"	if (c2 < c1)" \
-		"		flResult = LengthSqr(v2-p);" \
-		"	else" \
-		"	{" \
-		"		float b = c1/c2;" \
-		"		vec3 vb = v1 + v*b;" \
-		"		flResult = LengthSqr(vb - p);" \
-		"	}" \
-		"}" \
-		"return flResult;" \
-	"}" \
-
-#define ANGLE_DIFFERENCE \
-	"float AngleDifference(float a, float b)" \
-	"{" \
-		"float flYawDifference = a - b;" \
-		"if ( a > b )" \
-		"	while ( flYawDifference >= 180.0 )" \
-		"		flYawDifference -= 360.0;" \
-		"else" \
-		"	while ( flYawDifference <= -180.0 )" \
-		"		flYawDifference += 360.0;" \
-		"return flYawDifference;" \
-	"}" \
 
 /*
 	struct gl_LightSourceParameters {

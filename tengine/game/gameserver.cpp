@@ -673,7 +673,7 @@ void CGameServer::Render()
 		if (!pEntity->ShouldRender())
 			continue;
 
-		if (bFrustumCulling && !GameWindow()->GetRenderer()->IsSphereInFrustum(pEntity->GetRenderOrigin(), (float)pEntity->GetRenderRadius()))
+		if (bFrustumCulling && !GameWindow()->GetRenderer()->IsSphereInFrustum(pEntity->GetGlobalCenter(), (float)pEntity->GetBoundingRadius()))
 			continue;
 
 		m_apRenderList.push_back(pEntity);
