@@ -562,9 +562,7 @@ void test_matrix()
 	TAssert(m.GetRightVector() == Vector(0, 0, 1));
 
 	// Test Translation/Rotation inversion
-	m.Identity();
-	m.SetAngles(EAngle(0, 90, 0));
-	m.InvertTR();
+	m = Matrix4x4().AddAngles(EAngle(0, 90, 0)).InvertedRT();
 	TAssert(m.GetForwardVector() == Vector(0, 0, 1));
 	TAssert(m.GetUpVector() == Vector(0, 1, 0));
 	TAssert(m.GetRightVector() == Vector(-1, 0, 0));
@@ -572,7 +570,9 @@ void test_matrix()
 
 	m.Identity();
 	m.SetTranslation(Vector(2, 3, 4));
-	m.InvertTR();
+	TAssert(m * Vector(0, 0, 0) == Vector(2, 3, 4));
+	m.InvertRT();
+	TAssert(m * Vector(2, 3, 4) == Vector(0, 0, 0));
 	TAssert(m.GetForwardVector() == Vector(1, 0, 0));
 	TAssert(m.GetUpVector() == Vector(0, 1, 0));
 	TAssert(m.GetRightVector() == Vector(0, 0, 1));
@@ -581,73 +581,53 @@ void test_matrix()
 	m.Identity();
 	m.SetAngles(EAngle(0, 90, 0));
 	m.SetTranslation(Vector(2, 3, 4));
-	m.InvertTR();
+	TAssert(m * Vector(0, 0, 0) == Vector(2, 3, 4));
+	m.InvertRT();
+	TAssert(m * Vector(2, 3, 4) == Vector(0, 0, 0));
 	TAssert(m.GetForwardVector() == Vector(0, 0, 1));
 	TAssert(m.GetUpVector() == Vector(0, 1, 0));
 	TAssert(m.GetRightVector() == Vector(-1, 0, 0));
 	TAssert(m.GetTranslation() == Vector(4, -3, -2));
 
 	m.Identity();
-	m.SetAngles(EAngle(0, 90, 0));
-	m.AddScale(Vector(2, 2, 2));
-	m.InvertTR();
-	TAssert(m.GetForwardVector() == Vector(0, 0, 2));
-	TAssert(m.GetUpVector() == Vector(0, 2, 0));
-	TAssert(m.GetRightVector() == Vector(-2, 0, 0));
-	TAssert(m.GetTranslation() == Vector(0, 0, 0));
-
-	m.Identity();
-	m.SetTranslation(Vector(2, 3, 4));
-	m.AddScale(Vector(2, 2, 2));
-	m.InvertTR();
-	TAssert(m.GetForwardVector() == Vector(2, 0, 0));
-	TAssert(m.GetUpVector() == Vector(0, 2, 0));
-	TAssert(m.GetRightVector() == Vector(0, 0, 2));
-	TAssert(m.GetTranslation() == Vector(-4, -6, -8));
-
-	m.Identity();
-	m.SetAngles(EAngle(0, 90, 0));
-	m.SetTranslation(Vector(2, 3, 4));
-	m.AddScale(Vector(2, 2, 2));
-	m.InvertTR();
-	TAssert(m.GetForwardVector() == Vector(0, 0, 2));
-	TAssert(m.GetUpVector() == Vector(0, 2, 0));
-	TAssert(m.GetRightVector() == Vector(-2, 0, 0));
-	TAssert(m.GetTranslation() == Vector(8, -6, -4));
-
-	m.Identity();
 	m.SetReflection(Vector(1, 2, 3).Normalized());
 	n = m;
-	m.InvertTR();
+	m.InvertRT();
 	TAssert(m == n);	// The inversion of a reflection is always itself.
 
 	m.Identity();
-	m.SetReflection(Vector(1, 1, 0).Normalized());
-	m.AddScale(Vector(2, 1, 1));
-	m.InvertTR();
-	TAssert(m.GetForwardVector() == Vector(0, -1, 0));
-	TAssert(m.GetUpVector() == Vector(-2, 0, 0));
+	m.SetReflection(Vector(1, 0, 0));
+	m.AddTranslation(Vector(1, 2, 3));
+	TAssert(m * Vector(0, 0, 0) == Vector(-1, 2, 3));
+	m.InvertRT();
+	TAssert(m * Vector(-1, 2, 3) == Vector(0, 0, 0));
+	TAssert(m.GetForwardVector() == Vector(-1, 0, 0));
+	TAssert(m.GetUpVector() == Vector(0, 1, 0));
 	TAssert(m.GetRightVector() == Vector(0, 0, 1));
-	TAssert(m.GetTranslation() == Vector(0, 0, 0));
+	TAssert(m.GetTranslation() == Vector(-1, -2, -3));
 
 	m.Identity();
 	m.SetReflection(Vector(1, 1, 1).Normalized());
-	m.AddScale(Vector(2, 1, 1));
-	m.InvertTR();
-	TAssert(m.GetForwardVector() == Vector(1, -1, -1)*2/3);
-	TAssert(m.GetUpVector() == Vector(-4, 1, -2)/3);
-	TAssert(m.GetRightVector() == Vector(-4, -2, 1)/3);
-	TAssert(m.GetTranslation() == Vector(0, 0, 0));
+	m.AddTranslation(Vector(1, 2, 3));
+	TAssert(m * Vector(0, 0, 0) == Vector(-3, -2, -1));
+	m.InvertRT();
+	TAssert(m * Vector(-3, -2, -1) == Vector(0, 0, 0));
+	TAssert(m.GetForwardVector() == Vector(1, -2, -2)/3);
+	TAssert(m.GetUpVector() == Vector(-2, 1, -2)/3);
+	TAssert(m.GetRightVector() == Vector(-2, -2, 1)/3);
+	TAssert(m.GetTranslation() == Vector(-1, -2, -3));
 
 	m.Identity();
-	m.SetReflection(Vector(1, 1, 1).Normalized());
-	m.SetTranslation(Vector(1, 2, 3));
-	m.AddScale(Vector(2, 2, 2));
-	m.InvertTR();
-	TAssert(m.GetForwardVector() == Vector(1, -2, -2)*2/3);
-	TAssert(m.GetUpVector() == Vector(-2, 1, -2)*2/3);
-	TAssert(m.GetRightVector() == Vector(-2, -2, 1)*2/3);
-	TAssert(m.GetTranslation() == Vector(6, 4, 2));
+	m.AddAngles(EAngle(0, -45, 0));
+	m.AddReflection(Vector(1, 1, 1).Normalized());
+	m.AddTranslation(Vector(1, 2, 3));
+	TAssert(m * Vector(0, 0, 0) == Vector(-1.4142135f, -2, -2.8284268f));
+	m.InvertRT();
+	TAssert(m * Vector(-1.4142135f, -2, -2.8284268f) == Vector(0, 0, 0));
+	TAssert(m.GetForwardVector() == Vector(0.70710677f, 0, -0.70710677f));
+	TAssert(m.GetUpVector() == Vector(-2, 1, -2)/3);
+	TAssert(m.GetRightVector() == Vector(-0.23570222f, -0.94280899f, -0.23570222f));
+	TAssert(m.GetTranslation() == Vector(-1, -2, -3));
 
 	// Can't really test SetReflection() with SetAngles() since they both set the same shit.
 	// Whatever, we'll catch it below.
@@ -669,9 +649,15 @@ void test_matrix()
 	TAssert(m * (n * Vector4D(0, 0, 0, 1)) == Vector4D(3, 5, 7, 1));
 	TAssert(m * (n * Vector4D(1, 1, 1, 1)) == Vector4D(4, 6, 8, 1));
 
-	m.InvertTR();
-	n.InvertTR();
+	m.InvertRT();
+	n.InvertRT();
 	// Global to local
+	TAssert(n * (m * Vector(3, 5, 7)) == Vector(0, 0, 0));
+	TAssert(n * (m * Vector(4, 6, 8)) == Vector(1, 1, 1));
+	TAssert(n.TransformVector(m.TransformVector(Vector(1, 1, 1).Normalized())) == Vector(1, 1, 1).Normalized());
+	TAssert(n.TransformVector(m.TransformVector(Vector(10, 10, 10))) == Vector(10, 10, 10));
+	TAssert(n * (m * Vector4D(3, 5, 7, 1)) == Vector4D(0, 0, 0, 1));
+	TAssert(n * (m * Vector4D(4, 6, 8, 1)) == Vector4D(1, 1, 1, 1));
 	TAssert(n * (m * Vector(0, 0, 0)) == Vector(-3, -5, -7));
 	TAssert(n * (m * Vector(1, 1, 1)) == Vector(-2, -4, -6));
 	TAssert(n.TransformVector(m.TransformVector(Vector(1, 1, 1).Normalized())) == Vector(1, 1, 1).Normalized());
@@ -706,9 +692,23 @@ void test_matrix()
 	TAssert(m * (n * Vector4D(0, 0, 0, 1)) == Vector4D(0, 0, 0, 1));
 	TAssert(m * (n * Vector4D(1, 1, 1, 1)) == Vector4D(1, 1.4142136f, 0, 1));
 
-	m.InvertTR();
-	n.InvertTR();
+	m.InvertRT();
+	n.InvertRT();
 	// Global to local
+	TAssert(n * (m * Vector(0, 0, 0)) == Vector(0, 0, 0));
+	TAssert(n * (m * Vector(0, 1, -1).Normalized()) == Vector(1, 0, 0));
+	TAssert(n * (m * Vector(0, 1, 1).Normalized()) == Vector(0, 1, 0));
+	TAssert(n * (m * Vector(1, 0, 0)) == Vector(0, 0, 1));
+	TAssert(n.TransformVector(m.TransformVector(Vector(0, 1, -1).Normalized())) == Vector(1, 0, 0));
+	TAssert(n.TransformVector(m.TransformVector(Vector(0, 1, 1).Normalized())) == Vector(0, 1, 0));
+	TAssert(n.TransformVector(m.TransformVector(Vector(0.57735026f, 0.81649655f, 0))) == Vector(1, 1, 1).Normalized());
+	TAssert(n.TransformVector(m.TransformVector(Vector(0, 1, -1).Normalized()*10)) == Vector(10, 0, 0));
+	TAssert(n.TransformVector(m.TransformVector(Vector(0, 1, 1).Normalized()*10)) == Vector(0, 10, 0));
+	TAssert(n.TransformVector(m.TransformVector(Vector(10, 0, 0))) == Vector(0, 0, 10));
+	TAssert(n.TransformVector(m.TransformVector(Vector(10, 14.142136f, 0))) == Vector(10, 10, 10));
+	TAssert(n * (m * Vector4D(1, 1.4142136f, 0, 0)) == Vector4D(1, 1, 1, 0));
+	TAssert(n * (m * Vector4D(0, 0, 0, 1)) == Vector4D(0, 0, 0, 1));
+	TAssert(n * (m * Vector4D(1, 1.4142136f, 0, 1)) == Vector4D(1, 1, 1, 1));
 	TAssert(n * (m * Vector(0, 0, 0)) == Vector(0, 0, 0));
 	TAssert(n * (m * Vector(1, 0, 0)) == Vector(0, 0, 1));
 	TAssert(n * (m * Vector(0, 1, 0)) == Vector(1, 1, 0).Normalized());
@@ -754,9 +754,22 @@ void test_matrix()
 	TAssert(m * (n * Vector4D(0, 0, 0, 1)) == Vector4D(7, 7, -1, 1));
 	TAssert(m * (n * Vector4D(1, 1, 1, 1)) == Vector4D(8, 8.4142132f, -1, 1));
 
-	m.InvertTR();
-	n.InvertTR();
+	m.InvertRT();
+	n.InvertRT();
 	// Global to local
+	TAssert(n * (m * Vector(7, 7, -1)) == Vector(0, 0, 0));
+	TAssert(n * (m * Vector(7, 7.7071066f, -1.7071068f)) == Vector(1, 0, 0));
+	TAssert(n * (m * Vector(7, 7.7071066f, -0.29289344f)) == Vector(0, 1, 0));
+	TAssert(n * (m * Vector(8, 7, -1)) == Vector(0, 0, 1));
+	TAssert(n.TransformVector(m.TransformVector(Vector(0, 1, -1).Normalized())) == Vector(1, 0, 0));
+	TAssert(n.TransformVector(m.TransformVector(Vector(0, 1, 1).Normalized())) == Vector(0, 1, 0));
+	TAssert(n.TransformVector(m.TransformVector(Vector(0.57735026f, 0.81649655f, 0))) == Vector(1, 1, 1).Normalized());
+	TAssert(n.TransformVector(m.TransformVector(Vector(0, 1, -1).Normalized()*10)) == Vector(10, 0, 0));
+	TAssert(n.TransformVector(m.TransformVector(Vector(0, 1, 1).Normalized()*10)) == Vector(0, 10, 0));
+	TAssert(n.TransformVector(m.TransformVector(Vector(10, 14.142136f, 0))) == Vector(10, 10, 10));
+	TAssert(n * (m * Vector4D(1, 1.4142136f, 0, 0)) == Vector4D(1, 1, 1, 0));
+	TAssert(n * (m * Vector4D(7, 7, -1, 1)) == Vector4D(0, 0, 0, 1));
+	TAssert(n * (m * Vector4D(8, 8.4142132f, -1, 1)) == Vector4D(1, 1, 1, 1));
 	TAssert(n * (m * Vector(0, 0, 0)) == Vector(-5.6568542f, -4.2426405f, -7));
 	TAssert(n * (m * Vector(1, 0, 0)) == Vector(-5.6568542f, -4.2426405f, -6));
 	TAssert(n * (m * Vector(0, 1, 0)) == Vector(-4.9497471f, -3.5355339f, -7));
@@ -787,8 +800,8 @@ void test_matrix()
 	TAssert(m * (n * Vector(0, 1, 0)) == Vector(0, 1, 0));
 	TAssert(m * (n * Vector(0, 0, 1)) == Vector(0, 0, 1));
 
-	m.InvertTR();
-	n.InvertTR();
+	m.InvertRT();
+	n.InvertRT();
 	// Global to local
 	TAssert(n * (m * Vector(0, 0, 0)) == Vector(0, 0, 0));
 	TAssert(n * (m * Vector(1, 0, 0)) == Vector(1, 0, 0));
@@ -831,8 +844,8 @@ void test_matrix()
 	TAssert(m * (n * Vector4D(0, 0, 0, 1)) == Vector4D(0, 0, 0, 1));
 	TAssert(m * (n * Vector4D(1, 1, 1, 1)) == Vector4D(-1, -1, 1, 1));
 
-	m.InvertTR();
-	n.InvertTR();
+	m.InvertRT();
+	n.InvertRT();
 	// Global to local
 	TAssert(n * (m * Vector(0, 0, 0)) == Vector(0, 0, 0));
 	TAssert(n * (m * Vector(1, 0, 0)) == Vector(-1, 0, 0));
@@ -901,8 +914,8 @@ void test_matrix()
 	TAssert(m * (n * Vector4D(0, 0, 0, 1)) == Vector4D(-1, 5, 7, 1));
 	TAssert(m * (n * Vector4D(1, 1, 1, 1)) == Vector4D(-2, 4, 8, 1));
 
-	m.InvertTR();
-	n.InvertTR();
+	m.InvertRT();
+	n.InvertRT();
 	// Global to local
 	TAssert(n * (m * Vector(0, 0, 0)) == Vector(-1, 5, -7));
 	TAssert(n * (m * Vector(1, 0, 0)) == Vector(-2, 5, -7));
@@ -971,8 +984,8 @@ void test_matrix()
 	TAssert(m * (n * Vector4D(0, 0, 0, 1)) == Vector4D(0, 0, 0, 1));
 	TAssert(m * (n * Vector4D(1, 1, 1, 1)) == Vector4D(-1.3631659f, -0.71861345f, -0.79080582f, 1));
 
-	m.InvertTR();
-	n.InvertTR();
+	m.InvertRT();
+	n.InvertRT();
 	// Global to local
 	TAssert(n * (m * Vector(0, 0, 0)) == Vector(0, 0, 0));
 	TAssert(n * (m * Vector(1, 0, 0)) == Vector(-0.70710677f, 0.049325272f, -0.70538431f));
@@ -1020,16 +1033,7 @@ void test_matrix()
 	TAssert(m * (n * Vector4D(1, 1, 1, 0)) == Vector4D(-6, -2, 2, 0));
 	TAssert(m * (n * Vector4D(0, 0, 0, 1)) == Vector4D(0, 0, 0, 1));
 	TAssert(m * (n * Vector4D(1, 1, 1, 1)) == Vector4D(-6, -2, 2, 1));
-
-	m.InvertTR();
-	n.InvertTR();
-	// Global to local
-	TAssert(n * (m * Vector(0, 0, 0)) == Vector(0, 0, 0));
-	TAssert(n * (m * Vector(1, 0, 0)) == Vector(-6, 0, 0));
-	TAssert(n * (m * Vector(0, 1, 0)) == Vector(0, -2, 0));
-	TAssert(n * (m * Vector(0, 0, 1)) == Vector(0, 0, 2));
-	TAssert(n * (m * Vector(1, 1, 1)) == Vector(-6, -2, 2));
-	// Otherwise identical
+	// Can't test inverse since there's no valid matrix inversion function
 
 	m.Identity();
 	n.Identity();
@@ -1062,24 +1066,7 @@ void test_matrix()
 	TAssert(m * (n * Vector4D(1, 1, 1, 0)) == Vector4D(2, 1.9052335f, -1.1705060f, 0));
 	TAssert(m * (n * Vector4D(0, 0, 0, 1)) == Vector4D(9, 3.4142137f, 10.071068f, 1));
 	TAssert(m * (n * Vector4D(1, 1, 1, 1)) == Vector4D(11, 5.3194470f, 8.9005613f, 1));
-
-	m.InvertTR();
-	n.InvertTR();
-	// Global to local
-	TAssert(n * (m * Vector(0, 0, 0)) == Vector(-3.8581188f, -6, 4.9547496f));
-	TAssert(n * (m * Vector(1, 0, 0)) == Vector(-3.8581188f, -4, 4.9547496f));
-	TAssert(n * (m * Vector(0, 1, 0)) == Vector(-1.8657293f, -6, 4.8675938f));
-	TAssert(n * (m * Vector(0, 0, 1)) == Vector(-4.0324302f, -6, 3.9585547f));
-	TAssert(n * (m * Vector(1, 1, 1)) == Vector(-2.0400407f, -4, 3.8713989f));
-	TAssert(n.TransformVector(m.TransformVector(Vector(0, 0, 0))) == Vector(0, 0, 0));
-	TAssert(n.TransformVector(m.TransformVector(Vector(10, 0, 0))) == Vector(0.0000012632007f, 19.999998f, -0.00000055807857f));
-	TAssert(n.TransformVector(m.TransformVector(Vector(0, 10, 0))) == Vector(19.923895f, -0.0000012065125f, -0.87155724f));
-	TAssert(n.TransformVector(m.TransformVector(Vector(0, 0, 10))) == Vector(-1.7431145f, 0.00000070309989f, -9.9619465f));
-	TAssert(n.TransformVector(m.TransformVector(Vector(10, 10, 10))) == Vector(18.180780f, 20, -10.833504f));
-	TAssert(n * (m * Vector4D(0, 0, 0, 0)) == Vector4D(0, 0, 0, 0));
-	TAssert(n * (m * Vector4D(1, 1, 1, 0)) == Vector4D(1.8180780f, 1.9999998f, -1.0833504f, 0));
-	TAssert(n * (m * Vector4D(0, 0, 0, 1)) == Vector4D(-3.8581188f, -6, 4.9547496f, 1));
-	TAssert(n * (m * Vector4D(1, 1, 1, 1)) == Vector4D(-2.0400407f, -4, 3.8713989f, 1));
+	// Can't test inverse since there's no valid matrix inversion function
 
 	// Check that TransformNormal() doesn't interfere with the vector length.
 	m.Identity();

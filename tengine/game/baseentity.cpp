@@ -287,26 +287,18 @@ void CBaseEntity::SetGlobalTransform(const TMatrix& m)
 
 TMatrix CBaseEntity::GetGlobalToLocalTransform()
 {
-	TMatrix mInverse;
 	if (HasMoveParent())
-		mInverse = GetMoveParent()->GetGlobalTransform();
+		return GetMoveParent()->GetGlobalTransform().InvertedRT();
 	else
-		mInverse = GetGlobalTransform();
-
-	mInverse.InvertTR();
-	return mInverse;
+		return GetGlobalTransform().InvertedRT();
 }
 
 TMatrix CBaseEntity::GetGlobalToLocalTransform() const
 {
-	TMatrix mInverse;
 	if (HasMoveParent())
-		mInverse = GetMoveParent()->GetGlobalTransform();
+		return GetMoveParent()->GetGlobalTransform().InvertedRT();
 	else
-		mInverse = GetGlobalTransform();
-
-	mInverse.InvertTR();
-	return mInverse;
+		return GetGlobalTransform().InvertedRT();
 }
 
 TVector CBaseEntity::GetGlobalOrigin()

@@ -101,7 +101,8 @@ public:
 	Vector		GetUpVector() const { return Vector((float*)&m[1][0]); }
 	Vector		GetRightVector() const { return Vector((float*)&m[2][0]); }
 
-	void		InvertTR();
+	void		InvertRT();
+	Matrix4x4	InvertedRT() const;
 
 	float		Trace() const;
 

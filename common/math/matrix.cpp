@@ -520,8 +520,12 @@ void Matrix4x4::SetRightVector(const Vector& v)
 }
 
 // Not a true inversion, only works if the matrix is a translation/rotation matrix.
-void Matrix4x4::InvertTR()
+void Matrix4x4::InvertRT()
 {
+	TAssertNoMsg(fabs(GetForwardVector().LengthSqr() - 1) < 0.00001f);
+	TAssertNoMsg(fabs(GetUpVector().LengthSqr() - 1) < 0.00001f);
+	TAssertNoMsg(fabs(GetRightVector().LengthSqr() - 1) < 0.00001f);
+
 	Matrix4x4 t;
 
 	for (int h = 0; h < 3; h++)
@@ -533,6 +537,23 @@ void Matrix4x4::InvertTR()
 	Init(t);
 
 	SetTranslation(t*(-vecTranslation));
+}
+
+Matrix4x4 Matrix4x4::InvertedRT() const
+{
+	TAssertNoMsg(fabs(GetForwardVector().LengthSqr() - 1) < 0.00001f);
+	TAssertNoMsg(fabs(GetUpVector().LengthSqr() - 1) < 0.00001f);
+	TAssertNoMsg(fabs(GetRightVector().LengthSqr() - 1) < 0.00001f);
+
+	Matrix4x4 r;
+
+	for (int h = 0; h < 3; h++)
+		for (int v = 0; v < 3; v++)
+			r.m[h][v] = m[v][h];
+
+	r.SetTranslation(r*(-GetTranslation()));
+
+	return r;
 }
 
 float Matrix4x4::Trace() const
