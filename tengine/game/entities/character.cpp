@@ -134,9 +134,9 @@ void CCharacter::MoveThink()
 			Vector vecRight = m.GetForwardVector().Cross(vecUp).Normalized();
 			Vector vecForward = vecUp.Cross(vecRight).Normalized();
 
-			m.SetColumn(0, vecForward);
-			m.SetColumn(1, vecUp);
-			m.SetColumn(2, vecRight);
+			m.SetForwardVector(vecForward);
+			m.SetUpVector(vecUp);
+			m.SetRightVector(vecRight);
 
 			vecLocalVelocity = m.TransformVector(vecMove);
 		}
@@ -375,9 +375,9 @@ void CCharacter::ShowPlayerVectors() const
 	Vector vecUp = GetUpVector();
 	Vector vecRight = m.GetForwardVector().Cross(vecUp).Normalized();
 	Vector vecForward = vecUp.Cross(vecRight).Normalized();
-	m.SetColumn(0, vecForward);
-	m.SetColumn(1, vecUp);
-	m.SetColumn(2, vecRight);
+	m.SetForwardVector(vecForward);
+	m.SetUpVector(vecUp);
+	m.SetRightVector(vecRight);
 
 	CCharacter* pLocalCharacter = Game()->GetLocalPlayer()->GetCharacter();
 

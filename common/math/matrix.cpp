@@ -23,14 +23,14 @@ Matrix4x4::Matrix4x4(float* aflValues)
 
 Matrix4x4::Matrix4x4(const Vector& vecForward, const Vector& vecUp, const Vector& vecRight, const Vector& vecPosition)
 {
-	SetColumn(0, vecForward);
-	SetColumn(1, vecUp);
-	SetColumn(2, vecRight);
+	SetForwardVector(vecForward);
+	SetUpVector(vecUp);
+	SetRightVector(vecRight);
 	SetTranslation(vecPosition);
 
-	m[3][0] = 0;
-	m[3][1] = 0;
-	m[3][2] = 0;
+	m[0][3] = 0;
+	m[1][3] = 0;
+	m[2][3] = 0;
 	m[3][3] = 1;
 }
 
@@ -145,9 +145,9 @@ Matrix4x4 Matrix4x4::operator+(const Matrix4x4& t) const
 
 void Matrix4x4::SetTranslation(const Vector& vecPos)
 {
-	m[0][3] = vecPos.x;
-	m[1][3] = vecPos.y;
-	m[2][3] = vecPos.z;
+	m[3][0] = vecPos.x;
+	m[3][1] = vecPos.y;
+	m[3][2] = vecPos.z;
 }
 
 void Matrix4x4::SetAngles(const EAngle& angDir)
@@ -160,13 +160,13 @@ void Matrix4x4::SetAngles(const EAngle& angDir)
 	float cr = cos(angDir.r * M_PI/180);
 
 	m[0][0] = cy*cp;
-	m[0][1] = sr*sy-sp*cr*cy;
-	m[0][2] = sp*sr*cy+cr*sy;
-	m[1][0] = sp;
+	m[1][0] = sr*sy-sp*cr*cy;
+	m[2][0] = sp*sr*cy+cr*sy;
+	m[0][1] = sp;
 	m[1][1] = cp*cr;
-	m[1][2] = -cp*sr;
-	m[2][0] = -sy*cp;
-	m[2][1] = sp*cr*sy+sr*cy;
+	m[2][1] = -cp*sr;
+	m[0][2] = -sy*cp;
+	m[1][2] = sp*cr*sy+sr*cy;
 	m[2][2] = cr*cy-sy*sp*sr;
 }
 
@@ -189,15 +189,15 @@ void Matrix4x4::SetRotation(float flAngle, const Vector& v)
 	float t = 1-c;
 
 	m[0][0] = x*x*t + c;
-	m[0][1] = x*y*t - z*s;
-	m[0][2] = x*z*t + y*s;
+	m[1][0] = x*y*t - z*s;
+	m[2][0] = x*z*t + y*s;
 
-	m[1][0] = y*x*t + z*s;
+	m[0][1] = y*x*t + z*s;
 	m[1][1] = y*y*t + c;
-	m[1][2] = y*z*t - x*s;
+	m[2][1] = y*z*t - x*s;
 
-	m[2][0] = z*x*t - y*s;
-	m[2][1] = z*y*t + x*s;
+	m[0][2] = z*x*t - y*s;
+	m[1][2] = z*y*t + x*s;
 	m[2][2] = z*z*t + c;
 }
 
@@ -220,15 +220,15 @@ void Matrix4x4::SetRotation(const Quaternion& q)
 	float yw2 = 2*y*w;
 
 	m[0][0] = 1 - y2 - z2;
-	m[0][1] = xy2 - zw2;
-	m[0][2] = xz2 + yw2;
+	m[1][0] = xy2 - zw2;
+	m[2][0] = xz2 + yw2;
 
-	m[1][0] = xy2 + zw2;
+	m[0][1] = xy2 + zw2;
 	m[1][1] = 1 - x2 - z2;
-	m[1][2] = yz2 - xw2;
+	m[2][1] = yz2 - xw2;
 
-	m[2][0] = xz2 - yw2;
-	m[2][1] = yz2 + xw2;
+	m[0][2] = xz2 - yw2;
+	m[1][2] = yz2 + xw2;
 	m[2][2] = 1 - x2 - y2;
 }
 
@@ -272,9 +272,9 @@ void Matrix4x4::SetReflection(const Vector& vecPlane)
 
 Matrix4x4 Matrix4x4::operator+=(const Vector& v)
 {
-	m[0][3] += v.x;
-	m[1][3] += v.y;
-	m[2][3] += v.z;
+	m[3][0] += v.x;
+	m[3][1] += v.y;
+	m[3][2] += v.z;
 
 	return *this;
 }
@@ -292,35 +292,23 @@ Matrix4x4 Matrix4x4::operator*(const Matrix4x4& t) const
 {
 	Matrix4x4 r;
 
-	r.m[0][0] = m[0][0]*t.m[0][0] + m[0][1]*t.m[1][0] + m[0][2]*t.m[2][0] + m[0][3]*t.m[3][0];
-	r.m[0][1] = m[0][0]*t.m[0][1] + m[0][1]*t.m[1][1] + m[0][2]*t.m[2][1] + m[0][3]*t.m[3][1];
-	r.m[0][2] = m[0][0]*t.m[0][2] + m[0][1]*t.m[1][2] + m[0][2]*t.m[2][2] + m[0][3]*t.m[3][2];
-	r.m[0][3] = m[0][0]*t.m[0][3] + m[0][1]*t.m[1][3] + m[0][2]*t.m[2][3] + m[0][3]*t.m[3][3];
+	// [a b c d][A B C D]   [aA+bE+cI+dM
+	// [e f g h][E F G H] = [eA+fE+gI+hM ...
+	// [i j k l][I J K L]
+	// [m n o p][M N O P]
 
-	r.m[1][0] = m[1][0]*t.m[0][0] + m[1][1]*t.m[1][0] + m[1][2]*t.m[2][0] + m[1][3]*t.m[3][0];
-	r.m[1][1] = m[1][0]*t.m[0][1] + m[1][1]*t.m[1][1] + m[1][2]*t.m[2][1] + m[1][3]*t.m[3][1];
-	r.m[1][2] = m[1][0]*t.m[0][2] + m[1][1]*t.m[1][2] + m[1][2]*t.m[2][2] + m[1][3]*t.m[3][2];
-	r.m[1][3] = m[1][0]*t.m[0][3] + m[1][1]*t.m[1][3] + m[1][2]*t.m[2][3] + m[1][3]*t.m[3][3];
-
-	r.m[2][0] = m[2][0]*t.m[0][0] + m[2][1]*t.m[1][0] + m[2][2]*t.m[2][0] + m[2][3]*t.m[3][0];
-	r.m[2][1] = m[2][0]*t.m[0][1] + m[2][1]*t.m[1][1] + m[2][2]*t.m[2][1] + m[2][3]*t.m[3][1];
-	r.m[2][2] = m[2][0]*t.m[0][2] + m[2][1]*t.m[1][2] + m[2][2]*t.m[2][2] + m[2][3]*t.m[3][2];
-	r.m[2][3] = m[2][0]*t.m[0][3] + m[2][1]*t.m[1][3] + m[2][2]*t.m[2][3] + m[2][3]*t.m[3][3];
-
-	r.m[3][0] = m[3][0]*t.m[0][0] + m[3][1]*t.m[1][0] + m[3][2]*t.m[2][0] + m[3][3]*t.m[3][0];
-	r.m[3][1] = m[3][0]*t.m[0][1] + m[3][1]*t.m[1][1] + m[3][2]*t.m[2][1] + m[3][3]*t.m[3][1];
-	r.m[3][2] = m[3][0]*t.m[0][2] + m[3][1]*t.m[1][2] + m[3][2]*t.m[2][2] + m[3][3]*t.m[3][2];
-	r.m[3][3] = m[3][0]*t.m[0][3] + m[3][1]*t.m[1][3] + m[3][2]*t.m[2][3] + m[3][3]*t.m[3][3];
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+			r.m[i][j] = m[0][j]*t.m[i][0] + m[1][j]*t.m[i][1] + m[2][j]*t.m[i][2] + m[3][j]*t.m[i][3];
+	}
 
 	return r;
 }
 
 Matrix4x4 Matrix4x4::operator*=(const Matrix4x4& t)
 {
-	Matrix4x4 r;
-	r.Init(*this);
-
-	Init(r*t);
+	*this = (*this)*t;
 
 	return *this;
 }
@@ -392,7 +380,7 @@ Matrix4x4 Matrix4x4::AddReflection(const Vector& v)
 
 Vector Matrix4x4::GetTranslation() const
 {
-	return Vector(m[0][3], m[1][3], m[2][3]);
+	return Vector((float*)&m[3][0]);
 }
 
 EAngle Matrix4x4::GetAngles() const
@@ -428,46 +416,60 @@ EAngle Matrix4x4::GetAngles() const
 	}
 #endif
 
-	if (m[1][0] > 0.999999f)
-		return EAngle(asin(m[1][0]) * 180/M_PI, atan2(m[0][2], m[2][2]) * 180/M_PI, 0);
-	else if (m[1][0] < -0.999999f)
-		return EAngle(asin(m[1][0]) * 180/M_PI, atan2(m[0][2], m[2][2]) * 180/M_PI, 0);
+	if (m[0][1] > 0.999999f)
+		return EAngle(asin(m[0][1]) * 180/M_PI, atan2(m[2][0], m[2][2]) * 180/M_PI, 0);
+	else if (m[0][1] < -0.999999f)
+		return EAngle(asin(m[0][1]) * 180/M_PI, atan2(m[2][0], m[2][2]) * 180/M_PI, 0);
 
 	// Clamp to [-1, 1] looping
-	float flPitch = fmod(m[1][0], 2);
+	float flPitch = fmod(m[0][1], 2);
 	if (flPitch > 1)
 		flPitch -= 2;
 	else if (flPitch < -1)
 		flPitch += 2;
 
-	return EAngle(asin(flPitch) * 180/M_PI, atan2(-m[2][0], m[0][0]) * 180/M_PI, atan2(-m[1][2], m[1][1]) * 180/M_PI);
+	return EAngle(asin(flPitch) * 180/M_PI, atan2(-m[0][2], m[0][0]) * 180/M_PI, atan2(-m[2][1], m[1][1]) * 180/M_PI);
 }
 
 Vector Matrix4x4::operator*(const Vector& v) const
 {
+	// [a b c x][X] 
+	// [d e f y][Y] = [aX+bY+cZ+x dX+eY+fZ+y gX+hY+iZ+z]
+	// [g h i z][Z]
+	//          [1]
+
 	Vector vecResult;
-	vecResult.x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3];
-	vecResult.y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3];
-	vecResult.z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3];
+	vecResult.x = m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z + m[3][0];
+	vecResult.y = m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z + m[3][1];
+	vecResult.z = m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z + m[3][2];
 	return vecResult;
 }
 
 Vector Matrix4x4::TransformVector(const Vector& v) const
 {
+	// [a b c][X] 
+	// [d e f][Y] = [aX+bY+cZ dX+eY+fZ gX+hY+iZ]
+	// [g h i][Z]
+
 	Vector vecResult;
-	vecResult.x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z;
-	vecResult.y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z;
-	vecResult.z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z;
+	vecResult.x = m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z;
+	vecResult.y = m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z;
+	vecResult.z = m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z;
 	return vecResult;
 }
 
 Vector4D Matrix4x4::operator*(const Vector4D& v) const
 {
+	// [a b c x][X] 
+	// [d e f y][Y] = [aX+bY+cZ+xW dX+eY+fZ+yW gX+hY+iZ+zW jX+kY+lZ+mW]
+	// [g h i z][Z]
+	// [j k l m][W]
+
 	Vector4D vecResult;
-	vecResult.x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3] * v.w;
-	vecResult.y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3] * v.w;
-	vecResult.z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3] * v.w;
-	vecResult.w = m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3] * v.w;
+	vecResult.x = m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z + m[3][0] * v.w;
+	vecResult.y = m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z + m[3][1] * v.w;
+	vecResult.z = m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z + m[3][2] * v.w;
+	vecResult.w = m[0][3] * v.x + m[1][3] * v.y + m[2][3] * v.z + m[3][3] * v.w;
 	return vecResult;
 }
 
@@ -499,21 +501,21 @@ void Matrix4x4::SetColumn(int i, const Vector& vecColumn)
 void Matrix4x4::SetForwardVector(const Vector& v)
 {
 	m[0][0] = v.x;
-	m[1][0] = v.y;
-	m[2][0] = v.z;
+	m[0][1] = v.y;
+	m[0][2] = v.z;
 }
 
 void Matrix4x4::SetUpVector(const Vector& v)
 {
-	m[0][1] = v.x;
+	m[1][0] = v.x;
 	m[1][1] = v.y;
-	m[2][1] = v.z;
+	m[1][2] = v.z;
 }
 
 void Matrix4x4::SetRightVector(const Vector& v)
 {
-	m[0][2] = v.x;
-	m[1][2] = v.y;
+	m[2][0] = v.x;
+	m[2][1] = v.y;
 	m[2][2] = v.z;
 }
 

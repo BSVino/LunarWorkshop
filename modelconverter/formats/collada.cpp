@@ -298,7 +298,7 @@ void CModelConverter::ReadDAESceneTree(FCDSceneNode* pNode, CConversionSceneNode
 	{
 		FCDTransform* pTransform = pNode->GetTransform(t);
 		FMMatrix44 m = pTransform->ToMatrix();
-		mTransformations *= Matrix4x4(m.Transposed());	// Transpose because they use a different convention.
+		mTransformations *= Matrix4x4(m);
 	}
 
 	pScene->SetTransformations(mTransformations);

@@ -72,7 +72,7 @@ void CRenderingContext::Transform(const Matrix4x4& m)
 		glPushMatrix();
 	}
 
-	glMultMatrixf(m.Transposed());	// GL uses column major.
+	glMultMatrixf(m);
 }
 
 void CRenderingContext::Translate(const Vector& vecTranslate)
@@ -125,7 +125,7 @@ void CRenderingContext::LoadTransform(const Matrix4x4& m)
 		glPushMatrix();
 	}
 
-	glLoadMatrixf(m.Transposed());	// GL uses column major.
+	glLoadMatrixf(m);
 }
 
 void CRenderingContext::SetBlend(blendtype_t eBlend)
@@ -211,7 +211,7 @@ void CRenderingContext::RenderModel(size_t iModel)
 		Matrix4x4 mTransformations;
 		glGetFloatv(GL_MODELVIEW_MATRIX, mTransformations);
 
-		m_pRenderer->AddToBatch(pModel, mTransformations.Transposed(), m_clrRender, m_bColorSwap, m_clrSwap);
+		m_pRenderer->AddToBatch(pModel, mTransformations, m_clrRender, m_bColorSwap, m_clrSwap);
 	}
 	else
 	{

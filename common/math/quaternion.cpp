@@ -43,9 +43,9 @@ Quaternion::Quaternion(const Matrix4x4& m)
 		w = flRoot/2;
 
 		flRoot = 0.5f/flRoot;  // 1/(4w)
-		x = (m.m[2][1]-m.m[1][2])*flRoot;
-		y = (m.m[0][2]-m.m[2][0])*flRoot;
-		z = (m.m[1][0]-m.m[0][1])*flRoot;
+		x = (m.m[1][2]-m.m[2][1])*flRoot;
+		y = (m.m[2][0]-m.m[0][2])*flRoot;
+		z = (m.m[0][1]-m.m[1][0])*flRoot;
 	}
 	else
 	{
@@ -64,9 +64,9 @@ Quaternion::Quaternion(const Matrix4x4& m)
 		float* apflQuat[3] = { &x, &y, &z };
 		*apflQuat[i] = flRoot/2;
 		flRoot = 0.5f/flRoot;
-		w = (m.m[k][j]-m.m[j][k])*flRoot;
-		*apflQuat[j] = (m.m[j][i]+m.m[i][j])*flRoot;
-		*apflQuat[k] = (m.m[k][i]+m.m[i][k])*flRoot;
+		w = (m.m[j][k]-m.m[k][j])*flRoot;
+		*apflQuat[j] = (m.m[i][j]+m.m[j][i])*flRoot;
+		*apflQuat[k] = (m.m[i][k]+m.m[k][i])*flRoot;
 	}
 }
 

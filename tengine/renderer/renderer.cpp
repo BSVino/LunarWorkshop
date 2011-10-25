@@ -491,7 +491,7 @@ void CRenderer::StartRendering()
 		glPopMatrix();
 	}
 
-	m_oFrustum.CreateFrom(mModelView * mProjection);
+	m_oFrustum.CreateFrom(mProjection * mModelView);
 
 	// Momentarily return the viewport to the window size. This is because if the scene buffer is not the same as the window size,
 	// the viewport here will be the scene buffer size, but we need it to be the window size so we can do world/screen transformations.

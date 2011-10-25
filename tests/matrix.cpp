@@ -98,7 +98,7 @@ void test_matrix()
 		m.SetAngles(EAngle(f, 12, 34));
 
 		float flEp = 0.0001f;
-		if (m.m[1][0] >= 0.999999f)
+		if (m.m[0][1] >= 0.999999f)
 			flEp = 0.01f;
 		TAssert(m.GetAngles().EqualsExhaustive(EAngle(f, 12, 34), flEp));
 	}
@@ -111,7 +111,7 @@ void test_matrix()
 		m.SetAngles(EAngle(f, 12, 34));
 
 		float flEp = 0.0001f;
-		if (m.m[1][0] <= -0.999999f)
+		if (m.m[0][1] <= -0.999999f)
 			flEp = 0.01f;
 		TAssert(m.GetAngles().EqualsExhaustive(EAngle(f, 12, 34), flEp));
 	}
@@ -517,10 +517,10 @@ void test_matrix()
 
 	m.Identity();
 	m.SetAngles(EAngle(0, 90, 0));
-	TAssert(m.GetRow(0) == Vector4D(0, 0, 1, 0));
-	TAssert(m.GetRow(1) == Vector4D(0, 1, 0, 0));
-	TAssert(m.GetRow(2) == Vector4D(-1, 0, 0, 0));
-	TAssert(m.GetRow(3) == Vector4D(0, 0, 0, 1));
+	TAssert(m.GetColumn(0) == Vector4D(0, 0, 1, 0));
+	TAssert(m.GetColumn(1) == Vector4D(0, 1, 0, 0));
+	TAssert(m.GetColumn(2) == Vector4D(-1, 0, 0, 0));
+	TAssert(m.GetColumn(3) == Vector4D(0, 0, 0, 1));
 
 	m.Identity();
 	TAssert(m.GetColumn(0) == Vector4D(1, 0, 0, 0));
@@ -530,10 +530,10 @@ void test_matrix()
 
 	m.Identity();
 	m.SetAngles(EAngle(0, 90, 0));
-	TAssert(m.GetColumn(0) == Vector4D(0, 0, -1, 0));
-	TAssert(m.GetColumn(1) == Vector4D(0, 1, 0, 0));
-	TAssert(m.GetColumn(2) == Vector4D(1, 0, 0, 0));
-	TAssert(m.GetColumn(3) == Vector4D(0, 0, 0, 1));
+	TAssert(m.GetRow(0) == Vector4D(0, 0, -1, 0));
+	TAssert(m.GetRow(1) == Vector4D(0, 1, 0, 0));
+	TAssert(m.GetRow(2) == Vector4D(1, 0, 0, 0));
+	TAssert(m.GetRow(3) == Vector4D(0, 0, 0, 1));
 
 	m.Identity();
 	m.SetColumn(0, Vector(2, 3, 4));

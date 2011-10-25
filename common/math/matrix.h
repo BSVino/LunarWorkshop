@@ -8,10 +8,24 @@
 class Quaternion;
 
 // This Matrix4x4 class is for use in right-handed coordinate spaces with Y up.
-// A row is in sequential memory positions (m[0][0], m[0][1], m[0][2], m[0][3])
-// A column is in strided positions (m[0][0], m[1][0], m[2][0], m[3][0])
+// A column is in sequential memory positions (m[0][0], m[0][1], m[0][2], m[0][3])
+// A row is in strided positions (m[0][0], m[1][0], m[2][0], m[3][0])
 // Its values are stored with Forward/Up/Right vectors residing in the columns 0, 1, 2
 // Its translations are stored in the fourth column
+// Transformations are done on column vectors on the right
+
+// The notation of each array location
+// [00 10 20 30]
+// [01 11 21 31]
+// [02 12 22 32]
+// [03 13 23 33]
+
+// The layout in that notation of the base vectors (f u r t = forward up right translation)
+// [fx ux rx tx]
+// [fy uy ry ty]
+// [fz uz rz tz]
+// [fw uw rw tw]
+
 class Matrix4x4
 {
 public:
@@ -83,15 +97,20 @@ public:
 	void		SetForwardVector(const Vector& vecForward);
 	void		SetUpVector(const Vector& vecUp);
 	void		SetRightVector(const Vector& vecRight);
-	Vector		GetForwardVector() const { return Vector(GetColumn(0)); }
-	Vector		GetUpVector() const { return Vector(GetColumn(1)); }
-	Vector		GetRightVector() const { return Vector(GetColumn(2)); }
+	Vector		GetForwardVector() const { return Vector((float*)&m[0][0]); }
+	Vector		GetUpVector() const { return Vector((float*)&m[1][0]); }
+	Vector		GetRightVector() const { return Vector((float*)&m[2][0]); }
 
 	void		InvertTR();
 
 	float		Trace() const;
 
 	operator float*()
+	{
+		return(&m[0][0]);
+	}
+
+	operator const float*() const
 	{
 		return(&m[0][0]);
 	}
