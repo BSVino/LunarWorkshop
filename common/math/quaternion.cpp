@@ -5,10 +5,10 @@
 
 Quaternion::Quaternion()
 {
-	x = 1;
+	x = 0;
 	y = 0;
 	z = 0;
-	w = 0;
+	w = 1;
 }
 
 Quaternion::Quaternion(float X, float Y, float Z, float W)

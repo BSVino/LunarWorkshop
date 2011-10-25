@@ -53,6 +53,20 @@ public:
 		return TemplateVector( f/v.x, f/v.y, f/v.z );
 	}
 
+	bool	operator==(const TemplateVector<unit_t>& v) const
+	{
+		float flEp = 0.000001f;
+		if (fabs(v.x - x) < flEp && fabs(v.y - y) < flEp && fabs(v.z - z) < flEp)
+			return true;
+		return false;
+	}
+
+	bool	operator!=(const TemplateVector<unit_t>& v) const
+	{
+		float flEp = 0.000001f;
+		return fabs(v.x - x) > flEp || fabs(v.y - y) > flEp || fabs(v.z - z) > flEp;
+	}
+
 	unit_t	Length() const;
 	unit_t	LengthSqr() const;
 	unit_t	Length2D() const;
@@ -307,6 +321,20 @@ public:
 	EAngle	operator*(float f) const;
 	EAngle	operator/(float f) const;
 
+	bool	operator==(const EAngle& v) const
+	{
+		float flEp = 0.000001f;
+		return AngleDifference(v.p, p) < flEp && AngleDifference(v.y, y) < flEp && AngleDifference(v.r, r) < flEp;
+	}
+
+	bool	Equals(const EAngle& v, float flEp = 0.000001f) const
+	{
+		return AngleDifference(v.p, p) < flEp && AngleDifference(v.y, y) < flEp && AngleDifference(v.r, r) < flEp;
+	}
+
+	// Can find equivalence even in dangerous situations such as Gimbal lock.
+	bool	EqualsExhaustive(const EAngle& v, float flEp = 0.000001f) const;
+
 	operator float*()
 	{
 		return(&p);
@@ -542,6 +570,12 @@ public:
 public:
 	Vector4D	operator+(const Vector4D& v) const;
 	Vector4D	operator-(const Vector4D& v) const;
+
+	bool	operator==(const Vector4D& v) const
+	{
+		float flEp = 0.000001f;
+		return fabs(v.x - x) < flEp && fabs(v.y - y) < flEp && fabs(v.z - z) < flEp && fabs(v.w - w) < flEp;
+	}
 
 	operator float*()
 	{

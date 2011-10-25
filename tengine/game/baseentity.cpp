@@ -363,8 +363,9 @@ TVector CBaseEntity::GetGlobalVelocity()
 
 		if (m_vecLocalVelocity.Get().LengthSqr() > TFloat(0))
 		{
-			TFloat flLength = m_vecLocalVelocity.Get().Length();
-			return (mParentGlobal.TransformNoTranslate(m_vecLocalVelocity/flLength))*flLength;
+			Vector vecTransformed = mParentGlobal.TransformVector(m_vecLocalVelocity);
+			TAssert(vecTransformed.LengthSqr() == m_vecLocalVelocity.Get().LengthSqr());
+			return vecTransformed;
 		}
 		else
 			return TVector(0, 0, 0);
@@ -381,8 +382,9 @@ TVector CBaseEntity::GetGlobalVelocity() const
 
 		if (m_vecLocalVelocity.Get().LengthSqr() > TFloat(0))
 		{
-			TFloat flLength = m_vecLocalVelocity.Get().Length();
-			return (mParentGlobal.TransformNoTranslate(m_vecLocalVelocity/flLength))*flLength;
+			Vector vecTransformed = mParentGlobal.TransformVector(m_vecLocalVelocity);
+			TAssert(vecTransformed.LengthSqr() == m_vecLocalVelocity.Get().LengthSqr());
+			return vecTransformed;
 		}
 		else
 			return TVector(0, 0, 0);

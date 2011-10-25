@@ -126,7 +126,7 @@ void CCharacter::MoveThink()
 			if (HasMoveParent())
 			{
 				TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
-				vecUp = mGlobalToLocal.TransformNoTranslate(vecUp);
+				vecUp = mGlobalToLocal.TransformVector(vecUp);
 			}
 
 			TMatrix m = GetLocalTransform();
@@ -138,7 +138,7 @@ void CCharacter::MoveThink()
 			m.SetColumn(1, vecUp);
 			m.SetColumn(2, vecRight);
 
-			vecLocalVelocity = m.TransformNoTranslate(vecMove);
+			vecLocalVelocity = m.TransformVector(vecMove);
 		}
 		else
 			vecLocalVelocity = vecMove;
@@ -228,7 +228,7 @@ void CCharacter::MoveThink()
 						if (GetMoveParent())
 						{
 							vecLocalCollisionPoint = GetMoveParent()->GetGlobalToLocalTransform() * vecPoint;
-							vecNormal = GetMoveParent()->GetGlobalToLocalTransform().TransformNoTranslate(vecNormal);
+							vecNormal = GetMoveParent()->GetGlobalToLocalTransform().TransformVector(vecNormal);
 						}
 						else
 							vecLocalCollisionPoint = vecGlobalCollisionPoint;
@@ -301,7 +301,7 @@ void CCharacter::Jump()
 	if (HasMoveParent())
 	{
 		TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
-		vecLocalUp = mGlobalToLocal.TransformNoTranslate(vecLocalUp);
+		vecLocalUp = mGlobalToLocal.TransformVector(vecLocalUp);
 	}
 
 	SetLocalVelocity(GetLocalVelocity() + vecLocalUp * JumpStrength());
@@ -480,7 +480,7 @@ void CCharacter::FindGroundEntity()
 		if (GetMoveParent() == pEntity)
 		{
 			TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
-			Vector vecUpLocal = mGlobalToLocal.TransformNoTranslate(GetUpVector()) * m_flMaxStepSize;
+			Vector vecUpLocal = mGlobalToLocal.TransformVector(GetUpVector()) * m_flMaxStepSize;
 
 			if (pEntity->CollideLocal(GetLocalOrigin(), GetLocalOrigin() - vecUpLocal, vecPoint, vecNormal))
 			{

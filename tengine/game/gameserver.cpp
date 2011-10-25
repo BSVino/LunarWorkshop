@@ -586,7 +586,7 @@ void CGameServer::Simulate()
 							if (pEntity->GetMoveParent())
 							{
 								vecLocalCollisionPoint = pEntity->GetMoveParent()->GetGlobalToLocalTransform() * vecPoint;
-								vecNormal = pEntity->GetMoveParent()->GetGlobalToLocalTransform().TransformNoTranslate(vecNormal);
+								vecNormal = pEntity->GetMoveParent()->GetGlobalToLocalTransform().TransformVector(vecNormal);
 							}
 							else
 								vecLocalCollisionPoint = vecGlobalCollisionPoint;

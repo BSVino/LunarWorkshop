@@ -32,6 +32,14 @@
 	} \
 } \
 
+#define TAssertNoMsg(x) \
+{ \
+	if (!(x)) \
+	{ \
+		TDebugBreak(); \
+	} \
+} \
+
 #else
 
 #define TAssert(x) \
@@ -39,6 +47,8 @@
 	if (!(x)) \
 		printf("Assert failed: " #x "\n"); \
 } \
+
+#define TAssertNoMsg(x)
 
 #endif
 

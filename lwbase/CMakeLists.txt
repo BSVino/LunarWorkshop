@@ -28,6 +28,7 @@ set (LWBASE_SOURCES
 	../common/math/matrix.cpp
 	../common/math/quaternion.cpp
 	../common/math/frustum.cpp
+	../common/math/vector.cpp
 
 	../datamanager/data.cpp
 	../datamanager/dataserializer.cpp

@@ -1,6 +1,7 @@
 #include "matrix.h"
 
 #include "quaternion.h"
+#include "common.h"
 
 Matrix4x4::Matrix4x4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33)
 {
@@ -30,7 +31,7 @@ Matrix4x4::Matrix4x4(const Vector& vecForward, const Vector& vecUp, const Vector
 	m[3][0] = 0;
 	m[3][1] = 0;
 	m[3][2] = 0;
-	m[3][3] = 0;
+	m[3][3] = 1;
 }
 
 Matrix4x4::Matrix4x4(const Quaternion& q)
@@ -171,6 +172,9 @@ void Matrix4x4::SetAngles(const EAngle& angDir)
 
 void Matrix4x4::SetRotation(float flAngle, const Vector& v)
 {
+	// Normalize beforehand
+	TAssertNoMsg(fabs(v.LengthSqr() - 1) < 0.000001f);
+
 	// c = cos(angle), s = sin(angle), t = (1-c)
 	// [ xxt+c   xyt-zs  xzt+ys ]
 	// [ yxt+zs  yyt+c   yzt-xs ]
@@ -187,22 +191,14 @@ void Matrix4x4::SetRotation(float flAngle, const Vector& v)
 	m[0][0] = x*x*t + c;
 	m[0][1] = x*y*t - z*s;
 	m[0][2] = x*z*t + y*s;
-	m[0][3] = 0;
 
 	m[1][0] = y*x*t + z*s;
 	m[1][1] = y*y*t + c;
 	m[1][2] = y*z*t - x*s;
-	m[1][3] = 0;
 
 	m[2][0] = z*x*t - y*s;
 	m[2][1] = z*y*t + x*s;
 	m[2][2] = z*z*t + c;
-	m[2][3] = 0;
-
-	m[3][0] = 0;
-	m[3][1] = 0;
-	m[3][2] = 0;
-	m[3][3] = 0;
 }
 
 void Matrix4x4::SetRotation(const Quaternion& q)
@@ -226,48 +222,32 @@ void Matrix4x4::SetRotation(const Quaternion& q)
 	m[0][0] = 1 - y2 - z2;
 	m[0][1] = xy2 - zw2;
 	m[0][2] = xz2 + yw2;
-	m[0][3] = 0;
 
 	m[1][0] = xy2 + zw2;
 	m[1][1] = 1 - x2 - z2;
 	m[1][2] = yz2 - xw2;
-	m[1][3] = 0;
 
 	m[2][0] = xz2 - yw2;
 	m[2][1] = yz2 + xw2;
 	m[2][2] = 1 - x2 - y2;
-	m[2][3] = 0;
-
-	m[3][0] = 0;
-	m[3][1] = 0;
-	m[3][2] = 0;
-	m[3][3] = 0;
 }
 
-void Matrix4x4::SetOrientation(const Vector& vecDir)
+void Matrix4x4::SetOrientation(const Vector& v)
 {
+	Vector vecDir = v.Normalized();
+
 	Vector vecRight, vecUp;
 	vecUp = Vector(0, 1, 0);
-	if (vecDir.DistanceSqr(vecUp) > 0.001f && vecDir.DistanceSqr(-vecUp) > 0.001f)
+	if (vecDir != vecUp && vecDir != Vector(0, -1, 0))
 		vecRight = vecDir.Cross(vecUp).Normalized();
 	else
 		vecRight = Vector(1, 0, 0);
 
 	vecUp = vecRight.Cross(vecDir).Normalized();
 
-	m[0][0] = vecRight.x;
-	m[1][0] = vecRight.y;
-	m[2][0] = vecRight.z; 
-	m[0][1] = vecUp.x;
-	m[1][1] = vecUp.y;
-	m[2][1] = vecUp.z; 
-	m[0][2] = -vecDir.x;
-	m[1][2] = -vecDir.y;
-	m[2][2] = -vecDir.z; 
-
-	m[3][0] = m[3][1] = m[3][2] = 0.0f;
-	m[0][3] = m[1][3] = m[2][3] = 0.0f;
-	m[3][3] = 1.0f;
+	SetForwardVector(vecDir);
+	SetUpVector(vecUp);
+	SetRightVector(vecRight);
 }
 
 void Matrix4x4::SetScale(const Vector& vecScale)
@@ -279,6 +259,9 @@ void Matrix4x4::SetScale(const Vector& vecScale)
 
 void Matrix4x4::SetReflection(const Vector& vecPlane)
 {
+	// Normalize beforehand or use ::SetReflection()
+	TAssertNoMsg(fabs(vecPlane.LengthSqr() - 1) < 0.000001f);
+
 	m[0][0] = 1 - 2 * vecPlane.x * vecPlane.x;
 	m[1][1] = 1 - 2 * vecPlane.y * vecPlane.y;
 	m[2][2] = 1 - 2 * vecPlane.z * vecPlane.z;
@@ -289,14 +272,11 @@ void Matrix4x4::SetReflection(const Vector& vecPlane)
 
 Matrix4x4 Matrix4x4::operator+=(const Vector& v)
 {
-	Matrix4x4 r = *this;
-	r.m[0][3] += v.x;
-	r.m[1][3] += v.y;
-	r.m[2][3] += v.z;
+	m[0][3] += v.x;
+	m[1][3] += v.y;
+	m[2][3] += v.z;
 
-	Init(r);
-
-	return r;
+	return *this;
 }
 
 Matrix4x4 Matrix4x4::operator+=(const EAngle& a)
@@ -345,10 +325,66 @@ Matrix4x4 Matrix4x4::operator*=(const Matrix4x4& t)
 	return *this;
 }
 
+bool Matrix4x4::operator==(const Matrix4x4& t) const
+{
+	float flEp = 0.000001f;
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (fabs(m[i][j] - t.m[i][j]) > flEp)
+				return false;
+		}
+	}
+
+	return true;
+}
+
+bool Matrix4x4::Equals(const Matrix4x4& t, float flEp) const
+{
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (fabs(m[i][j] - t.m[i][j]) > flEp)
+				return false;
+		}
+	}
+
+	return true;
+}
+
+Matrix4x4 Matrix4x4::AddTranslation(const Vector& v)
+{
+	Matrix4x4 r;
+	r.SetTranslation(v);
+	(*this) *= r;
+
+	return *this;
+}
+
+Matrix4x4 Matrix4x4::AddAngles(const EAngle& a)
+{
+	Matrix4x4 r;
+	r.SetAngles(a);
+	(*this) *= r;
+
+	return *this;
+}
+
 Matrix4x4 Matrix4x4::AddScale(const Vector& vecScale)
 {
 	Matrix4x4 r;
 	r.SetScale(vecScale);
+	(*this) *= r;
+
+	return *this;
+}
+
+Matrix4x4 Matrix4x4::AddReflection(const Vector& v)
+{
+	Matrix4x4 r;
+	r.SetReflection(v);
 	(*this) *= r;
 
 	return *this;
@@ -361,10 +397,41 @@ Vector Matrix4x4::GetTranslation() const
 
 EAngle Matrix4x4::GetAngles() const
 {
+#ifdef _DEBUG
+	// If any of the below is not true then you have a matrix that has been scaled or reflected or something and it won't work to try to pull its Eulers
+	bool b = fabs(GetForwardVector().LengthSqr() - 1) < 0.000001f;
+	if (!b)
+	{
+		TAssertNoMsg(b);
+		return EAngle(0, 0, 0);
+	}
+
+	b = fabs(GetUpVector().LengthSqr() - 1) < 0.000001f;
+	if (!b)
+	{
+		TAssertNoMsg(b);
+		return EAngle(0, 0, 0);
+	}
+
+	b = fabs(GetRightVector().LengthSqr() - 1) < 0.000001f;
+	if (!b)
+	{
+		TAssertNoMsg(b);
+		return EAngle(0, 0, 0);
+	}
+
+	b = GetRightVector().Cross(GetForwardVector()) == GetUpVector();
+	if (!b)
+	{
+		TAssertNoMsg(b);
+		return EAngle(0, 0, 0);
+	}
+#endif
+
 	if (m[1][0] > 0.999999f)
-		return EAngle(90, atan2(m[0][2], m[2][2]) * 180/M_PI, 0);
+		return EAngle(asin(m[1][0]) * 180/M_PI, atan2(m[0][2], m[2][2]) * 180/M_PI, 0);
 	else if (m[1][0] < -0.999999f)
-		return EAngle(-90, atan2(m[0][2], m[2][2]) * 180/M_PI, 0);
+		return EAngle(asin(m[1][0]) * 180/M_PI, atan2(m[0][2], m[2][2]) * 180/M_PI, 0);
 
 	// Clamp to [-1, 1] looping
 	float flPitch = fmod(m[1][0], 2);
@@ -385,12 +452,22 @@ Vector Matrix4x4::operator*(const Vector& v) const
 	return vecResult;
 }
 
-Vector Matrix4x4::TransformNoTranslate(const Vector& v) const
+Vector Matrix4x4::TransformVector(const Vector& v) const
 {
 	Vector vecResult;
 	vecResult.x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z;
 	vecResult.y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z;
 	vecResult.z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z;
+	return vecResult;
+}
+
+Vector4D Matrix4x4::operator*(const Vector4D& v) const
+{
+	Vector4D vecResult;
+	vecResult.x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3] * v.w;
+	vecResult.y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3] * v.w;
+	vecResult.z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3] * v.w;
+	vecResult.w = m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3] * v.w;
 	return vecResult;
 }
 
@@ -419,6 +496,27 @@ void Matrix4x4::SetColumn(int i, const Vector& vecColumn)
 	m[2][i] = vecColumn.z;
 }
 
+void Matrix4x4::SetForwardVector(const Vector& v)
+{
+	m[0][0] = v.x;
+	m[1][0] = v.y;
+	m[2][0] = v.z;
+}
+
+void Matrix4x4::SetUpVector(const Vector& v)
+{
+	m[0][1] = v.x;
+	m[1][1] = v.y;
+	m[2][1] = v.z;
+}
+
+void Matrix4x4::SetRightVector(const Vector& v)
+{
+	m[0][2] = v.x;
+	m[1][2] = v.y;
+	m[2][2] = v.z;
+}
+
 // Not a true inversion, only works if the matrix is a translation/rotation matrix.
 void Matrix4x4::InvertTR()
 {
@@ -428,13 +526,11 @@ void Matrix4x4::InvertTR()
 		for (int v = 0; v < 3; v++)
 			t.m[h][v] = m[v][h];
 
-	float fl03 = m[0][3];
-	float fl13 = m[1][3];
-	float fl23 = m[2][3];
+	Vector vecTranslation = GetTranslation();
 
 	Init(t);
 
-	SetColumn(3, t*Vector(-fl03, -fl13, -fl23));
+	SetTranslation(t*(-vecTranslation));
 }
 
 float Matrix4x4::Trace() const
