@@ -48,6 +48,8 @@ public:
 
 	virtual float					AttackTime() const { return 0.3f; }
 	virtual float					AttackDamage() const { return 50; }
+	virtual float					AttackSphereRadius() const { return 40.0f; }
+	virtual TVector					AttackSphereCenter() const { return GetGlobalCenter(); }
 
 	virtual bool					ShouldCollide() const { return false; }
 

@@ -323,8 +323,8 @@ void CCharacter::Attack()
 	m_flLastAttack = GameServer()->GetGameTime();
 	m_vecMoveVelocity = TVector();
 
-	TFloat flAttackSphereRadius = 0.4f;
-	TVector vecDamageSphereCenter = GetGlobalOrigin() + GetUpVector()*EyeHeight() + GetGlobalTransform().GetForwardVector() * flAttackSphereRadius;
+	TFloat flAttackSphereRadius = AttackSphereRadius();
+	TVector vecDamageSphereCenter = AttackSphereCenter();
 
 	size_t iMaxEntities = GameServer()->GetMaxEntities();
 	for (size_t j = 0; j < iMaxEntities; j++)

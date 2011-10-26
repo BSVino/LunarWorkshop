@@ -142,12 +142,12 @@ void CBaseEntity::Spawn()
 
 TVector CBaseEntity::GetLocalCenter() const
 {
-	return m_aabbBoundingBox.Center();
+	return m_mLocalTransform * m_aabbBoundingBox.Center();
 }
 
 TVector CBaseEntity::GetGlobalCenter() const
 {
-	return GetGlobalOrigin() + GetLocalCenter();
+	return m_mGlobalTransform * m_aabbBoundingBox.Center();
 }
 
 TFloat CBaseEntity::GetBoundingRadius() const
@@ -283,6 +283,10 @@ void CBaseEntity::SetGlobalTransform(const TMatrix& m)
 	m_hMoveParent = NULL;
 	m_mGlobalTransform = m_mLocalTransform = m;
 	m_bGlobalTransformsDirty = false;
+
+	m_vecLocalOrigin = m_mLocalTransform.GetTranslation();
+	m_angLocalAngles = m_mLocalTransform.GetAngles();
+	m_qLocalRotation = Quaternion(m_mLocalTransform);
 }
 
 TMatrix CBaseEntity::GetGlobalToLocalTransform()

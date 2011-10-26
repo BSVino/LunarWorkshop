@@ -52,7 +52,7 @@ void CTackWindow::SetupTack()
 	Game()->AddPlayer(pPlayer);
 
 	CPlayerCharacter* pCharacter = GameServer()->Create<CPlayerCharacter>("CPlayerCharacter");
-	pCharacter->SetGlobalOrigin(Vector(-2, 0, -2));
+	pCharacter->SetGlobalOrigin(Vector(-1, 0, -1));
 	pPlayer->SetCharacter(pCharacter);
 
 	CZombie* pZombie = GameServer()->Create<CZombie>("CZombie");
@@ -62,13 +62,13 @@ void CTackWindow::SetupTack()
 	pZombie->SetGlobalOrigin(Vector(6, 0, 2));
 
 	pZombie = GameServer()->Create<CZombie>("CZombie");
-	pZombie->SetGlobalOrigin(Vector(-4, 0, -2));
+	pZombie->SetGlobalOrigin(Vector(-6, 0, -5));
 
 	pZombie = GameServer()->Create<CZombie>("CZombie");
-	pZombie->SetGlobalOrigin(Vector(3, 0, 1));
+	pZombie->SetGlobalOrigin(Vector(4, 0, -4));
 
 	pZombie = GameServer()->Create<CZombie>("CZombie");
-	pZombie->SetGlobalOrigin(Vector(-3, 0, -3));
+	pZombie->SetGlobalOrigin(Vector(-5, 0, -6));
 
 	pZombie = GameServer()->Create<CZombie>("CZombie");
 	pZombie->SetGlobalOrigin(Vector(-6, 0, 2));

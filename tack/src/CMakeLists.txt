@@ -13,6 +13,7 @@ if (WIN32)
 endif (WIN32)
 
 set (TACK_CHARACTERS_SOURCES
+	characters/corpse.cpp
 	characters/tack_character.cpp
 	characters/tack_playercharacter.cpp
 	characters/zombie.cpp

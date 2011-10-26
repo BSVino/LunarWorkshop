@@ -6,6 +6,7 @@
 
 #include "tack_game.h"
 #include "tack_renderer.h"
+#include "corpse.h"
 
 REGISTER_ENTITY(CTackCharacter);
 
@@ -53,8 +54,19 @@ void CTackCharacter::Think()
 	BaseClass::Think();
 
 	if (!IsAlive() && !IsInDamageRecoveryTime())
+	{
+		CreateCorpse();
 		Delete();
+	}
 
+	CalculateGoalYaw();
+
+	m_flRenderYaw = AngleApproach(m_flGoalYaw, m_flRenderYaw, GameServer()->GetFrameTime()*anim_yawspeed.GetFloat());
+	SetGlobalAngles(EAngle(0, m_flRenderYaw, 0));
+}
+
+void CTackCharacter::CalculateGoalYaw()
+{
 	Vector vecYawVelocity = GetGlobalVelocity();
 	if (IsInDamageRecoveryTime())
 		vecYawVelocity = m_vecGoalVelocity;
@@ -65,9 +77,6 @@ void CTackCharacter::Think()
 		vecVelocity.y = 0;
 		m_flGoalYaw = VectorAngles(vecVelocity).y;
 	}
-
-	m_flRenderYaw = AngleApproach(m_flGoalYaw, m_flRenderYaw, GameServer()->GetFrameTime()*anim_yawspeed.GetFloat());
-	SetGlobalAngles(EAngle(0, m_flRenderYaw, 0));
 }
 
 Matrix4x4 CTackCharacter::GetRenderTransform() const
@@ -83,12 +92,32 @@ void CTackCharacter::ModifyContext(class CRenderingContext* pContext, bool bTran
 		pContext->SetColor(Color(255, 0, 0));
 }
 
+CVar debug_showattack("debug_showattack", "on");
+
+void CTackCharacter::PostRender(bool bTransparent) const
+{
+	if (debug_showattack.GetBool() && m_flLastAttack >= 0 && GameServer()->GetGameTime() - m_flLastAttack < 0.2f)
+	{
+		CRenderingContext c(GameServer()->GetRenderer());
+
+		TFloat flAttackSphereRadius = AttackSphereRadius();
+		c.Translate(AttackSphereCenter());
+		c.Scale(flAttackSphereRadius, flAttackSphereRadius, flAttackSphereRadius);
+		c.RenderSphere();
+	}
+}
+
 bool CTackCharacter::CanAttack() const
 {
 	if (IsInDamageRecoveryTime())
 		return false;
 
 	return BaseClass::CanAttack();
+}
+
+Vector CTackCharacter::AttackSphereCenter() const
+{
+	return GetGlobalOrigin() + GetUpVector()*(EyeHeight()*0.7f) + GetGlobalTransform().GetForwardVector() * AttackSphereRadius();
 }
 
 bool CTackCharacter::IsInDamageRecoveryTime() const
@@ -127,4 +156,23 @@ void CTackCharacter::OnTakeDamage(CBaseEntity* pAttacker, CBaseEntity* pInflicto
 	vecAttackDirection.Normalize();
 
 	SetGlobalVelocity(vecAttackDirection * game_damagepushback.GetFloat() + Vector(0, 1, 0) * game_damagepushup.GetFloat());
+}
+
+void CTackCharacter::CreateCorpse()
+{
+	CCorpse* pCorpse = GameServer()->Create<CCorpse>("CCorpse");
+	pCorpse->SetGlobalTransform(GetGlobalTransform());
+	pCorpse->SetModel(GetModel());
+	pCorpse->SetSpecialAbility(CorpseAbility());
+}
+
+tstring g_asSpecialAbilityNames[] =
+{
+	"None",
+	"Eat Brains",
+};
+
+const tstring& SpecialAbilityName(special_ability_t eAbility)
+{
+	return g_asSpecialAbilityNames[eAbility];
 }

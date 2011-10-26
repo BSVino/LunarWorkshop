@@ -24,10 +24,23 @@ void CTackPlayer::MouseMotion(int x, int y)
 
 void CTackPlayer::KeyPress(int c)
 {
+	CPlayerCharacter* pCharacter = GetPlayerCharacter();
 	if (c == ' ')
-		GetPlayerCharacter()->Attack();
+	{
+		if (pCharacter->IsAbsorbing())
+			pCharacter->FinishAbsorbCorpse(false);
+		else
+			pCharacter->Attack();
+	}
 	else
 		BaseClass::KeyPress(c);
+
+	if (c == 'F')
+	{
+		if (pCharacter->AbsorbCorpse())
+			return;
+		pCharacter->UseSpecialAbility();
+	}
 }
 
 CPlayerCharacter* CTackPlayer::GetPlayerCharacter()

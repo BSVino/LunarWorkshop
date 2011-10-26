@@ -16,6 +16,7 @@ public:
 
 	virtual TFloat				CharacterSpeed() { return 1.0f; }
 	virtual float				AttackDamage() const { return 5; }
+	virtual special_ability_t	CorpseAbility() { return ABILITY_EATBRAINS; }
 
 protected:
 	float						m_flGoalYaw;
