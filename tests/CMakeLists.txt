@@ -7,6 +7,7 @@ include_directories (
 )
 
 set (TEST_SOURCES
+	eangles.cpp
 	matrix.cpp
 	main.cpp
 )

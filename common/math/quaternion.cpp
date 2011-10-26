@@ -86,8 +86,8 @@ EAngle Quaternion::GetAngles() const
 
 void Quaternion::SetAngles(const EAngle& a)
 {
-	float c1 = cos(a.y/2 *M_PI/180);
-	float s1 = sin(a.y/2 *M_PI/180);
+	float c1 = cos(-a.y/2 *M_PI/180);
+	float s1 = sin(-a.y/2 *M_PI/180);
 	float c2 = cos(a.p/2 *M_PI/180);
 	float s2 = sin(a.p/2 *M_PI/180);
 	float c3 = cos(a.r/2 *M_PI/180);

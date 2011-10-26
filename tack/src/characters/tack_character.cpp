@@ -62,8 +62,6 @@ void CTackCharacter::Think()
 	if (vecYawVelocity.LengthSqr() > 0.5f)
 	{
 		Vector vecVelocity = vecYawVelocity.Normalized();
-		// Why? Dunno.
-		vecVelocity.z = -vecVelocity.z;
 		vecVelocity.y = 0;
 		m_flGoalYaw = VectorAngles(vecVelocity).y;
 	}

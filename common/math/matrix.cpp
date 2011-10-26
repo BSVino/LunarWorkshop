@@ -153,20 +153,25 @@ void Matrix4x4::SetTranslation(const Vector& vecPos)
 void Matrix4x4::SetAngles(const EAngle& angDir)
 {
 	float sp = sin(angDir.p * M_PI/180);
-	float sy = sin(angDir.y * M_PI/180);
+	float sy = sin(-angDir.y * M_PI/180);
 	float sr = sin(angDir.r * M_PI/180);
 	float cp = cos(angDir.p * M_PI/180);
-	float cy = cos(angDir.y * M_PI/180);
+	float cy = cos(-angDir.y * M_PI/180);
 	float cr = cos(angDir.r * M_PI/180);
 
+	// Forward vector
 	m[0][0] = cy*cp;
-	m[1][0] = sr*sy-sp*cr*cy;
-	m[2][0] = sp*sr*cy+cr*sy;
 	m[0][1] = sp;
-	m[1][1] = cp*cr;
-	m[2][1] = -cp*sr;
 	m[0][2] = -sy*cp;
+
+	// Up vector
+	m[1][0] = sr*sy-sp*cr*cy;
+	m[1][1] = cp*cr;
 	m[1][2] = sp*cr*sy+sr*cy;
+
+	// Right vector
+	m[2][0] = sp*sr*cy+cr*sy;
+	m[2][1] = -cp*sr;
 	m[2][2] = cr*cy-sy*sp*sr;
 }
 
@@ -241,7 +246,7 @@ void Matrix4x4::SetOrientation(const Vector& v)
 	if (vecDir != vecUp && vecDir != Vector(0, -1, 0))
 		vecRight = vecDir.Cross(vecUp).Normalized();
 	else
-		vecRight = Vector(1, 0, 0);
+		vecRight = Vector(0, 0, 1);
 
 	vecUp = vecRight.Cross(vecDir).Normalized();
 
@@ -417,9 +422,9 @@ EAngle Matrix4x4::GetAngles() const
 #endif
 
 	if (m[0][1] > 0.999999f)
-		return EAngle(asin(m[0][1]) * 180/M_PI, atan2(m[2][0], m[2][2]) * 180/M_PI, 0);
+		return EAngle(asin(m[0][1]) * 180/M_PI, -atan2(m[2][0], m[2][2]) * 180/M_PI, 0);
 	else if (m[0][1] < -0.999999f)
-		return EAngle(asin(m[0][1]) * 180/M_PI, atan2(m[2][0], m[2][2]) * 180/M_PI, 0);
+		return EAngle(asin(m[0][1]) * 180/M_PI, -atan2(m[2][0], m[2][2]) * 180/M_PI, 0);
 
 	// Clamp to [-1, 1] looping
 	float flPitch = fmod(m[0][1], 2);
@@ -428,7 +433,7 @@ EAngle Matrix4x4::GetAngles() const
 	else if (flPitch < -1)
 		flPitch += 2;
 
-	return EAngle(asin(flPitch) * 180/M_PI, atan2(-m[0][2], m[0][0]) * 180/M_PI, atan2(-m[2][1], m[1][1]) * 180/M_PI);
+	return EAngle(asin(flPitch) * 180/M_PI, -atan2(-m[0][2], m[0][0]) * 180/M_PI, atan2(-m[2][1], m[1][1]) * 180/M_PI);
 }
 
 Vector Matrix4x4::operator*(const Vector& v) const

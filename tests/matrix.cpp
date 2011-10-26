@@ -194,14 +194,14 @@ void test_matrix()
 
 	m.Identity();
 	m.SetOrientation(Vector(0, 0, 1));
-	TAssert(m.GetAngles() == EAngle(0, -90, 0));
+	TAssert(m.GetAngles() == EAngle(0, 90, 0));
 	TAssert(m.GetForwardVector() == Vector(0, 0, 1));
 	TAssert(m.GetUpVector() == Vector(0, 1, 0));
 	TAssert(m.GetRightVector() == Vector(-1, 0, 0));
 
 	m.Identity();
 	m.SetOrientation(Vector(0, 0, -1));
-	TAssert(m.GetAngles() == EAngle(0, 90, 0));
+	TAssert(m.GetAngles() == EAngle(0, -90, 0));
 	TAssert(m.GetForwardVector() == Vector(0, 0, -1));
 	TAssert(m.GetUpVector() == Vector(0, 1, 0));
 	TAssert(m.GetRightVector() == Vector(1, 0, 0));
@@ -210,19 +210,19 @@ void test_matrix()
 	m.SetOrientation(Vector(0, 1, 0));
 	TAssert(m.GetAngles() == EAngle(90, 0, 0));
 	TAssert(m.GetForwardVector() == Vector(0, 1, 0));
-	TAssert(m.GetUpVector() == Vector(0, 0, 1));
-	TAssert(m.GetRightVector() == Vector(1, 0, 0));
+	TAssert(m.GetUpVector() == Vector(-1, 0, 0));
+	TAssert(m.GetRightVector() == Vector(0, 0, 1));
 
 	m.Identity();
 	m.SetOrientation(Vector(0, -1, 0));
 	TAssert(m.GetAngles() == EAngle(-90, 0, 0));
 	TAssert(m.GetForwardVector() == Vector(0, -1, 0));
-	TAssert(m.GetUpVector() == Vector(0, 0, -1));
-	TAssert(m.GetRightVector() == Vector(1, 0, 0));
+	TAssert(m.GetUpVector() == Vector(1, 0, 0));
+	TAssert(m.GetRightVector() == Vector(0, 0, 1));
 
 	m.Identity();
 	m.SetOrientation(Vector(1, 1, 1));
-	TAssert(m.GetAngles() == EAngle(35.264389f, -45, 0));
+	TAssert(m.GetAngles() == EAngle(35.264389f, 45, 0));
 	TAssert(m.GetForwardVector() == Vector(1, 1, 1).Normalized());
 	TAssert(m.GetUpVector() == Vector(-1, 2, -1).Normalized());
 	TAssert(m.GetRightVector() == Vector(-1, 0, 1).Normalized());
@@ -393,7 +393,7 @@ void test_matrix()
 	TAssert(m * Vector(1, 1, 0) == Vector(-1, -1, 0));
 
 	m.Identity();
-	m.SetAngles(EAngle(0, 90, 0));
+	m.SetAngles(EAngle(0, -90, 0));
 	m.AddScale(Vector(2, 2, 2));
 	m.AddReflection(Vector(0, 0, 1));
 	TAssert(m == Matrix4x4(Vector(0, 0, -2), Vector(0, 2, 0), Vector(-2, 0, 0)));
@@ -433,7 +433,7 @@ void test_matrix()
 	TAssert(m * Vector(1, 1, 1) == Vector(1, 1, 1));
 
 	m.Identity();
-	m.SetAngles(EAngle(0, 90, 0));
+	m.SetAngles(EAngle(0, -90, 0));
 	TAssert(m * Vector(0, 0, 0) == Vector(0, 0, 0));
 	TAssert(m * Vector(1, 0, 0) == Vector(0, 0, -1));
 	TAssert(m * Vector(-1, 0, 0) == Vector(0, 0, 1));
@@ -450,7 +450,7 @@ void test_matrix()
 
 	m.Identity();
 	// SetAngles() and SetTranslation() makes a matrix with rotation and then translation
-	m.SetAngles(EAngle(0, 90, 0));
+	m.SetAngles(EAngle(0, -90, 0));
 	m.SetTranslation(Vector(4, 5, 6));
 	TAssert(m * Vector(0, 0, 0) == Vector(4, 5, 6));
 	TAssert(m * Vector(1, 1, 1) == Vector(5, 6, 5));	// (1, 1, 1) rotates to (1, 1, -1) and then translates to (5, 6, 5)
@@ -470,7 +470,7 @@ void test_matrix()
 
 	m.Identity();
 	// SetAngles() and AddTranslation() makes a matrix with translation and then rotation. (Reverse order.)
-	m.SetAngles(EAngle(0, 90, 0));
+	m.SetAngles(EAngle(0, -90, 0));
 	m.AddTranslation(Vector(4, 5, 6));
 	TAssert(m * Vector(0, 0, 0) == Vector(6, 5, -4));
 	TAssert(m * Vector(1, 1, 1) == Vector(7, 6, -5));	// (1, 1, 1) translates to (5, 6, 7) and then rotates to (7, 6, -5)
@@ -491,7 +491,7 @@ void test_matrix()
 	m.Identity();
 	// SetTranslation() and AddAngles() makes a matrix with rotation and then translation
 	m.SetTranslation(Vector(4, 5, 6));
-	m.AddAngles(EAngle(0, 90, 0));
+	m.AddAngles(EAngle(0, -90, 0));
 	TAssert(m * Vector(0, 0, 0) == Vector(4, 5, 6));
 	TAssert(m * Vector(1, 1, 1) == Vector(5, 6, 5));	// (1, 1, 1) rotates to (1, 1, -1) and then translates to (5, 6, 5)
 	TAssert(m.TransformVector(Vector(0, 0, 0)) == Vector(0, 0, 0));
@@ -516,7 +516,7 @@ void test_matrix()
 	TAssert(m.GetRow(3) == Vector4D(0, 0, 0, 1));
 
 	m.Identity();
-	m.SetAngles(EAngle(0, 90, 0));
+	m.SetAngles(EAngle(0, -90, 0));
 	TAssert(m.GetColumn(0) == Vector4D(0, 0, 1, 0));
 	TAssert(m.GetColumn(1) == Vector4D(0, 1, 0, 0));
 	TAssert(m.GetColumn(2) == Vector4D(-1, 0, 0, 0));
@@ -529,7 +529,7 @@ void test_matrix()
 	TAssert(m.GetColumn(3) == Vector4D(0, 0, 0, 1));
 
 	m.Identity();
-	m.SetAngles(EAngle(0, 90, 0));
+	m.SetAngles(EAngle(0, -90, 0));
 	TAssert(m.GetRow(0) == Vector4D(0, 0, -1, 0));
 	TAssert(m.GetRow(1) == Vector4D(0, 1, 0, 0));
 	TAssert(m.GetRow(2) == Vector4D(1, 0, 0, 0));
@@ -550,7 +550,7 @@ void test_matrix()
 	TAssert(m.GetRightVector() == Vector(0, 0, 1));
 
 	m.Identity();
-	m.SetAngles(EAngle(0, 90, 0));
+	m.SetAngles(EAngle(0, -90, 0));
 	TAssert(m.GetForwardVector() == Vector(0, 0, -1));
 	TAssert(m.GetUpVector() == Vector(0, 1, 0));
 	TAssert(m.GetRightVector() == Vector(1, 0, 0));
@@ -562,7 +562,7 @@ void test_matrix()
 	TAssert(m.GetRightVector() == Vector(0, 0, 1));
 
 	// Test Translation/Rotation inversion
-	m = Matrix4x4().AddAngles(EAngle(0, 90, 0)).InvertedRT();
+	m = Matrix4x4().AddAngles(EAngle(0, -90, 0)).InvertedRT();
 	TAssert(m.GetForwardVector() == Vector(0, 0, 1));
 	TAssert(m.GetUpVector() == Vector(0, 1, 0));
 	TAssert(m.GetRightVector() == Vector(-1, 0, 0));
@@ -579,7 +579,7 @@ void test_matrix()
 	TAssert(m.GetTranslation() == Vector(-2, -3, -4));
 
 	m.Identity();
-	m.SetAngles(EAngle(0, 90, 0));
+	m.SetAngles(EAngle(0, -90, 0));
 	m.SetTranslation(Vector(2, 3, 4));
 	TAssert(m * Vector(0, 0, 0) == Vector(2, 3, 4));
 	m.InvertRT();
@@ -618,7 +618,7 @@ void test_matrix()
 	TAssert(m.GetTranslation() == Vector(-1, -2, -3));
 
 	m.Identity();
-	m.AddAngles(EAngle(0, -45, 0));
+	m.AddAngles(EAngle(0, 45, 0));
 	m.AddReflection(Vector(1, 1, 1).Normalized());
 	m.AddTranslation(Vector(1, 2, 3));
 	TAssert(m * Vector(0, 0, 0) == Vector(-1.4142135f, -2, -2.8284268f));
@@ -669,7 +669,7 @@ void test_matrix()
 
 	m.Identity();
 	n.Identity();
-	m.SetAngles(EAngle(0, 90, 0));
+	m.SetAngles(EAngle(0, -90, 0));
 	n.SetAngles(EAngle(45, 0, 0));
 	// First test that the result matrix is correct
 	TAssert((m * n) == Matrix4x4(Vector(0, 1, -1).Normalized(), Vector(0, 1, 1).Normalized(), Vector(1, 0, 0)));
@@ -731,7 +731,7 @@ void test_matrix()
 	n.Identity();
 	m.SetTranslation(Vector(1, 2, 3));
 	n.SetTranslation(Vector(4, 5, 6));
-	m.SetAngles(EAngle(0, 90, 0));
+	m.SetAngles(EAngle(0, -90, 0));
 	n.SetAngles(EAngle(45, 0, 0));
 	// First test that the result matrix is correct
 	TAssert((m * n) == Matrix4x4(Vector(0, 1, -1).Normalized(), Vector(0, 1, 1).Normalized(), Vector(1, 0, 0), Vector(7, 7, -1)));
@@ -950,7 +950,7 @@ void test_matrix()
 	n.Identity();
 	m.SetAngles(EAngle(0, 0, 45));
 	m.AddReflection(Vector(1, 0, 0));
-	n.SetAngles(EAngle(0, 45, 4));
+	n.SetAngles(EAngle(0, -45, 4));
 	n.AddReflection(Vector(0, 1, 0));
 	// First test that the result matrix is correct
 	TAssert((m * n) == Matrix4x4(Vector(-0.70710677f, 0.49999997f, -0.49999997f), Vector(0.049325272f, -0.67050606f, -0.74026257f), Vector(-0.70538431f, -0.54810727f, 0.44945675f)));
@@ -1038,11 +1038,11 @@ void test_matrix()
 	m.Identity();
 	n.Identity();
 	m.SetTranslation(Vector(1, 2, 3));
-	m.SetAngles(EAngle(45, 90, 0));
+	m.SetAngles(EAngle(45, -90, 0));
 	m.AddScale(Vector(2, 2, 2));
 	m.AddReflection(Vector(1, 0, 0));
 	n.SetTranslation(Vector(2, 3, 4));
-	n.SetAngles(EAngle(40, 180, 0));
+	n.SetAngles(EAngle(40, -180, 0));
 	n.AddScale(Vector(1, 0.5f, 1));
 	n.AddReflection(Vector(0, 1, 1).Normalized());
 	// First test that the result matrix is correct
@@ -1072,10 +1072,10 @@ void test_matrix()
 	m.Identity();
 	n.Identity();
 	m.SetTranslation(Vector(1, 2, 3));
-	m.SetAngles(EAngle(45, 90, 0));
+	m.SetAngles(EAngle(45, -90, 0));
 	m.AddReflection(Vector(1, 0, 0));
 	n.SetTranslation(Vector(2, 3, 4));
-	n.SetAngles(EAngle(40, 180, 0));
+	n.SetAngles(EAngle(40, -180, 0));
 	n.AddReflection(Vector(0, 1, 1).Normalized());
 	TAssert(fabs(n.TransformVector(Vector(10, 0, 0)).Length() - 10) < 0.00001f);
 	TAssert(fabs(n.TransformVector(Vector(1, 1, 0).Normalized()*10).Length() - 10) < 0.00001f);

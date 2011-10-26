@@ -308,12 +308,15 @@ inline unit_t TemplateVector<unit_t>::operator[](size_t i) const
 }
 
 // Euler angles
+// Positive pitch looks up, negative looks down.
+// Positive yaw rotates like a top to the right, negative to the left.
+// Positive roll banks to the right (right wing down, left wing up) negative roll to the left.
 class EAngle
 {
 public:
 			EAngle();
-			EAngle(float x, float y, float z);
-			EAngle(float* xyz);
+			EAngle(float p, float y, float r);
+			EAngle(float* pyr);
 
 	EAngle	operator+(const EAngle& v) const;
 	EAngle	operator-(const EAngle& v) const;
@@ -398,47 +401,7 @@ inline Vector AngleVector(const EAngle& a)
 	return vecResult;
 }
 
-inline void AngleVectors(const EAngle& a, Vector* pvecF, Vector* pvecR, Vector* pvecU)
-{
-	float p = (float)(a.p * (M_PI*2 / 360));
-	float y = (float)(a.y * (M_PI*2 / 360));
-	float r = 0;
-
-	float sp = sin(p);
-	float cp = cos(p);
-	float sy = sin(y);
-	float cy = cos(y);
-	float sr = 0;
-	float cr = 0;
-
-	if (pvecR || pvecU)
-	{
-		r = (float)(a.r * (M_PI*2 / 360));
-		sr = sin(r);
-		cr = cos(r);
-	}
-
-	if (pvecF)
-	{
-		pvecF->x = cp*cy;
-		pvecF->y = sp;
-		pvecF->z = cp*sy;
-	}
-
-	if (pvecR)
-	{
-		pvecR->x = -sr*sp*cy + cr*sy;
-		pvecR->y = sr*cp;
-		pvecR->z = -sr*sp*sy - cr*cy;
-	}
-
-	if (pvecU)
-	{
-		pvecU->x = cr*sp*cy + sr*sy;
-		pvecU->y = -cr*cp;
-		pvecU->z = cr*sp*sy - sr*cy;
-	}
-}
+void AngleVectors(const EAngle& a, Vector* pvecF, Vector* pvecU, Vector* pvecR);
 
 inline EAngle VectorAngles( const Vector& vecForward )
 {
