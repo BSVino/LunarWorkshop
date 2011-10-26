@@ -49,7 +49,7 @@ public:
 	virtual float					AttackTime() const { return 0.3f; }
 	virtual float					AttackDamage() const { return 50; }
 
-	virtual bool					ShouldCollide() const { return true; }
+	virtual bool					ShouldCollide() const { return false; }
 
 	CBaseEntity*					GetGroundEntity() const { return m_hGround; }
 	void							SetGroundEntity(CBaseEntity* pEntity) { m_hGround = pEntity; }
