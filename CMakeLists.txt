@@ -35,7 +35,6 @@ add_definitions(-DTINKER_NO_REGISTRATION)
 
 add_subdirectory (lwbase)
 
-add_subdirectory (raytracer)
 add_subdirectory (modelconverter)
 
 add_subdirectory (tinker)

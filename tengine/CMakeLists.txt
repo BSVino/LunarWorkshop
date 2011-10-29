@@ -22,6 +22,7 @@ if (WIN32)
 	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/pthreads-w32-2-8-0-release)
 	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/SDL-1.2.14/include)
 	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/SDL_mixer-1.2.11/include)
+	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/src)
 endif (WIN32)
 
 set (TENGINE_GAME_SOURCES
@@ -31,6 +32,8 @@ set (TENGINE_GAME_SOURCES
 	game/gameserver.cpp
 	game/level.cpp
 	game/networkedeffect.cpp
+	game/physics.cpp
+	game/physics_debugdraw.cpp
 	game/team.cpp
 	game/entities/counter.cpp
 	game/entities/character.cpp
@@ -83,13 +86,16 @@ source_group(Sound FILES ${TENGINE_SOUND_SOURCES})
 source_group(Tinker FILES ${TENGINE_TINKER_SOURCES})
 
 add_library(tengine STATIC ${TENGINE_SOURCES})
-target_link_libraries (tengine tinker modelconverter raytracer)
+target_link_libraries (tengine tinker modelconverter)
 
 if (WIN32)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Debug/DevIL.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Debug/ILU.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/pthreads-w32-2-8-0-release/Debug/pthread.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/enet-1.3.0/Debug/enet.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/BulletDynamics_Debug.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/BulletCollision_Debug.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/LinearMath_Debug.lib)
 
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Release/DevIL.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Release/ILU.lib)

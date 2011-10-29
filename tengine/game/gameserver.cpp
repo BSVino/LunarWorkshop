@@ -25,6 +25,7 @@
 #include <tinker/cvar.h>
 #include <tinker/gamewindow.h>
 
+#include "physics.h"
 #include "camera.h"
 #include "level.h"
 
@@ -53,7 +54,6 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 
 	m_flHostTime = 0;
 	m_flGameTime = 0;
-	m_flSimulationTime = 0;
 	m_flFrameTime = 0;
 	m_flNextClientInfoUpdate = 0;
 	m_iFrame = 0;
@@ -62,6 +62,10 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 
 	if (m_pWorkListener)
 		m_pWorkListener->BeginProgress();
+
+	TMsg("Creating physics model...");
+	m_pPhysicsManager = new CPhysicsManager();
+	TMsg("Done\n");
 
 	TMsg(_T("Precaching entities... "));
 
@@ -102,6 +106,8 @@ CGameServer::~CGameServer()
 
 	if (m_pWorkListener)
 		m_pWorkListener->SetAction(_T("Scrubbing database"), CBaseEntity::GetEntityRegistration().size());
+
+	delete m_pPhysicsManager;
 
 	for (size_t i = 0; i < m_apLevels.size(); i++)
 		delete m_apLevels[i];
@@ -458,183 +464,7 @@ void CGameServer::Simulate()
 	if (!Game()->ShouldRunSimulation())
 		return;
 
-	float flSimulationFrameTime = 0.01f;
-
-	m_apSimulateList.reserve(CBaseEntity::GetNumEntities());
-	m_apSimulateList.clear();
-
-	size_t iMaxEntities = GameServer()->GetMaxEntities();
-	for (size_t i = 0; i < iMaxEntities; i++)
-	{
-		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
-		if (!pEntity)
-			continue;
-
-		if (pEntity->IsDeleted())
-			continue;
-
-		pEntity->SetLastLocalOrigin(pEntity->GetLocalOrigin());
-
-		if (!pEntity->ShouldSimulate())
-			continue;
-
-		m_apSimulateList.push_back(pEntity);
-	}
-
-	m_apCollisionList.reserve(CBaseEntity::GetNumEntities());
-
-	// Move all entities
-	for (size_t i = 0; i < m_apSimulateList.size(); i++)
-	{
-		CBaseEntity* pEntity = m_apSimulateList[i];
-		if (!pEntity)
-			continue;
-
-		m_apCollisionList.clear();
-
-		for (size_t j = 0; j < iMaxEntities; j++)
-		{
-			CBaseEntity* pEntity2 = CBaseEntity::GetEntity(j);
-
-			if (!pEntity2)
-				continue;
-
-			if (pEntity2->IsDeleted())
-				continue;
-
-			if (pEntity2 == pEntity)
-				continue;
-
-			if (!pEntity2->ShouldCollide())
-				continue;
-
-			m_apCollisionList.push_back(pEntity2);
-		}
-
-		TMatrix mGlobalToLocalRotation;
-		if (pEntity->HasMoveParent())
-		{
-			mGlobalToLocalRotation = pEntity->GetMoveParent()->GetGlobalToLocalTransform();
-			mGlobalToLocalRotation.SetTranslation(TVector());
-		}
-
-		// Break simulations up into very small steps in order to preserve accuracy.
-		// I think floating point precision causes this problem but I'm not sure. Anyway this works better for my projectiles.
-		for (float flCurrentSimulationTime = GameServer()->GetSimulationTime(); flCurrentSimulationTime < GameServer()->GetGameTime(); flCurrentSimulationTime += flSimulationFrameTime)
-		{
-			TVector vecVelocity = pEntity->GetLocalVelocity();
-
-			TVector vecGlobalGravity = pEntity->GetGlobalGravity();
-			TVector vecLocalGravity;
-			if (!vecGlobalGravity.IsZero())
-			{
-				if (pEntity->HasMoveParent())
-				{
-					TFloat flLength = vecGlobalGravity.Length();
-					vecLocalGravity = (mGlobalToLocalRotation * (vecGlobalGravity/flLength))*flLength;
-				}
-				else
-					vecLocalGravity = vecGlobalGravity;
-				pEntity->SetLocalVelocity(vecVelocity + vecLocalGravity * flSimulationFrameTime);
-			}
-			else
-				vecLocalGravity = TVector();
-
-			TVector vecLocalOrigin = pEntity->GetLocalOrigin();
-			TVector vecGlobalOrigin = pEntity->GetGlobalOrigin();
-
-			vecVelocity = vecVelocity * flSimulationFrameTime;
-
-			TVector vecLocalDestination = vecLocalOrigin + vecVelocity;
-			TVector vecGlobalDestination = vecLocalDestination;
-			if (pEntity->GetMoveParent())
-				vecGlobalDestination = pEntity->GetMoveParent()->GetGlobalTransform() * vecLocalDestination;
-
-			TVector vecNewLocalOrigin = vecLocalDestination;
-
-			size_t iTries = 0;
-			while (true)
-			{
-				iTries++;
-
-				TVector vecPoint, vecNormal;
-
-				TVector vecLocalCollisionPoint, vecGlobalCollisionPoint;
-
-				bool bContact = false;
-				for (size_t i = 0; i < m_apCollisionList.size(); i++)
-				{
-					CBaseEntity* pEntity2 = m_apCollisionList[i];
-
-					if (pEntity->GetMoveParent() == pEntity2)
-					{
-						if (pEntity2->CollideLocal(vecLocalOrigin, vecLocalDestination, vecPoint, vecNormal))
-						{
-							bContact = true;
-							pEntity->Touching(pEntity2);
-							vecLocalCollisionPoint = vecPoint;
-							vecGlobalCollisionPoint = pEntity->GetMoveParent()->GetGlobalTransform() * vecPoint;
-						}
-					}
-					else
-					{
-						if (pEntity2->Collide(vecGlobalOrigin, vecGlobalDestination, vecPoint, vecNormal))
-						{
-							bContact = true;
-							pEntity->Touching(pEntity2);
-							vecGlobalCollisionPoint = vecPoint;
-							if (pEntity->GetMoveParent())
-							{
-								vecLocalCollisionPoint = pEntity->GetMoveParent()->GetGlobalToLocalTransform() * vecPoint;
-								vecNormal = pEntity->GetMoveParent()->GetGlobalToLocalTransform().TransformVector(vecNormal);
-							}
-							else
-								vecLocalCollisionPoint = vecGlobalCollisionPoint;
-						}
-					}
-				}
-
-				if (bContact)
-				{
-					vecNewLocalOrigin = vecLocalCollisionPoint;
-					vecVelocity -= vecLocalCollisionPoint - vecLocalOrigin;
-				}
-
-				if (!bContact)
-					break;
-
-				if (iTries > 4)
-					break;
-
-				vecLocalOrigin = vecLocalCollisionPoint;
-				vecGlobalOrigin = vecGlobalCollisionPoint;
-
-				// Clip the velocity to the surface normal of whatever we hit.
-				TFloat flDistance = vecVelocity.Dot(vecNormal);
-
-				vecVelocity = vecVelocity - vecNormal * flDistance;
-
-				// Do it one more time just to make sure we're not headed towards the plane.
-				TFloat flAdjust = vecVelocity.Dot(vecNormal);
-				if (flAdjust < 0.0f)
-					vecVelocity -= (vecNormal * flAdjust);
-
-				vecLocalDestination = vecLocalOrigin + vecVelocity;
-
-				if (pEntity->GetMoveParent())
-					vecGlobalDestination = pEntity->GetMoveParent()->GetGlobalTransform() * vecLocalDestination;
-				else
-					vecGlobalDestination = vecLocalDestination;
-
-				pEntity->SetLocalVelocity(vecVelocity.Normalized() * pEntity->GetLocalVelocity().Length());
-			}
-
-			pEntity->SetLocalOrigin(vecNewLocalOrigin);
-		}
-	}
-
-	while (GameServer()->GetSimulationTime() < GameServer()->GetGameTime())
-		GameServer()->AdvanceSimulationTime(flSimulationFrameTime);
+	GamePhysics()->Simulate();
 }
 
 CVar r_cullfrustum("r_frustumculling", "on");
@@ -720,7 +550,6 @@ void CGameServer::SaveToFile(const tchar* pFileName)
 	o.write((char*)&pGameServer->m_iSaveCRC, sizeof(pGameServer->m_iSaveCRC));
 
 	o.write((char*)&pGameServer->m_flGameTime, sizeof(pGameServer->m_flGameTime));
-	o.write((char*)&pGameServer->m_flSimulationTime, sizeof(pGameServer->m_flSimulationTime));
 
 	eastl::vector<CBaseEntity*> apSaveEntities;
 	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
@@ -771,7 +600,6 @@ bool CGameServer::LoadFromFile(const tchar* pFileName)
 		return false;
 
 	i.read((char*)&pGameServer->m_flGameTime, sizeof(pGameServer->m_flGameTime));
-	i.read((char*)&pGameServer->m_flSimulationTime, sizeof(pGameServer->m_flSimulationTime));
 
 	size_t iEntities;
 	i.read((char*)&iEntities, sizeof(iEntities));
@@ -809,7 +637,12 @@ CEntityHandle<CBaseEntity> CGameServer::Create(const char* pszEntityName)
 
 	CEntityHandle<CBaseEntity> hEntity(CreateEntity(pszEntityName));
 
-	::CreateEntity.RunCommand(sprintf(tstring("%s %d %d"), pszEntityName, hEntity->GetHandle(), hEntity->GetSpawnSeed()));
+	TAssert(!GameNetwork()->IsConnected());
+	// The below causes entities to be created twice on the server. Wasn't a
+	// problem with Digitanks, but is a problem now that I'm adding physics.
+	// If I ever go back to multiplayer, the code needs to be split into a
+	// client portion and a server portion to help minimize bugs like this.
+	//::CreateEntity.RunCommand(sprintf(tstring("%s %d %d"), pszEntityName, hEntity->GetHandle(), hEntity->GetSpawnSeed()));
 
 	return hEntity;
 }
@@ -975,7 +808,7 @@ void CGameServer::ClientInfo(int iConnection, CNetworkParameters* p)
 	if (flNewGameTime - m_flGameTime > 0.1f)
 		TMsg(sprintf(tstring("New game time from server %.1f different!\n"), flNewGameTime - m_flGameTime));
 
-	m_flGameTime = m_flSimulationTime = flNewGameTime;
+	m_flGameTime = flNewGameTime;
 
 	// Can't send any client commands until we've gotten the client info because we need m_iClient filled out properly.
 	if (!m_bGotClientInfo)

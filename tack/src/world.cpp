@@ -1,5 +1,7 @@
 #include "world.h"
 
+#include <game/physics.h>
+
 REGISTER_ENTITY(CWorld);
 
 NETVAR_TABLE_BEGIN(CWorld);
@@ -21,6 +23,7 @@ void CWorld::Spawn()
 	BaseClass::Spawn();
 
 	SetModel("levels/test.obj");
+	AddToPhysics(CT_STATIC_MESH);
 }
 
 bool CWorld::CollideLocal(const TVector& v1, const TVector& v2, TVector& vecPoint, TVector& vecNormal)

@@ -86,7 +86,7 @@ Matrix4x4 CTackCharacter::GetRenderTransform() const
 	return mGlobal;
 }
 
-void CTackCharacter::ModifyContext(class CRenderingContext* pContext, bool bTransparent) const
+void CTackCharacter::ModifyContext(CRenderingContext* pContext, bool bTransparent) const
 {
 	if (IsInDamageRecoveryTime())
 		pContext->SetColor(Color(255, 0, 0));

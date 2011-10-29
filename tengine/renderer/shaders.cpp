@@ -238,6 +238,7 @@ bool CShader::Compile()
 	m_iPositionAttribute = glGetAttribLocation(m_iProgram, "vecPosition");
 	m_iNormalAttribute = glGetAttribLocation(m_iProgram, "vecNormal");
 	m_iTexCoordAttribute = glGetAttribLocation(m_iProgram, "vecTexCoord0");
+	m_iColorAttribute = glGetAttribLocation(m_iProgram, "vecVertexColor");
 
 	return true;
 }

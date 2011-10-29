@@ -28,7 +28,7 @@ void CTackHUD::Paint(int x, int y, int w, int h)
 	float flCorpseAbsorbDistance = pTack->CorpseAbsorbDistance();
 	CCorpse* pNearestCorpse = NULL;
 	float flNearestDistanceSqr;
-	for (size_t i = 0; i < CBaseEntity::GetNumEntities(); i++)
+	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
 	{
 		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
 		if (!pEntity)

@@ -27,6 +27,7 @@ public:
 	size_t					m_iPositionAttribute;
 	size_t					m_iNormalAttribute;
 	size_t					m_iTexCoordAttribute;
+	size_t					m_iColorAttribute;
 };
 
 class CShaderLibrary

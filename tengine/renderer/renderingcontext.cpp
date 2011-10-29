@@ -22,6 +22,7 @@
 CRenderingContext::CRenderingContext(CRenderer* pRenderer)
 {
 	m_pRenderer = pRenderer;
+	m_pShader = NULL;
 
 	m_bMatrixTransformations = false;
 	m_bBoundTexture = false;
@@ -31,7 +32,7 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer)
 
 	m_bColorSwap = false;
 
-	m_clrRender = Color(255, 255, 255, 255);
+	m_clrRender = ::Color(255, 255, 255, 255);
 
 	m_eBlend = BLEND_NONE;
 	m_flAlpha = 1;
@@ -180,7 +181,7 @@ void CRenderingContext::SetBackCulling(bool bCull)
 		glDisable(GL_CULL_FACE);
 }
 
-void CRenderingContext::SetColorSwap(Color clrSwap)
+void CRenderingContext::SetColorSwap(const ::Color& clrSwap)
 {
 	m_bColorSwap = true;
 	m_clrSwap = clrSwap;
@@ -279,12 +280,16 @@ void CRenderingContext::RenderModel(CModel* pModel, size_t iMaterial, CShader* p
 
 	if (pShader->m_iNormalAttribute != ~0)
 		glEnableVertexAttribArray(pShader->m_iNormalAttribute);
+	if (pShader->m_iColorAttribute != ~0)
+		glEnableVertexAttribArray(pShader->m_iColorAttribute);
 
 	glEnableVertexAttribArray(pShader->m_iTexCoordAttribute);
 	glEnableVertexAttribArray(pShader->m_iPositionAttribute);
 
 	if (pShader->m_iNormalAttribute != ~0)
 		glVertexAttribPointer(pShader->m_iNormalAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecNormal) - ((size_t)&v)));
+	if (pShader->m_iColorAttribute != ~0)
+		glVertexAttribPointer(pShader->m_iColorAttribute, 3, GL_UNSIGNED_BYTE, true, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.clrColor) - ((size_t)&v)));
 
 	glVertexAttribPointer(pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecUV) - ((size_t)&v)));
 	glVertexAttribPointer(pShader->m_iPositionAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecPosition) - ((size_t)&v)));
@@ -293,6 +298,8 @@ void CRenderingContext::RenderModel(CModel* pModel, size_t iMaterial, CShader* p
 
 	if (pShader->m_iNormalAttribute != ~0)
 		glDisableVertexAttribArray(pShader->m_iNormalAttribute);
+	if (pShader->m_iColorAttribute != ~0)
+		glDisableVertexAttribArray(pShader->m_iColorAttribute);
 
 	glDisableVertexAttribArray(pShader->m_iTexCoordAttribute);
 	glDisableVertexAttribArray(pShader->m_iPositionAttribute);
@@ -398,7 +405,7 @@ void CRenderingContext::SetUniform(const char* pszName, const Vector& vecValue)
 	glUniform3fv(iUniform, 1, vecValue);
 }
 
-void CRenderingContext::SetUniform(const char* pszName, const Color& clrValue)
+void CRenderingContext::SetUniform(const char* pszName, const ::Color& clrValue)
 {
 	TAssert(m_pRenderer->ShouldUseShaders());
 
@@ -428,7 +435,7 @@ void CRenderingContext::BindTexture(size_t iTexture, int iChannel)
 	m_bBoundTexture = true;
 }
 
-void CRenderingContext::SetColor(Color c)
+void CRenderingContext::SetColor(const ::Color& c)
 {
 	m_clrRender = c;
 }
@@ -444,6 +451,7 @@ void CRenderingContext::BeginRenderTris()
 
 	m_bTexCoord = false;
 	m_bNormal = false;
+	m_bColor = false;
 
 	m_iDrawMode = GL_TRIANGLES;
 }
@@ -459,6 +467,7 @@ void CRenderingContext::BeginRenderQuads()
 
 	m_bTexCoord = false;
 	m_bNormal = false;
+	m_bColor = false;
 
 	m_iDrawMode = GL_QUADS;
 }
@@ -474,6 +483,7 @@ void CRenderingContext::BeginRenderDebugLines()
 
 	m_bTexCoord = false;
 	m_bNormal = false;
+	m_bColor = false;
 
 	glLineWidth( 3.0f );
 	m_iDrawMode = GL_LINE_LOOP;
@@ -526,15 +536,18 @@ void CRenderingContext::TexCoord(const DoubleVector& v, int iChannel)
 
 void CRenderingContext::Normal(const Vector& v)
 {
-	glEnableClientState(GL_NORMAL_ARRAY);
 	m_vecNormal = v;
 	m_bNormal = true;
 }
 
+void CRenderingContext::Color(const ::Color& c)
+{
+	m_clrColor = c;
+	m_bColor = true;
+}
+
 void CRenderingContext::Vertex(const Vector& v)
 {
-	glEnableClientState(GL_VERTEX_ARRAY);
-
 	if (m_bTexCoord)
 	{
 		if (m_aavecTexCoords.size() < m_avecTexCoord.size())
@@ -546,6 +559,9 @@ void CRenderingContext::Vertex(const Vector& v)
 
 	if (m_bNormal)
 		m_avecNormals.push_back(m_vecNormal);
+
+	if (m_bColor)
+		m_aclrColors.push_back(m_clrColor);
 
 	m_avecVertices.push_back(v);
 }
@@ -559,18 +575,25 @@ void CRenderingContext::RenderCallList(size_t iCallList)
 
 void CRenderingContext::EndRender()
 {
-	if (m_bTexCoord)
+	if (m_bTexCoord && m_pShader->m_iTexCoordAttribute != ~0)
 	{
 		glEnableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
 		glVertexAttribPointer(m_pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, 0, m_aavecTexCoords[0].data());
 	}
 
-	if (m_bNormal)
+	if (m_bNormal && m_pShader->m_iNormalAttribute != ~0)
 	{
 		glEnableVertexAttribArray(m_pShader->m_iNormalAttribute);
 		glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, 0, m_avecNormals.data());
 	}
 
+	if (m_bColor && m_pShader->m_iColorAttribute != ~0)
+	{
+		glEnableVertexAttribArray(m_pShader->m_iColorAttribute);
+		glVertexAttribPointer(m_pShader->m_iColorAttribute, 3, GL_UNSIGNED_BYTE, true, sizeof(::Color), m_aclrColors.data());
+	}
+
+	TAssert(m_pShader->m_iPositionAttribute != ~0);
 	glEnableVertexAttribArray(m_pShader->m_iPositionAttribute);
 	glVertexAttribPointer(m_pShader->m_iPositionAttribute, 3, GL_FLOAT, false, 0, m_avecVertices.data());
 

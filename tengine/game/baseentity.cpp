@@ -3,7 +3,6 @@
 #include <strutils.h>
 #include <mtrand.h>
 
-#include <raytracer/raytracer.h>
 #include <models/models.h>
 #include <renderer/renderingcontext.h>
 #include <renderer/particles.h>
@@ -14,6 +13,7 @@
 #include <models/texturelibrary.h>
 
 #include "game.h"
+#include "physics.h"
 
 eastl::vector<CBaseEntity*> CBaseEntity::s_apEntityList;
 size_t CBaseEntity::s_iEntities = 0;
@@ -47,6 +47,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_OUTPUT(OnDeactivated);
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, eastl::string, m_sName);
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sClassName);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flMass);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hMoveParent);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_ahMoveChildren);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, AABB, m_aabbBoundingBox);
@@ -68,11 +69,11 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, bool, m_bActive);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CTeam>, m_hTeam);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bSimulated);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bInPhysics);
 	SAVEDATA_DEFINE(CSaveData::DATA_OMIT, bool, m_bDeleted);	// Deleted entities are not saved.
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bClientSpawn);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYVECTOR, CEntityHandle<CBaseEntity>, m_ahTouching);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup);
-	SAVEDATA_DEFINE(CSaveData::DATA_OMIT, class raytrace::CRaytracer*, m_pTracer);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, size_t, m_iModel);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, float, m_flSpawnTime);
@@ -104,8 +105,8 @@ CBaseEntity::CBaseEntity()
 	s_iEntities++;
 
 	m_iCollisionGroup = 0;
-	m_pTracer = NULL;
 
+	m_flMass = 50.0f;
 	m_bTakeDamage = false;
 	m_flTotalHealth = 1;
 	m_flHealth = 1;
@@ -115,6 +116,7 @@ CBaseEntity::CBaseEntity()
 	m_bDeleted = false;
 	m_bActive = true;
 	m_bSimulated = false;
+	m_bInPhysics = false;
 
 	m_iModel = ~0;
 
@@ -127,13 +129,13 @@ CBaseEntity::CBaseEntity()
 
 CBaseEntity::~CBaseEntity()
 {
+	if (IsInPhysics())
+		RemoveFromPhysics();
+
 	s_apEntityList[m_iHandle] = NULL;
 
 	TAssert(s_iEntities > 0);
 	s_iEntities--;
-
-	if (m_pTracer)
-		delete m_pTracer;
 }
 
 void CBaseEntity::Spawn()
@@ -167,16 +169,6 @@ void CBaseEntity::SetModel(size_t iModel)
 	if (m_iModel.Get() == ~0)
 		return;
 
-	if (UsesRaytracedCollision())
-	{
-		if (m_pTracer)
-			delete m_pTracer;
-
-		m_pTracer = new raytrace::CRaytracer(CModelLibrary::Get()->GetModel(m_iModel)->m_pScene);
-		m_pTracer->AddMeshesFromNode(CModelLibrary::Get()->GetModel(m_iModel)->m_pScene->GetScene(0));
-		m_pTracer->BuildTree();
-	}
-
 	CModel* pModel = CModelLibrary::Get()->GetModel(iModel);
 	if (pModel)
 		m_aabbBoundingBox = pModel->m_aabbBoundingBox;
@@ -184,6 +176,11 @@ void CBaseEntity::SetModel(size_t iModel)
 
 void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 {
+	if (IsInPhysics())
+	{
+		TAssert(!pParent);
+	}
+
 	if (m_hMoveParent.GetPointer() == pParent)
 		return;
 
@@ -287,6 +284,9 @@ void CBaseEntity::SetGlobalTransform(const TMatrix& m)
 	m_vecLocalOrigin = m_mLocalTransform.GetTranslation();
 	m_angLocalAngles = m_mLocalTransform.GetAngles();
 	m_qLocalRotation = Quaternion(m_mLocalTransform);
+
+	if (IsInPhysics())
+		GamePhysics()->SetEntityTransform(this, m_mGlobalTransform);
 }
 
 TMatrix CBaseEntity::GetGlobalToLocalTransform()
@@ -408,6 +408,12 @@ void CBaseEntity::SetLocalTransform(const TMatrix& m)
 	m_qLocalRotation = Quaternion(m);
 
 	InvalidateGlobalTransforms();
+
+	if (IsInPhysics())
+	{
+		TAssert(!GetMoveParent());
+		GamePhysics()->SetEntityTransform(this, GetGlobalTransform());
+	}
 }
 
 void CBaseEntity::SetLocalRotation(const Quaternion& q)
@@ -418,12 +424,26 @@ void CBaseEntity::SetLocalRotation(const Quaternion& q)
 	m_qLocalRotation = q;
 
 	InvalidateGlobalTransforms();
+
+	if (IsInPhysics())
+	{
+		TAssert(!GetMoveParent());
+		GamePhysics()->SetEntityTransform(this, GetGlobalTransform());
+	}
 }
 
 void CBaseEntity::SetLocalOrigin(const TVector& vecOrigin)
 {
 	if (!m_vecLocalOrigin.IsInitialized())
 		m_vecLocalOrigin = vecOrigin;
+
+	if (IsInPhysics())
+	{
+		TAssert(!GetMoveParent());
+		Matrix4x4 mLocal = m_mLocalTransform;
+		mLocal.SetTranslation(vecOrigin);
+		GamePhysics()->SetEntityTransform(this, mLocal);
+	}
 
 	if ((vecOrigin - m_vecLocalOrigin).LengthSqr() == TFloat(0))
 		return;
@@ -449,6 +469,12 @@ void CBaseEntity::SetLocalVelocity(const TVector& vecVelocity)
 	if (!m_vecLocalVelocity.IsInitialized())
 		m_vecLocalVelocity = vecVelocity;
 
+	if (IsInPhysics())
+	{
+		TAssert(!GetMoveParent());
+		GamePhysics()->SetEntityVelocity(this, vecVelocity);
+	}
+
 	if ((vecVelocity - m_vecLocalVelocity).LengthSqr() == TFloat(0))
 		return;
 
@@ -459,6 +485,14 @@ void CBaseEntity::SetLocalAngles(const EAngle& angAngles)
 {
 	if (!m_angLocalAngles.IsInitialized())
 		m_angLocalAngles = angAngles;
+
+	if (IsInPhysics())
+	{
+		TAssert(!GetMoveParent());
+		Matrix4x4 mLocalTransform = m_mLocalTransform;
+		mLocalTransform.SetAngles(angAngles);
+		GamePhysics()->SetEntityTransform(this, mLocalTransform);
+	}
 
 	EAngle angDifference = angAngles - m_angLocalAngles;
 	if (fabs(angDifference.p) < 0.001f && fabs(angDifference.y) < 0.001f && fabs(angDifference.r) < 0.001f)
@@ -483,6 +517,26 @@ CBaseEntity* CBaseEntity::GetEntity(size_t iHandle)
 size_t CBaseEntity::GetNumEntities()
 {
 	return s_iEntities;
+}
+
+void CBaseEntity::AddToPhysics(collision_type_t eCollisionType)
+{
+	TAssert(!IsInPhysics());
+	if (IsInPhysics())
+		return;
+
+	GamePhysics()->AddEntity(this, eCollisionType);
+	m_bInPhysics = true;
+}
+
+void CBaseEntity::RemoveFromPhysics()
+{
+	TAssert(IsInPhysics());
+	if (!IsInPhysics())
+		return;
+
+	m_bInPhysics = false;
+	GamePhysics()->RemoveEntity(this);
 }
 
 CTeam* CBaseEntity::GetTeam() const

@@ -16,6 +16,8 @@
 
 #include "entityhandle.h"
 
+extern enum collision_type_e;
+
 typedef enum
 {
 	DAMAGE_GENERIC = 1,
@@ -25,11 +27,6 @@ typedef enum
 	DAMAGE_LASER,
 	DAMAGE_MELEE,
 } damagetype_t;
-
-namespace raytrace
-{
-	class CRaytracer;
-};
 
 typedef void (*EntityRegisterCallback)();
 typedef size_t (*EntityCreateCallback)();
@@ -312,6 +309,9 @@ public:
 	void									SetName(const eastl::string& sName) { m_sName = sName; };
 	eastl::string							GetName() { return m_sName; };
 
+	void									SetMass(float flMass) { m_flMass = flMass; };
+	float									GetMass() { return m_flMass; };
+
 	virtual const AABB&						GetBoundingBox() const { return m_aabbBoundingBox; }
 	virtual TVector							GetLocalCenter() const;
 	virtual TVector							GetGlobalCenter() const;
@@ -380,6 +380,10 @@ public:
 
 	bool									GetSimulated() const { return m_bSimulated; };
 	void									SetSimulated(bool bSimulated) { m_bSimulated = bSimulated; };
+
+	bool									IsInPhysics() const { return m_bInPhysics; };
+	void									AddToPhysics(enum collision_type_e eCollisionType);
+	void									RemoveFromPhysics();
 
 	size_t									GetHandle() const { return m_iHandle; }
 
@@ -452,8 +456,6 @@ public:
 
 	virtual bool							ShouldCollide() const { return false; }
 
-	virtual bool							UsesRaytracedCollision() { return false; }
-
 	size_t									GetSpawnSeed() const { return m_iSpawnSeed; }
 	void									SetSpawnSeed(size_t iSpawnSeed);
 
@@ -515,6 +517,8 @@ protected:
 	eastl::string							m_sName;
 	tstring									m_sClassName;
 
+	float									m_flMass;
+
 	CNetworkedHandle<CBaseEntity>			m_hMoveParent;
 	CNetworkedSTLVector<CEntityHandle<CBaseEntity>>	m_ahMoveChildren;
 
@@ -544,13 +548,13 @@ protected:
 	CNetworkedHandle<CTeam>					m_hTeam;
 
 	bool									m_bSimulated;
+	bool									m_bInPhysics;
 	bool									m_bDeleted;
 	bool									m_bClientSpawn;
 
 	eastl::vector<CEntityHandle<CBaseEntity> >	m_ahTouching;
 
 	CNetworkedVariable<int>					m_iCollisionGroup;
-	class raytrace::CRaytracer*				m_pTracer;
 
 	CNetworkedVariable<size_t>				m_iModel;
 

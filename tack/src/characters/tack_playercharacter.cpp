@@ -1,6 +1,7 @@
 #include "tack_playercharacter.h"
 
 #include <tinker/application.h>
+#include <game/physics.h>
 
 #include "corpse.h"
 
@@ -29,6 +30,9 @@ void CPlayerCharacter::Spawn()
 	BaseClass::Spawn();
 
 	SetModel("models/characters/tack.obj");
+	SetMass(60);
+
+	AddToPhysics(CT_CHARACTER);
 }
 
 void CPlayerCharacter::Think()
@@ -65,7 +69,7 @@ bool CPlayerCharacter::AbsorbCorpse()
 	float flCorpseAbsorbDistance = CorpseAbsorbDistance();
 	CCorpse* pNearestCorpse = NULL;
 	float flNearestDistanceSqr;
-	for (size_t i = 0; i < CBaseEntity::GetNumEntities(); i++)
+	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
 	{
 		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
 		if (!pEntity)

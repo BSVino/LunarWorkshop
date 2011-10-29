@@ -20,7 +20,7 @@ public:
 			TemplateVector();
 			TemplateVector(class Color c);
 			TemplateVector(unit_t x, unit_t y, unit_t z);
-			TemplateVector(unit_t* xyz);
+			TemplateVector(const unit_t* xyz);
 
 			// Conversions
 			TemplateVector(const TemplateVector<float>& v);
@@ -130,7 +130,7 @@ inline TemplateVector<unit_t>::TemplateVector(unit_t X, unit_t Y, unit_t Z)
 }
 
 template <class unit_t>
-inline TemplateVector<unit_t>::TemplateVector(unit_t* xyz)
+inline TemplateVector<unit_t>::TemplateVector(const unit_t* xyz)
 	: x(*xyz), y(*(xyz+1)), z(*(xyz+2))
 {
 }

@@ -3,13 +3,16 @@
 
 #include <EASTL/vector.h>
 #include <EASTL/string.h>
+
 #include <modelconverter/convmesh.h>
+#include <color.h>
 
 typedef struct
 {
 	Vector		vecPosition;
 	Vector		vecNormal;
 	Vector2D	vecUV;
+	Color		clrColor;
 } Vertex_t;
 
 class CModel
@@ -19,6 +22,7 @@ public:
 							~CModel();
 
 public:
+	void					Load();
 	void					LoadSceneIntoBuffer();
 	void					LoadSceneNodeIntoBuffer(CConversionSceneNode* pNode, const Matrix4x4& mTransformations = Matrix4x4());
 	void					LoadMeshInstanceIntoBuffer(CConversionMeshInstance* pMeshInstance, const Matrix4x4& mTransformations);

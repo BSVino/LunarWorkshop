@@ -24,7 +24,6 @@ SAVEDATA_TABLE_BEGIN(CCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecGoalVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecMoveVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLastAttack);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flMoveSimulationTime);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TFloat, m_flMaxStepSize);
 SAVEDATA_TABLE_END();
 
@@ -47,8 +46,6 @@ void CCharacter::Spawn()
 	m_vecGoalVelocity = Vector(0,0,0);
 
 	m_flLastAttack = -1;
-
-	m_flMoveSimulationTime = 0;
 
 	m_flMaxStepSize = 10;
 
@@ -100,14 +97,6 @@ void CCharacter::MoveThink()
 {
 	float flSimulationFrameTime = 0.01f;
 
-	if (!GetGroundEntity())
-	{
-		// Keep the sim time current
-		for (; m_flMoveSimulationTime < GameServer()->GetGameTime(); m_flMoveSimulationTime += flSimulationFrameTime);
-
-		return;
-	}
-
 	TVector vecGoalVelocity = GetGoalVelocity();
 
 	m_vecMoveVelocity.x = Approach(vecGoalVelocity.x, m_vecMoveVelocity.x, GameServer()->GetFrameTime()*4);
@@ -147,147 +136,6 @@ void CCharacter::MoveThink()
 	}
 	else
 		SetLocalVelocity(TVector());
-
-	eastl::vector<CEntityHandle<CBaseEntity> > apCollisionList;
-
-	size_t iMaxEntities = GameServer()->GetMaxEntities();
-	for (size_t j = 0; j < iMaxEntities; j++)
-	{
-		CBaseEntity* pEntity2 = CBaseEntity::GetEntity(j);
-
-		if (!pEntity2)
-			continue;
-
-		if (pEntity2->IsDeleted())
-			continue;
-
-		if (pEntity2 == this)
-			continue;
-
-		if (!pEntity2->ShouldCollide())
-			continue;
-
-		apCollisionList.push_back(pEntity2);
-	}
-
-	TMatrix mGlobalToLocalRotation;
-	if (HasMoveParent())
-	{
-		mGlobalToLocalRotation = GetMoveParent()->GetGlobalToLocalTransform();
-		mGlobalToLocalRotation.SetTranslation(TVector());
-	}
-
-	// Break simulations up into consistent small steps to preserve accuracy.
-	for (; m_flMoveSimulationTime < GameServer()->GetGameTime(); m_flMoveSimulationTime += flSimulationFrameTime)
-	{
-		TVector vecVelocity = GetLocalVelocity();
-
-		TVector vecLocalOrigin = GetLocalOrigin();
-		TVector vecGlobalOrigin = GetGlobalOrigin();
-
-		vecVelocity = vecVelocity * flSimulationFrameTime;
-
-		TVector vecLocalDestination = vecLocalOrigin + vecVelocity;
-		TVector vecGlobalDestination = vecLocalDestination;
-		if (GetMoveParent())
-			vecGlobalDestination = GetMoveParent()->GetGlobalTransform() * vecLocalDestination;
-
-		TVector vecNewLocalOrigin = vecLocalDestination;
-
-		size_t iTries = 0;
-		while (true)
-		{
-			iTries++;
-
-			TVector vecPoint, vecNormal;
-
-			TVector vecLocalCollisionPoint, vecGlobalCollisionPoint;
-
-			bool bContact = false;
-			for (size_t i = 0; i < apCollisionList.size(); i++)
-			{
-				CBaseEntity* pEntity2 = apCollisionList[i];
-
-				if (GetMoveParent() == pEntity2)
-				{
-					if (pEntity2->CollideLocal(vecLocalOrigin, vecLocalDestination, vecPoint, vecNormal))
-					{
-						bContact = true;
-						Touching(pEntity2);
-						vecLocalCollisionPoint = vecPoint;
-						vecGlobalCollisionPoint = GetMoveParent()->GetGlobalTransform() * vecPoint;
-					}
-				}
-				else
-				{
-					if (pEntity2->Collide(vecGlobalOrigin, vecGlobalDestination, vecPoint, vecNormal))
-					{
-						bContact = true;
-						Touching(pEntity2);
-						vecGlobalCollisionPoint = vecPoint;
-						if (GetMoveParent())
-						{
-							vecLocalCollisionPoint = GetMoveParent()->GetGlobalToLocalTransform() * vecPoint;
-							vecNormal = GetMoveParent()->GetGlobalToLocalTransform().TransformVector(vecNormal);
-						}
-						else
-							vecLocalCollisionPoint = vecGlobalCollisionPoint;
-					}
-				}
-			}
-
-			if (bContact)
-			{
-				vecNewLocalOrigin = vecLocalCollisionPoint;
-				vecVelocity -= vecLocalCollisionPoint - vecLocalOrigin;
-			}
-
-			if (!bContact)
-				break;
-
-			if (iTries > 4)
-				break;
-
-			vecLocalOrigin = vecLocalCollisionPoint;
-			vecGlobalOrigin = vecGlobalCollisionPoint;
-
-			// Clip the velocity to the surface normal of whatever we hit.
-			TFloat flDistance = vecVelocity.Dot(vecNormal);
-
-			vecVelocity = vecVelocity - vecNormal * flDistance;
-
-			// Do it one more time just to make sure we're not headed towards the plane.
-			TFloat flAdjust = vecVelocity.Dot(vecNormal);
-			if (flAdjust < 0.0f)
-				vecVelocity -= (vecNormal * flAdjust);
-
-			vecLocalDestination = vecLocalOrigin + vecVelocity;
-
-			if (GetMoveParent())
-				vecGlobalDestination = GetMoveParent()->GetGlobalTransform() * vecLocalDestination;
-			else
-				vecGlobalDestination = vecLocalDestination;
-
-			SetLocalVelocity(vecVelocity.Normalized() * GetLocalVelocity().Length());
-		}
-
-		SetLocalOrigin(vecNewLocalOrigin);
-
-		// Try to keep the player on the ground.
-		// Untested.
-		/*TVector vecStart = GetGlobalOrigin() + GetGlobalTransform().GetUpVector()*m_flMaxStepSize;
-		TVector vecEnd = GetGlobalOrigin() - GetGlobalTransform().GetUpVector()*m_flMaxStepSize;
-
-		// First go up a bit
-		TVector vecHit, vecNormal;
-		Game()->TraceLine(GetGlobalOrigin(), vecStart, vecHit, vecNormal, NULL);
-		vecStart = vecHit;
-
-		// Now see if there's ground underneath us.
-		bool bHit = Game()->TraceLine(vecStart, vecEnd, vecHit, vecNormal, NULL);
-		if (bHit && vecNormal.y >= TFloat(0.7f))
-			SetGlobalOrigin(vecHit);*/
-	}
 }
 
 void CCharacter::Jump()

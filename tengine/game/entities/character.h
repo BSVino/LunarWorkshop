@@ -57,6 +57,8 @@ public:
 	void							SetGroundEntity(CBaseEntity* pEntity) { m_hGround = pEntity; }
 	virtual void					FindGroundEntity();
 
+	TFloat							GetMaxStepHeight() const { return m_flMaxStepSize; }
+
 protected:
 	CNetworkedHandle<CPlayer>		m_hControllingPlayer;
 
@@ -68,7 +70,6 @@ protected:
 
 	float							m_flLastAttack;
 
-	float							m_flMoveSimulationTime;	// This is a higher resolution of game time for physics
 	TFloat							m_flMaxStepSize;
 };
 

@@ -89,8 +89,6 @@ public:
 
 	float										GetFrameTime() { return m_flFrameTime; };
 	float										GetGameTime() { return m_flGameTime; };
-	float										GetSimulationTime() { return m_flSimulationTime; };
-	void										AdvanceSimulationTime(float f) { m_flSimulationTime += f; };
 	size_t										GetFrame() { return m_iFrame; }
 
 	class CRenderer*							GetRenderer();
@@ -107,6 +105,7 @@ public:
 
 	static CGameServer*							GetGameServer() { return s_pGameServer; };
 	class CGame*								GetGame();
+	class CPhysicsManager*						GetPhysics() { return m_pPhysicsManager; }
 
 protected:
 	tstring				m_sNickname;
@@ -120,11 +119,11 @@ protected:
 	size_t										m_iSaveCRC;
 
 	float										m_flGameTime;		// This is how time passes for the game entities
-	float										m_flSimulationTime;	// This is a higher resolution of game time for physics
 	float										m_flFrameTime;		// This is the delta of each frame of game time
 	float										m_flHostTime;		// This is the current time for the computer
 	size_t										m_iFrame;
 
+	class CPhysicsManager*						m_pPhysicsManager;
 	eastl::vector<CEntityHandle<CBaseEntity> >	m_apSimulateList;
 	eastl::vector<CEntityHandle<CBaseEntity> >	m_apCollisionList;
 	eastl::vector<CBaseEntity*>					m_apRenderList;

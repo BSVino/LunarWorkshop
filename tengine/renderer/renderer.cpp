@@ -15,6 +15,7 @@
 #include <game/gameserver.h>
 #include <models/texturelibrary.h>
 #include <game/camera.h>
+#include <game/physics.h>
 
 #include "renderingcontext.h"
 
@@ -505,6 +506,7 @@ void CRenderer::StartRendering()
 }
 
 CVar show_frustum("debug_show_frustum", "no");
+CVar show_physics("debug_show_physics", "no");
 
 void CRenderer::FinishRendering()
 {
@@ -531,6 +533,9 @@ void CRenderer::FinishRendering()
 			glEnd();
 		}
 	}
+
+	if (show_physics.GetBool())
+		GamePhysics()->DebugDraw();
 
 	glPopMatrix();
 	glPopAttrib();

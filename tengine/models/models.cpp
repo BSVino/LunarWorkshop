@@ -3,6 +3,7 @@
 #include <modelconverter/modelconverter.h>
 #include <renderer/renderer.h>
 #include <models/texturelibrary.h>
+#include <game/physics.h>
 
 CModelLibrary* CModelLibrary::s_pModelLibrary = NULL;
 static CModelLibrary g_ModelLibrary = CModelLibrary();
@@ -31,7 +32,9 @@ size_t CModelLibrary::AddModel(const tstring& sModel)
 	if (iModel != ~0)
 		return iModel;
 
-	m_apModels.push_back(new CModel(sModel));
+	CModel* pModel = new CModel(sModel);
+	m_apModels.push_back(pModel);
+	pModel->Load();
 
 	return m_apModels.size()-1;
 }
@@ -58,10 +61,18 @@ size_t CModelLibrary::FindModel(const tstring& sModel)
 CModel::CModel(const tstring& sFilename)
 {
 	m_sFilename = sFilename;
+}
+
+CModel::~CModel()
+{
+}
+
+void CModel::Load()
+{
 	m_pScene = new CConversionScene();
 	CModelConverter c(m_pScene);
 	c.SetWantEdges(false);
-	c.ReadModel(sFilename);
+	c.ReadModel(m_sFilename);
 
 	size_t iMaterials = m_pScene->GetNumMaterials();
 	LoadSceneIntoBuffer();
@@ -80,16 +91,14 @@ CModel::CModel(const tstring& sFilename)
 		m_aiVertexBufferSizes[i] = m_aaVertices[i].size();
 	}
 
+	GamePhysics()->LoadCollisionMesh(m_sFilename, m_aaVertices);
+
 	m_aaVertices.set_capacity(0);
 
 	m_aabbBoundingBox = m_pScene->m_oExtends;
 
 	delete m_pScene;
 	m_pScene = NULL;
-}
-
-CModel::~CModel()
-{
 }
 
 void CModel::LoadSceneIntoBuffer()
@@ -167,6 +176,7 @@ void CModel::LoadMeshInstanceIntoBuffer(CConversionMeshInstance* pMeshInstance, 
 				v.vecPosition = pMesh->GetVertex(pVertex0->v);
 				v.vecNormal = pMesh->GetNormal(pVertex0->vn);
 				v.vecUV = pMesh->GetUV(pVertex0->vu);
+				v.clrColor = Color(255, 255, 255, 255);
 
 				aVertices.push_back(v);
 
@@ -175,6 +185,7 @@ void CModel::LoadMeshInstanceIntoBuffer(CConversionMeshInstance* pMeshInstance, 
 				v.vecPosition = pMesh->GetVertex(pVertex1->v);
 				v.vecNormal = pMesh->GetNormal(pVertex1->vn);
 				v.vecUV = pMesh->GetUV(pVertex1->vu);
+				v.clrColor = Color(255, 255, 255, 255);
 
 				aVertices.push_back(v);
 
@@ -183,6 +194,7 @@ void CModel::LoadMeshInstanceIntoBuffer(CConversionMeshInstance* pMeshInstance, 
 				v.vecPosition = pMesh->GetVertex(pVertex2->v);
 				v.vecNormal = pMesh->GetNormal(pVertex2->vn);
 				v.vecUV = pMesh->GetUV(pVertex2->vu);
+				v.clrColor = Color(255, 255, 255, 255);
 
 				aVertices.push_back(v);
 			}
