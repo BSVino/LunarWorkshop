@@ -37,7 +37,7 @@ void CPlayer::MouseMotion(int x, int y)
 
 	EAngle angDirection = m_hCharacter->GetLocalAngles();
 
-	angDirection.y -= (x/m_sensitivity.GetFloat());
+	angDirection.y += (x/m_sensitivity.GetFloat());
 	angDirection.p -= (y/m_sensitivity.GetFloat());
 
 	if (angDirection.p > 89)

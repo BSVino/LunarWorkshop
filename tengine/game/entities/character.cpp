@@ -233,6 +233,7 @@ void CCharacter::ShowPlayerVectors() const
 
 	CRenderingContext c(GameServer()->GetRenderer());
 
+	c.UseProgram("model");
 	c.Translate((GetGlobalOrigin()));
 	c.SetColor(Color(255, 255, 255));
 	c.BeginRenderDebugLines();
