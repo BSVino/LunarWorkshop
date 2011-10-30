@@ -14,6 +14,7 @@ public:
 
 public:
 	virtual void					MouseMotion(int x, int y);
+	virtual void					MouseInput(int iButton, int iState) {};
 	virtual void					KeyPress(int c);
 	virtual void					KeyRelease(int c);
 

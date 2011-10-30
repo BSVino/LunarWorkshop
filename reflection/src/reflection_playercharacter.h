@@ -3,6 +3,8 @@
 
 #include "reflection_character.h"
 
+class CMirror;
+
 class CPlayerCharacter : public CReflectionCharacter
 {
 	REGISTER_ENTITY_CLASS(CPlayerCharacter, CReflectionCharacter);
@@ -11,7 +13,10 @@ public:
 	void						Precache();
 	void						Spawn();
 
+	void						PlaceMirror();
+
 protected:
+	CEntityHandle<CMirror>		m_hMirror;
 };
 
 #endif

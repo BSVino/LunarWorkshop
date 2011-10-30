@@ -11,6 +11,7 @@
 #include <tinker/profiler.h>
 #include <network/commands.h>
 #include <models/texturelibrary.h>
+#include <tinker/cvar.h>
 
 #include "game.h"
 #include "physics.h"
@@ -144,17 +145,17 @@ void CBaseEntity::Spawn()
 
 TVector CBaseEntity::GetLocalCenter() const
 {
-	return m_mLocalTransform * m_aabbBoundingBox.Center();
+	return GetLocalTransform() * m_aabbBoundingBox.Center();
 }
 
 TVector CBaseEntity::GetGlobalCenter() const
 {
-	return m_mGlobalTransform * m_aabbBoundingBox.Center();
+	return GetGlobalTransform() * m_aabbBoundingBox.Center();
 }
 
 TFloat CBaseEntity::GetBoundingRadius() const
 {
-	return (m_aabbBoundingBox.Size()/2).Length();
+	return m_aabbBoundingBox.Size().Length()/2;
 }
 
 void CBaseEntity::SetModel(const tstring& sModel)
@@ -628,6 +629,8 @@ void CBaseEntity::ToggleActive(const eastl::vector<tstring>& sArgs)
 	SetActive(!IsActive());
 }
 
+CVar show_centers("debug_show_centers", "off");
+
 void CBaseEntity::Render(bool bTransparent) const
 {
 	TPROF("CBaseEntity::Render");
@@ -662,6 +665,25 @@ void CBaseEntity::Render(bool bTransparent) const
 	} while (false);
 
 	PostRender(bTransparent);
+
+	if (show_centers.GetBool())
+	{
+		CRenderingContext r(GameServer()->GetRenderer());
+		r.UseProgram("model");
+		r.Translate(GetGlobalCenter());
+		r.BeginRenderDebugLines();
+			r.Vertex(Vector(-1, 0, 0));
+			r.Vertex(Vector(1, 0, 0));
+		r.EndRender();
+		r.BeginRenderDebugLines();
+			r.Vertex(Vector(0, -1, 0));
+			r.Vertex(Vector(0, 1, 0));
+		r.EndRender();
+		r.BeginRenderDebugLines();
+			r.Vertex(Vector(0, 0, -1));
+			r.Vertex(Vector(0, 0, 1));
+		r.EndRender();
+	}
 }
 
 void CBaseEntity::Delete()

@@ -418,7 +418,7 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnActivated);
 	DECLARE_ENTITY_OUTPUT(OnDeactivated);
 
-	virtual bool							ShouldRender() const { return false; };
+	virtual bool							ShouldRender() const { return (size_t)m_iModel != ~0; };
 	virtual bool							ShouldRenderModel() const { return true; };
 	virtual void							PreRender(bool bTransparent) const {};
 	virtual void							ModifyContext(class CRenderingContext* pContext, bool bTransparent) const {};

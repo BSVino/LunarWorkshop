@@ -8,6 +8,8 @@ class CReflectionPlayer : public CPlayer
 	REGISTER_ENTITY_CLASS(CReflectionPlayer, CPlayer);
 
 public:
+	virtual void					MouseInput(int iButton, int iState);
+
 	class CPlayerCharacter*			GetPlayerCharacter();
 };
 

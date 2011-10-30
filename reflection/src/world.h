@@ -10,8 +10,6 @@ class CWorld : public CBaseEntity
 public:
 	virtual void					Precache();
 	virtual void					Spawn();
-
-	virtual bool					ShouldRender() const { return true; };
 };
 
 #endif

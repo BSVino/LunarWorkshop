@@ -22,3 +22,15 @@ CPlayerCharacter* CReflectionPlayer::GetPlayerCharacter()
 {
 	return static_cast<CPlayerCharacter*>(m_hCharacter.GetPointer());
 }
+
+void CReflectionPlayer::MouseInput(int iButton, int iState)
+{
+	BaseClass::MouseInput(iButton, iState);
+
+	TAssert(GetPlayerCharacter());
+	if (!GetPlayerCharacter())
+		return;
+
+	if (iButton == TINKER_KEY_MOUSE_LEFT && iState == 1)
+		GetPlayerCharacter()->PlaceMirror();
+}

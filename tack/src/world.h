@@ -11,8 +11,6 @@ public:
 	virtual void					Precache();
 	virtual void					Spawn();
 
-	virtual bool					ShouldRender() const { return true; };
-
 	virtual bool					ShouldCollide() const { return true; }
 
 	virtual bool					CollideLocal(const TVector& v1, const TVector& v2, TVector& vecPoint, TVector& vecNormal);

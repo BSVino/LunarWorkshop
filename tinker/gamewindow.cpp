@@ -191,4 +191,13 @@ void CGameWindow::MouseInput(int iButton, int iState)
 
 	if (GameServer() && GameServer()->GetCamera())
 		GameServer()->GetCamera()->MouseButton(iButton, iState);
+
+	if (Game())
+	{
+		for (size_t i = 0; i < Game()->GetNumLocalPlayers(); i++)
+		{
+			CPlayer* pPlayer = Game()->GetLocalPlayer(i);
+			pPlayer->MouseInput(iButton, iState);
+		}
+	}
 }

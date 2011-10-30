@@ -16,6 +16,7 @@ set (REFLECTION_SOURCES
 	main.cpp
 
 	world.cpp
+	mirror.cpp
 
 	reflection_player.cpp
 

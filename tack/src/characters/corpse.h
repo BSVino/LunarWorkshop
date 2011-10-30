@@ -10,8 +10,6 @@ class CCorpse : public CBaseEntity
 	REGISTER_ENTITY_CLASS(CCorpse, CBaseEntity);
 
 public:
-	virtual bool			ShouldRender() const { return true; };
-
 	virtual void			Think();
 
 	void					SetSpecialAbility(special_ability_t eAbility) { m_eAbility = eAbility; };
