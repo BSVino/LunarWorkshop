@@ -63,6 +63,7 @@ public:
 	void										Think(float flHostTime);
 	void										Simulate();
 	void										Render();
+	void										RenderEverything();
 
 	virtual void								Think() {};
 

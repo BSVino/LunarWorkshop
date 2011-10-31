@@ -33,9 +33,12 @@ public:
 
 	float					GetAlpha() { return m_flAlpha; };
 	blendtype_t				GetBlend() { return m_eBlend; };
+	::Color					GetColor() { return m_clrRender; };
+	bool					IsColorSwapActive() { return m_bColorSwap; }
+	::Color					GetColorSwap() { return m_clrSwap; }
 
 	void					RenderModel(size_t iModel);
-	void					RenderModel(class CModel* pModel, size_t iMaterial, class CShader* pShader = NULL);
+	void					RenderModel(class CModel* pModel, size_t iMaterial);
 
 	void					RenderSphere();
 

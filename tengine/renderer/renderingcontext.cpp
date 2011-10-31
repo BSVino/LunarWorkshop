@@ -218,36 +218,6 @@ void CRenderingContext::RenderModel(size_t iModel)
 	{
 		glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT|GL_LIGHTING_BIT|GL_TEXTURE_BIT);
 
-		GLuint iProgram = (GLuint)CShaderLibrary::GetProgram("model");
-		glUseProgram(iProgram);
-
-		GLuint bDiffuse = glGetUniformLocation(iProgram, "bDiffuse");
-		glUniform1i(bDiffuse, true);
-
-		GLuint iDiffuse = glGetUniformLocation(iProgram, "iDiffuse");
-		glUniform1i(iDiffuse, 0);
-
-		GLuint vecColor = glGetUniformLocation(iProgram, "vecColor");
-		glUniform4fv(vecColor, 1, Vector4D(m_clrRender));
-
-		GLuint flAlpha = glGetUniformLocation(iProgram, "flAlpha");
-		glUniform1f(flAlpha, m_flAlpha);
-
-		GLuint bColorSwapInAlpha = glGetUniformLocation(iProgram, "bColorSwapInAlpha");
-		glUniform1i(bColorSwapInAlpha, m_bColorSwap);
-
-		if (m_bColorSwap)
-		{
-			GLuint vecColorSwap = glGetUniformLocation(iProgram, "vecColorSwap");
-			Vector vecColor((float)m_clrSwap.r()/255, (float)m_clrSwap.g()/255, (float)m_clrSwap.b()/255);
-			glUniform3fv(vecColorSwap, 1, vecColor);
-		}
-
-		CShader* pShader = CShaderLibrary::GetShader("model");
-
-		TAssert(pShader->m_iPositionAttribute != ~0);
-		TAssert(pShader->m_iTexCoordAttribute != ~0);
-
 		for (size_t m = 0; m < pModel->m_aiVertexBuffers.size(); m++)
 		{
 			if (!pModel->m_aiVertexBufferSizes[m])
@@ -258,7 +228,7 @@ void CRenderingContext::RenderModel(size_t iModel)
 			glBindTexture(GL_TEXTURE_2D, (GLuint)pModel->m_aiTextures[m]);
 			glEnable(GL_TEXTURE_2D);
 
-			RenderModel(pModel, m, pShader);
+			RenderModel(pModel, m);
 		}
 
 		glUseProgram(0);
@@ -266,43 +236,46 @@ void CRenderingContext::RenderModel(size_t iModel)
 	}
 }
 
-void CRenderingContext::RenderModel(CModel* pModel, size_t iMaterial, CShader* pShader)
+void CRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 {
-	if (!pShader)
-		pShader = m_pShader;
+	m_pRenderer->SetupShader(this, pModel, iMaterial);
 
-	if (!pModel || !pShader)
+	TAssert(m_pShader);
+	if (!m_pShader)
+		return;
+
+	if (!pModel || !m_pShader)
 		return;
 
 	Vertex_t v;
 
 	glBindBuffer(GL_ARRAY_BUFFER, pModel->m_aiVertexBuffers[iMaterial]);
 
-	if (pShader->m_iNormalAttribute != ~0)
-		glEnableVertexAttribArray(pShader->m_iNormalAttribute);
-	if (pShader->m_iColorAttribute != ~0)
-		glEnableVertexAttribArray(pShader->m_iColorAttribute);
+	if (m_pShader->m_iNormalAttribute != ~0)
+		glEnableVertexAttribArray(m_pShader->m_iNormalAttribute);
+	if (m_pShader->m_iColorAttribute != ~0)
+		glEnableVertexAttribArray(m_pShader->m_iColorAttribute);
 
-	glEnableVertexAttribArray(pShader->m_iTexCoordAttribute);
-	glEnableVertexAttribArray(pShader->m_iPositionAttribute);
+	glEnableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
+	glEnableVertexAttribArray(m_pShader->m_iPositionAttribute);
 
-	if (pShader->m_iNormalAttribute != ~0)
-		glVertexAttribPointer(pShader->m_iNormalAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecNormal) - ((size_t)&v)));
-	if (pShader->m_iColorAttribute != ~0)
-		glVertexAttribPointer(pShader->m_iColorAttribute, 3, GL_UNSIGNED_BYTE, true, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.clrColor) - ((size_t)&v)));
+	if (m_pShader->m_iNormalAttribute != ~0)
+		glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecNormal) - ((size_t)&v)));
+	if (m_pShader->m_iColorAttribute != ~0)
+		glVertexAttribPointer(m_pShader->m_iColorAttribute, 3, GL_UNSIGNED_BYTE, true, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.clrColor) - ((size_t)&v)));
 
-	glVertexAttribPointer(pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecUV) - ((size_t)&v)));
-	glVertexAttribPointer(pShader->m_iPositionAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecPosition) - ((size_t)&v)));
+	glVertexAttribPointer(m_pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecUV) - ((size_t)&v)));
+	glVertexAttribPointer(m_pShader->m_iPositionAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecPosition) - ((size_t)&v)));
 
 	glDrawArrays(GL_TRIANGLES, 0, pModel->m_aiVertexBufferSizes[iMaterial]);
 
-	if (pShader->m_iNormalAttribute != ~0)
-		glDisableVertexAttribArray(pShader->m_iNormalAttribute);
-	if (pShader->m_iColorAttribute != ~0)
-		glDisableVertexAttribArray(pShader->m_iColorAttribute);
+	if (m_pShader->m_iNormalAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iNormalAttribute);
+	if (m_pShader->m_iColorAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
 
-	glDisableVertexAttribArray(pShader->m_iTexCoordAttribute);
-	glDisableVertexAttribArray(pShader->m_iPositionAttribute);
+	glDisableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
+	glDisableVertexAttribArray(m_pShader->m_iPositionAttribute);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

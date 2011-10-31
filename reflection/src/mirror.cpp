@@ -1,5 +1,9 @@
 #include "mirror.h"
 
+#include <models/models.h>
+
+#include "reflection_renderer.h"
+
 REGISTER_ENTITY(CMirror);
 
 NETVAR_TABLE_BEGIN(CMirror);
@@ -19,4 +23,6 @@ void CMirror::Precache()
 void CMirror::Spawn()
 {
 	SetModel("models/mirror.obj");
+
+	ReflectionRenderer()->SetMirror(this);
 }

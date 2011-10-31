@@ -50,7 +50,7 @@ public:
 					CRenderer(size_t iWidth, size_t iHeight);
 
 public:
-	void			Initialize();
+	virtual void	Initialize();
 	virtual void	LoadShaders() {};
 
 	CFrameBuffer	CreateFrameBuffer(size_t iWidth, size_t iHeight, bool bDepth, bool bLinear);
@@ -112,6 +112,8 @@ public:
 
 	void			ClearProgram();
 	void			UseProgram(size_t i);
+
+	virtual void	SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial);
 
 	Vector			ScreenPosition(Vector vecWorld);
 	Vector			WorldPosition(Vector vecScreen);

@@ -478,15 +478,27 @@ void CGameServer::Render()
 
 	m_pCamera->Think();
 
-	GameWindow()->GetRenderer()->SetCameraPosition(m_pCamera->GetCameraPosition());
-	GameWindow()->GetRenderer()->SetCameraTarget(m_pCamera->GetCameraTarget());
-	GameWindow()->GetRenderer()->SetCameraUp(m_pCamera->GetCameraUp());
-	GameWindow()->GetRenderer()->SetCameraFOV(m_pCamera->GetCameraFOV());
-	GameWindow()->GetRenderer()->SetCameraNear(m_pCamera->GetCameraNear());
-	GameWindow()->GetRenderer()->SetCameraFar(m_pCamera->GetCameraFar());
+	CRenderer* pRenderer = GameWindow()->GetRenderer();
 
-	GameWindow()->GetRenderer()->SetupFrame();
-	GameWindow()->GetRenderer()->StartRendering();
+	pRenderer->SetCameraPosition(m_pCamera->GetCameraPosition());
+	pRenderer->SetCameraTarget(m_pCamera->GetCameraTarget());
+	pRenderer->SetCameraUp(m_pCamera->GetCameraUp());
+	pRenderer->SetCameraFOV(m_pCamera->GetCameraFOV());
+	pRenderer->SetCameraNear(m_pCamera->GetCameraNear());
+	pRenderer->SetCameraFar(m_pCamera->GetCameraFar());
+
+	pRenderer->SetupFrame();
+	pRenderer->StartRendering();
+
+	RenderEverything();
+
+	pRenderer->FinishRendering();
+	pRenderer->FinishFrame();
+}
+
+void CGameServer::RenderEverything()
+{
+	CRenderer* pRenderer = GameWindow()->GetRenderer();
 
 	m_apRenderList.reserve(CBaseEntity::GetNumEntities());
 	m_apRenderList.clear();
@@ -503,20 +515,20 @@ void CGameServer::Render()
 		if (!pEntity->ShouldRender())
 			continue;
 
-		if (bFrustumCulling && !GameWindow()->GetRenderer()->IsSphereInFrustum(pEntity->GetGlobalCenter(), (float)pEntity->GetBoundingRadius()))
+		if (bFrustumCulling && !pRenderer->IsSphereInFrustum(pEntity->GetGlobalCenter(), (float)pEntity->GetBoundingRadius()))
 			continue;
 
 		m_apRenderList.push_back(pEntity);
 	}
 
-	GameWindow()->GetRenderer()->BeginBatching();
+	pRenderer->BeginBatching();
 
 	// First render all opaque objects
 	size_t iEntites = m_apRenderList.size();
 	for (size_t i = 0; i < iEntites; i++)
 		m_apRenderList[i]->Render(false);
 
-	GameWindow()->GetRenderer()->RenderBatches();
+	pRenderer->RenderBatches();
 
 	// Now render all transparent objects. Should really sort this back to front but meh for now.
 	for (size_t i = 0; i < iEntites; i++)
@@ -524,9 +536,6 @@ void CGameServer::Render()
 
 	CParticleSystemLibrary::Render();
 	CModelDissolver::Render();
-
-	GameWindow()->GetRenderer()->FinishRendering();
-	GameWindow()->GetRenderer()->FinishFrame();
 }
 
 void CGameServer::GenerateSaveCRC(size_t iInput)

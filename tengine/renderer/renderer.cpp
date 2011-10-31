@@ -882,11 +882,6 @@ void CRenderer::RenderBatches()
 
 	CRenderingContext c(this);
 
-	c.UseProgram("model");
-	c.SetUniform("bDiffuse", true);
-	c.SetUniform("iDiffuse", 0);
-	c.SetUniform("flAlpha", 1.0f);
-
 	for (eastl::map<size_t, eastl::vector<CRenderBatch> >::iterator it = m_aBatches.begin(); it != m_aBatches.end(); it++)
 	{
 		c.BindTexture(it->first);
@@ -895,13 +890,6 @@ void CRenderer::RenderBatches()
 		{
 			CRenderBatch* pBatch = &it->second[i];
 
-			c.SetUniform("bColorSwapInAlpha", pBatch->bSwap);
-
-			if (pBatch->bSwap)
-				c.SetUniform("vecColorSwap", pBatch->clrSwap);
-
-			c.SetUniform("vecColor", pBatch->clrRender);
-	
 			c.ResetTransformations();
 			c.LoadTransform(pBatch->mTransformation);
 
@@ -972,6 +960,19 @@ void CRenderer::UseProgram(size_t i)
 		return;
 
 	glUseProgram(i);
+}
+
+void CRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial)
+{
+	c->UseProgram("model");
+	c->SetUniform("bDiffuse", true);
+	c->SetUniform("iDiffuse", 0);
+
+	c->SetUniform("vecColor", c->GetColor());
+	c->SetUniform("flAlpha", c->GetAlpha());
+	c->SetUniform("bColorSwapInAlpha", c->IsColorSwapActive());
+	if (c->IsColorSwapActive())
+		c->SetUniform("vecColorSwap", c->GetColorSwap());
 }
 
 Vector CRenderer::ScreenPosition(Vector vecWorld)
