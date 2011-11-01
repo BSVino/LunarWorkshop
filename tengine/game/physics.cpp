@@ -181,8 +181,9 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 			m_pCharacterShape = new btCapsuleShape(flRadius, flHeight - flRadius);
 		}
 
-#ifdef _DEBUG
 		btCapsuleShape* pCapsuleShape = dynamic_cast<btCapsuleShape*>(m_pCharacterShape);
+
+#ifdef _DEBUG
 		TAssert(pCapsuleShape);
 		if (pCapsuleShape)
 		{
