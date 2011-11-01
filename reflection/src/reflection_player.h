@@ -10,6 +10,7 @@ class CReflectionPlayer : public CPlayer
 public:
 	virtual void					MouseMotion(int x, int y);
 	virtual void					MouseInput(int iButton, int iState);
+	virtual void					KeyPress(int c);
 
 	class CPlayerCharacter*			GetPlayerCharacter();
 };

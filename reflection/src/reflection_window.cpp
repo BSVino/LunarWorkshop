@@ -20,6 +20,7 @@
 #include "reflection_playercharacter.h"
 #include "reflection_renderer.h"
 #include "world.h"
+#include "token.h"
 #include "ui/hud.h"
 
 CReflectionWindow::CReflectionWindow(int argc, char** argv)
@@ -55,6 +56,14 @@ void CReflectionWindow::SetupReflection()
 	CPlayerCharacter* pCharacter = GameServer()->Create<CPlayerCharacter>("CPlayerCharacter");
 	pCharacter->SetGlobalOrigin(Vector(-1, 0, -1));
 	pPlayer->SetCharacter(pCharacter);
+
+	CToken* pToken = GameServer()->Create<CToken>("CToken");
+	pToken->SetGlobalOrigin(Vector(-6, 0, 3));
+	pToken->SetGlobalAngles(EAngle(0, -90, 0));
+
+	CReceptacle* pReceptacle = GameServer()->Create<CReceptacle>("CReceptacle");
+	pReceptacle->SetGlobalOrigin(Vector(-7.5f, 0.8f, 2.5f));
+	pReceptacle->SetGlobalAngles(EAngle(45, 180, 0));
 }
 
 void CReflectionWindow::RenderLoading()

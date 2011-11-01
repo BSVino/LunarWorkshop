@@ -37,6 +37,7 @@ public:
 	class CModel*	pModel;
 	Matrix4x4		mTransformation;
 	bool			bSwap;
+	bool			bReverseWinding;
 	Color			clrSwap;
 	Color			clrRender;
 	size_t			iMaterial;
@@ -99,7 +100,7 @@ public:
 
 	bool			ShouldBatchThisFrame() { return m_bBatchThisFrame; }
 	void			BeginBatching();
-	void			AddToBatch(class CModel* pModel, const Matrix4x4& mTransformations, const Color& clrRender, bool bClrSwap, const Color& clrSwap);
+	void			AddToBatch(class CModel* pModel, const Matrix4x4& mTransformations, const Color& clrRender, bool bClrSwap, const Color& clrSwap, bool bReverseWinding);
 	void			RenderBatches();
 	bool			IsBatching() { return m_bBatching; };
 

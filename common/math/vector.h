@@ -73,6 +73,7 @@ public:
 	unit_t	Length2DSqr() const;
 	void	Normalize();
 	TemplateVector<unit_t>	Normalized() const;
+	TemplateVector<unit_t>	Flattened() const;
 
 	unit_t	Distance(const TemplateVector<unit_t>& v) const;
 	unit_t	DistanceSqr(const TemplateVector<unit_t>& v) const;
@@ -257,6 +258,14 @@ inline TemplateVector<unit_t> TemplateVector<unit_t>::Normalized() const
 		return TemplateVector(0,0,1);
 	else
 		return *this/flLength;
+}
+
+template <class unit_t>
+inline TemplateVector<unit_t> TemplateVector<unit_t>::Flattened() const
+{
+	TemplateVector<unit_t> vecResult(*this);
+	vecResult.y = 0;
+	return vecResult;
 }
 
 template <class unit_t>

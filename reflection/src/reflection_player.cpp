@@ -45,3 +45,14 @@ void CReflectionPlayer::MouseInput(int iButton, int iState)
 	if (iButton == TINKER_KEY_MOUSE_LEFT && iState == 1)
 		GetPlayerCharacter()->PlaceMirror();
 }
+
+void CReflectionPlayer::KeyPress(int c)
+{
+	if (m_hCharacter == NULL)
+		return;
+
+	if (c == 'E')
+		GetPlayerCharacter()->FindItems();
+
+	BaseClass::KeyPress(c);
+}

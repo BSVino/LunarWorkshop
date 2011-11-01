@@ -30,6 +30,7 @@ public:
 	void					SetBackCulling(bool bCull);
 	void					SetColorSwap(const ::Color& clrSwap);
 	void					SetLighting(bool bLighting);
+	void					SetReverseWinding(bool bReverse);
 
 	float					GetAlpha() { return m_flAlpha; };
 	blendtype_t				GetBlend() { return m_eBlend; };
@@ -84,6 +85,9 @@ public:
 	::Color					m_clrSwap;
 
 	::Color					m_clrRender;
+
+	bool					m_bInitialWinding;
+	bool					m_bReverseWinding;
 
 	blendtype_t				m_eBlend;
 	float					m_flAlpha;

@@ -39,7 +39,6 @@ void CCharacter::Spawn()
 {
 	BaseClass::Spawn();
 
-	SetSimulated(false);
 	SetTotalHealth(100);
 
 	m_vecMoveVelocity = Vector(0,0,0);
@@ -302,7 +301,6 @@ void CCharacter::FindGroundEntity()
 	if (vecVelocity.Dot(GetUpVector()) > JumpStrength()/2.0f)
 	{
 		SetGroundEntity(NULL);
-		SetSimulated(true);
 		return;
 	}
 
@@ -334,7 +332,6 @@ void CCharacter::FindGroundEntity()
 			if (pEntity->CollideLocal(GetLocalOrigin(), GetLocalOrigin() - vecUpLocal, vecPoint, vecNormal))
 			{
 				SetGroundEntity(pEntity);
-				SetSimulated(false);
 
 				return;
 			}
@@ -344,7 +341,6 @@ void CCharacter::FindGroundEntity()
 			if (pEntity->Collide(GetGlobalOrigin(), GetGlobalOrigin() - vecUp, vecPoint, vecNormal))
 			{
 				SetGroundEntity(pEntity);
-				SetSimulated(false);
 
 				return;
 			}
@@ -352,5 +348,4 @@ void CCharacter::FindGroundEntity()
 	}
 
 	SetGroundEntity(NULL);
-	SetSimulated(true);
 }

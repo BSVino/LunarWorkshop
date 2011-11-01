@@ -851,7 +851,7 @@ void CRenderer::BeginBatching()
 		it->second.clear();
 }
 
-void CRenderer::AddToBatch(class CModel* pModel, const Matrix4x4& mTransformations, const Color& clrRender, bool bClrSwap, const Color& clrSwap)
+void CRenderer::AddToBatch(class CModel* pModel, const Matrix4x4& mTransformations, const Color& clrRender, bool bClrSwap, const Color& clrSwap, bool bReverseWinding)
 {
 	TAssert(pModel);
 
@@ -865,6 +865,7 @@ void CRenderer::AddToBatch(class CModel* pModel, const Matrix4x4& mTransformatio
 		pBatch->pModel = pModel;
 		pBatch->mTransformation = mTransformations;
 		pBatch->bSwap = bClrSwap;
+		pBatch->bReverseWinding = bReverseWinding;
 		pBatch->clrSwap = clrSwap;
 		pBatch->clrRender = clrRender;
 		pBatch->iMaterial = i;
@@ -889,6 +890,8 @@ void CRenderer::RenderBatches()
 		for (size_t i = 0; i < it->second.size(); i++)
 		{
 			CRenderBatch* pBatch = &it->second[i];
+
+			c.SetReverseWinding(pBatch->bReverseWinding);
 
 			c.ResetTransformations();
 			c.LoadTransform(pBatch->mTransformation);

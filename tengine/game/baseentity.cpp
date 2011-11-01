@@ -69,7 +69,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLastTakeDamage);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, bool, m_bActive);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CTeam>, m_hTeam);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bSimulated);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bVisible);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bInPhysics);
 	SAVEDATA_DEFINE(CSaveData::DATA_OMIT, bool, m_bDeleted);	// Deleted entities are not saved.
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bClientSpawn);
@@ -116,7 +116,7 @@ CBaseEntity::CBaseEntity()
 
 	m_bDeleted = false;
 	m_bActive = true;
-	m_bSimulated = false;
+	m_bVisible = true;
 	m_bInPhysics = false;
 
 	m_iModel = ~0;
@@ -657,6 +657,9 @@ CVar show_centers("debug_show_centers", "off");
 void CBaseEntity::Render(bool bTransparent) const
 {
 	TPROF("CBaseEntity::Render");
+
+	if (!IsVisible())
+		return;
 
 	PreRender(bTransparent);
 

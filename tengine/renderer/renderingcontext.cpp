@@ -34,6 +34,11 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer)
 
 	m_clrRender = ::Color(255, 255, 255, 255);
 
+	int iWinding;
+	glGetIntegerv(GL_FRONT_FACE, &iWinding);
+	m_bInitialWinding = (iWinding == GL_CCW);
+	m_bReverseWinding = false;
+
 	m_eBlend = BLEND_NONE;
 	m_flAlpha = 1;
 }
@@ -198,6 +203,14 @@ void CRenderingContext::SetLighting(bool bLighting)
 		glDisable(GL_LIGHTING);
 }
 
+void CRenderingContext::SetReverseWinding(bool bReverse)
+{
+	if (!m_bAttribs)
+		PushAttribs();
+
+	m_bReverseWinding = bReverse;
+}
+
 void CRenderingContext::RenderModel(size_t iModel)
 {
 	CModel* pModel = CModelLibrary::Get()->GetModel(iModel);
@@ -212,7 +225,7 @@ void CRenderingContext::RenderModel(size_t iModel)
 		Matrix4x4 mTransformations;
 		glGetFloatv(GL_MODELVIEW_MATRIX, mTransformations);
 
-		m_pRenderer->AddToBatch(pModel, mTransformations, m_clrRender, m_bColorSwap, m_clrSwap);
+		m_pRenderer->AddToBatch(pModel, mTransformations, m_clrRender, m_bColorSwap, m_clrSwap, m_bReverseWinding);
 	}
 	else
 	{
@@ -246,6 +259,11 @@ void CRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 
 	if (!pModel || !m_pShader)
 		return;
+
+	int iWinding = (m_bInitialWinding?GL_CCW:GL_CW);
+	if (m_bReverseWinding)
+		iWinding = (m_bInitialWinding?GL_CW:GL_CCW);
+	glFrontFace(iWinding);
 
 	Vertex_t v;
 
@@ -579,6 +597,6 @@ void CRenderingContext::PushAttribs()
 {
 	m_bAttribs = true;
 	// Push all the attribs we'll ever need. I don't want to have to worry about popping them in order.
-	glPushAttrib(GL_ENABLE_BIT|GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_CURRENT_BIT|GL_TEXTURE_BIT);
+	glPushAttrib(GL_ENABLE_BIT|GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_CURRENT_BIT|GL_TEXTURE_BIT|GL_POLYGON_BIT);
 }
 

@@ -25,6 +25,7 @@ public:
 
 	bool						IsReflected() const { return m_bReflected; }
 	CMirror*					GetMirrorInside() const;
+	virtual void				Reflected() {};
 
 protected:
 	bool						m_bReflected;	// Protected and reflected? Rejected? Projected? INFLECTED?!?

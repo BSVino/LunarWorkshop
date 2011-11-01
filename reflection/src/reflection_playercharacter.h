@@ -4,6 +4,7 @@
 #include "reflection_character.h"
 
 class CMirror;
+class CToken;
 
 class CPlayerCharacter : public CReflectionCharacter
 {
@@ -17,8 +18,16 @@ public:
 
 	CMirror*					GetMirror() const;
 
+	void						FindItems();
+	void						DropToken();
+	void						PickUpToken(CToken* pToken);
+	CToken*						GetToken() const;
+
+	virtual void				Reflected();
+
 protected:
 	CEntityHandle<CMirror>		m_hMirror;
+	CEntityHandle<CToken>		m_hToken;
 };
 
 #endif

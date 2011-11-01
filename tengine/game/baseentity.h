@@ -378,8 +378,8 @@ public:
 
 	virtual TVector							GetUpVector() const { return TVector(0, 1, 0); };
 
-	bool									GetSimulated() const { return m_bSimulated; };
-	void									SetSimulated(bool bSimulated) { m_bSimulated = bSimulated; };
+	bool									IsVisible() const { return m_bVisible; }
+	void									SetVisible(bool bVisible) { m_bVisible = bVisible; }
 
 	bool									IsInPhysics() const { return m_bInPhysics; };
 	void									AddToPhysics(enum collision_type_e eCollisionType);
@@ -435,7 +435,6 @@ public:
 
 	virtual void							Think() {};
 
-	virtual bool							ShouldSimulate() const { return GetSimulated(); };
 	virtual void							Touching(CBaseEntity* pOther) {};
 
 	void									CallInput(const eastl::string& sName, const tstring& sArgs);
@@ -547,7 +546,7 @@ protected:
 
 	CNetworkedHandle<CTeam>					m_hTeam;
 
-	bool									m_bSimulated;
+	bool									m_bVisible;
 	bool									m_bInPhysics;
 	bool									m_bDeleted;
 	bool									m_bClientSpawn;

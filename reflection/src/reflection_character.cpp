@@ -98,6 +98,8 @@ void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 				m_hMirrorInside = pMirror;
 			else
 				m_hMirrorInside = NULL;
+
+			Reflected();
 		}
 	}
 }

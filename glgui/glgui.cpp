@@ -1792,7 +1792,7 @@ void CRootPanel::Paint(int x, int y, int w, int h)
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	glOrtho(x, x+w, y+h, y, -1, 1);
+	glOrtho(x, x+w, y+h, y, -1000, 1000);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();

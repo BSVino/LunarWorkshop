@@ -4,6 +4,7 @@
 #include <game/physics.h>
 
 #include "mirror.h"
+#include "token.h"
 
 REGISTER_ENTITY(CPlayerCharacter);
 
@@ -12,6 +13,7 @@ NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CPlayerCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CMirror>, m_hMirror);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CToken>, m_hToken);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CPlayerCharacter);
@@ -55,4 +57,101 @@ void CPlayerCharacter::PlaceMirror()
 CMirror* CPlayerCharacter::GetMirror() const
 {
 	return m_hMirror;
+}
+
+void CPlayerCharacter::FindItems()
+{
+	CToken* pToken = NULL;
+	float flTokenRadius = 1.5f;
+
+	size_t iMaxEntities = GameServer()->GetMaxEntities();
+	for (size_t j = 0; j < iMaxEntities; j++)
+	{
+		CBaseEntity* pEntity = CBaseEntity::GetEntity(j);
+
+		if (!pEntity)
+			continue;
+
+		if (pEntity->IsDeleted())
+			continue;
+
+		if (!pEntity->IsVisible())
+			continue;
+
+		if (pEntity == this)
+			continue;
+
+		if (pEntity == m_hToken)
+			continue;
+
+		TFloat flRadius = pEntity->GetBoundingRadius() + flTokenRadius;
+		flRadius = flRadius*flRadius;
+		if ((GetGlobalCenter() - pEntity->GetGlobalCenter()).LengthSqr() > flRadius)
+			continue;
+
+		CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pEntity);
+		if (pReceptacle && !pReceptacle->GetToken() && m_hToken != nullptr)
+		{
+			pToken = m_hToken;
+			DropToken();
+			pReceptacle->SetToken(pToken);
+			return;
+		}
+
+		if (pReceptacle && pReceptacle->GetToken() && m_hToken == nullptr)
+		{
+			pToken = pReceptacle->GetToken();
+			pReceptacle->SetToken(nullptr);
+			PickUpToken(pToken);
+			return;
+		}
+
+		pToken = dynamic_cast<CToken*>(pEntity);
+
+		if (pToken && !pToken->GetReceptacle())
+		{
+			PickUpToken(pToken);
+			return;
+		}
+	}
+
+	// If we couldn't find any tokens or receptacles, just drop our token.
+	DropToken();
+}
+
+void CPlayerCharacter::DropToken()
+{
+	if (m_hToken == nullptr)
+		return;
+
+	m_hToken->SetMoveParent(nullptr);
+	m_hToken->SetGlobalOrigin(GetGlobalOrigin() + GetGlobalTransform().GetForwardVector().Flattened().Normalized());
+	m_hToken->SetGlobalAngles(EAngle(0, GetGlobalAngles().y, 0));
+	m_hToken->SetVisible(true);
+	m_hToken = nullptr;
+}
+
+void CPlayerCharacter::PickUpToken(CToken* pToken)
+{
+	if (m_hToken != nullptr)
+		return;
+
+	m_hToken = pToken;
+
+	pToken->SetVisible(false);
+	pToken->SetMoveParent(this);
+	pToken->SetLocalOrigin(Vector());
+}
+
+CToken* CPlayerCharacter::GetToken() const
+{
+	return m_hToken;
+}
+
+void CPlayerCharacter::Reflected()
+{
+	BaseClass::Reflected();
+
+	if (m_hToken != nullptr)
+		m_hToken->Reflected();
 }
