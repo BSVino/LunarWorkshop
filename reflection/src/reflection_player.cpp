@@ -23,6 +23,17 @@ CPlayerCharacter* CReflectionPlayer::GetPlayerCharacter()
 	return static_cast<CPlayerCharacter*>(m_hCharacter.GetPointer());
 }
 
+void CReflectionPlayer::MouseMotion(int x, int y)
+{
+	if (!GetPlayerCharacter())
+		return;
+
+	if (GetPlayerCharacter()->IsReflected())
+		BaseClass::MouseMotion(-x, y);
+	else
+		BaseClass::MouseMotion(x, y);
+}
+
 void CReflectionPlayer::MouseInput(int iButton, int iState)
 {
 	BaseClass::MouseInput(iButton, iState);

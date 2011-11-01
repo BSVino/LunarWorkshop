@@ -47,4 +47,12 @@ void CPlayerCharacter::PlaceMirror()
 	angGlobal.p = 0;
 	angGlobal.r = 0;
 	pMirror->SetGlobalAngles(angGlobal);
+
+	if (IsReflected())
+		m_hMirrorInside = pMirror;
+}
+
+CMirror* CPlayerCharacter::GetMirror() const
+{
+	return m_hMirror;
 }

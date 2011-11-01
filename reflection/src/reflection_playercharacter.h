@@ -15,6 +15,8 @@ public:
 
 	void						PlaceMirror();
 
+	CMirror*					GetMirror() const;
+
 protected:
 	CEntityHandle<CMirror>		m_hMirror;
 };

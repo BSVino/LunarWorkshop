@@ -569,17 +569,6 @@ void CRenderer::FinishFrame()
 	glReadBuffer(GL_BACK);
 	glDrawBuffer(GL_BACK);
 
-	if (ShouldUseFramebuffers())
-	{
-		if (ShouldUseShaders())
-			SetupSceneShader();
-
-		RenderMapFullscreen(m_oSceneBuffer.m_iMap);
-
-		if (ShouldUseShaders())
-			ClearProgram();
-	}
-
 	RenderFullscreenBuffers();
 
 	glMatrixMode(GL_PROJECTION);
@@ -630,6 +619,17 @@ void CRenderer::RenderOffscreenBuffers()
 void CRenderer::RenderFullscreenBuffers()
 {
 	TPROF("CRenderer::RenderFullscreenBuffers");
+
+	if (ShouldUseFramebuffers())
+	{
+		if (ShouldUseShaders())
+			SetupSceneShader();
+
+		RenderMapFullscreen(m_oSceneBuffer.m_iMap);
+
+		if (ShouldUseShaders())
+			ClearProgram();
+	}
 
 	glEnable(GL_BLEND);
 

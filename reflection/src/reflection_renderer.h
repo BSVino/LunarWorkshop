@@ -18,7 +18,9 @@ public:
 	virtual void	LoadShaders();
 
 	virtual void	SetupFrame();
+	virtual void	StartRendering();
 	virtual void	StartRenderingReflection(CMirror* pMirror);
+	virtual void	RenderFullscreenBuffers();
 
 	void			SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial);
 

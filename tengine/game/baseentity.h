@@ -357,13 +357,13 @@ public:
 
 	const TMatrix&							GetLocalTransform() const { return m_mLocalTransform; }
 	void									SetLocalTransform(const TMatrix& m);
+	virtual void							OnSetLocalTransform(TMatrix& m) {}
 
 	const Quaternion&						GetLocalRotation() const { return m_qLocalRotation; }
 	void									SetLocalRotation(const Quaternion& q);
 
 	virtual inline TVector					GetLocalOrigin() const { return m_vecLocalOrigin; };
 	void									SetLocalOrigin(const TVector& vecOrigin);
-	virtual void							OnSetLocalOrigin(const TVector& vecOrigin) {}
 
 	inline TVector							GetLastLocalOrigin() const { return m_vecLastLocalOrigin; };
 	void									SetLastLocalOrigin(const TVector& vecOrigin) { m_vecLastLocalOrigin = vecOrigin; };

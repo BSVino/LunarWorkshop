@@ -278,8 +278,12 @@ TMatrix CBaseEntity::GetGlobalTransform() const
 
 void CBaseEntity::SetGlobalTransform(const TMatrix& m)
 {
+	TMatrix mNew = m;
+	if (mNew != m_mLocalTransform)
+		OnSetLocalTransform(mNew);
+
 	m_hMoveParent = NULL;
-	m_mGlobalTransform = m_mLocalTransform = m;
+	m_mGlobalTransform = m_mLocalTransform = mNew;
 	m_bGlobalTransformsDirty = false;
 
 	m_vecLocalOrigin = m_mLocalTransform.GetTranslation();
@@ -402,27 +406,40 @@ void CBaseEntity::SetGlobalVelocity(const TVector& vecVelocity)
 
 void CBaseEntity::SetLocalTransform(const TMatrix& m)
 {
-	SetLocalOrigin(m.GetTranslation());
-	SetLocalAngles(m.GetAngles());
+	TMatrix mNew = m;
+	OnSetLocalTransform(mNew);
 
-	m_mLocalTransform = m;
-	m_qLocalRotation = Quaternion(m);
+	if (!m_vecLocalOrigin.IsInitialized())
+		m_vecLocalOrigin = m.GetTranslation();
 
-	InvalidateGlobalTransforms();
+	EAngle angNew = mNew.GetAngles();
+	if (!m_angLocalAngles.IsInitialized())
+		m_angLocalAngles = angNew;
 
 	if (IsInPhysics())
 	{
 		TAssert(!GetMoveParent());
-		GamePhysics()->SetEntityTransform(this, GetGlobalTransform());
+		GamePhysics()->SetEntityTransform(this, mNew);
 	}
+
+	m_mLocalTransform = mNew;
+
+	if ((mNew.GetTranslation() - m_vecLocalOrigin).LengthSqr() > TFloat(0))
+		m_vecLocalOrigin = mNew.GetTranslation();
+
+	EAngle angDifference = angNew - m_angLocalAngles;
+	if (fabs(angDifference.p) > 0.001f || fabs(angDifference.y) > 0.001f || fabs(angDifference.r) > 0.001f)
+	{
+		m_angLocalAngles = mNew.GetAngles();
+		m_qLocalRotation = Quaternion(mNew);
+	}
+
+	InvalidateGlobalTransforms();
 }
 
 void CBaseEntity::SetLocalRotation(const Quaternion& q)
 {
 	SetLocalAngles(q.GetAngles());
-	m_mLocalTransform.SetRotation(q);
-
-	m_qLocalRotation = q;
 
 	InvalidateGlobalTransforms();
 
@@ -449,10 +466,12 @@ void CBaseEntity::SetLocalOrigin(const TVector& vecOrigin)
 	if ((vecOrigin - m_vecLocalOrigin).LengthSqr() == TFloat(0))
 		return;
 
-	OnSetLocalOrigin(vecOrigin);
-	m_vecLocalOrigin = vecOrigin;
+	TMatrix mNew = m_mLocalTransform;
+	mNew.SetTranslation(vecOrigin);
+	OnSetLocalTransform(mNew);
 
-	m_mLocalTransform.SetTranslation(vecOrigin);
+	m_vecLocalOrigin = mNew.GetTranslation();
+	m_mLocalTransform = mNew;
 
 	InvalidateGlobalTransforms();
 };
@@ -499,10 +518,14 @@ void CBaseEntity::SetLocalAngles(const EAngle& angAngles)
 	if (fabs(angDifference.p) < 0.001f && fabs(angDifference.y) < 0.001f && fabs(angDifference.r) < 0.001f)
 		return;
 
-	m_angLocalAngles = angAngles;
+	TMatrix mNew = m_mLocalTransform;
+	mNew.SetAngles(angAngles);
+	OnSetLocalTransform(mNew);
 
-	m_mLocalTransform.SetAngles(angAngles);
-	m_qLocalRotation.SetAngles(angAngles);
+	m_angLocalAngles = mNew.GetAngles();
+
+	m_mLocalTransform = mNew;
+	m_qLocalRotation = Quaternion(mNew);
 
 	InvalidateGlobalTransforms();
 }
