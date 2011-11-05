@@ -31,7 +31,7 @@ namespace glgui
 		virtual void	Paint() { float x = 0, y = 0; GetAbsPos(x, y); Paint(x, y); };
 		virtual void	Paint(float x, float y) { Paint(x, y, m_flW, m_flH); };
 		virtual void	Paint(float x, float y, float w, float h);
-		virtual void	DrawLine(tchar* pszText, unsigned iLength, float x, float y, float w, float h);
+		virtual void	DrawLine(const tchar* pszText, unsigned iLength, float x, float y, float w, float h);
 		virtual void	Layout() {};
 		virtual void	Think() {};
 
@@ -82,23 +82,24 @@ namespace glgui
 	protected:
 		bool			m_bEnabled;
 		bool			m_bWrap;
-		tstring	m_sText;
+		tstring			m_sText;
 		Color			m_FGColor;
 		bool			m_bScissor;
 
 		TextAlign		m_eAlign;
 
-		int				m_iTotalLines;
+		eastl::vector<tstring>	m_asLines;
+
 		int				m_iLine;
 
 		int				m_iPrintChars;
 		int				m_iCharsDrawn;
 
-		tstring	m_sFontName;
+		tstring			m_sFontName;
 		int				m_iFontFaceSize;
 
 		static eastl::map<tstring, eastl::map<size_t, class ::FTFont*> >	s_apFonts;
-		static eastl::map<tstring, tstring>							s_apFontNames;
+		static eastl::map<tstring, tstring>									s_apFontNames;
 	};
 };
 
