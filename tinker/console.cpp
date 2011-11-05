@@ -85,7 +85,7 @@ void CConsole::Layout()
 	BaseClass::Layout();
 }
 
-void CConsole::Paint(int x, int y, int w, int h)
+void CConsole::Paint(float x, float y, float w, float h)
 {
 	if (!CApplication::Get()->IsOpen())
 		return;
@@ -121,9 +121,9 @@ void CConsole::Paint(int x, int y, int w, int h)
 		}
 
 		if (bAbbreviated)
-			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (iCommandsToShow+1)*13+3, Color(0, 0, 0, 200));
+			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)(iCommandsToShow+1)*13+3, Color(0, 0, 0, 200));
 		else
-			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, iCommandsToShow*13+3, Color(0, 0, 0, 200));
+			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)iCommandsToShow*13+3, Color(0, 0, 0, 200));
 
 		int iCommandsToSkip = 0;
 		if (m_iAutoComplete >= 0 && asCommands.size())

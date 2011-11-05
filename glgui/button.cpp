@@ -6,7 +6,7 @@
 
 using namespace glgui;
 
-CButton::CButton(int x, int y, int w, int h, const tstring& sText, bool bToggle, const tstring& sFont, size_t iSize)
+CButton::CButton(float x, float y, float w, float h, const tstring& sText, bool bToggle, const tstring& sFont, size_t iSize)
 	: CLabel(x, y, w, h, sText, sFont, iSize)
 {
 	m_bToggle = bToggle;
@@ -161,7 +161,7 @@ void CButton::Think()
 	CLabel::Think();
 }
 
-void CButton::Paint(int x, int y, int w, int h)
+void CButton::Paint(float x, float y, float w, float h)
 {
 	if (!IsVisible())
 		return;
@@ -172,7 +172,7 @@ void CButton::Paint(int x, int y, int w, int h)
 	CLabel::Paint(x, y, w, h);
 }
 
-void CButton::PaintButton(int x, int y, int w, int h)
+void CButton::PaintButton(float x, float y, float w, float h)
 {
 	if (m_bDown)
 	{

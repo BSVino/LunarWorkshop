@@ -18,13 +18,13 @@ namespace glgui
 #endif
 
 	public:
-								CPanel(int x, int y, int w, int h);
+								CPanel(float x, float y, float w, float h);
 		virtual					~CPanel();
 
 	public:
 		virtual void			Paint();
-		virtual void			Paint(int x, int y);
-		virtual void			Paint(int x, int y, int w, int h);
+		virtual void			Paint(float x, float y);
+		virtual void			Paint(float x, float y, float w, float h);
 		virtual void			Layout();
 		virtual void			Think();
 		virtual void			UpdateScene();
@@ -57,7 +57,7 @@ namespace glgui
 		void					SetBorder(Border b) { m_eBorder = b; };
 
 	protected:
-		virtual void			PaintBorder(int x, int y, int w, int h);
+		virtual void			PaintBorder(float x, float y, float w, float h);
 
 		eastl::vector<IControl*>	m_apControls;
 

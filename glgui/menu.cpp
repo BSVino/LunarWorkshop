@@ -35,11 +35,11 @@ void CMenuBar::Layout( void )
 
 	CPanel::Layout();
 
-	int iX = 0;
+	float x = 0;
 	for (size_t i = 0; i < m_apControls.size(); i++)
 	{
-		m_apControls[i]->SetPos(iX, 0);
-		iX += m_apControls[i]->GetWidth() + MENU_SPACING;
+		m_apControls[i]->SetPos(x, 0);
+		x += m_apControls[i]->GetWidth() + MENU_SPACING;
 	}
 }
 
@@ -106,7 +106,8 @@ void CMenu::Think()
 
 	for (size_t i = 0; i < m_pMenu->GetControls().size(); i++)
 	{
-		int cx, cy, cw, ch, mx, my;
+		float cx, cy, cw, ch;
+		int mx, my;
 		m_pMenu->GetControls()[i]->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::GetFullscreenMousePos(mx, my);
 		if (mx >= cx &&
@@ -135,18 +136,18 @@ void CMenu::Think()
 
 void CMenu::Layout()
 {
-	int iHeight = 0;
-	int iWidth = 0;
+	float iHeight = 0;
+	float iWidth = 0;
 	eastl::vector<IControl*> apControls = m_pMenu->GetControls();
 	for (size_t i = 0; i < apControls.size(); i++)
 	{
-		apControls[i]->SetPos(5, (int)(i*MENU_HEIGHT));
+		apControls[i]->SetPos(5, (float)(i*MENU_HEIGHT));
 		iHeight += MENU_HEIGHT;
 		if (apControls[i]->GetWidth()+10 > iWidth)
 			iWidth = apControls[i]->GetWidth()+10;
 	}
 
-	int x, y;
+	float x, y;
 	GetAbsPos(x, y);
 
 	m_pMenu->SetSize(iWidth, iHeight);
@@ -155,7 +156,7 @@ void CMenu::Layout()
 	m_pMenu->Layout();
 }
 
-void CMenu::Paint(int x, int y, int w, int h)
+void CMenu::Paint(float x, float y, float w, float h)
 {
 	if (!m_bSubmenu)
 	{
@@ -166,7 +167,7 @@ void CMenu::Paint(int x, int y, int w, int h)
 
 	if (m_pMenu->IsVisible())
 	{
-		int mx, my, mw, mh;
+		float mx, my, mw, mh;
 		m_pMenu->GetAbsDimensions(mx, my, mw, mh);
 
 		float flMenuHeight = Lerp(m_flMenuHeight, 0.6f);
@@ -175,13 +176,13 @@ void CMenu::Paint(int x, int y, int w, int h)
 
 		Color clrBox = g_clrBox;
 		clrBox.SetAlpha((int)RemapVal(m_flMenuHighlight, 0, 1, 0, 255));
-		CRootPanel::PaintRect(mx, (int)(my), mw, (int)(mh*flMenuHeight), clrBox);
+		CRootPanel::PaintRect(mx, (float)(my), mw, (float)(mh*flMenuHeight), clrBox);
 
 		if (m_flMenuSelectionHighlight > 0)
 		{
 			clrBox = g_clrBoxHi;
 			clrBox.SetAlpha((int)(255 * m_flMenuSelectionHighlight * flMenuHeight));
-			CRootPanel::PaintRect((int)m_MenuSelection.x, (int)m_MenuSelection.y+1, (int)m_MenuSelection.w, (int)m_MenuSelection.h-2, clrBox);
+			CRootPanel::PaintRect((float)m_MenuSelection.x, (float)m_MenuSelection.y+1, (float)m_MenuSelection.w, (float)m_MenuSelection.h-2, clrBox);
 		}
 	}
 
@@ -259,7 +260,8 @@ size_t CMenu::GetSelectedMenu()
 {
 	for (size_t i = 0; i < m_apEntries.size(); i++)
 	{
-		int cx, cy, cw, ch, mx, my;
+		float cx, cy, cw, ch;
+		int mx, my;
 		m_apEntries[i]->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::GetFullscreenMousePos(mx, my);
 		if (mx >= cx &&
@@ -297,7 +299,7 @@ void CMenu::CSubmenuPanel::Think()
 	{
 		IControl* pControl = m_apControls[i];
 
-		int x, y;
+		float x, y;
 		pControl->GetPos(x, y);
 
 		if (y < m_flFakeHeight*GetHeight())

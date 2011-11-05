@@ -77,7 +77,7 @@ void CRootPanel::UpdateScene()
 	CPanel::UpdateScene();
 }
 
-void CRootPanel::Paint(int x, int y, int w, int h)
+void CRootPanel::Paint(float x, float y, float w, float h)
 {
 	SetSize(w, h);
 
@@ -114,8 +114,8 @@ void CRootPanel::Paint(int x, int y, int w, int h)
 		int mx, my;
 		CRootPanel::GetFullscreenMousePos(mx, my);
 
-		int iWidth = m_pDragging->GetCurrentDraggable()->GetWidth();
-		int iHeight = m_pDragging->GetCurrentDraggable()->GetHeight();
+		float iWidth = m_pDragging->GetCurrentDraggable()->GetWidth();
+		float iHeight = m_pDragging->GetCurrentDraggable()->GetHeight();
 		m_pDragging->GetCurrentDraggable()->Paint(mx-iWidth/2, my-iHeight/2, iWidth, iHeight, true);
 	}
 
@@ -138,7 +138,7 @@ void CRootPanel::Layout()
 
 	int aiViewport[4];
 	glGetIntegerv(GL_VIEWPORT, aiViewport);
-	SetDimensions(aiViewport[0], aiViewport[1], aiViewport[2], aiViewport[3]);
+	SetDimensions((float)aiViewport[0], (float)aiViewport[1], (float)aiViewport[2], (float)aiViewport[3]);
 
 	CPanel::Layout();
 }
@@ -159,7 +159,7 @@ bool CRootPanel::MousePressed(int code, int mx, int my, bool bInsideControl)
 
 	if (m_pPopup)
 	{
-		int x = 0, y = 0, w = 0, h = 0;
+		float x = 0, y = 0, w = 0, h = 0;
 		m_pPopup->GetAbsDimensions(x, y, w, h);
 		if (!(mx >= x &&
 			my >= y &&
@@ -185,7 +185,7 @@ bool CRootPanel::MousePressed(int code, int mx, int my, bool bInsideControl)
 		if (!pControl->IsVisible())
 			continue;
 
-		int x = 0, y = 0, w = 0, h = 0;
+		float x = 0, y = 0, w = 0, h = 0;
 		pControl->GetAbsDimensions(x, y, w, h);
 		if (mx >= x &&
 			my >= y &&
@@ -334,6 +334,6 @@ void CRootPanel::GetFullscreenMousePos(int& mx, int& my)
 	my = Get()->m_iMY;
 }
 
-void CRootPanel::DrawRect(int x, int y, int x2, int y2)
+void CRootPanel::DrawRect(float x, float y, float x2, float y2)
 {
 }

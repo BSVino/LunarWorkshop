@@ -4,7 +4,7 @@
 
 using namespace glgui;
 
-CDroppablePanel::CDroppablePanel(int x, int y, int w, int h)
+CDroppablePanel::CDroppablePanel(float x, float y, float w, float h)
 	: CPanel(x, y, w, h)
 {
 	m_bGrabbable = true;
@@ -24,7 +24,7 @@ CDroppablePanel::~CDroppablePanel()
 		CRootPanel::Get()->RemoveDroppable(this);
 }
 
-void CDroppablePanel::Paint(int x, int y, int w, int h)
+void CDroppablePanel::Paint(float x, float y, float w, float h)
 {
 	if (!IsVisible())
 		return;
@@ -32,23 +32,23 @@ void CDroppablePanel::Paint(int x, int y, int w, int h)
 	for (size_t i = 0; i < m_apDraggables.size(); i++)
 	{
 		// Translate this location to the child's local space.
-		int ax, ay;
+		float ax, ay;
 		FRect c = m_apDraggables[i]->GetHoldingRect();
 		GetAbsPos(ax, ay);
-		m_apDraggables[i]->Paint((int)c.x+x-ax, (int)c.y+y-ay);
+		m_apDraggables[i]->Paint(c.x+x-ax, c.y+y-ay);
 	}
 
 	CPanel::Paint(x, y, w, h);
 }
 
-void CDroppablePanel::SetSize(int w, int h)
+void CDroppablePanel::SetSize(float w, float h)
 {
 	CPanel::SetSize(w, h);
 	for (size_t i = 0; i < m_apDraggables.size(); i++)
 		m_apDraggables[i]->SetHoldingRect(GetHoldingRect());
 }
 
-void CDroppablePanel::SetPos(int x, int y)
+void CDroppablePanel::SetPos(float x, float y)
 {
 	CPanel::SetPos(x, y);
 	for (size_t i = 0; i < m_apDraggables.size(); i++)

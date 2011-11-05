@@ -7,13 +7,13 @@
 
 using namespace glgui;
 
-CBaseControl::CBaseControl(int x, int y, int w, int h)
+CBaseControl::CBaseControl(float x, float y, float w, float h)
 {
 	SetParent(NULL);
-	m_iX = x;
-	m_iY = y;
-	m_iW = w;
-	m_iH = h;
+	m_flX = x;
+	m_flY = y;
+	m_flW = w;
+	m_flH = h;
 	m_bVisible = true;
 	SetAlpha(255);
 
@@ -29,7 +29,7 @@ CBaseControl::CBaseControl(int x, int y, int w, int h)
 
 CBaseControl::CBaseControl(const FRect& Rect)
 {
-	CBaseControl((int)Rect.x, (int)Rect.y, (int)Rect.w, (int)Rect.h);
+	CBaseControl(Rect.x, Rect.y, Rect.w, Rect.h);
 }
 
 CBaseControl::~CBaseControl()
@@ -47,45 +47,45 @@ CBaseControl::~CBaseControl()
 	// Parent is IControl, which is virtual.
 }
 
-void CBaseControl::GetAbsPos(int &x, int &y)
+void CBaseControl::GetAbsPos(float &x, float &y)
 {
-	int px = 0;
-	int py = 0;
+	float px = 0;
+	float py = 0;
 	if (GetParent())
 		GetParent()->GetAbsPos(px, py);
-	x = m_iX + px;
-	y = m_iY + py;
+	x = m_flX + px;
+	y = m_flY + py;
 }
 
-void CBaseControl::GetAbsDimensions(int &x, int &y, int &w, int &h)
+void CBaseControl::GetAbsDimensions(float &x, float &y, float &w, float &h)
 {
 	GetAbsPos(x, y);
-	w = m_iW;
-	h = m_iH;
+	w = m_flW;
+	h = m_flH;
 }
 
 FRect CBaseControl::GetAbsDimensions()
 {
-	int x, y;
+	float x, y;
 	GetAbsPos(x, y);
 
 	FRect r;
-	r.x = (float)x;
-	r.y = (float)y;
-	r.w = (float)m_iW;
-	r.h = (float)m_iH;
+	r.x = x;
+	r.y = y;
+	r.w = m_flW;
+	r.h = m_flH;
 
 	return r;
 }
 
-void CBaseControl::SetRight(int r)
+void CBaseControl::SetRight(float r)
 {
-	m_iW = r - m_iX;
+	m_flW = r - m_flX;
 }
 
-void CBaseControl::SetBottom(int b)
+void CBaseControl::SetBottom(float b)
 {
-	m_iH = b - m_iY;
+	m_flH = b - m_flY;
 }
 
 void CBaseControl::SetVisible(bool bVis)
@@ -112,17 +112,17 @@ bool CBaseControl::MousePressed(int iButton, int mx, int my)
 
 void CBaseControl::Paint()
 {
-	int x = 0, y = 0;
+	float x = 0, y = 0;
 	GetAbsPos(x, y);
 	Paint(x, y);
 }
 
-void CBaseControl::Paint(int x, int y)
+void CBaseControl::Paint(float x, float y)
 {
-	Paint(x, y, m_iW, m_iH);
+	Paint(x, y, m_flW, m_flH);
 }
 
-void CBaseControl::Paint(int x, int y, int w, int h)
+void CBaseControl::Paint(float x, float y, float w, float h)
 {
 	if (m_sTip.length() > 0 && m_flMouseInTime > 0 && CRootPanel::Get()->GetTime() > m_flMouseInTime + 0.5f)
 	{
@@ -134,17 +134,17 @@ void CBaseControl::Paint(int x, int y, int w, int h)
 		int mx, my;
 		CRootPanel::GetFullscreenMousePos(mx, my);
 
-		int iTooltipRight = (int)(mx + flTextWidth);
+		float iTooltipRight = mx + flTextWidth;
 		if (iTooltipRight > CRootPanel::Get()->GetWidth())
-			mx -= (iTooltipRight - CRootPanel::Get()->GetWidth());
+			mx -= (int)(iTooltipRight - CRootPanel::Get()->GetWidth());
 
-		PaintRect(mx-3, (int)(my-flFontHeight)+1, (int)flTextWidth+6, (int)flFontHeight+6); 
+		PaintRect((float)mx-3, my-flFontHeight+1, flTextWidth+6, flFontHeight+6); 
 		glColor4ubv(Color(255, 255, 255, 255));
 		CLabel::PaintText(m_sTip, m_sTip.length(), _T("sans-serif"), iFontSize, (float)mx, (float)my);
 	}
 }
 
-void CBaseControl::PaintRect(int x, int y, int w, int h, const Color& c)
+void CBaseControl::PaintRect(float x, float y, float w, float h, const Color& c)
 {
 	glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT);
 
@@ -165,22 +165,22 @@ void CBaseControl::PaintRect(int x, int y, int w, int h, const Color& c)
 	{
 		glBegin(GL_QUADS);
 			glNormal3f(-0.707106781f, 0.707106781f, 0);	// Give 'em normals so that the light falls on them cool-like.
-			glVertex2d(x, y);
+			glVertex2f(x, y);
 			glNormal3f(-0.707106781f, -0.707106781f, 0);
-			glVertex2d(x, y+h);
+			glVertex2f(x, y+h);
 			glNormal3f(0.707106781f, -0.707106781f, 0);
-			glVertex2d(x+w-1, y+h);
+			glVertex2f(x+w-1, y+h);
 			glNormal3f(0.707106781f, 0.707106781f, 0);
-			glVertex2d(x+w-1, y);
+			glVertex2f(x+w-1, y);
 		glEnd();
 	}
 	else
 	{
 		glBegin(GL_LINES);
 			glNormal3f(0, 1.0, 0);
-			glVertex2d(x, y);
+			glVertex2f(x, y);
 			glNormal3f(0, -1.0, 0);
-			glVertex2d(x, y+h);
+			glVertex2f(x, y+h);
 		glEnd();
 	}
 
@@ -188,21 +188,21 @@ void CBaseControl::PaintRect(int x, int y, int w, int h, const Color& c)
 	{
 		glBegin(GL_LINES);
 			glNormal3f(-0.707106781f, 0.707106781f, 0);
-			glVertex2d(x, y+1);
+			glVertex2f(x, y+1);
 			glNormal3f(-0.707106781f, -0.707106781f, 0);
-			glVertex2d(x, y+h-1);
+			glVertex2f(x, y+h-1);
 
 			glNormal3f(0.707106781f, 0.707106781f, 0);
-			glVertex2d(x+w, y+1);
+			glVertex2f(x+w, y+1);
 			glNormal3f(0.707106781f, -0.707106781f, 0);
-			glVertex2d(x+w, y+h-1);
+			glVertex2f(x+w, y+h-1);
 		glEnd();
 	}
 
 	glPopAttrib();
 }
 
-void CBaseControl::PaintTexture(size_t iTexture, int x, int y, int w, int h, const Color& c)
+void CBaseControl::PaintTexture(size_t iTexture, float x, float y, float w, float h, const Color& c)
 {
 	glPushAttrib(GL_ENABLE_BIT);
 
@@ -212,20 +212,20 @@ void CBaseControl::PaintTexture(size_t iTexture, int x, int y, int w, int h, con
 	glColor4ubv(c);
 	glBegin(GL_QUADS);
 		glTexCoord2f(0, 1);
-		glVertex2d(x, y);
+		glVertex2f(x, y);
 		glTexCoord2f(0, 0);
-		glVertex2d(x, y+h);
+		glVertex2f(x, y+h);
 		glTexCoord2f(1, 0);
-		glVertex2d(x+w, y+h);
+		glVertex2f(x+w, y+h);
 		glTexCoord2f(1, 1);
-		glVertex2d(x+w, y);
+		glVertex2f(x+w, y);
 	glEnd();
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glPopAttrib();
 }
 
-void CBaseControl::PaintSheet(size_t iTexture, int x, int y, int w, int h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c)
+void CBaseControl::PaintSheet(size_t iTexture, float x, float y, float w, float h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c)
 {
 	glPushAttrib(GL_ENABLE_BIT);
 
@@ -236,13 +236,13 @@ void CBaseControl::PaintSheet(size_t iTexture, int x, int y, int w, int h, int s
 	glColor4ubv(c);
 	glBegin(GL_QUADS);
 		glTexCoord2f((float)sx/tw, 1-(float)sy/th);
-		glVertex2d(x, y);
+		glVertex2f(x, y);
 		glTexCoord2f((float)sx/tw, 1-((float)sy+sh)/th);
-		glVertex2d(x, y+h);
+		glVertex2f(x, y+h);
 		glTexCoord2f(((float)sx+sw)/tw, 1-((float)sy+sh)/th);
-		glVertex2d(x+w, y+h);
+		glVertex2f(x+w, y+h);
 		glTexCoord2f(((float)sx+sw)/tw, 1-(float)sy/th);
-		glVertex2d(x+w, y);
+		glVertex2f(x+w, y);
 	glEnd();
 	glBindTexture(GL_TEXTURE_2D, 0);
 

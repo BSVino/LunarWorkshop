@@ -41,7 +41,7 @@ namespace glgui
 		virtual void		Open()=0;
 		virtual void		Close()=0;
 	
-		virtual void		GetAbsDimensions(int &x, int &y, int &w, int &h)=0;	// Screen space
+		virtual void		GetAbsDimensions(float &x, float &y, float &w, float &h)=0;	// Screen space
 
 		virtual void		SetVisible(bool bVisible)=0;
 	};
@@ -56,23 +56,23 @@ namespace glgui
 		virtual void		LevelShutdown()=0;
 		virtual void		LoadTextures()=0;
 
-		virtual void		SetSize(int w, int h)=0;
-		virtual void		SetPos(int x, int y)=0;
-		virtual void		GetSize(int &w, int &h)=0;
-		virtual void		GetPos(int &x, int &y)=0;
-		virtual void		GetAbsPos(int &x, int &y)=0;	// Screen space
-		virtual void		GetAbsDimensions(int &x, int &y, int &w, int &h)=0;	// Screen space
-		virtual void		GetBR(int &x, int &y)=0;
-		virtual int			GetWidth()=0;
-		virtual int			GetHeight()=0;
+		virtual void		SetSize(float w, float h)=0;
+		virtual void		SetPos(float x, float y)=0;
+		virtual void		GetSize(float &w, float &h)=0;
+		virtual void		GetPos(float &x, float &y)=0;
+		virtual void		GetAbsPos(float &x, float &y)=0;	// Screen space
+		virtual void		GetAbsDimensions(float &x, float &y, float &w, float &h)=0;	// Screen space
+		virtual void		GetBR(float &x, float &y)=0;
+		virtual float		GetWidth()=0;
+		virtual float		GetHeight()=0;
 		virtual void		SetAlpha(int a)=0;
 		virtual int			GetAlpha()=0;
 
 		virtual bool		IsVisible()=0;
 		virtual void		SetVisible(bool bVisible)=0;
 		virtual void		Paint()=0;
-		virtual void		Paint(int x, int y)=0;
-		virtual void		Paint(int x, int y, int w, int h)=0;
+		virtual void		Paint(float x, float y)=0;
+		virtual void		Paint(float x, float y, float w, float h)=0;
 		virtual void		Layout()=0;
 		virtual void		Think()=0;
 		virtual void		UpdateScene()=0;
@@ -112,12 +112,12 @@ namespace glgui
 		virtual void			SetDroppable(IDroppable* pDroppable)=0;
 
 		virtual void			Paint()=0;
-		virtual void			Paint(int x, int y)=0;
-		virtual void			Paint(int x, int y, int w, int h)=0;
-		virtual void			Paint(int x, int y, int w, int h, bool bFloating)=0;
+		virtual void			Paint(float x, float y)=0;
+		virtual void			Paint(float x, float y, float w, float h)=0;
+		virtual void			Paint(float x, float y, float w, float h, bool bFloating)=0;
 
-		virtual int				GetWidth()=0;
-		virtual int				GetHeight()=0;
+		virtual float			GetWidth()=0;
+		virtual float			GetHeight()=0;
 
 		virtual DragClass_t		GetClass()=0;
 		virtual IDraggable*		MakeCopy()=0;

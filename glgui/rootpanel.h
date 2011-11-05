@@ -14,7 +14,7 @@ namespace glgui
 	public:
 		virtual void				Think(float flTime);
 		virtual void				UpdateScene();
-		virtual void				Paint(int x, int y, int w, int h);
+		virtual void				Paint(float x, float y, float w, float h);
 		virtual void				Layout();
 
 		virtual bool				MousePressed(int code, int mx, int my, bool bInsideControl = false);
@@ -53,7 +53,7 @@ namespace glgui
 		static bool					GetCloseAfter();
 
 		static void					GetFullscreenMousePos(int& mx, int& my);
-		static void					DrawRect(int x, int y, int x2, int y2);
+		static void					DrawRect(float x, float y, float x2, float y2);
 
 	private:
 		static CRootPanel*			s_pRootPanel;

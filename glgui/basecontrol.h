@@ -8,7 +8,7 @@ namespace glgui
 	class CBaseControl : public IControl
 	{
 	public:
-						CBaseControl(int x, int y, int w, int h);
+						CBaseControl(float x, float y, float w, float h);
 						CBaseControl(const FRect& Rect);
 		virtual			~CBaseControl();
 
@@ -19,32 +19,32 @@ namespace glgui
 		virtual void	LoadTextures() {};
 
 		virtual void	Paint();
-		virtual void	Paint(int x, int y);
-		virtual void	Paint(int x, int y, int w, int h);
+		virtual void	Paint(float x, float y);
+		virtual void	Paint(float x, float y, float w, float h);
 		virtual void	Layout() {};
 		virtual void	Think() {};
 		virtual void	UpdateScene() {};
 
-		virtual void	SetSize(int w, int h) { m_iW = w; m_iH = h; };
-		virtual void	SetPos(int x, int y) { m_iX = x; m_iY = y; };
-		virtual void	GetSize(int &w, int &h) { w = m_iW; h = m_iH; };
-		virtual void	GetPos(int &x, int &y) { x = m_iX; y = m_iY; };
-		virtual void	GetAbsPos(int &x, int &y);
-		virtual void	GetAbsDimensions(int &x, int &y, int &w, int &h);
+		virtual void	SetSize(float w, float h) { m_flW = w; m_flH = h; };
+		virtual void	SetPos(float x, float y) { m_flX = x; m_flY = y; };
+		virtual void	GetSize(float &w, float &h) { w = m_flW; h = m_flH; };
+		virtual void	GetPos(float &x, float &y) { x = m_flX; y = m_flY; };
+		virtual void	GetAbsPos(float &x, float &y);
+		virtual void	GetAbsDimensions(float &x, float &y, float &w, float &h);
 		virtual FRect	GetAbsDimensions();
-		virtual int		GetWidth() { return m_iW; };
-		virtual int		GetHeight() { return m_iH; };
-		virtual void	SetDimensions(int x, int y, int w, int h) { m_iX = x; m_iY = y; m_iW = w; m_iH = h; };	// Local space
-		virtual void	SetDimensions(const FRect& Dims) { SetDimensions((int)Dims.x, (int)Dims.y, (int)Dims.w, (int)Dims.h); };	// Local space
-		virtual void	GetBR(int &x, int &y) { x = m_iX + m_iW; y = m_iY + m_iH; };
+		virtual float	GetWidth() { return m_flW; };
+		virtual float	GetHeight() { return m_flH; };
+		virtual void	SetDimensions(float x, float y, float w, float h) { m_flX = x; m_flY = y; m_flW = w; m_flH = h; };	// Local space
+		virtual void	SetDimensions(const FRect& Dims) { SetDimensions(Dims.x, Dims.y, Dims.w, Dims.h); };	// Local space
+		virtual void	GetBR(float &x, float &y) { x = m_flX + m_flW; y = m_flY + m_flH; };
 		virtual void	SetAlpha(int a) { m_iAlpha = a; };
 		virtual int		GetAlpha() { return m_iAlpha; };
-		virtual void	SetRight(int r);
-		virtual void	SetBottom(int b);
-		virtual int		GetLeft() { return m_iX; };
-		virtual int		GetTop() { return m_iY; };
-		virtual int		GetRight() { return m_iX + m_iW; };
-		virtual int		GetBottom() { return m_iY + m_iH; };
+		virtual void	SetRight(float r);
+		virtual void	SetBottom(float b);
+		virtual float	GetLeft() { return m_flX; };
+		virtual float	GetTop() { return m_flY; };
+		virtual float	GetRight() { return m_flX + m_flW; };
+		virtual float	GetBottom() { return m_flY + m_flH; };
 
 		virtual void	SetVisible(bool bVis);
 		virtual bool	IsVisible();
@@ -71,17 +71,17 @@ namespace glgui
 		virtual void	SetTooltip(const tstring& sTip);
 		virtual tstring	GetTooltip() { return m_sTip; };
 
-		static void		PaintRect(int x, int y, int w, int h, const Color& c = g_clrBox);
-		static void		PaintTexture(size_t iTexture, int x, int y, int w, int h, const Color& c = Color(255, 255, 255, 255));
-		static void		PaintSheet(size_t iTexture, int x, int y, int w, int h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c = Color(255, 255, 255, 255));
+		static void		PaintRect(float x, float y, float w, float h, const Color& c = g_clrBox);
+		static void		PaintTexture(size_t iTexture, float x, float y, float w, float h, const Color& c = Color(255, 255, 255, 255));
+		static void		PaintSheet(size_t iTexture, float x, float y, float w, float h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c = Color(255, 255, 255, 255));
 
 	protected:
 		IControl*		m_pParent;
 
-		int				m_iX;
-		int				m_iY;
-		int				m_iW;
-		int				m_iH;
+		float			m_flX;
+		float			m_flY;
+		float			m_flW;
+		float			m_flH;
 
 		int				m_iAlpha;
 

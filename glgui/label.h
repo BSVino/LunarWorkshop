@@ -14,7 +14,7 @@ namespace glgui
 		friend class CRootPanel;
 
 	public:
-						CLabel(int x, int y, int w, int h, const tstring& sText, const tstring& sFont=_T("sans-serif"), size_t iSize=13);
+						CLabel(float x, float y, float w, float h, const tstring& sText, const tstring& sFont=_T("sans-serif"), size_t iSize=13);
 
 	public:
 		typedef enum
@@ -28,14 +28,14 @@ namespace glgui
 			TA_BOTTOMLEFT	= 6,
 		} TextAlign;
 
-		virtual void	Paint() { int x = 0, y = 0; GetAbsPos(x, y); Paint(x, y); };
-		virtual void	Paint(int x, int y) { Paint(x, y, m_iW, m_iH); };
-		virtual void	Paint(int x, int y, int w, int h);
-		virtual void	DrawLine(tchar* pszText, unsigned iLength, int x, int y, int w, int h);
+		virtual void	Paint() { float x = 0, y = 0; GetAbsPos(x, y); Paint(x, y); };
+		virtual void	Paint(float x, float y) { Paint(x, y, m_flW, m_flH); };
+		virtual void	Paint(float x, float y, float w, float h);
+		virtual void	DrawLine(tchar* pszText, unsigned iLength, float x, float y, float w, float h);
 		virtual void	Layout() {};
 		virtual void	Think() {};
 
-		virtual void	SetSize(int w, int h);
+		virtual void	SetSize(float w, float h);
 
 		virtual bool	MousePressed(int code, int mx, int my) {return false;};
 		virtual bool	MouseReleased(int code, int mx, int my) {return false;};
@@ -58,9 +58,9 @@ namespace glgui
 		virtual void	SetFont(const tstring& sFontName, int iSize=13);
 		virtual int		GetFontFaceSize() { return m_iFontFaceSize; };
 
-		virtual int		GetTextWidth();
+		virtual float	GetTextWidth();
 		virtual float	GetTextHeight();
-		virtual void	ComputeLines(int w = -1, int h = -1);
+		virtual void	ComputeLines(float w = -1, float h = -1);
 		virtual void	EnsureTextFits();
 
 		virtual Color	GetFGColor();

@@ -43,8 +43,8 @@ CTree::~CTree()
 
 void CTree::Layout()
 {
-	m_iCurrentHeight = 0;
-	m_iCurrentDepth = 0;
+	m_flCurrentHeight = 0;
+	m_flCurrentDepth = 0;
 
 	for (size_t i = 0; i < m_apNodes.size(); i++)
 		m_apNodes[i]->LayoutNode();
@@ -65,7 +65,7 @@ void CTree::Think()
 		if (!pNode->IsVisible())
 			continue;
 
-		int x, y, w, h;
+		float x, y, w, h;
 		pNode->GetAbsDimensions(x, y, w, h);
 
 		if (mx >= x && my >= y && mx < x+w && my < y+h)
@@ -87,17 +87,17 @@ void CTree::Think()
 
 void CTree::Paint()
 {
-	int x = 0, y = 0;
+	float x = 0, y = 0;
 	GetAbsPos(x, y);
 	Paint(x, y);
 }
 
-void CTree::Paint(int x, int y)
+void CTree::Paint(float x, float y)
 {
-	Paint(x, y, m_iW, m_iH);
+	Paint(x, y, m_flW, m_flH);
 }
 
-void CTree::Paint(int x, int y, int w, int h)
+void CTree::Paint(float x, float y, float w, float h)
 {
 	CRootPanel::PaintRect(x, y, w, h, m_clrBackground);
 
@@ -108,7 +108,7 @@ void CTree::Paint(int x, int y, int w, int h)
 	if (m_iHilighted != ~0)
 	{
 		IControl* pNode = m_apControls[m_iHilighted];
-		int cx, cy, cw, ch;
+		float cx, cy, cw, ch;
 		pNode->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::PaintRect(cx, cy, cw, ch, clrHilight);
 	}
@@ -116,7 +116,7 @@ void CTree::Paint(int x, int y, int w, int h)
 	if (m_iSelected != ~0 && m_apControls[m_iSelected]->IsVisible())
 	{
 		IControl* pNode = m_apControls[m_iSelected];
-		int cx, cy, cw, ch;
+		float cx, cy, cw, ch;
 		pNode->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::PaintRect(cx, cy, cw, ch, clrSelected);
 	}
@@ -141,7 +141,7 @@ bool CTree::MousePressed(int code, int mx, int my)
 		if (!pNode->IsVisible())
 			continue;
 
-		int x, y, w, h;
+		float x, y, w, h;
 		pNode->GetAbsDimensions(x, y, w, h);
 
 		if (mx >= x && my >= y && mx < x+w && my < y+h)
@@ -315,47 +315,47 @@ CTreeNode::~CTreeNode()
 //		delete m_apNodes[i];
 }
 
-int CTreeNode::GetNodeHeight()
+float CTreeNode::GetNodeHeight()
 {
-	return (int)m_pLabel->GetTextHeight();
+	return m_pLabel->GetTextHeight();
 }
 
 void CTreeNode::LayoutNode()
 {
-	int& iCurrentDepth = m_pTree->m_iCurrentDepth;
-	int& iCurrentHeight = m_pTree->m_iCurrentHeight;
+	float& flCurrentDepth = m_pTree->m_flCurrentDepth;
+	float& flCurrentHeight = m_pTree->m_flCurrentHeight;
 
-	int iHeight = GetNodeHeight();
+	float flHeight = GetNodeHeight();
 
-	int iX = iCurrentDepth*iHeight;
-	int iY = iCurrentHeight;
-	int iW = m_pTree->GetWidth() - iCurrentDepth*iHeight;
-	int iH = iHeight;
+	float x = flCurrentDepth*flHeight;
+	float y = flCurrentHeight;
+	float w = m_pTree->GetWidth() - flCurrentDepth*flHeight;
+	float h = flHeight;
 
-	SetPos(iX, iY);
-	SetSize(iW, iH);
+	SetPos(x, y);
+	SetSize(w, h);
 
 	m_pExpandButton->SetPos(0, 0);
-	m_pExpandButton->SetSize(iHeight, iHeight);
+	m_pExpandButton->SetSize(flHeight, flHeight);
 
-	iCurrentHeight += iHeight;
-	iCurrentHeight += GetNodeSpacing();
+	flCurrentHeight += flHeight;
+	flCurrentHeight += GetNodeSpacing();
 
 	if (IsExpanded())
 	{
-		iCurrentDepth++;
+		flCurrentDepth += 1;
 		for (size_t i = 0; i < m_apNodes.size(); i++)
 			m_apNodes[i]->LayoutNode();
-		iCurrentDepth--;
+		flCurrentDepth -= 1;
 	}
 }
 
-void CTreeNode::Paint(int x, int y, int w, int h)
+void CTreeNode::Paint(float x, float y, float w, float h)
 {
 	Paint(x, y, w, h, false);
 }
 
-void CTreeNode::Paint(int x, int y, int w, int h, bool bFloating)
+void CTreeNode::Paint(float x, float y, float w, float h, bool bFloating)
 {
 	if (!IsVisible())
 		return;
@@ -365,10 +365,10 @@ void CTreeNode::Paint(int x, int y, int w, int h, bool bFloating)
 
 //	CBaseControl::PaintRect(x+15, y, w-25, h);
 
-	int iIconSize = 0;
+	float flIconSize = 0;
 	if (m_iIconTexture)
 	{
-		iIconSize = 12;
+		flIconSize = 12;
 
 		glPushAttrib(GL_ENABLE_BIT);
 		glEnable(GL_BLEND);
@@ -380,20 +380,20 @@ void CTreeNode::Paint(int x, int y, int w, int h, bool bFloating)
 		glColor4f(1,1,1,1);
 		glBegin(GL_QUADS);
 			glTexCoord2f(0, 1);
-			glVertex2d(x+12, y);
+			glVertex2f(x+12, y);
 			glTexCoord2f(0, 0);
-			glVertex2d(x+12, y+iIconSize);
+			glVertex2f(x+12, y+flIconSize);
 			glTexCoord2f(1, 0);
-			glVertex2d(x+12+iIconSize, y+iIconSize);
+			glVertex2f(x+12+flIconSize, y+flIconSize);
 			glTexCoord2f(1, 1);
-			glVertex2d(x+12+iIconSize, y);
+			glVertex2f(x+12+flIconSize, y);
 		glEnd();
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glPopAttrib();
 	}
 
-	m_pLabel->Paint(x+h+iIconSize, y, w-h-iIconSize, h);
+	m_pLabel->Paint(x+h+flIconSize, y, w-h-flIconSize, h);
 
 	if (m_pVisibilityButton)
 		m_pVisibilityButton->Paint();
@@ -498,7 +498,7 @@ void CTreeNode::CExpandButton::Think()
 	m_flExpandedCurrent = Approach(m_flExpandedGoal, m_flExpandedCurrent, CRootPanel::Get()->GetFrameTime()*10);
 }
 
-void CTreeNode::CExpandButton::Paint(int x, int y, int w, int h)
+void CTreeNode::CExpandButton::Paint(float x, float y, float w, float h)
 {
 	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_BLEND);
@@ -518,13 +518,13 @@ void CTreeNode::CExpandButton::Paint(int x, int y, int w, int h)
 	glColor4f(1,1,1,1);
 	glBegin(GL_QUADS);
 		glTexCoord2f(0, 1);
-		glVertex2d(-w/2, -h/2);
+		glVertex2f(-w/2, -h/2);
 		glTexCoord2f(1, 1);
-		glVertex2d(-w/2, h/2);
+		glVertex2f(-w/2, h/2);
 		glTexCoord2f(1, 0);
-		glVertex2d(w/2, h/2);
+		glVertex2f(w/2, h/2);
 		glTexCoord2f(0, 0);
-		glVertex2d(w/2, -h/2);
+		glVertex2f(w/2, -h/2);
 	glEnd();
 	glBindTexture(GL_TEXTURE_2D, 0);
 

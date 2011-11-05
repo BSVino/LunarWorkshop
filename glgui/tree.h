@@ -16,13 +16,13 @@ namespace glgui
 		virtual								~CTreeNode();
 
 	public:
-		virtual int							GetNodeHeight();
-		virtual int							GetNodeSpacing() { return 0; };
+		virtual float						GetNodeHeight();
+		virtual float						GetNodeSpacing() { return 0; };
 		virtual void						LayoutNode();
 		virtual void						Paint() { CPanel::Paint(); };
-		virtual void						Paint(int x, int y) { CPanel::Paint(x, y); };
-		virtual void						Paint(int x, int y, int w, int h);
-		virtual void						Paint(int x, int y, int w, int h, bool bFloating);
+		virtual void						Paint(float x, float y) { CPanel::Paint(x, y); };
+		virtual void						Paint(float x, float y, float w, float h);
+		virtual void						Paint(float x, float y, float w, float h, bool bFloating);
 
 		size_t								AddNode(const tstring& sName);
 		template <typename T>
@@ -51,8 +51,8 @@ namespace glgui
 		virtual IDroppable*					GetDroppable();
 		virtual void						SetDroppable(IDroppable* pDroppable);
 
-		virtual int							GetWidth() { return BaseClass::GetWidth(); };
-		virtual int							GetHeight() { return BaseClass::GetHeight(); };
+		virtual float						GetWidth() { return BaseClass::GetWidth(); };
+		virtual float						GetHeight() { return BaseClass::GetHeight(); };
 
 		virtual DragClass_t					GetClass() { return DC_UNSPECIFIED; };
 		virtual IDraggable*					MakeCopy() { return new CTreeNode(*this); };
@@ -81,7 +81,7 @@ namespace glgui
 		public:
 			void							Think();
 			void							Paint() { CButton::Paint(); };
-			void							Paint(int x, int y, int w, int h);
+			void							Paint(float x, float y, float w, float h);
 
 			bool							IsExpanded() { return m_bExpanded; };
 			void							SetExpanded(bool bExpanded);
@@ -109,8 +109,8 @@ namespace glgui
 		virtual void						Layout();
 		virtual void						Think();
 		virtual void						Paint();
-		virtual void						Paint(int x, int y);
-		virtual void						Paint(int x, int y, int w, int h);
+		virtual void						Paint(float x, float y);
+		virtual void						Paint(float x, float y, float w, float h);
 
 		virtual bool						MousePressed(int code, int mx, int my);
 		virtual bool						MouseReleased(int iButton, int mx, int my);
@@ -152,8 +152,8 @@ namespace glgui
 	public:
 		eastl::vector<CTreeNode*>			m_apNodes;
 
-		int									m_iCurrentHeight;
-		int									m_iCurrentDepth;
+		float								m_flCurrentHeight;
+		float								m_flCurrentDepth;
 
 		size_t								m_iHilighted;
 		size_t								m_iSelected;
@@ -195,7 +195,7 @@ namespace glgui
 		{
 			CTreeNode::LayoutNode();
 
-			int iHeight = (int)m_pLabel->GetTextHeight();
+			float iHeight = m_pLabel->GetTextHeight();
 
 			if (m_pVisibilityButton)
 			{

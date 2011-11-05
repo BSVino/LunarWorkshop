@@ -62,7 +62,7 @@ namespace glgui
 				int mx, my;
 				CRootPanel::GetFullscreenMousePos(mx, my);
 
-				int x, y, w, h;
+				float x, y, w, h;
 				GetAbsDimensions(x, y, w, h);
 
 				m_flHandlePositionGoal = RemapValClamped((float)mx, (float)x, (float)(x + w), 0.0f, 1.0f);
@@ -90,24 +90,24 @@ namespace glgui
 
 #define HANDLE_SIZE 12
 
-		virtual void Paint(int x, int y, int w, int h)
+		virtual void Paint(float x, float y, float w, float h)
 		{
 			//CRootPanel::PaintRect(x, y, w, h, g_clrBoxHi);
 
-			int iLeft = x+HANDLE_SIZE/2;
-			int iWidth = w-HANDLE_SIZE;
+			float flLeft = x+HANDLE_SIZE/2;
+			float flWidth = w-HANDLE_SIZE;
 
-			CRootPanel::PaintRect(iLeft, y+h/2, iWidth, 1, Color(200, 200, 200, 255));
+			CRootPanel::PaintRect(flLeft, y+h/2, flWidth, 1, Color(200, 200, 200, 255));
 
 			if (m_aSelections.size() < 2)
 			{
-				CRootPanel::PaintRect(iLeft, y+h/2-5, 1, 10, Color(200, 200, 200, 255));
-				CRootPanel::PaintRect(iLeft + iWidth, y+h/2-5, 1, 10, Color(200, 200, 200, 255));
+				CRootPanel::PaintRect(flLeft, y+h/2-5, 1, 10, Color(200, 200, 200, 255));
+				CRootPanel::PaintRect(flLeft + flWidth, y+h/2-5, 1, 10, Color(200, 200, 200, 255));
 			}
 			else
 			{
 				for (size_t i = 0; i < m_aSelections.size(); i++)
-					CRootPanel::PaintRect(iLeft + iWidth*(int)i/((int)m_aSelections.size()-1), y+h/2-5, 1, 10, Color(200, 200, 200, 255));
+					CRootPanel::PaintRect(flLeft + flWidth*(int)i/((int)m_aSelections.size()-1), y+h/2-5, 1, 10, Color(200, 200, 200, 255));
 			}
 
 			CRootPanel::PaintRect(HandleX()+2, HandleY()+2, HANDLE_SIZE-4, HANDLE_SIZE-4, g_clrBoxHi);
@@ -117,10 +117,10 @@ namespace glgui
 
 		virtual bool MousePressed(int code, int mx, int my)
 		{
-			int x, y, w, h;
+			float x, y, w, h;
 			GetAbsDimensions(x, y, w, h);
 
-			int hx, hy;
+			float hx, hy;
 			hx = HandleX();
 			hy = HandleY();
 
@@ -140,7 +140,7 @@ namespace glgui
 
 		virtual bool MouseReleased(int code, int mx, int my)
 		{
-			int x, y, w, h;
+			float x, y, w, h;
 			GetAbsDimensions(x, y, w, h);
 
 			if (m_bMovingHandle)
@@ -159,7 +159,7 @@ namespace glgui
 				int mx, my;
 				CRootPanel::GetFullscreenMousePos(mx, my);
 
-				int x, y, w, h;
+				float x, y, w, h;
 				GetAbsDimensions(x, y, w, h);
 
 				// If the mouse went out of the left or right side, make sure we're all the way to that side.
@@ -250,19 +250,19 @@ namespace glgui
 			return iSelection;
 		}
 
-		virtual int HandleX()
+		virtual float HandleX()
 		{
-			int x, y, w, h;
+			float x, y, w, h;
 			GetAbsDimensions(x, y, w, h);
 
-			int iLeft = x+HANDLE_SIZE/2;
-			int iWidth = w-HANDLE_SIZE;
-			return iLeft + (int)(iWidth*m_flHandlePosition) - HANDLE_SIZE/2;
+			float flLeft = x+HANDLE_SIZE/2;
+			float flWidth = w-HANDLE_SIZE;
+			return flLeft + flWidth*m_flHandlePosition - HANDLE_SIZE/2;
 		}
 
-		virtual int HandleY()
+		virtual float HandleY()
 		{
-			int x, y, w, h;
+			float x, y, w, h;
 			GetAbsDimensions(x, y, w, h);
 
 			return y+h/2-HANDLE_SIZE/2;

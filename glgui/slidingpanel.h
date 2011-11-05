@@ -27,7 +27,7 @@ namespace glgui
 
 	public:
 		virtual void				Layout();
-		virtual void				Paint(int x, int y, int w, int h);
+		virtual void				Paint(float x, float y, float w, float h);
 
 		virtual void				AddControl(IControl* pControl, bool bToTail = false);
 
@@ -40,7 +40,7 @@ namespace glgui
 //		virtual void				AppendTitle(char* pszNew) { m_pTitle->AppendText(pszNew); };
 //		virtual void				AppendTitle(tchar* pszNew) { m_pTitle->AppendText(pszNew); };
 
-		static const int			SLIDER_COLLAPSED_HEIGHT = 30;
+		static float				SLIDER_COLLAPSED_HEIGHT;
 
 	protected:
 		bool						m_bCurrent;
@@ -53,7 +53,7 @@ namespace glgui
 	class CSlidingContainer : public CPanel
 	{
 	public:
-									CSlidingContainer(int x, int y, int w, int h);
+									CSlidingContainer(float x, float y, float w, float h);
 
 	public:
 		virtual void				Layout();

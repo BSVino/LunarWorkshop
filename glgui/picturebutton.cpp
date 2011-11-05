@@ -12,7 +12,7 @@ CPictureButton::CPictureButton(const tstring& sText, size_t iTexture, bool bTogg
 	m_bSheet = false;
 }
 
-void CPictureButton::Paint(int x, int y, int w, int h)
+void CPictureButton::Paint(float x, float y, float w, float h)
 {
 	if (!IsVisible())
 		return;
@@ -38,13 +38,13 @@ void CPictureButton::Paint(int x, int y, int w, int h)
 		glColor4f(1,1,1,(float)GetAlpha()*flHighlight/255);
 		glBegin(GL_QUADS);
 			glTexCoord2f((float)m_iSX/m_iTW, 1-(float)m_iSY/m_iTH);
-			glVertex2d(x, y);
+			glVertex2f(x, y);
 			glTexCoord2f((float)m_iSX/m_iTW, 1-((float)m_iSY+m_iSH)/m_iTH);
-			glVertex2d(x, y+h);
+			glVertex2f(x, y+h);
 			glTexCoord2f(((float)m_iSX+m_iSW)/m_iTW, 1-((float)m_iSY+m_iSH)/m_iTH);
-			glVertex2d(x+w, y+h);
+			glVertex2f(x+w, y+h);
 			glTexCoord2f(((float)m_iSX+m_iSW)/m_iTW, 1-(float)m_iSY/m_iTH);
-			glVertex2d(x+w, y);
+			glVertex2f(x+w, y);
 		glEnd();
 		glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -63,13 +63,13 @@ void CPictureButton::Paint(int x, int y, int w, int h)
 		glColor4f(1,1,1,(float)GetAlpha()*flHighlight/255);
 		glBegin(GL_QUADS);
 			glTexCoord2f(0, 1);
-			glVertex2d(x, y);
+			glVertex2f(x, y);
 			glTexCoord2f(0, 0);
-			glVertex2d(x, y+h);
+			glVertex2f(x, y+h);
 			glTexCoord2f(1, 0);
-			glVertex2d(x+w, y+h);
+			glVertex2f(x+w, y+h);
 			glTexCoord2f(1, 1);
-			glVertex2d(x+w, y);
+			glVertex2f(x+w, y);
 		glEnd();
 		glBindTexture(GL_TEXTURE_2D, 0);
 

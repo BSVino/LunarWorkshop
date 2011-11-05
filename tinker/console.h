@@ -12,8 +12,6 @@ public:
 	virtual					~CConsole();
 
 public:
-	virtual void			Delete() { delete this; };
-
 	virtual bool			IsVisible();
 	virtual void			SetVisible(bool bVisible);
 	virtual bool			IsOpen();
@@ -22,7 +20,7 @@ public:
 
 	virtual void			Layout();
 	virtual void			Paint() { Paint(GetLeft(), GetTop(), GetWidth(), GetHeight()); };
-	virtual void			Paint(int x, int y, int w, int h);
+	virtual void			Paint(float x, float y, float w, float h);
 
 	void					PrintConsole(tstring sText);
 

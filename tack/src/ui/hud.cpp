@@ -15,7 +15,7 @@ CTackHUD::CTackHUD()
 {
 }
 
-void CTackHUD::Paint(int x, int y, int w, int h)
+void CTackHUD::Paint(float x, float y, float w, float h)
 {
 	glgui::CBaseControl::PaintRect(95, 15, 150, 55, Color(50, 50, 50, 150));
 
@@ -56,7 +56,7 @@ void CTackHUD::Paint(int x, int y, int w, int h)
 		tstring sTip = "F - Absorb '" + SpecialAbilityName(pNearestCorpse->GetSpecialAbility()) + "'";
 		float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 		float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-		glgui::CBaseControl::PaintRect(w/2+200 - 5, (int)(h/2 - flFontHeight), (int)flTextWidth + 10, (int)flFontHeight + 10, Color(50, 50, 50, 150));
+		glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - flFontHeight, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
 		glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, (float)w/2+200, (float)h/2);
 	}
 }

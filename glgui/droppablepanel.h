@@ -8,7 +8,7 @@ namespace glgui
 	class CDroppablePanel : public CPanel, public IDroppable
 	{
 	public:
-							CDroppablePanel(int x, int y, int w, int h);
+							CDroppablePanel(float x, float y, float w, float h);
 		virtual				~CDroppablePanel();
 
 	public:
@@ -17,10 +17,10 @@ namespace glgui
 		virtual void		SetParent(IControl* pParent) { return CPanel::SetParent(pParent); };
 		virtual bool		IsVisible() { return CPanel::IsVisible(); };
 
-		virtual void		Paint(int x, int y, int w, int h);
+		virtual void		Paint(float x, float y, float w, float h);
 
-		virtual void		SetSize(int w, int h);
-		virtual void		SetPos(int x, int y);
+		virtual void		SetSize(float w, float h);
+		virtual void		SetPos(float x, float y);
 
 		virtual bool		MousePressed(int code, int mx, int my);
 

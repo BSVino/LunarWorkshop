@@ -12,7 +12,7 @@ namespace glgui
 
 	public:
 		virtual void	Paint() { CButton::Paint(); };
-		virtual void	Paint(int x, int y, int w, int h);
+		virtual void	Paint(float x, float y, float w, float h);
 
 		virtual void	SetTexture(size_t iTexture);
 		virtual void	SetSheetTexture(size_t iSheet, int sx, int sy, int sw, int sh, int tw, int th);

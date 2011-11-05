@@ -2,6 +2,8 @@
 
 using namespace glgui;
 
+float CSlidingPanel::SLIDER_COLLAPSED_HEIGHT = 30;
+
 CSlidingPanel::CInnerPanel::CInnerPanel(CSlidingContainer* pMaster)
 	: CPanel(0, 0, 100, SLIDER_COLLAPSED_HEIGHT)
 {
@@ -44,7 +46,7 @@ void CSlidingPanel::Layout()
 	CPanel::Layout();
 }
 
-void CSlidingPanel::Paint(int x, int y, int w, int h)
+void CSlidingPanel::Paint(float x, float y, float w, float h)
 {
 	if (!IsVisible())
 		return;
@@ -88,7 +90,7 @@ void CSlidingPanel::SetCurrent(bool bCurrent)
 	m_pInnerPanel->SetVisible(bCurrent);
 }
 
-CSlidingContainer::CSlidingContainer(int x, int y, int w, int h)
+CSlidingContainer::CSlidingContainer(float x, float y, float w, float h)
 	: CPanel(x, y, w, h)
 {
 	SetBorder(BT_NONE);
@@ -97,19 +99,19 @@ CSlidingContainer::CSlidingContainer(int x, int y, int w, int h)
 
 void CSlidingContainer::Layout()
 {
-	int iY = 0;
+	float y = 0;
 	size_t iCount = m_apControls.size();
-	int iCurrentHeight = GetHeight() - CSlidingPanel::SLIDER_COLLAPSED_HEIGHT * (VisiblePanels()-1);
+	float flCurrentHeight = GetHeight() - CSlidingPanel::SLIDER_COLLAPSED_HEIGHT * (VisiblePanels()-1);
 
 	for (size_t i = 0; i < iCount; i++)
 	{
 		if (!m_apControls[i]->IsVisible())
 			continue;
 
-		m_apControls[i]->SetPos(0, iY);
-		m_apControls[i]->SetSize(GetWidth(), (i == m_iCurrent)?iCurrentHeight:CSlidingPanel::SLIDER_COLLAPSED_HEIGHT);
+		m_apControls[i]->SetPos(0, y);
+		m_apControls[i]->SetSize(GetWidth(), (i == m_iCurrent)?flCurrentHeight:CSlidingPanel::SLIDER_COLLAPSED_HEIGHT);
 
-		iY += (i == m_iCurrent)?iCurrentHeight:CSlidingPanel::SLIDER_COLLAPSED_HEIGHT;
+		y += (i == m_iCurrent)?flCurrentHeight:CSlidingPanel::SLIDER_COLLAPSED_HEIGHT;
 	}
 
 	CPanel::Layout();
