@@ -19,7 +19,7 @@ public:
 	virtual bool			IsOpen();
 
 	virtual void			Layout();
-	virtual void			Paint(int x, int y, int w, int h);
+	virtual void			Paint(float x, float y, float w, float h);
 
 	void					PrintChat(tstring sText);
 

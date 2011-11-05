@@ -2,7 +2,7 @@
 
 using namespace glgui;
 
-CPanel::CPanel(int x, int y, int w, int h)
+CPanel::CPanel(float x, float y, float w, float h)
 	: CBaseControl(x, y, w, h)
 {
 	SetBorder(BT_SOME);
@@ -92,7 +92,7 @@ bool CPanel::MousePressed(int code, int mx, int my)
 		if (!pControl->IsVisible())
 			continue;
 
-		int x = 0, y = 0, w = 0, h = 0;
+		float x = 0, y = 0, w = 0, h = 0;
 		pControl->GetAbsDimensions(x, y, w, h);
 		if (mx >= x &&
 			my >= y &&
@@ -117,7 +117,7 @@ bool CPanel::MouseReleased(int code, int mx, int my)
 		if (!pControl->IsVisible())
 			continue;
 
-		int x, y, w, h;
+		float x, y, w, h;
 		pControl->GetAbsDimensions(x, y, w, h);
 		if (mx >= x &&
 			my >= y &&
@@ -144,7 +144,7 @@ void CPanel::CursorMoved(int mx, int my)
 		if (!pControl->IsVisible() || !pControl->IsCursorListener())
 			continue;
 
-		int x, y, w, h;
+		float x, y, w, h;
 		pControl->GetAbsDimensions(x, y, w, h);
 		if (mx >= x &&
 			my >= y &&
@@ -263,17 +263,17 @@ void CPanel::UpdateScene( void )
 
 void CPanel::Paint()
 {
-	int x = 0, y = 0;
+	float x = 0, y = 0;
 	GetAbsPos(x, y);
 	Paint(x, y);
 }
 
-void CPanel::Paint(int x, int y)
+void CPanel::Paint(float x, float y)
 {
-	Paint(x, y, m_iW, m_iH);
+	Paint(x, y, m_flW, m_flH);
 }
 
-void CPanel::Paint(int x, int y, int w, int h)
+void CPanel::Paint(float x, float y, float w, float h)
 {
 	if (!IsVisible())
 		return;
@@ -289,7 +289,7 @@ void CPanel::Paint(int x, int y, int w, int h)
 			continue;
 
 		// Translate this location to the child's local space.
-		int cx, cy, ax, ay;
+		float cx, cy, ax, ay;
 		pControl->GetAbsPos(cx, cy);
 		GetAbsPos(ax, ay);
 		pControl->Paint(cx+x-ax, cy+y-ay);
@@ -298,7 +298,7 @@ void CPanel::Paint(int x, int y, int w, int h)
 	BaseClass::Paint(x, y, w, h);
 }
 
-void CPanel::PaintBorder(int x, int y, int w, int h)
+void CPanel::PaintBorder(float x, float y, float w, float h)
 {
 }
 

@@ -114,7 +114,7 @@ void CGameWindow::Render()
 	{
 		TPROF("GUI");
 		glgui::CRootPanel::Get()->Think(GameServer()->GetGameTime());
-		glgui::CRootPanel::Get()->Paint(0, 0, (int)m_iWindowWidth, (int)m_iWindowHeight);
+		glgui::CRootPanel::Get()->Paint(0, 0, (float)m_iWindowWidth, (float)m_iWindowHeight);
 	}
 }
 

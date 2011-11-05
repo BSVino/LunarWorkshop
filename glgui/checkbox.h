@@ -11,7 +11,7 @@ namespace glgui
 						CCheckBox();
 
 	public:
-		void			Paint(int x, int y, int w, int h);
+		void			Paint(float x, float y, float w, float h);
 	};
 };
 

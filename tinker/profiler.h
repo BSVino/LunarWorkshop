@@ -65,7 +65,7 @@ public:
 protected:
 	static void					PopAllScopes();
 
-	static void					Render(CPerfBlock* pBlock, int& iLeft, int& iTop);
+	static void					Render(CPerfBlock* pBlock, float& flLeft, float& flTop);
 
 protected:
 	static CPerfBlock*			s_pBottomBlock;

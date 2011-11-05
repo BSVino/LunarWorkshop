@@ -11,7 +11,7 @@ CCheckBox::CCheckBox()
 {
 }
 
-void CCheckBox::Paint(int x, int y, int w, int h)
+void CCheckBox::Paint(float x, float y, float w, float h)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -29,27 +29,27 @@ void CCheckBox::Paint(int x, int y, int w, int h)
 	glBegin(GL_LINES);
 		// Bottom line
 		glNormal3f(-0.707106781f, 0.707106781f, 0);
-		glVertex2d(x, y);
+		glVertex2f(x, y);
 		glNormal3f(0.707106781f, 0.707106781f, 0);
-		glVertex2d(x+w-1, y);
+		glVertex2f(x+w-1, y);
 
 		// Top line
 		glNormal3f(-0.707106781f, -0.707106781f, 0);
-		glVertex2d(x, y+h-1);
+		glVertex2f(x, y+h-1);
 		glNormal3f(0.707106781f, -0.707106781f, 0);
-		glVertex2d(x+w-1, y+h-1);
+		glVertex2f(x+w-1, y+h-1);
 
 		// Left line
 		glNormal3f(-0.707106781f, 0.707106781f, 0);
-		glVertex2d(x, y+1);
+		glVertex2f(x, y+1);
 		glNormal3f(-0.707106781f, -0.707106781f, 0);
-		glVertex2d(x, y+h-1);
+		glVertex2f(x, y+h-1);
 
 		// Right line
 		glNormal3f(0.707106781f, 0.707106781f, 0);
-		glVertex2d(x+w, y+1);
+		glVertex2f(x+w, y+1);
 		glNormal3f(0.707106781f, -0.707106781f, 0);
-		glVertex2d(x+w, y+h-1);
+		glVertex2f(x+w, y+h-1);
 	glEnd();
 
 	glDisable(GL_BLEND);

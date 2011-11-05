@@ -28,7 +28,7 @@ namespace glgui
 	public:
 		virtual void				Think();
 		virtual void				Layout();
-		virtual void				Paint(int x, int y, int w, int h);
+		virtual void				Paint(float x, float y, float w, float h);
 
 		virtual bool				IsCursorListener() { return true; };
 		virtual void				CursorIn();

@@ -21,7 +21,7 @@ CTextField::CTextField()
 
 	SetFontFaceSize(13);
 
-	SetSize(GetWidth(), (int)(GetTextHeight() + 8.0f));
+	SetSize(GetWidth(), GetTextHeight() + 8.0f);
 
 	m_iCursor = 0;
 
@@ -33,7 +33,7 @@ CTextField::CTextField()
 	m_pContentsChangedListener = NULL;
 }
 
-void CTextField::Paint(int x, int y, int w, int h)
+void CTextField::Paint(float x, float y, float w, float h)
 {
 	if (!IsVisible())
 		return;
@@ -70,35 +70,35 @@ void CTextField::Paint(int x, int y, int w, int h)
 	glBegin(GL_LINES);
 		// Bottom line
 		glNormal3f(-0.707106781f, 0.707106781f, 0);
-		glVertex2d(x, y);
+		glVertex2f(x, y);
 		glNormal3f(0.707106781f, 0.707106781f, 0);
-		glVertex2d(x+w-1, y);
+		glVertex2f(x+w-1, y);
 
 		// Top line
 		glNormal3f(-0.707106781f, -0.707106781f, 0);
-		glVertex2d(x, y+h-1);
+		glVertex2f(x, y+h-1);
 		glNormal3f(0.707106781f, -0.707106781f, 0);
-		glVertex2d(x+w-1, y+h-1);
+		glVertex2f(x+w-1, y+h-1);
 
 		// Left line
 		glNormal3f(-0.707106781f, 0.707106781f, 0);
-		glVertex2d(x, y+1);
+		glVertex2f(x, y+1);
 		glNormal3f(-0.707106781f, -0.707106781f, 0);
-		glVertex2d(x, y+h-1);
+		glVertex2f(x, y+h-1);
 
 		// Right line
 		glNormal3f(0.707106781f, 0.707106781f, 0);
-		glVertex2d(x+w, y+1);
+		glVertex2f(x+w, y+1);
 		glNormal3f(0.707106781f, -0.707106781f, 0);
-		glVertex2d(x+w, y+h-1);
+		glVertex2f(x+w, y+h-1);
 
 		float flCursor = CLabel::GetFont(_T("sans-serif"), m_iFontFaceSize)->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str(), m_iCursor);
 		if (HasFocus() && (fmod(CRootPanel::Get()->GetTime() - m_flBlinkTime, 1) < 0.5f))
 		{
 			glNormal3f(0.707106781f, 0.707106781f, 0);
-			glVertex2d(x + 4 + flCursor + m_flRenderOffset, y+5);
+			glVertex2f(x + 4 + flCursor + m_flRenderOffset, y+5);
 			glNormal3f(0.707106781f, -0.707106781f, 0);
-			glVertex2d(x + 4 + flCursor + m_flRenderOffset, y+h-5);
+			glVertex2f(x + 4 + flCursor + m_flRenderOffset, y+h-5);
 		}
 
 	glEnd();
@@ -108,7 +108,7 @@ void CTextField::Paint(int x, int y, int w, int h)
 	glPopAttrib();
 }
 
-void CTextField::DrawLine(const tchar* pszText, unsigned iLength, int x, int y, int w, int h)
+void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float y, float w, float h)
 {
 	FTFont* pFont = CLabel::GetFont(_T("sans-serif"), m_iFontFaceSize);
 
@@ -129,9 +129,9 @@ void CTextField::DrawLine(const tchar* pszText, unsigned iLength, int x, int y, 
 
 	glMatrixMode(GL_MODELVIEW);
 
-	int cx, cy;
+	float cx, cy;
 	GetAbsPos(cx, cy);
-	glScissor(cx+4, 0, GetWidth()-8, 1000);
+	glScissor((int)cx+4, 0, (int)GetWidth()-8, 1000);
 	glEnable(GL_SCISSOR_TEST);
 	pFont->Render(convertstring<tchar, FTGLchar>(pszText).c_str(), iLength, FTPoint(vecPosition.x, CRootPanel::Get()->GetBottom()-vecPosition.y));
 	glDisable(GL_SCISSOR_TEST);
@@ -151,7 +151,7 @@ void CTextField::SetFocus(bool bFocus)
 		int mx, my;
 		CRootPanel::GetFullscreenMousePos(mx, my);
 
-		int cx, cy;
+		float cx, cy;
 		GetAbsPos(cx, cy);
 
 		float flCursor = (float)(mx-cx);
@@ -262,7 +262,7 @@ void CTextField::UpdateContentsChangedListener()
 
 void CTextField::FindRenderOffset()
 {
-	int cx, cy;
+	float cx, cy;
 	GetAbsPos(cx, cy);
 
 	float flTextWidth = CLabel::GetFont(_T("sans-serif"), m_iFontFaceSize)->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str());
@@ -317,9 +317,9 @@ void CTextField::SetFontFaceSize(int iSize)
 	m_iFontFaceSize = iSize;
 }
 
-int CTextField::GetTextWidth()
+float CTextField::GetTextWidth()
 {
-	return (int)CLabel::GetFont(_T("sans-serif"), m_iFontFaceSize)->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str());
+	return CLabel::GetFont(_T("sans-serif"), m_iFontFaceSize)->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str());
 }
 
 float CTextField::GetTextHeight()
@@ -330,14 +330,14 @@ float CTextField::GetTextHeight()
 // Make the label tall enough for one line of text to fit inside.
 void CTextField::EnsureTextFits()
 {
-	int w = GetTextWidth()+4;
-	int h = (int)GetTextHeight()+4;
+	float w = GetTextWidth()+4;
+	float h = GetTextHeight()+4;
 
-	if (m_iH < h)
-		SetSize(m_iW, h);
+	if (m_flH < h)
+		SetSize(m_flW, h);
 
-	if (m_iW < w)
-		SetSize(w, m_iH);
+	if (m_flW < w)
+		SetSize(w, m_flH);
 }
 
 tstring CTextField::GetText()

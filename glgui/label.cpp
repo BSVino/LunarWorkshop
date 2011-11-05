@@ -12,7 +12,7 @@ typedef char FTGLchar;
 eastl::map<tstring, tstring> CLabel::s_apFontNames;
 eastl::map<tstring, eastl::map<size_t, class ::FTFont*> > CLabel::s_apFonts;
 
-CLabel::CLabel(int x, int y, int w, int h, const tstring& sText, const tstring& sFont, size_t iSize)
+CLabel::CLabel(float x, float y, float w, float h, const tstring& sText, const tstring& sFont, size_t iSize)
 	: CBaseControl(x, y, w, h)
 {
 	m_bEnabled = true;
@@ -30,7 +30,7 @@ CLabel::CLabel(int x, int y, int w, int h, const tstring& sText, const tstring& 
 	m_iPrintChars = -1;
 }
 
-void CLabel::Paint(int x, int y, int w, int h)
+void CLabel::Paint(float x, float y, float w, float h)
 {
 	if (!IsVisible())
 		return;
@@ -43,9 +43,9 @@ void CLabel::Paint(int x, int y, int w, int h)
 
 	if (m_bScissor)
 	{
-		int cx, cy;
+		float cx, cy;
 		GetAbsPos(cx, cy);
-		glScissor(cx, glgui::CRootPanel::Get()->GetHeight()-cy-GetHeight()-3, GetWidth(), GetHeight()+3);
+		glScissor((int)cx, (int)(glgui::CRootPanel::Get()->GetHeight()-cy-GetHeight()-3), (int)GetWidth(), (int)GetHeight()+3);
 		glEnable(GL_SCISSOR_TEST);
 	}
 
@@ -134,7 +134,7 @@ void CLabel::Paint(int x, int y, int w, int h)
 	CBaseControl::Paint(x, y, w, h);
 }
 
-void CLabel::DrawLine(tchar* pszText, unsigned iLength, int x, int y, int w, int h)
+void CLabel::DrawLine(tchar* pszText, unsigned iLength, float x, float y, float w, float h)
 {
 	float lw = s_apFonts[m_sFontName][m_iFontFaceSize]->Advance(convertstring<tchar, FTGLchar>(pszText).c_str(), iLength);
 	float t = s_apFonts[m_sFontName][m_iFontFaceSize]->LineHeight();
@@ -219,7 +219,7 @@ void CLabel::PaintText3D(const tstring& sText, unsigned iLength, const tstring& 
 	s_apFonts[sFontName][iFontFaceSize]->Render(convertstring<tchar, FTGLchar>(sText).c_str(), iLength, FTPoint(vecPosition.x, vecPosition.y, vecPosition.z));
 }
 
-void CLabel::SetSize(int w, int h)
+void CLabel::SetSize(float w, float h)
 {
 	CBaseControl::SetSize(w, h);
 	ComputeLines();
@@ -246,9 +246,9 @@ void CLabel::SetFont(const tstring& sFontName, int iSize)
 		AddFontSize(m_sFontName, m_iFontFaceSize);
 }
 
-int CLabel::GetTextWidth()
+float CLabel::GetTextWidth()
 {
-	return (int)s_apFonts[m_sFontName][m_iFontFaceSize]->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str());
+	return s_apFonts[m_sFontName][m_iFontFaceSize]->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str());
 }
 
 float CLabel::GetTextHeight()
@@ -256,13 +256,13 @@ float CLabel::GetTextHeight()
 	return (s_apFonts[m_sFontName][m_iFontFaceSize]->LineHeight()) * m_iTotalLines;
 }
 
-void CLabel::ComputeLines(int w, int h)
+void CLabel::ComputeLines(float w, float h)
 {
-	if (w == -1)
-		w = m_iW;
+	if (w < 0)
+		w = m_flW;
 
-	if (h == -1)
-		h = m_iH;
+	if (h < 0)
+		h = m_flH;
 
 	const tchar* pszSeps = _T("\n");
 	tchar* pszText = strdup<tchar>(m_sText.c_str());
@@ -340,14 +340,14 @@ void CLabel::ComputeLines(int w, int h)
 // Make the label tall enough for one line of text to fit inside.
 void CLabel::EnsureTextFits()
 {
-	int w = GetTextWidth()+4;
-	int h = (int)GetTextHeight()+4;
+	float w = GetTextWidth()+4;
+	float h = GetTextHeight()+4;
 
-	if (m_iH < h)
-		SetSize(m_iW, h);
+	if (m_flH < h)
+		SetSize(m_flW, h);
 
-	if (m_iW < w)
-		SetSize(w, m_iH);
+	if (m_flW < w)
+		SetSize(w, m_flH);
 }
 
 tstring CLabel::GetText()

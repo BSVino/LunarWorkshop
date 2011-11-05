@@ -158,7 +158,7 @@ void CChatBox::Layout()
 	BaseClass::Layout();
 }
 
-void CChatBox::Paint(int x, int y, int w, int h)
+void CChatBox::Paint(float x, float y, float w, float h)
 {
 	float flAlpha;
 	float flTimeSinceLastMessage = GameServer()->GetGameTime() - m_flLastMessage;

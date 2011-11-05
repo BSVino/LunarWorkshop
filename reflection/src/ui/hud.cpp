@@ -16,7 +16,7 @@ CReflectionHUD::CReflectionHUD()
 {
 }
 
-void CReflectionHUD::Paint(int x, int y, int w, int h)
+void CReflectionHUD::Paint(float x, float y, float w, float h)
 {
 	CPlayerCharacter* pPlayer = static_cast<CPlayerCharacter*>(ReflectionGame()->GetLocalPlayerCharacter());
 	if (pPlayer && pPlayer->GetToken())
@@ -69,8 +69,8 @@ void CReflectionHUD::Paint(int x, int y, int w, int h)
 			tstring sTip = "E - Pick up";
 			float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 			float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-			glgui::CBaseControl::PaintRect(w/2+200 - 5, (int)(h/2 - flFontHeight), (int)flTextWidth + 10, (int)flFontHeight + 10, Color(50, 50, 50, 150));
-			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, (float)w/2+200, (float)h/2);
+			glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - flFontHeight, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 			break;
 		}
 
@@ -80,8 +80,8 @@ void CReflectionHUD::Paint(int x, int y, int w, int h)
 			tstring sTip = "E - Place";
 			float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 			float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-			glgui::CBaseControl::PaintRect(w/2+200 - 5, (int)(h/2 - flFontHeight), (int)flTextWidth + 10, (int)flFontHeight + 10, Color(50, 50, 50, 150));
-			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, (float)w/2+200, (float)h/2);
+			glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - flFontHeight, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 			break;
 		}
 	}

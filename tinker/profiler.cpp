@@ -150,16 +150,16 @@ void CProfiler::Render()
 
 	PopAllScopes();
 
-	int iWidth = glgui::CRootPanel::Get()->GetWidth();
-	int iHeight = glgui::CRootPanel::Get()->GetHeight();
+	float flWidth = glgui::CRootPanel::Get()->GetWidth();
+	float flHeight = glgui::CRootPanel::Get()->GetHeight();
 
-	int iCurrLeft = iWidth - 400;
-	int iCurrTop = 200;
+	float flCurrLeft = flWidth - 400;
+	float flCurrTop = 200;
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	glOrtho(0, iWidth, iHeight, 0, -1, 1);
+	glOrtho(0, flWidth, flHeight, 0, -1, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -174,9 +174,9 @@ void CProfiler::Render()
 
 	glColor4ubv(Color(255, 255, 255, 255));
 
-	glgui::CBaseControl::PaintRect(iCurrLeft, iCurrTop, 400, 800, Color(0, 0, 0, 150));
+	glgui::CBaseControl::PaintRect(flCurrLeft, flCurrTop, 400, 800, Color(0, 0, 0, 150));
 
-	Render(s_pBottomBlock, iCurrLeft, iCurrTop);
+	Render(s_pBottomBlock, flCurrLeft, flCurrTop);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();   
@@ -187,24 +187,24 @@ void CProfiler::Render()
 	glPopAttrib();
 }
 
-void CProfiler::Render(CPerfBlock* pBlock, int& iLeft, int& iTop)
+void CProfiler::Render(CPerfBlock* pBlock, float& flLeft, float& flTop)
 {
-	iLeft += 15;
-	iTop += 15;
+	flLeft += 15;
+	flTop += 15;
 
 	Color clrBlock(255, 255, 255);
 	if (pBlock->GetTime() < 0.005)
 		clrBlock = Color(255, 255, 255, 150);
 
-	glgui::CBaseControl::PaintRect(iLeft, iTop+1, (int)(pBlock->GetTime()*5000), 1, clrBlock);
+	glgui::CBaseControl::PaintRect(flLeft, flTop+1, pBlock->GetTime()*5000, 1, clrBlock);
 
 	tstring sName = convertstring<char, tchar>(pBlock->GetName());
 	sName += sprintf(tstring(": %d ms"), (int)(pBlock->GetTime()*1000));
 	glColor4ubv(clrBlock);
-	glgui::CLabel::PaintText(sName, sName.length(), _T("sans-serif"), 10, (float)iLeft, (float)iTop);
+	glgui::CLabel::PaintText(sName, sName.length(), _T("sans-serif"), 10, (float)flLeft, (float)flTop);
 
 	for (eastl::map<eastl::string, CPerfBlock*>::iterator it = pBlock->m_apPerfBlocks.begin(); it != pBlock->m_apPerfBlocks.end(); it++)
-		Render(it->second, iLeft, iTop);
+		Render(it->second, flLeft, flTop);
 
-	iLeft -= 15;
+	flLeft -= 15;
 }
