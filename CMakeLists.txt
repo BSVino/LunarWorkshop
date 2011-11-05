@@ -42,5 +42,6 @@ add_subdirectory (tengine)
 
 add_subdirectory (tack)
 add_subdirectory (reflection)
+add_subdirectory (chain)
 
 add_subdirectory (tests)
