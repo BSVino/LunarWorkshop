@@ -1,7 +1,7 @@
 #ifndef REFLECTION_HUD_H
 #define REFLECTION_HUD_H
 
-#include <glgui/glgui.h>
+#include <glgui/panel.h>
 
 class CReflectionHUD : public glgui::CPanel
 {

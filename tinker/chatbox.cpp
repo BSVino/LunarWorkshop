@@ -10,6 +10,9 @@
 #include <tinker/lobby/lobby_server.h>
 #include <tinker/gamewindow.h>
 #include <game/game.h>
+#include <glgui/rootpanel.h>
+#include <glgui/label.h>
+#include <glgui/textfield.h>
 
 SERVER_COMMAND(CONNECTION_UNDEFINED, ServerChatSay)
 {

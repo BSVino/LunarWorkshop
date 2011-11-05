@@ -10,6 +10,22 @@ include_directories (
 	../common/math
 )
 
+set (TINKER_GLGUI_SOURCES
+	../glgui/glgui.cpp
+	../glgui/basecontrol.cpp
+	../glgui/button.cpp
+	../glgui/checkbox.cpp
+	../glgui/droppablepanel.cpp
+	../glgui/label.cpp
+	../glgui/menu.cpp
+	../glgui/panel.cpp
+	../glgui/picturebutton.cpp
+	../glgui/rootpanel.cpp
+	../glgui/slidingpanel.cpp
+	../glgui/tree.cpp
+	../glgui/textfield.cpp
+)
+
 set (TINKER_SOURCES
 	application.cpp
 	console.cpp
@@ -17,8 +33,10 @@ set (TINKER_SOURCES
 	portals/portal_stubs.cpp
 	register.cpp
 
-	../glgui/glgui.cpp
+	${TINKER_GLGUI_SOURCES}
 )
+
+source_group(GLGUI FILES ${TINKER_GLGUI_SOURCES})
 
 if (WIN32)
 	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/glew/include)

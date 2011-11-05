@@ -18,7 +18,7 @@
 #include <tinker/keys.h>
 #include <tinker/portals/portal.h>
 #include <tinker/cvar.h>
-#include <glgui/glgui.h>
+#include <glgui/rootpanel.h>
 
 CApplication* CApplication::s_pApplication = NULL;
 

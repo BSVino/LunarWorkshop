@@ -1,7 +1,7 @@
 #ifndef LW_TINKER_CONSOLE
 #define LW_TINKER_CONSOLE
 
-#include <glgui/glgui.h>
+#include <glgui/panel.h>
 
 class CConsole : public glgui::CPanel
 {

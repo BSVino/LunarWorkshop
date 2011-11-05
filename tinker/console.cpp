@@ -2,6 +2,9 @@
 
 #include <platform.h>
 #include <strutils.h>
+#include <glgui/textfield.h>
+#include <glgui/label.h>
+#include <glgui/rootpanel.h>
 
 #include "application.h"
 #include "keys.h"

@@ -11,7 +11,7 @@
 #include <tinker/keys.h>
 #include <game/gameserver.h>
 #include <game/game.h>
-#include <glgui/glgui.h>
+#include <glgui/rootpanel.h>
 #include <renderer/renderer.h>
 #include <tinker/cvar.h>
 #include <game/camera.h>

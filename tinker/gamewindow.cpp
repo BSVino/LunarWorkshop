@@ -4,7 +4,7 @@
 
 #include <tinker/profiler.h>
 #include <game/gameserver.h>
-#include <glgui/glgui.h>
+#include <glgui/rootpanel.h>
 #include <game/camera.h>
 #include <renderer/renderer.h>
 #include <tengine/game/game.h>

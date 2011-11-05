@@ -3,6 +3,8 @@
 #include <tengine/game/gameserver.h>
 #include <tengine/renderer/renderer.h>
 #include <tengine/renderer/renderingcontext.h>
+#include <glgui/rootpanel.h>
+#include <glgui/label.h>
 
 #include "../reflection_character.h"
 #include "../reflection_playercharacter.h"

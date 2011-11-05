@@ -1,7 +1,7 @@
 #ifndef DT_CHATBOX_H
 #define DT_CHATBOX_H
 
-#include <glgui/glgui.h>
+#include <glgui/panel.h>
 
 class CChatBox : public glgui::CPanel
 {

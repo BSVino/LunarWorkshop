@@ -2,6 +2,8 @@
 
 #include <tengine/game/gameserver.h>
 #include <tengine/renderer/renderer.h>
+#include <glgui/rootpanel.h>
+#include <glgui/label.h>
 
 #include "../characters/tack_character.h"
 #include "../characters/tack_playercharacter.h"

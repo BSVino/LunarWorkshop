@@ -6,7 +6,8 @@
 
 #include <tinker/application.h>
 #include <tinker/cvar.h>
-#include <glgui/glgui.h>
+#include <glgui/rootpanel.h>
+#include <glgui/label.h>
 
 CVar prof_enable("prof_enable", "no");
 

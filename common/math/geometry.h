@@ -4,10 +4,11 @@
 #include "vector.h"
 #include <EASTL/vector.h>
 
-class Rect
+template <class T>
+class TRect
 {
 public:
-	Rect()
+	TRect()
 	{
 		x = 0;
 		y = 0;
@@ -15,7 +16,7 @@ public:
 		h = 0;
 	}
 
-	Rect(int X, int Y, int W, int H)
+	TRect(T X, T Y, T W, T H)
 	{
 		x = X;
 		y = Y;
@@ -23,8 +24,13 @@ public:
 		h = H;
 	}
 
-	int x, y, w, h;
+	T Size() { return w*h; }
+
+	T x, y, w, h;
 };
+
+typedef TRect<int> Rect;
+typedef TRect<float> FRect;
 
 class Ray
 {
