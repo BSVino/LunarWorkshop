@@ -15,18 +15,17 @@ namespace glgui
 		{
 		public:
 									CInnerPanel(CSlidingContainer* pMaster);
-			
-			virtual void			Delete() { delete this; };
-
+	
+		public:
 			virtual bool			IsVisible();
 
 			CSlidingContainer*		m_pMaster;
 		};
 
+	public:
 									CSlidingPanel(CSlidingContainer* pParent, char* pszTitle);
 
-		virtual void				Delete() { delete this; };
-
+	public:
 		virtual void				Layout();
 		virtual void				Paint(int x, int y, int w, int h);
 
@@ -56,8 +55,7 @@ namespace glgui
 	public:
 									CSlidingContainer(int x, int y, int w, int h);
 
-		virtual void				Delete() { delete this; };
-
+	public:
 		virtual void				Layout();
 
 		virtual void				AddControl(IControl* pControl, bool bToTail = false);

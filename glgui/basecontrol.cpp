@@ -32,7 +32,7 @@ CBaseControl::CBaseControl(const FRect& Rect)
 	CBaseControl((int)Rect.x, (int)Rect.y, (int)Rect.w, (int)Rect.h);
 }
 
-void CBaseControl::Destructor()
+CBaseControl::~CBaseControl()
 {
 	if (HasFocus())
 		CRootPanel::Get()->SetFocus(NULL);

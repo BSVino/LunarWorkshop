@@ -30,11 +30,6 @@ CLabel::CLabel(int x, int y, int w, int h, const tstring& sText, const tstring& 
 	m_iPrintChars = -1;
 }
 
-void CLabel::Destructor()
-{
-	CBaseControl::Destructor();
-}
-
 void CLabel::Paint(int x, int y, int w, int h)
 {
 	if (!IsVisible())

@@ -11,7 +11,7 @@ CPanel::CPanel(int x, int y, int w, int h)
 	m_bDestructing = false;
 }
 
-void CPanel::Destructor()
+CPanel::~CPanel()
 {
 	// Protect m_apControls from accesses elsewhere.
 	m_bDestructing = true;
@@ -19,17 +19,11 @@ void CPanel::Destructor()
 	size_t iCount = m_apControls.size();
 	size_t i;
 	for (i = 0; i < iCount; i++)
-	{
-		// Christ.
-		IControl* pControl = m_apControls[i];
-		pControl->Destructor();
-		pControl->Delete();
-	}
+		delete m_apControls[i];
+
 	m_apControls.clear();
 
 	m_bDestructing = false;
-
-	CBaseControl::Destructor();
 }
 
 bool CPanel::KeyPressed(int code, bool bCtrlDown)

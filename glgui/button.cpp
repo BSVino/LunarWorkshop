@@ -21,11 +21,6 @@ CButton::CButton(int x, int y, int w, int h, const tstring& sText, bool bToggle,
 	m_clrDown = g_clrBoxHi;
 }
 
-void CButton::Destructor()
-{
-	CLabel::Destructor();
-}
-
 void CButton::SetToggleState(bool bState)
 {
 	if (m_bDown == bState)

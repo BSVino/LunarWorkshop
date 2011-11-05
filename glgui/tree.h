@@ -13,11 +13,9 @@ namespace glgui
 	public:
 											CTreeNode(CTreeNode* pParent, class CTree* pTree, const tstring& sText, const tstring& sFont);
 											CTreeNode(const CTreeNode& c);
+		virtual								~CTreeNode();
 
 	public:
-		virtual void						Destructor();
-		virtual void						Delete() { delete this; };
-
 		virtual int							GetNodeHeight();
 		virtual int							GetNodeSpacing() { return 0; };
 		virtual void						LayoutNode();
@@ -105,11 +103,9 @@ namespace glgui
 
 	public:
 											CTree(size_t iArrowTexture, size_t iEditTexture, size_t iVisibilityTexture);
+		virtual								~CTree();
 
 	public:
-		virtual void						Destructor();
-		virtual void						Delete() { delete this; };
-
 		virtual void						Layout();
 		virtual void						Think();
 		virtual void						Paint();

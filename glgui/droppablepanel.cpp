@@ -12,21 +12,16 @@ CDroppablePanel::CDroppablePanel(int x, int y, int w, int h)
 	CRootPanel::Get()->AddDroppable(this);
 };
 
-void CDroppablePanel::Destructor()
+CDroppablePanel::~CDroppablePanel()
 {
 	if (m_apDraggables.size())
 	{
 		for (size_t i = 0; i < m_apDraggables.size(); i++)
-		{
-			m_apDraggables[i]->Destructor();
-			m_apDraggables[i]->Delete();
-		}
+			delete m_apDraggables[i];
 	}
 
 	if (CRootPanel::Get())
 		CRootPanel::Get()->RemoveDroppable(this);
-
-	CPanel::Destructor();
 }
 
 void CDroppablePanel::Paint(int x, int y, int w, int h)
@@ -104,10 +99,7 @@ void CDroppablePanel::ClearDraggables(bool bDelete)
 	if (bDelete)
 	{
 		for (size_t i = 0; i < m_apDraggables.size(); i++)
-		{
-			m_apDraggables[i]->Destructor();
-			m_apDraggables[i]->Delete();
-		}
+			delete m_apDraggables[i];
 	}
 
 	m_apDraggables.clear();

@@ -10,12 +10,9 @@ namespace glgui
 	public:
 						CBaseControl(int x, int y, int w, int h);
 						CBaseControl(const FRect& Rect);
-		virtual			~CBaseControl() {};
+		virtual			~CBaseControl();
 
 	public:
-		virtual void	Destructor();
-		virtual void	Delete() { delete this; };
-
 		virtual IControl*	GetParent() { return m_pParent; };
 		virtual void	SetParent(IControl* pParent) { m_pParent = pParent; };
 

@@ -10,9 +10,8 @@ namespace glgui
 	public:
 									CRootPanel( );
 		virtual						~CRootPanel( );
-		virtual void				Destructor( );
-		virtual void				Delete() { delete this; };
 
+	public:
 		virtual void				Think(float flTime);
 		virtual void				UpdateScene();
 		virtual void				Paint(int x, int y, int w, int h);

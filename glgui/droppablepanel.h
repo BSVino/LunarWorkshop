@@ -9,9 +9,9 @@ namespace glgui
 	{
 	public:
 							CDroppablePanel(int x, int y, int w, int h);
-		virtual void		Destructor();
-		virtual void		Delete() { delete this; };
+		virtual				~CDroppablePanel();
 
+	public:
 		// It's already in CBaseControl, but we need this again for IDroppable.
 		virtual IControl*	GetParent() { return CPanel::GetParent(); };
 		virtual void		SetParent(IControl* pParent) { return CPanel::SetParent(pParent); };

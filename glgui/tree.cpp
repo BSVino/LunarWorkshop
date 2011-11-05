@@ -32,11 +32,10 @@ CTree::CTree(size_t iArrowTexture, size_t iEditTexture, size_t iVisibilityTextur
 	CRootPanel::Get()->AddDroppable(this);
 }
 
-void CTree::Destructor()
+CTree::~CTree()
 {
 	CRootPanel::Get()->RemoveDroppable(this);
 
-	CPanel::Destructor();
 	// CPanel destructor does this since they are controls.
 //	for (size_t i = 0; i < m_apNodes.size(); i++)
 //		delete m_apNodes[i];
@@ -176,8 +175,7 @@ void CTree::ClearTree()
 	{
 		IControl* pNode = m_apControls[0];
 		RemoveControl(pNode);
-		pNode->Destructor();
-		pNode->Delete();
+		delete pNode;
 	}
 
 	m_apNodes.clear();
@@ -310,9 +308,8 @@ CTreeNode::CTreeNode(const CTreeNode& c)
 	m_bDraggable = false;
 }
 
-void CTreeNode::Destructor()
+CTreeNode::~CTreeNode()
 {
-	CPanel::Destructor();
 	// They are controls of CTree so it will deallocate them.
 //	for (size_t i = 0; i < m_apNodes.size(); i++)
 //		delete m_apNodes[i];

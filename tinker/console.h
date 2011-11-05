@@ -9,9 +9,9 @@ class CConsole : public glgui::CPanel
 
 public:
 							CConsole();
+	virtual					~CConsole();
 
 public:
-	virtual void			Destructor();
 	virtual void			Delete() { delete this; };
 
 	virtual bool			IsVisible();

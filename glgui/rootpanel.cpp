@@ -33,25 +33,15 @@ CRootPanel::CRootPanel() :
 
 CRootPanel::~CRootPanel( )
 {
-	Destructor();
-}
-
-void CRootPanel::Destructor( )
-{
 	m_bDestructing = true;
 
 	size_t iCount = m_apDroppables.size();
 	for (size_t i = 0; i < iCount; i++)
-	{
-		// Christ.
-		m_apDroppables[i]->Destructor();
-		m_apDroppables[i]->Delete();
-	}
+		delete m_apDroppables[i];
+
 	m_apDroppables.clear();
 
 	m_bDestructing = false;
-
-	CPanel::Destructor();
 
 	s_pRootPanel = NULL;
 }

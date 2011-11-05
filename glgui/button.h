@@ -12,9 +12,8 @@ namespace glgui
 
 	public:
 						CButton(int x, int y, int w, int h, const tstring& sText, bool bToggle = false, const tstring& sFont=_T("sans-serif"), size_t iSize=13);
-		virtual void	Destructor();
-		virtual void	Delete() { delete this; };
 
+	public:
 		virtual void	Think();
 
 		virtual void	Paint() { CLabel::Paint(); };

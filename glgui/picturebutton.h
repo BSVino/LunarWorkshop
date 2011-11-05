@@ -9,7 +9,6 @@ namespace glgui
 	{
 	public:
 						CPictureButton(const tstring& sText, size_t iTexture = 0, bool bToggle = false);
-		virtual void	Delete() { delete this; };
 
 	public:
 		virtual void	Paint() { CButton::Paint(); };

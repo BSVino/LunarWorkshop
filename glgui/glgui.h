@@ -49,6 +49,7 @@ namespace glgui
 	class IControl
 	{
 	public:
+		virtual				~IControl() {};
 		virtual IControl*	GetParent()=0;
 		virtual void		SetParent(IControl* pParent)=0;
 
@@ -89,9 +90,6 @@ namespace glgui
 		virtual IControl*	GetHasCursor()=0;
 
 		virtual tstring		GetTooltip()=0;
-
-		virtual void		Destructor()=0;
-		virtual void		Delete()=0;
 	};
 
 	class IDroppable;
@@ -104,8 +102,8 @@ namespace glgui
 		{
 			DC_UNSPECIFIED	= 0,
 		} DragClass_t;		// Where the hookers go to learn their trade.
-		virtual void			Destructor()=0;
-		virtual void			Delete()=0;
+
+		virtual					~IDraggable() {};
 
 		virtual void			SetHoldingRect(const FRect&)=0;
 		virtual FRect			GetHoldingRect()=0;
@@ -130,8 +128,7 @@ namespace glgui
 	class IDroppable
 	{
 	public:
-		virtual void			Destructor()=0;
-		virtual void			Delete()=0;
+		virtual					~IDroppable() {};
 
 		// Get the place where a droppable object should be.
 		virtual const FRect		GetHoldingRect()=0;

@@ -37,11 +37,9 @@ CConsole::CConsole()
 	m_iAutoComplete = -1;
 }
 
-void CConsole::Destructor()
+CConsole::~CConsole()
 {
 	glgui::CRootPanel::Get()->RemoveControl(this);
-
-	BaseClass::Destructor();
 }
 
 bool CConsole::IsVisible()

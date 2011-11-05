@@ -19,9 +19,9 @@ namespace glgui
 
 	public:
 								CPanel(int x, int y, int w, int h);
-		virtual void			Destructor();
-		virtual void			Delete() { delete this; };
+		virtual					~CPanel();
 
+	public:
 		virtual void			Paint();
 		virtual void			Paint(int x, int y);
 		virtual void			Paint(int x, int y, int w, int h);

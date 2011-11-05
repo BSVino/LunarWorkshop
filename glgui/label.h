@@ -15,9 +15,8 @@ namespace glgui
 
 	public:
 						CLabel(int x, int y, int w, int h, const tstring& sText, const tstring& sFont=_T("sans-serif"), size_t iSize=13);
-		virtual void	Destructor();
-		virtual void	Delete() { delete this; };
 
+	public:
 		typedef enum
 		{
 			TA_TOPLEFT		= 0,
