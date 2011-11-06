@@ -22,8 +22,7 @@ CStory::CStory()
 {
 	m_pText = new CLabel();
 	m_pText->Set3D(true);
-	m_pText->SetText("MACHINE OF THE GODS");
-	m_pText->SetFont("sans-serif", 96);
+	m_pText->SetText("[size=96]MACHINE [size=56]OF THE[/size] GODS[/size]\n\n\n\n\n\n[size=42]George T. Downing[/size]");
 }
 
 CStory::~CStory()
@@ -92,6 +91,5 @@ void CStory::OnRender(CRenderingContext* pContext, bool bTransparent) const
 	pContext->Scale(1/flScale, 1/flScale, 1/flScale);
 
 	pContext->UseProgram("");
-	m_pText->SetFGColor(Color(255, 255, 255, 255));
 	m_pText->Paint();
 }

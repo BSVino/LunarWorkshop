@@ -41,8 +41,6 @@ void CChainWindow::SetupEngine()
 	SetupChain();
 
 	GameServer()->SetLoading(false);
-
-	CApplication::Get()->SetMouseCursorEnabled(false);
 }
 
 void CChainWindow::SetupChain()

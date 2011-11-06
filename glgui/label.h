@@ -13,6 +13,25 @@ namespace glgui
 	{
 		friend class CRootPanel;
 
+	protected:
+		class CLineSection
+		{
+		public:
+			tstring		m_sText;
+			FRect		m_rArea;
+			tstring		m_sFont;
+			size_t		m_iFontSize;
+			float		m_flStart;	// X coordinate of the start of this section
+		};
+
+		class CLine
+		{
+		public:
+			eastl::vector<CLineSection>	m_aSections;
+			float		m_flLineHeight;
+			float		m_flLineWidth;
+		};
+
 	public:
 						CLabel();
 						CLabel(float x, float y, float w, float h, const tstring& sText, const tstring& sFont=_T("sans-serif"), size_t iSize=13);
@@ -32,7 +51,7 @@ namespace glgui
 		virtual void	Paint() { float x = 0, y = 0; GetAbsPos(x, y); Paint(x, y); };
 		virtual void	Paint(float x, float y) { Paint(x, y, m_flW, m_flH); };
 		virtual void	Paint(float x, float y, float w, float h);
-		virtual void	DrawLine(const tchar* pszText, unsigned iLength, float x, float y, float w, float h);
+		virtual void	DrawSection(const CLine& l, const CLineSection& s, float x, float y, float w, float h, float flLineHeight);
 		virtual void	Layout() {};
 		virtual void	Think() {};
 
@@ -93,10 +112,9 @@ namespace glgui
 
 		TextAlign		m_eAlign;
 
-		eastl::vector<tstring>	m_asLines;
+		eastl::vector<CLine>	m_aLines;
+		float			m_flTotalHeight;
 		bool			m_bNeedsCompute;
-
-		int				m_iLine;
 
 		int				m_iPrintChars;
 		int				m_iCharsDrawn;

@@ -76,16 +76,19 @@ void CLabel::Paint(float x, float y, float w, float h)
 	if (!m_bEnabled)
 		FGColor.SetColor(m_FGColor.r()/2, m_FGColor.g()/2, m_FGColor.b()/2, m_iAlpha);
 
-	m_iLine = 0;
+	float flLineHeight = 0;;
 
 	m_iCharsDrawn = 0;
 
-	for (size_t i = 0; i < m_asLines.size(); i++)
-	{
-		glColor4ubv(FGColor);
+	glColor4ubv(FGColor);
 
-		DrawLine(m_asLines[i].c_str(), m_asLines[i].length(), x, y, w, h);
-		m_iLine++;
+	for (size_t i = 0; i < m_aLines.size(); i++)
+	{
+		const CLine& oLine = m_aLines[i];
+		for (size_t j = 0; j < oLine.m_aSections.size(); j++)
+			DrawSection(oLine, oLine.m_aSections[j], x, y, w, h, flLineHeight);
+
+		flLineHeight += oLine.m_flLineHeight;
 	}
 
 	if (m_bScissor)
@@ -96,51 +99,59 @@ void CLabel::Paint(float x, float y, float w, float h)
 	CBaseControl::Paint(x, y, w, h);
 }
 
-void CLabel::DrawLine(const tchar* pszText, unsigned iLength, float x, float y, float w, float h)
+void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y, float w, float h, float flLineHeight)
 {
-	float lw = s_apFonts[m_sFontName][m_iFontFaceSize]->Advance(convertstring<tchar, FTGLchar>(pszText).c_str(), iLength);
-	float t = s_apFonts[m_sFontName][m_iFontFaceSize]->LineHeight();
-	float th = GetTextHeight() - t;
+	if (!s.m_sText.length())
+	{
+		m_iCharsDrawn += 1;
+		return;
+	}
 
-	float flBaseline = (float)s_apFonts[m_sFontName][m_iFontFaceSize]->FaceSize()/2 + s_apFonts[m_sFontName][m_iFontFaceSize]->Descender()/2;
+	float lw = l.m_flLineWidth;
+	float lh = l.m_flLineHeight;
+	float th = m_flTotalHeight - lh;
+
+	float flBaseline = (float)s_apFonts[s.m_sFont][s.m_iFontSize]->FaceSize()/2 + s_apFonts[s.m_sFont][s.m_iFontSize]->Descender()/2;
 
 	Vector vecPosition;
 
 	if (m_eAlign == TA_MIDDLECENTER)
-		vecPosition = Vector((float)x + (float)w/2 - lw/2, (float)y + flBaseline + h/2 - th/2 + m_iLine*t, 0);
+		vecPosition = Vector((float)x + (float)w/2 - lw/2, (float)y + flBaseline + h/2 - th/2 + flLineHeight, 0);
 	else if (m_eAlign == TA_LEFTCENTER)
-		vecPosition = Vector((float)x, (float)y + flBaseline + h/2 - th/2 + m_iLine*t, 0);
+		vecPosition = Vector((float)x, (float)y + flBaseline + h/2 - th/2 + flLineHeight, 0);
 	else if (m_eAlign == TA_RIGHTCENTER)
-		vecPosition = Vector((float)x + (float)w - lw, y + flBaseline + h/2 - th/2 + m_iLine*t, 0);
+		vecPosition = Vector((float)x + (float)w - lw, y + flBaseline + h/2 - th/2 + flLineHeight, 0);
 	else if (m_eAlign == TA_TOPCENTER)
-		vecPosition = Vector((float)x + (float)w/2 - lw/2, (float)y + flBaseline + m_iLine*t, 0);
+		vecPosition = Vector((float)x + (float)w/2 - lw/2, (float)y + flBaseline + flLineHeight, 0);
 	else if (m_eAlign == TA_BOTTOMCENTER)
-		vecPosition = Vector((float)x + (float)w/2 - lw/2, (float)y + h - (m_asLines.size()-1)*t + m_iLine*t, 0);
+		vecPosition = Vector((float)x + (float)w/2 - lw/2, (float)y + h - m_flTotalHeight + flLineHeight, 0);
 	else if (m_eAlign == TA_BOTTOMLEFT)
-		vecPosition = Vector((float)x, (float)y + h - (m_asLines.size()-1)*t + m_iLine*t, 0);
+		vecPosition = Vector((float)x, (float)y + h - m_flTotalHeight + flLineHeight, 0);
 	else	// TA_TOPLEFT
-		vecPosition = Vector((float)x, (float)y + flBaseline + m_iLine*t, 0);
+		vecPosition = Vector((float)x, (float)y + flBaseline + flLineHeight, 0);
+
+	vecPosition.x += s.m_flStart;
 
 	int iDrawChars;
 	if (m_iPrintChars == -1)
-		iDrawChars = iLength;
+		iDrawChars = s.m_sText.length();
 	else
 	{
-		if ((int)iLength > m_iPrintChars - m_iCharsDrawn)
+		if ((int)s.m_sText.length() > m_iPrintChars - m_iCharsDrawn)
 			iDrawChars = m_iPrintChars - m_iCharsDrawn;
 		else
-			iDrawChars = iLength;
+			iDrawChars = s.m_sText.length();
 	}
 
 	if (Get3D())
 	{
 		vecPosition.y = -vecPosition.y;
-		PaintText3D(pszText, iDrawChars, m_sFontName, m_iFontFaceSize, vecPosition);
+		PaintText3D(s.m_sText, iDrawChars, s.m_sFont, s.m_iFontSize, vecPosition);
 	}
 	else
-		PaintText(pszText, iDrawChars, m_sFontName, m_iFontFaceSize, vecPosition.x, vecPosition.y);
+		PaintText(s.m_sText, iDrawChars, s.m_sFont, s.m_iFontSize, vecPosition.x, vecPosition.y);
 
-	m_iCharsDrawn += iLength+1;
+	m_iCharsDrawn += s.m_sText.length()+1;
 }
 
 float CLabel::GetTextWidth(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize)
@@ -189,7 +200,7 @@ void CLabel::PaintText3D(const tstring& sText, unsigned iLength, const tstring& 
 
 void CLabel::SetSize(float w, float h)
 {
-	m_bNeedsCompute = (GetWidth() != w) || (GetHeight() != h);
+	m_bNeedsCompute |= (GetWidth() != w) || (GetHeight() != h);
 
 	CBaseControl::SetSize(w, h);
 }
@@ -232,7 +243,7 @@ float CLabel::GetTextHeight()
 	if (m_bNeedsCompute)
 		ComputeLines();
 
-	return (s_apFonts[m_sFontName][m_iFontFaceSize]->LineHeight()) * m_asLines.size();
+	return m_flTotalHeight;
 }
 
 void CLabel::ComputeLines(float w, float h)
@@ -243,83 +254,190 @@ void CLabel::ComputeLines(float w, float h)
 	if (h < 0)
 		h = m_flH;
 
-	const tchar* pszSeps = _T("\n");
-	tchar* pszText = strdup<tchar>(m_sText.c_str());
+	tstring sDelimiter = "\n";
 
-	// Cut off any ending line returns so that labels don't have hanging space below.
-	if (pszText[tstrlen(pszText)-1] == _T('\n'))
-		pszText[tstrlen(pszText)-1] = _T('\0');
+	eastl::vector<tstring> aTokens;
+	explode(m_sText, aTokens, sDelimiter);
 
-	tchar* pszState;
-	tchar* pszTok = strtok<tchar>(pszText, pszSeps, &pszState);
+	m_aLines.clear();
 
-	m_asLines.clear();
+	m_flTotalHeight = 0;
 
-	while (pszTok)
+	CLineSection oSection;
+	oSection.m_sFont = m_sFontName;
+	oSection.m_iFontSize = m_iFontFaceSize;
+
+	// This stack is so that markups can be nested.
+	// ie [size=20]big[size=20]bigger[/size][/size]
+	// A section is pushed on the section stack on every [size] and popped on every [/size]
+	// Then it's used to push onto m_aLines.m_aSections
+	eastl::vector<CLineSection> aSectionStack;
+	aSectionStack.push_back(oSection);
+
+	for (size_t i = 0; i < aTokens.size(); i++)
 	{
-		float tw = s_apFonts[m_sFontName][m_iFontFaceSize]->Advance(convertstring<tchar, FTGLchar>(pszTok).c_str());
-		float lh = s_apFonts[m_sFontName][m_iFontFaceSize]->LineHeight();
+		tstring sLine = aTokens[i];
 
-		if (!m_bWrap || tw < w || w == 0 || (m_asLines.size()+1)*lh > h)
+		CLine oLine;
+		oLine.m_flLineHeight = 0;
+		oLine.m_flLineWidth = 0;
+		m_aLines.push_back(oLine);
+
+		// Default the line height to whatever's on the top of the section stack.
+		m_aLines.back().m_flLineHeight = s_apFonts[aSectionStack.back().m_sFont][aSectionStack.back().m_iFontSize]->LineHeight();
+
+		float lw = 0;
+		unsigned int iChar = 0;
+		int iLastSpace = 0, iLastBreak = 0, iLength = 0;
+		while (iChar < sLine.length())
 		{
-			m_asLines.push_back(pszTok);
-		}
-		else
-		{
-			tw = 0;
-			unsigned int iSource = 0;
-			int iLastSpace = 0, iLastBreak = 0, iLength = 0;
-			while (iSource < tstrlen(pszTok))
+			if (tstrncmp(&sLine[iChar], "[size=", 6) == 0)
 			{
-				FTGLchar szChar[2];
-				szChar[0] = FTGLchar(pszTok[iSource]);
-				szChar[1] = '\0';
-				float cw = s_apFonts[m_sFontName][m_iFontFaceSize]->Advance(szChar);
-
-				// If our total line width plus this character does not exceed the label's width
-				// or if this is the first character in this line
-				// or if we've exceeded the total height of the label
-				if (tw + cw < w || (tw == 0 && w < cw) || (m_asLines.size()+1)*lh > h)
+				// We're ending a section, push our line.
+				oSection = aSectionStack.back();
+				oSection.m_sText = tstring(&sLine[iLastBreak], &sLine[iChar]);
+				oSection.m_flStart = m_aLines.back().m_flLineWidth;
+				if (oSection.m_sText.length())
 				{
-					// Then add this letter on to our current line.
-					iLength++;
-					if (pszTok[iSource] == _T(' '))
-						iLastSpace = iSource;
-					tw += cw;
+					m_aLines.back().m_aSections.push_back(oSection);
+					m_aLines.back().m_flLineWidth += s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Advance(oSection.m_sText.c_str());
 				}
-				else
-				{
-					// Looks like we've exceeded the label width. Find the previous space, and that's our word break. Add a new line.
+				iLength = 0;
+				lw = 0;
 
-					int iBackup = iSource - iLastSpace;
-					if (iLastSpace == iLastBreak)
-						iBackup = 0;
+				iChar += 6;
 
-					iSource -= iBackup;
-					iLength -= iBackup;
+				int iSize = atoi(&sLine[iChar]);
 
-					m_asLines.push_back(tstring(&pszTok[iLastBreak], &pszTok[iLastBreak+iLength]));
+				// Fast forward past the number
+				while (sLine[iChar] >= '0' && sLine[iChar] <= '9')
+					iChar++;
 
-					iLength = 0;
-					tw = 0;
+				while (sLine[iChar] != ']')
+					iChar++;
 
-					// Proceed to the end of any string of whitespace characters
-					while (iSource < tstrlen(pszTok) && pszTok[iSource] == _T(' '))
-						iSource++;
+				iChar++;
 
-					iLastBreak = iLastSpace = iSource--;	// Skip over any following spaces, but leave iSource at the space 'cause it's incremented again below.
-				}
+				oSection.m_iFontSize = iSize;
+				oSection.m_sText.clear();
+				aSectionStack.push_back(oSection);
+				AddFontSize(oSection.m_sFont, oSection.m_iFontSize);
 
-				iSource++;
+				iLastBreak = iChar;
+			}
+			else if (tstrncmp(&sLine[iChar], "[/size]", 7) == 0)
+			{
+				// We're ending a section, push our line.
+				oSection = aSectionStack.back();
+				oSection.m_sText = tstring(&sLine[iLastBreak], &sLine[iChar]);
+				oSection.m_flStart = m_aLines.back().m_flLineWidth;
+				m_aLines.back().m_aSections.push_back(oSection);
+				m_aLines.back().m_flLineWidth += s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Advance(oSection.m_sText.c_str());
+				iLength = 0;
+				lw = 0;
+
+				iChar += 7;
+
+				aSectionStack.pop_back();
+				oSection = aSectionStack.back();
+
+				iLastBreak = iChar;
 			}
 
-			m_asLines.push_back(tstring(&pszTok[iLastBreak]));
+			if (iChar >= sLine.length())
+				break;
+
+			if (sLine[iChar] == '\n')
+			{
+				m_flTotalHeight += m_aLines.back().m_flLineHeight;
+				m_aLines.push_back(oLine);
+
+				iChar++;
+
+				continue;
+			}
+
+			CLineSection& oTopSection = aSectionStack.back();
+
+			float lh = s_apFonts[oTopSection.m_sFont][oTopSection.m_iFontSize]->LineHeight();
+
+			FTGLchar szChar[2];
+			szChar[0] = FTGLchar(sLine[iChar]);
+			szChar[1] = '\0';
+			float cw = s_apFonts[oTopSection.m_sFont][oTopSection.m_iFontSize]->Advance(szChar);
+
+			// If we make it this far then we are now adding to a block.
+			if (m_aLines.back().m_flLineHeight < lh)
+				m_aLines.back().m_flLineHeight = lh;
+
+			float flTotalHeightSoFar = m_flTotalHeight + m_aLines.back().m_flLineHeight;
+
+			// If our total line width plus this character does not exceed the label's width
+			// or if this is the first character in this line
+			// or if we've exceeded the total height of the label
+			bool bNoWrap = (lw + cw < w || (lw == 0 && w < cw) || flTotalHeightSoFar > h);
+			if (!m_bWrap)
+				bNoWrap = true;
+			if (w == 0)
+				bNoWrap = true;
+
+			if (bNoWrap)
+			{
+				// Then add this letter on to our current line.
+				iLength++;
+				if (sLine[iChar] == _T(' '))
+					iLastSpace = iChar;
+				lw += cw;
+			}
+			else
+			{
+				// Looks like we've exceeded the label width. Find the previous space, and that's our word break. Add a new line.
+
+				int iBackup = iChar - iLastSpace;
+				if (iLastSpace == iLastBreak)
+					iBackup = 0;
+
+				iChar -= iBackup;
+				iLength -= iBackup;
+
+				// We're ending a section, push our line.
+				oSection = aSectionStack.back();
+				oSection.m_sText = tstring(&sLine[iLastBreak], &sLine[iLastBreak+iLength]);
+				oSection.m_flStart = m_aLines.back().m_flLineWidth;
+				if (oSection.m_sText.length())
+				{
+					m_aLines.back().m_aSections.push_back(oSection);
+					m_aLines.back().m_flLineWidth += s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Advance(oSection.m_sText.c_str());
+				}
+				m_flTotalHeight += m_aLines.back().m_flLineHeight;
+				m_aLines.push_back(oLine);
+
+				iLength = 0;
+				lw = 0;
+
+				// Proceed to the end of any string of whitespace characters
+				while (iChar < sLine.length() && sLine[iChar] == _T(' '))
+					iChar++;
+
+				iLastBreak = iLastSpace = iChar--;	// Skip over any following spaces, but leave iSource at the space 'cause it's incremented again below.
+			}
+
+			iChar++;
 		}
 
-		pszTok = strtok<tchar>(NULL, pszSeps, &pszState);
+		// Push the remainder.
+		oSection = aSectionStack.back();
+		oSection.m_sText = tstring(&sLine[iLastBreak], &sLine[iLastBreak+iLength]);
+		oSection.m_flStart = m_aLines.back().m_flLineWidth;
+		if (oSection.m_sText.length() || !m_aLines.back().m_aSections.size())
+		{
+			m_aLines.back().m_aSections.push_back(oSection);
+			m_aLines.back().m_flLineWidth += s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Advance(oSection.m_sText.c_str());
+		}
+		m_flTotalHeight += m_aLines.back().m_flLineHeight;
 	}
 
-	free(pszText);
+	TAssert(aSectionStack.size() == 1);
 
 	m_bNeedsCompute = false;
 }
