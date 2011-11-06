@@ -18,6 +18,7 @@ CLabel::CLabel()
 	m_bEnabled = true;
 	m_bWrap = true;
 	m_b3D = false;
+	m_bNeedsCompute = false;
 	m_sText = _T("");
 	m_eAlign = TA_MIDDLECENTER;
 	m_FGColor = Color(255, 255, 255, 255);
@@ -36,6 +37,7 @@ CLabel::CLabel(float x, float y, float w, float h, const tstring& sText, const t
 	m_bEnabled = true;
 	m_bWrap = true;
 	m_b3D = false;
+	m_bNeedsCompute = false;
 	m_sText = _T("");
 	m_eAlign = TA_MIDDLECENTER;
 	m_FGColor = Color(255, 255, 255, 255);
@@ -55,6 +57,9 @@ void CLabel::Paint(float x, float y, float w, float h)
 
 	if (m_iAlpha == 0)
 		return;
+
+	if (m_bNeedsCompute)
+		ComputeLines();
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
@@ -184,26 +189,23 @@ void CLabel::PaintText3D(const tstring& sText, unsigned iLength, const tstring& 
 
 void CLabel::SetSize(float w, float h)
 {
-	bool bCompute = (GetWidth() != w) || (GetHeight() != h);
+	m_bNeedsCompute = (GetWidth() != w) || (GetHeight() != h);
 
 	CBaseControl::SetSize(w, h);
-
-	if (bCompute)
-		ComputeLines();
 }
 
 void CLabel::SetText(const tstring& sText)
 {
 	m_sText = sText;
 
-	ComputeLines();
+	m_bNeedsCompute = true;
 }
 
 void CLabel::AppendText(const tstring& sText)
 {
 	m_sText.append(sText);
 
-	ComputeLines();
+	m_bNeedsCompute = true;
 }
 
 void CLabel::SetFont(const tstring& sFontName, int iSize)
@@ -213,15 +215,23 @@ void CLabel::SetFont(const tstring& sFontName, int iSize)
 
 	if (!GetFont(m_sFontName, m_iFontFaceSize))
 		AddFontSize(m_sFontName, m_iFontFaceSize);
+
+	m_bNeedsCompute = true;
 }
 
 float CLabel::GetTextWidth()
 {
+	if (m_bNeedsCompute)
+		ComputeLines();
+
 	return s_apFonts[m_sFontName][m_iFontFaceSize]->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str());
 }
 
 float CLabel::GetTextHeight()
 {
+	if (m_bNeedsCompute)
+		ComputeLines();
+
 	return (s_apFonts[m_sFontName][m_iFontFaceSize]->LineHeight()) * m_asLines.size();
 }
 
@@ -288,7 +298,7 @@ void CLabel::ComputeLines(float w, float h)
 					iSource -= iBackup;
 					iLength -= iBackup;
 
-					m_asLines.push_back(tstring(&pszTok[iLastBreak], &pszTok[iLength]));
+					m_asLines.push_back(tstring(&pszTok[iLastBreak], &pszTok[iLastBreak+iLength]));
 
 					iLength = 0;
 					tw = 0;
@@ -310,6 +320,8 @@ void CLabel::ComputeLines(float w, float h)
 	}
 
 	free(pszText);
+
+	m_bNeedsCompute = false;
 }
 
 // Make the label tall enough for one line of text to fit inside.

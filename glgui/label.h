@@ -48,7 +48,7 @@ namespace glgui
 		virtual void	SetAlign(TextAlign eAlign) { m_eAlign = eAlign; };
 
 		virtual bool	GetWrap() { return m_bWrap; };
-		virtual void	SetWrap(bool bWrap) { m_bWrap = bWrap; ComputeLines(); };
+		virtual void	SetWrap(bool bWrap) { m_bWrap = bWrap; m_bNeedsCompute = true; };
 
 		virtual void	SetPrintChars(int iPrintChars) { m_iPrintChars = iPrintChars; }
 
@@ -94,6 +94,7 @@ namespace glgui
 		TextAlign		m_eAlign;
 
 		eastl::vector<tstring>	m_asLines;
+		bool			m_bNeedsCompute;
 
 		int				m_iLine;
 
