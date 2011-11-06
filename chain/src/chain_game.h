@@ -3,6 +3,8 @@
 
 #include <game/game.h>
 
+class CStory;
+
 class CChainGame : public CGame
 {
 	REGISTER_ENTITY_CLASS(CChainGame, CGame);
@@ -15,6 +17,12 @@ public:
 	class CPlayerCharacter*		GetLocalPlayerCharacter();
 	class CChainRenderer*		GetChainRenderer();
 	class CChainCamera*			GetChainCamera();
+
+	CStory*						GetStory() const;
+	void						SetStory(CStory* pStory);
+
+protected:
+	CEntityHandle<CStory>		m_hStory;
 };
 
 inline class CChainGame* ChainGame()

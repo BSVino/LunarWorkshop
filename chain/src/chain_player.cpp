@@ -6,6 +6,8 @@
 #include <tinker/keys.h>
 
 #include "chain_playercharacter.h"
+#include "chain_game.h"
+#include "story.h"
 
 REGISTER_ENTITY(CChainPlayer);
 
@@ -17,6 +19,18 @@ SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CChainPlayer);
 INPUTS_TABLE_END();
+
+void CChainPlayer::MouseInput(int iButton, int iState)
+{
+	BaseClass::MouseInput(iButton, iState);
+
+	CStory* pStory = ChainGame()->GetStory();
+	if (!pStory)
+		return;
+
+	if (iButton == TINKER_KEY_MOUSE_LEFT && iState == 1)
+		pStory->NextPage();
+}
 
 CPlayerCharacter* CChainPlayer::GetPlayerCharacter()
 {

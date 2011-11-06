@@ -8,6 +8,8 @@ class CChainPlayer : public CPlayer
 	REGISTER_ENTITY_CLASS(CChainPlayer, CPlayer);
 
 public:
+	void							MouseInput(int iButton, int iState);
+
 	class CPlayerCharacter*			GetPlayerCharacter();
 };
 
