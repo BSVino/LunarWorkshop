@@ -97,6 +97,7 @@ public:
 
 	void			FrustumOverride(Vector vecPosition, Vector vecTarget, float flFOV, float flNear, float flFar);
 	void			CancelFrustumOverride();
+	const Frustum&	GetFrustum() const { return m_oFrustum; }
 
 	bool			ShouldBatchThisFrame() { return m_bBatchThisFrame; }
 	void			BeginBatching();

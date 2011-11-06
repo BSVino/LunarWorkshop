@@ -12,11 +12,30 @@ typedef char FTGLchar;
 eastl::map<tstring, tstring> CLabel::s_apFontNames;
 eastl::map<tstring, eastl::map<size_t, class ::FTFont*> > CLabel::s_apFonts;
 
+CLabel::CLabel()
+	: CBaseControl(0, 0, 100, 30)
+{
+	m_bEnabled = true;
+	m_bWrap = true;
+	m_b3D = false;
+	m_sText = _T("");
+	m_eAlign = TA_MIDDLECENTER;
+	m_FGColor = Color(255, 255, 255, 255);
+	m_bScissor = false;
+
+	SetFont("sans-serif", 13);
+
+	SetText("");
+
+	m_iPrintChars = -1;
+}
+
 CLabel::CLabel(float x, float y, float w, float h, const tstring& sText, const tstring& sFont, size_t iSize)
 	: CBaseControl(x, y, w, h)
 {
 	m_bEnabled = true;
 	m_bWrap = true;
+	m_b3D = false;
 	m_sText = _T("");
 	m_eAlign = TA_MIDDLECENTER;
 	m_FGColor = Color(255, 255, 255, 255);
@@ -108,7 +127,13 @@ void CLabel::DrawLine(const tchar* pszText, unsigned iLength, float x, float y, 
 			iDrawChars = iLength;
 	}
 
-	PaintText(pszText, iDrawChars, m_sFontName, m_iFontFaceSize, vecPosition.x, vecPosition.y);
+	if (Get3D())
+	{
+		vecPosition.y = -vecPosition.y;
+		PaintText3D(pszText, iDrawChars, m_sFontName, m_iFontFaceSize, vecPosition);
+	}
+	else
+		PaintText(pszText, iDrawChars, m_sFontName, m_iFontFaceSize, vecPosition.x, vecPosition.y);
 
 	m_iCharsDrawn += iLength+1;
 }
@@ -159,8 +184,12 @@ void CLabel::PaintText3D(const tstring& sText, unsigned iLength, const tstring& 
 
 void CLabel::SetSize(float w, float h)
 {
+	bool bCompute = (GetWidth() != w) || (GetHeight() != h);
+
 	CBaseControl::SetSize(w, h);
-	ComputeLines();
+
+	if (bCompute)
+		ComputeLines();
 }
 
 void CLabel::SetText(const tstring& sText)
@@ -173,6 +202,8 @@ void CLabel::SetText(const tstring& sText)
 void CLabel::AppendText(const tstring& sText)
 {
 	m_sText.append(sText);
+
+	ComputeLines();
 }
 
 void CLabel::SetFont(const tstring& sFontName, int iSize)

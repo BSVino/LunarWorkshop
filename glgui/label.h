@@ -14,6 +14,7 @@ namespace glgui
 		friend class CRootPanel;
 
 	public:
+						CLabel();
 						CLabel(float x, float y, float w, float h, const tstring& sText, const tstring& sFont=_T("sans-serif"), size_t iSize=13);
 
 	public:
@@ -70,6 +71,9 @@ namespace glgui
 
 		virtual void	SetScissor(bool bScissor); // 61
 
+		virtual void	Set3D(bool b3D) { m_b3D = b3D; }
+		virtual bool	Get3D() const { return m_b3D; }
+
 		static class ::FTFont*	GetFont(const tstring& sName, size_t iSize);
 		static void		AddFont(const tstring& sName, const tstring& sFile);
 		static void		AddFontSize(const tstring& sName, size_t iSize);
@@ -82,6 +86,7 @@ namespace glgui
 	protected:
 		bool			m_bEnabled;
 		bool			m_bWrap;
+		bool			m_b3D;
 		tstring			m_sText;
 		Color			m_FGColor;
 		bool			m_bScissor;

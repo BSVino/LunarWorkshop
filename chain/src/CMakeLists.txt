@@ -15,8 +15,8 @@ endif (WIN32)
 set (CHAIN_SOURCES
 	main.cpp
 
+	story.cpp
 	chain_player.cpp
-
 	chain_camera.cpp
 	chain_game.cpp
 	chain_renderer.cpp

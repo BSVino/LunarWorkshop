@@ -355,9 +355,13 @@ void CRenderingContext::UseProgram(const tstring& sProgram)
 		return;
 
 	m_pShader = CShaderLibrary::GetShader(sProgram);
-	TAssert(m_pShader);
+	if (sProgram.length())
+		TAssert(m_pShader);
 	if (!m_pShader)
+	{
+		glUseProgram(0);
 		return;
+	}
 
 	m_iProgram = m_pShader->m_iProgram;
 	glUseProgram((GLuint)m_pShader->m_iProgram);

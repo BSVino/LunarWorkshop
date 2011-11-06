@@ -19,6 +19,7 @@
 #include "chain_player.h"
 #include "chain_playercharacter.h"
 #include "chain_renderer.h"
+#include "story.h"
 #include "ui/hud.h"
 
 CChainWindow::CChainWindow(int argc, char** argv)
@@ -50,8 +51,10 @@ void CChainWindow::SetupChain()
 	Game()->AddPlayer(pPlayer);
 
 	CPlayerCharacter* pCharacter = GameServer()->Create<CPlayerCharacter>("CPlayerCharacter");
-	pCharacter->SetGlobalOrigin(Vector(-1, 0, -1));
+	pCharacter->SetGlobalOrigin(Vector(0, 0, 0));
 	pPlayer->SetCharacter(pCharacter);
+
+	CStory* pStory = GameServer()->Create<CStory>("CStory");
 }
 
 void CChainWindow::RenderLoading()

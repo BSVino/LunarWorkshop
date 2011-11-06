@@ -19,13 +19,17 @@ Vector CChainCamera::GetCameraPosition()
 	if (m_bFreeMode)
 		return BaseClass::GetCameraPosition();
 
-	return Vector(0, 10, 0);
+	CPlayerCharacter* pCharacter = ChainGame()->GetLocalPlayerCharacter();
+	if (!pCharacter)
+		return Vector(10,0,0);
+
+	return Vector(0, 0, 10);
 }
 
 Vector CChainCamera::GetCameraTarget()
 {
 	if (m_bFreeMode)
-		return BaseClass::GetCameraPosition();
+		return BaseClass::GetCameraTarget();
 
 	return Vector(0, 0, 0);
 }

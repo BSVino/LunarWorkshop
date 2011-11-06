@@ -12,6 +12,7 @@
 CChainRenderer::CChainRenderer()
 	: CRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
 {
+	FrustumOverride(Vector(0, 0, 10), Vector(0, 0, 0), 45, 0.1f, 50);
 }
 
 void CChainRenderer::LoadShaders()
@@ -19,6 +20,7 @@ void CChainRenderer::LoadShaders()
 	CShaderLibrary::AddShader("brightpass", "pass", "brightpass");
 	CShaderLibrary::AddShader("model", "pass", "model");
 	CShaderLibrary::AddShader("blur", "pass", "blur");
+	CShaderLibrary::AddShader("text", "pass", "text");
 }
 
 CChainRenderer* ChainRenderer()
