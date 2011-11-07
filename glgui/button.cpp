@@ -76,12 +76,12 @@ void CButton::SetState(bool bDown, bool bRegister)
 	if (m_bToggle && !m_bToggleOn)
 	{
 		if (bRegister && m_pUnclickListener && m_pfnUnclickCallback)
-			m_pfnUnclickCallback(m_pUnclickListener);
+			m_pfnUnclickCallback(m_pUnclickListener, "");
 	}
 	else
 	{
 		if (bRegister && m_pClickListener && m_pfnClickCallback)
-			m_pfnClickCallback(m_pClickListener);
+			m_pfnClickCallback(m_pClickListener, "");
 	}
 }
 

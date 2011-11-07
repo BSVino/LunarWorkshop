@@ -297,6 +297,38 @@ inline bool RayIntersectsTriangle(Ray vecRay, Vector v0, Vector v1, Vector v2, V
 	return true;
 }
 
+inline bool RayIntersectsPlane(Ray vecRay, Vector v0, Vector v1, Vector v2, Vector* pvecHit = NULL)
+{
+	Vector u = v1 - v0;
+	Vector v = v2 - v0;
+	Vector n = u.Cross(v);
+
+	Vector w0 = vecRay.m_vecPos - v0;
+
+	float a = -n.Dot(w0);
+	float b = n.Dot(vecRay.m_vecDir);
+
+	float ep = 1e-4f;
+
+	if (fabs(b) < ep)
+	{
+		if (a == 0)			// Ray is parallel
+			return false;	// Ray is inside plane
+		else
+			return false;	// Ray is somewhere else
+	}
+
+	float r = a/b;
+	if (r < 0)
+		return false;		// Ray goes away from the plane
+
+	Vector vecPoint = vecRay.m_vecPos + vecRay.m_vecDir*r;
+	if (pvecHit)
+		*pvecHit = vecPoint;
+
+	return true;
+}
+
 inline bool ClipRay(float flMin, float flMax, float a, float d, float& tmin, float& tmax)
 {
 	const float flEpsilon = 1e-5f;

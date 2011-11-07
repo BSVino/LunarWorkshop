@@ -257,7 +257,7 @@ void CTextField::SetContentsChangedListener(IEventListener* pListener, IEventLis
 void CTextField::UpdateContentsChangedListener()
 {
 	if (m_pfnContentsChangedCallback)
-		m_pfnContentsChangedCallback(m_pContentsChangedListener);
+		m_pfnContentsChangedCallback(m_pContentsChangedListener, "");
 }
 
 void CTextField::FindRenderOffset()

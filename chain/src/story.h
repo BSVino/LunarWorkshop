@@ -4,7 +4,7 @@
 #include <game/baseentity.h>
 #include <glgui/glgui.h>
 
-class CStory : public CBaseEntity
+class CStory : public CBaseEntity, public glgui::IEventListener
 {
 	REGISTER_ENTITY_CLASS(CStory, CBaseEntity);
 
@@ -20,7 +20,11 @@ public:
 
 	virtual void			OnRender(class CRenderingContext* pContext, bool bTransparent) const;
 
-	void					NextPage();
+	void					MousePressed();
+
+	float					LabelScale() const { return 100; }
+
+	EVENT_CALLBACK(CStory, LinkClicked);
 
 protected:
 	glgui::CLabel*			m_pText;

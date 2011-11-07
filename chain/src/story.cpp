@@ -1,8 +1,12 @@
 #include "story.h"
 
+#include <geometry.h>
+
 #include <glgui/label.h>
 #include <renderer/renderingcontext.h>
 #include <renderer/renderer.h>
+#include <tinker/application.h>
+#include <game/camera.h>
 
 #include "chain_game.h"
 
@@ -27,15 +31,19 @@ eastl::vector<tstring> g_asPages;
 
 CStory::CStory()
 {
-	g_asPages.push_back("[size=96]MACHINE [size=56]OF THE[/size] GODS[/size]\n\n\n\n\n\n[size=42]George T. Downing[/size]");
-	g_asPages.push_back("[size=56]CHAPTER 1[/size]\n\n\n\n\n\n[size=42]The Awakening[/size]");
-	g_asPages.push_back("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec et justo nunc, ut feugiat lorem.\n\nVestibulum a sem id neque condimentum posuere. Pellentesque semper vulputate lorem, id volutpat lectus bibendum id. Vivamus et enim lacus. Nam eros nisi, commodo in vulputate vel, interdum vel neque. Maecenas congue consequat felis, et ullamcorper turpis venenatis vitae. Morbi in nunc eu odio scelerisque condimentum at et elit. Integer interdum facilisis sollicitudin. Donec tempor libero vel mi vulputate vehicula. Quisque mattis nulla vel magna interdum ultrices. Nam nunc tellus, pharetra ac iaculis nec, ornare sagittis diam.");
-	g_asPages.push_back("In eleifend, enim sed fermentum sagittis, nibh est sagittis nisl, aliquam tempor turpis felis a urna. In orci elit, dapibus et malesuada non, sodales ut nisl. Donec lorem purus, aliquet vitae bibendum id, rhoncus eget risus. Curabitur volutpat pharetra lectus, ac mattis risus elementum at. Suspendisse potenti. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Suspendisse ac nisi enim. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Vivamus pharetra, ipsum eu convallis aliquam, ante turpis laoreet odio, non faucibus nisi ipsum vitae lorem.\n\nNulla eget nibh eget libero blandit pulvinar at at arcu. Fusce massa nisi, ultrices id lobortis ac, mattis ac risus. Fusce non velit neque. Donec consectetur gravida odio sit amet fringilla. Duis quis sagittis ligula.");
+	if (!g_asPages.size())
+	{
+		g_asPages.push_back("[size=96]MACHINE [size=56]OF THE[/size] GODS[/size]\n\n\n\n\n\n[size=42]George T. Downing[/size]");
+		g_asPages.push_back("[size=56]CHAPTER 1[/size]\n\n\n\n\n\n[size=42]The Awakening[/size]");
+		g_asPages.push_back("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec et justo nunc, ut feugiat lorem.\n\nVestibulum a sem id neque condimentum posuere. Pellentesque semper vulputate lorem, id volutpat lectus bibendum id. Vivamus et enim lacus. Nam eros nisi, commodo in vulputate vel, interdum vel neque. Maecenas congue consequat felis, et ullamcorper turpis venenatis vitae. Morbi in nunc eu odio scelerisque condimentum at et elit. Integer interdum facilisis sollicitudin. Donec tempor libero vel mi vulputate vehicula. Quisque mattis nulla vel magna interdum ultrices. Nam nunc tellus, pharetra ac iaculis nec, [link=0]ornare sagittis diam.[/link]");
+		g_asPages.push_back("In eleifend, enim sed fermentum sagittis, nibh est sagittis nisl, aliquam tempor turpis felis a urna. In orci elit, dapibus et malesuada non, sodales ut nisl. Donec lorem purus, aliquet vitae bibendum id, rhoncus eget risus. Curabitur volutpat pharetra lectus, ac mattis risus elementum at. Suspendisse potenti. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Suspendisse ac nisi enim. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Vivamus pharetra, ipsum eu convallis aliquam, ante turpis laoreet odio, non faucibus nisi ipsum vitae lorem.\n\nNulla eget nibh eget libero blandit pulvinar at at arcu. Fusce massa nisi, ultrices id lobortis ac, mattis ac risus. Fusce non velit neque. Donec consectetur gravida odio sit amet fringilla. [link=0]Duis quis sagittis ligula.[/link]");
+	}
 
 	m_pText = new CLabel();
 	m_pText->Set3D(true);
 	m_pText->SetFont("sans-serif", 20);
 	m_pText->SetText(g_asPages[0]);
+	m_pText->SetLinkClickedListener(this, LinkClicked);
 	m_iPage = 0;
 	m_flAlpha = 0;
 	m_flAlphaGoal = 1;
@@ -72,6 +80,25 @@ void CStory::Think()
 		m_pText->SetText(g_asPages[m_iPage]);
 		m_flAlphaGoal = 1;
 	}
+
+	int mx, my;
+	Application()->GetMousePosition(mx, my);
+	Vector vecWorld = GameServer()->GetRenderer()->WorldPosition(Vector((float)mx, (float)my, 0));
+
+	Vector vecCamera = GameServer()->GetCamera()->GetCameraPosition();
+	Vector v1, v2, v3;
+	Vector vecSize;
+	m_pText->GetSize(vecSize.x, vecSize.y);
+	m_pText->GetPos(v1.x, v1.y);
+	m_pText->GetPos(v2.x, v2.y);
+	m_pText->GetPos(v3.x, v3.y);
+	v2.x += vecSize.x;
+	v3.y += vecSize.y;
+
+	Vector vecHit;
+	RayIntersectsPlane(Ray(vecCamera, (vecWorld - vecCamera).Normalized()), v1, v2, v3, &vecHit);
+
+	m_pText->Set3DMousePosition(vecHit*LabelScale());
 }
 
 Vector FindPointAtZ(const Frustum& oFrustum, int iF1, int iF2, float Z)
@@ -107,6 +134,9 @@ Vector FindPointAtZ(const Frustum& oFrustum, int iF1, int iF2, float Z)
 
 void CStory::OnRender(CRenderingContext* pContext, bool bTransparent) const
 {
+	if (!bTransparent)
+		return;
+
 	const Frustum& oFrustum = GameServer()->GetRenderer()->GetFrustum();
 
 /*	Vector vecTopLeft = FindPointAtZ(oFrustum, FRUSTUM_UP, FRUSTUM_LEFT, -10);
@@ -123,7 +153,7 @@ void CStory::OnRender(CRenderingContext* pContext, bool bTransparent) const
 	pContext->Vertex(vecTopRight/2);
 	pContext->EndRender();*/
 
-	float flScale = 100;
+	float flScale = LabelScale();
 	Vector vecTopRight = FindPointAtZ(oFrustum, FRUSTUM_UP, FRUSTUM_RIGHT, 0)*flScale*4/5;
 	Vector vecBottomLeft = FindPointAtZ(oFrustum, FRUSTUM_DOWN, FRUSTUM_LEFT, 0)*flScale*4/5;
 
@@ -139,7 +169,22 @@ void CStory::OnRender(CRenderingContext* pContext, bool bTransparent) const
 	m_pText->Paint();
 }
 
-void CStory::NextPage()
+void CStory::MousePressed()
 {
+	if (m_iPage >= 2)
+	{
+		// The text isn't part of the HUD so we need to manually call its MousePressed.
+		m_pText->MousePressed(0, 0, 0);
+		return;
+	}
+
+	m_flAlphaGoal = 0;
+}
+
+void CStory::LinkClickedCallback(const tstring& sLink)
+{
+	size_t iPage = stoi(sLink);
+
+	// For now just always go to the next page.
 	m_flAlphaGoal = 0;
 }

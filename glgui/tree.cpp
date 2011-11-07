@@ -256,7 +256,7 @@ void CTree::SetDroppedListener(IEventListener* pListener, IEventListener::Callba
 void CTree::SetDraggable(IDraggable* pDraggable, bool bDelete)
 {
 	if (m_pDroppedListener)
-		m_pfnDroppedCallback(m_pDroppedListener);
+		m_pfnDroppedCallback(m_pDroppedListener, "");
 
 	AddNode(dynamic_cast<CTreeNode*>(pDraggable->MakeCopy()));
 }
@@ -440,7 +440,7 @@ CTreeNode* CTreeNode::GetNode(size_t i)
 void CTreeNode::Selected()
 {
 	if (m_pTree->m_pSelectedListener)
-		m_pTree->m_pfnSelectedCallback(m_pTree->m_pSelectedListener);
+		m_pTree->m_pfnSelectedCallback(m_pTree->m_pSelectedListener, "");
 }
 
 bool CTreeNode::IsVisible()
@@ -480,7 +480,7 @@ void CTreeNode::SetDroppable(IDroppable* pDroppable)
 {
 }
 
-void CTreeNode::ExpandCallback()
+void CTreeNode::ExpandCallback(const tstring& sArgs)
 {
 	SetExpanded(!IsExpanded());
 	m_pTree->Layout();

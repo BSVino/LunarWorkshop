@@ -144,12 +144,12 @@ void CConsole::Paint(float x, float y, float w, float h)
 
 		int iCommandsPainted = 0;
 		for (size_t i = iCommandsToSkip; i < iCommandsToShow+iCommandsToSkip; i++)
-			glgui::CLabel::PaintText(asCommands[i], asCommands[i].length(), _T("sans-serif"), 13, (float)(x + 5), (float)(y + h + 13 + iCommandsPainted++*13));
+			glgui::CLabel::PaintText(asCommands[i], asCommands[i].length(), _T("sans-serif"), 13, (float)(x + 5), (float)(y + h + iCommandsPainted++*13));
 
 		if (bAbbreviated)
 		{
 			tstring sDotDotDot = _T("...");
-			glgui::CLabel::PaintText(sDotDotDot, sDotDotDot.length(), _T("sans-serif"), 13, (float)(x + 5), (float)(y + h + 13 + iCommandsPainted++*13));
+			glgui::CLabel::PaintText(sDotDotDot, sDotDotDot.length(), _T("sans-serif"), 13, (float)(x + 5), (float)(y + h + iCommandsPainted++*13));
 		}
 	}
 }

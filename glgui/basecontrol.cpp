@@ -161,43 +161,16 @@ void CBaseControl::PaintRect(float x, float y, float w, float h, const Color& c)
 
 	glLineWidth(1);
 
-	if (w > 1)
-	{
-		glBegin(GL_QUADS);
-			glNormal3f(-0.707106781f, 0.707106781f, 0);	// Give 'em normals so that the light falls on them cool-like.
-			glVertex2f(x, y);
-			glNormal3f(-0.707106781f, -0.707106781f, 0);
-			glVertex2f(x, y+h);
-			glNormal3f(0.707106781f, -0.707106781f, 0);
-			glVertex2f(x+w-1, y+h);
-			glNormal3f(0.707106781f, 0.707106781f, 0);
-			glVertex2f(x+w-1, y);
-		glEnd();
-	}
-	else
-	{
-		glBegin(GL_LINES);
-			glNormal3f(0, 1.0, 0);
-			glVertex2f(x, y);
-			glNormal3f(0, -1.0, 0);
-			glVertex2f(x, y+h);
-		glEnd();
-	}
-
-	if (h > 1 && w > 1)
-	{
-		glBegin(GL_LINES);
-			glNormal3f(-0.707106781f, 0.707106781f, 0);
-			glVertex2f(x, y+1);
-			glNormal3f(-0.707106781f, -0.707106781f, 0);
-			glVertex2f(x, y+h-1);
-
-			glNormal3f(0.707106781f, 0.707106781f, 0);
-			glVertex2f(x+w, y+1);
-			glNormal3f(0.707106781f, -0.707106781f, 0);
-			glVertex2f(x+w, y+h-1);
-		glEnd();
-	}
+	glBegin(GL_QUADS);
+		glNormal3f(-0.707106781f, 0.707106781f, 0);	// Give 'em normals so that the light falls on them cool-like.
+		glVertex2f(x, y);
+		glNormal3f(-0.707106781f, -0.707106781f, 0);
+		glVertex2f(x, y+h);
+		glNormal3f(0.707106781f, -0.707106781f, 0);
+		glVertex2f(x+w, y+h);
+		glNormal3f(0.707106781f, 0.707106781f, 0);
+		glVertex2f(x+w, y);
+	glEnd();
 
 	glPopAttrib();
 }
@@ -260,7 +233,7 @@ bool CBaseControl::IsCursorListener()
 void CBaseControl::CursorIn()
 {
 	if (m_pfnCursorInCallback)
-		m_pfnCursorInCallback(m_pCursorInListener);
+		m_pfnCursorInCallback(m_pCursorInListener, "");
 
 	m_flMouseInTime = CRootPanel::Get()->GetTime();
 }
@@ -268,7 +241,7 @@ void CBaseControl::CursorIn()
 void CBaseControl::CursorOut()
 {
 	if (m_pfnCursorOutCallback)
-		m_pfnCursorOutCallback(m_pCursorOutListener);
+		m_pfnCursorOutCallback(m_pCursorOutListener, "");
 
 	m_flMouseInTime = 0;
 }

@@ -7,10 +7,10 @@
 
 // Not my favorite hack.
 #define EVENT_CALLBACK(type, pfn) \
-	void pfn##Callback(); \
-	static void pfn(glgui::IEventListener* obj) \
+	void pfn##Callback(const tstring& sArgs); \
+	static void pfn(glgui::IEventListener* obj, const tstring& sArgs) \
 	{ \
-		((type*)obj)->pfn##Callback(); \
+		((type*)obj)->pfn##Callback(sArgs); \
 	}
 
 namespace glgui
@@ -153,7 +153,7 @@ namespace glgui
 	class IEventListener
 	{
 	public:
-		typedef void (*Callback)(IEventListener*);
+		typedef void (*Callback)(IEventListener*, const tstring& sArgs);
 	};
 };
 

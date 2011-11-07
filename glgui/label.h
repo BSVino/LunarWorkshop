@@ -18,10 +18,10 @@ namespace glgui
 		{
 		public:
 			tstring		m_sText;
+			tstring		m_sLink;
 			FRect		m_rArea;
 			tstring		m_sFont;
 			size_t		m_iFontSize;
-			float		m_flStart;	// X coordinate of the start of this section
 		};
 
 		class CLine
@@ -51,14 +51,20 @@ namespace glgui
 		virtual void	Paint() { float x = 0, y = 0; GetAbsPos(x, y); Paint(x, y); };
 		virtual void	Paint(float x, float y) { Paint(x, y, m_flW, m_flH); };
 		virtual void	Paint(float x, float y, float w, float h);
-		virtual void	DrawSection(const CLine& l, const CLineSection& s, float x, float y, float w, float h, float flLineHeight);
+		virtual void	DrawSection(const CLine& l, const CLineSection& s, float x, float y, float w, float h);
 		virtual void	Layout() {};
 		virtual void	Think() {};
 
+		virtual void	GetAlignmentOffset(float flLineWidth, float flLineHeight, const tstring& sFont, size_t iFontSize, float flAreaWidth, float flAreaHeight, float& x, float& y) const;
+
 		virtual void	SetSize(float w, float h);
 
-		virtual bool	MousePressed(int code, int mx, int my) {return false;};
-		virtual bool	MouseReleased(int code, int mx, int my) {return false;};
+		void			GetRealMousePosition(float& x, float& y);
+		bool			MouseIsInside(const CLine& oLine, const CLineSection& oSection);
+
+		virtual bool	IsCursorListener() { return true; };
+		virtual bool	MousePressed(int code, int mx, int my);
+		virtual bool	MouseReleased(int code, int mx, int my);
 
 		virtual bool	IsEnabled() {return m_bEnabled;};
 		virtual void	SetEnabled(bool bEnabled) {m_bEnabled = bEnabled;};
@@ -80,8 +86,10 @@ namespace glgui
 
 		virtual float	GetTextWidth();
 		virtual float	GetTextHeight();
-		virtual void	ComputeLines(float w = -1, float h = -1);
 		virtual void	EnsureTextFits();
+
+		virtual void	ComputeLines(float w = -1, float h = -1);
+		virtual void	PushSection(const CLineSection& oSection, const tstring& sText);
 
 		virtual Color	GetFGColor();
 		virtual void	SetFGColor(Color FGColor);
@@ -91,7 +99,12 @@ namespace glgui
 		virtual void	SetScissor(bool bScissor); // 61
 
 		virtual void	Set3D(bool b3D) { m_b3D = b3D; }
-		virtual bool	Get3D() const { return m_b3D; }
+		virtual bool	Is3D() const { return m_b3D; }
+		virtual void	Set3DMousePosition(const Vector& vecMouse) { m_vec3DMouse = vecMouse; }
+
+		virtual void	SetLinkClickedListener(IEventListener* pListener, IEventListener::Callback pfnCallback);
+		virtual IEventListener::Callback	GetLinkClickedListenerCallback() { return m_pfnLinkClickCallback; };
+		virtual IEventListener*				GetLinkClickedListener() { return m_pLinkClickListener; };
 
 		static class ::FTFont*	GetFont(const tstring& sName, size_t iSize);
 		static void		AddFont(const tstring& sName, const tstring& sFile);
@@ -106,6 +119,7 @@ namespace glgui
 		bool			m_bEnabled;
 		bool			m_bWrap;
 		bool			m_b3D;
+		Vector			m_vec3DMouse;
 		tstring			m_sText;
 		Color			m_FGColor;
 		bool			m_bScissor;
@@ -124,6 +138,9 @@ namespace glgui
 
 		static eastl::map<tstring, eastl::map<size_t, class ::FTFont*> >	s_apFonts;
 		static eastl::map<tstring, tstring>									s_apFontNames;
+
+		IEventListener::Callback m_pfnLinkClickCallback;
+		IEventListener*	m_pLinkClickListener;
 	};
 };
 

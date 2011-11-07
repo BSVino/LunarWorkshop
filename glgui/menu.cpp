@@ -209,7 +209,7 @@ void CMenu::SetMenuListener(IEventListener* pListener, IEventListener::Callback 
 	m_pMenuListener = pListener;
 }
 
-void CMenu::OpenCallback()
+void CMenu::OpenCallback(const tstring& sArgs)
 {
 	CRootPanel::Get()->GetMenuBar()->SetActive(this);
 
@@ -221,7 +221,7 @@ void CMenu::OpenCallback()
 	}
 }
 
-void CMenu::CloseCallback()
+void CMenu::CloseCallback(const tstring& sArgs)
 {
 	if (m_pMenu->GetControls().size())
 	{
@@ -230,12 +230,12 @@ void CMenu::CloseCallback()
 	}
 }
 
-void CMenu::ClickedCallback()
+void CMenu::ClickedCallback(const tstring& sArgs)
 {
 	CRootPanel::Get()->GetMenuBar()->SetActive(NULL);
 
 	if (m_pMenuListener)
-		m_pfnMenuCallback(m_pMenuListener);
+		m_pfnMenuCallback(m_pMenuListener, "");
 }
 
 void CMenu::AddSubmenu(const tstring& sTitle, IEventListener* pListener, IEventListener::Callback pfnCallback)

@@ -29,7 +29,7 @@ void CChainPlayer::MouseInput(int iButton, int iState)
 		return;
 
 	if (iButton == TINKER_KEY_MOUSE_LEFT && iState == 1)
-		pStory->NextPage();
+		pStory->MousePressed();
 }
 
 CPlayerCharacter* CChainPlayer::GetPlayerCharacter()

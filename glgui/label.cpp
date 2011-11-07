@@ -3,6 +3,8 @@
 #include <GL/glew.h>
 #include <FTGL/ftgl.h>
 
+#include <tinker/cvar.h>
+
 #include "rootpanel.h"
 
 using namespace glgui;
@@ -24,6 +26,8 @@ CLabel::CLabel()
 	m_FGColor = Color(255, 255, 255, 255);
 	m_bScissor = false;
 
+	m_pLinkClickListener = NULL;
+
 	SetFont("sans-serif", 13);
 
 	SetText("");
@@ -43,12 +47,16 @@ CLabel::CLabel(float x, float y, float w, float h, const tstring& sText, const t
 	m_FGColor = Color(255, 255, 255, 255);
 	m_bScissor = false;
 
+	m_pLinkClickListener = NULL;
+
 	SetFont(sFont, iSize);
 
 	SetText(sText);
 
 	m_iPrintChars = -1;
 }
+
+CVar glgui_showsections("glgui_showsections", "off");
 
 void CLabel::Paint(float x, float y, float w, float h)
 {
@@ -76,19 +84,55 @@ void CLabel::Paint(float x, float y, float w, float h)
 	if (!m_bEnabled)
 		FGColor.SetColor(m_FGColor.r()/2, m_FGColor.g()/2, m_FGColor.b()/2, m_iAlpha);
 
-	float flLineHeight = 0;;
-
 	m_iCharsDrawn = 0;
 
 	glColor4ubv(FGColor);
+
+	float ax, ay;
+	GetAbsPos(ax, ay);
 
 	for (size_t i = 0; i < m_aLines.size(); i++)
 	{
 		const CLine& oLine = m_aLines[i];
 		for (size_t j = 0; j < oLine.m_aSections.size(); j++)
-			DrawSection(oLine, oLine.m_aSections[j], x, y, w, h, flLineHeight);
+		{
+			if (glgui_showsections.GetBool())
+			{
+				const CLineSection& oSection = oLine.m_aSections[j];
 
-		flLineHeight += oLine.m_flLineHeight;
+				if (MouseIsInside(oLine, oSection))
+				{
+					float ox, oy;
+					GetAlignmentOffset(oLine.m_flLineWidth, oLine.m_flLineHeight, oSection.m_sFont, oSection.m_iFontSize, w, h, ox, oy);
+
+					if (Is3D())
+					{
+						float flHeight = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->LineHeight();
+						float flDescender = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Descender();
+
+						float x = oSection.m_rArea.x + ax + ox;
+						float y = oSection.m_rArea.h - (oSection.m_rArea.y + ay + oy) - flHeight + flDescender;
+						float w = oSection.m_rArea.w;
+						float h = oSection.m_rArea.h;
+
+						glPushAttrib(GL_DEPTH_BUFFER_BIT|GL_CURRENT_BIT);
+						glColor4ubv(Color(50, 50, 50, 255));
+						glDepthMask(GL_FALSE);
+						glBegin(GL_QUADS);
+							glVertex2f(x, y);
+							glVertex2f(x+w, y);
+							glVertex2f(x+w, y+h);
+							glVertex2f(x, y+h);
+						glEnd();
+						glPopAttrib();
+					}
+					else
+						CBaseControl::PaintRect(oSection.m_rArea.x + ax + ox, oSection.m_rArea.y + ay + oy, oSection.m_rArea.w, oSection.m_rArea.h);
+				}
+			}
+
+			DrawSection(oLine, oLine.m_aSections[j], x, y, w, h);
+		}
 	}
 
 	if (m_bScissor)
@@ -99,7 +143,7 @@ void CLabel::Paint(float x, float y, float w, float h)
 	CBaseControl::Paint(x, y, w, h);
 }
 
-void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y, float w, float h, float flLineHeight)
+void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y, float w, float h)
 {
 	if (!s.m_sText.length())
 	{
@@ -107,30 +151,10 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 		return;
 	}
 
-	float lw = l.m_flLineWidth;
-	float lh = l.m_flLineHeight;
-	float th = m_flTotalHeight - lh;
+	float ox, oy;
+	GetAlignmentOffset(l.m_flLineWidth, l.m_flLineHeight, s.m_sFont, s.m_iFontSize, w, h, ox, oy);
 
-	float flBaseline = (float)s_apFonts[s.m_sFont][s.m_iFontSize]->FaceSize()/2 + s_apFonts[s.m_sFont][s.m_iFontSize]->Descender()/2;
-
-	Vector vecPosition;
-
-	if (m_eAlign == TA_MIDDLECENTER)
-		vecPosition = Vector((float)x + (float)w/2 - lw/2, (float)y + flBaseline + h/2 - th/2 + flLineHeight, 0);
-	else if (m_eAlign == TA_LEFTCENTER)
-		vecPosition = Vector((float)x, (float)y + flBaseline + h/2 - th/2 + flLineHeight, 0);
-	else if (m_eAlign == TA_RIGHTCENTER)
-		vecPosition = Vector((float)x + (float)w - lw, y + flBaseline + h/2 - th/2 + flLineHeight, 0);
-	else if (m_eAlign == TA_TOPCENTER)
-		vecPosition = Vector((float)x + (float)w/2 - lw/2, (float)y + flBaseline + flLineHeight, 0);
-	else if (m_eAlign == TA_BOTTOMCENTER)
-		vecPosition = Vector((float)x + (float)w/2 - lw/2, (float)y + h - m_flTotalHeight + flLineHeight, 0);
-	else if (m_eAlign == TA_BOTTOMLEFT)
-		vecPosition = Vector((float)x, (float)y + h - m_flTotalHeight + flLineHeight, 0);
-	else	// TA_TOPLEFT
-		vecPosition = Vector((float)x, (float)y + flBaseline + flLineHeight, 0);
-
-	vecPosition.x += s.m_flStart;
+	Vector vecPosition(x + ox + s.m_rArea.x, y + oy + s.m_rArea.y, 0);
 
 	int iDrawChars;
 	if (m_iPrintChars == -1)
@@ -143,7 +167,7 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 			iDrawChars = s.m_sText.length();
 	}
 
-	if (Get3D())
+	if (Is3D())
 	{
 		vecPosition.y = -vecPosition.y;
 		PaintText3D(s.m_sText, iDrawChars, s.m_sFont, s.m_iFontSize, vecPosition);
@@ -152,6 +176,54 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 		PaintText(s.m_sText, iDrawChars, s.m_sFont, s.m_iFontSize, vecPosition.x, vecPosition.y);
 
 	m_iCharsDrawn += s.m_sText.length()+1;
+}
+
+void CLabel::GetAlignmentOffset(float flLineWidth, float flLineHeight, const tstring& sFont, size_t iFontSize, float flAreaWidth, float flAreaHeight, float& x, float& y) const
+{
+	float lw = flLineWidth;
+	float lh = flLineHeight;
+	float th = m_flTotalHeight - lh;
+	float w = flAreaWidth;
+	float h = flAreaHeight;
+
+	switch (m_eAlign)
+	{
+	case TA_MIDDLECENTER:
+		x = w/2 - lw/2;
+		y = h/2 - th/2;
+		break;
+
+	case TA_LEFTCENTER:
+		x = 0;
+		y = h/2 - th/2;
+		break;
+
+	case TA_RIGHTCENTER:
+		x = w - lw;
+		y = h/2 - th/2;
+		break;
+
+	case TA_TOPCENTER:
+		x = w/2 - lw/2;
+		y = 0;
+		break;
+
+	case TA_BOTTOMCENTER:
+		x = w/2 - lw/2;
+		y = h - m_flTotalHeight;
+		break;
+
+	case TA_BOTTOMLEFT:
+		x = 0;
+		y = h - m_flTotalHeight;
+		break;
+
+	default:
+	case TA_TOPLEFT:
+		x = 0;
+		y = 0;
+		break;
+	}
 }
 
 float CLabel::GetTextWidth(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize)
@@ -175,6 +247,8 @@ void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sF
 	if (!GetFont(sFontName, iFontFaceSize))
 		AddFontSize(sFontName, iFontFaceSize);
 
+	float flBaseline = s_apFonts[sFontName][iFontFaceSize]->Ascender();
+
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -182,7 +256,7 @@ void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sF
 
 	glMatrixMode(GL_MODELVIEW);
 
-	s_apFonts[sFontName][iFontFaceSize]->Render(convertstring<tchar, FTGLchar>(sText).c_str(), iLength, FTPoint(x, CRootPanel::Get()->GetBottom()-y));
+	s_apFonts[sFontName][iFontFaceSize]->Render(convertstring<tchar, FTGLchar>(sText).c_str(), iLength, FTPoint(x, CRootPanel::Get()->GetBottom()-y-flBaseline));
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -203,6 +277,87 @@ void CLabel::SetSize(float w, float h)
 	m_bNeedsCompute |= (GetWidth() != w) || (GetHeight() != h);
 
 	CBaseControl::SetSize(w, h);
+}
+
+void CLabel::GetRealMousePosition(float& x, float& y)
+{
+	if (Is3D())
+	{
+		x = m_vec3DMouse.x;
+		y = RemapVal(m_vec3DMouse.y, GetTop(), GetTop()+GetHeight(), GetTop()+GetHeight(), GetTop());
+	}
+	else
+	{
+		int fsmx, fsmy;
+		CRootPanel::GetFullscreenMousePos(fsmx, fsmy);
+
+		x = (float)fsmx;
+		y = (float)fsmy;
+	}
+}
+
+bool CLabel::MouseIsInside(const CLine& oLine, const CLineSection& oSection)
+{
+	float mx, my;
+	GetRealMousePosition(mx, my);
+
+	float ax, ay;
+	GetAbsPos(ax, ay);
+
+	float ox, oy;
+	GetAlignmentOffset(oLine.m_flLineWidth, oLine.m_flLineHeight, oSection.m_sFont, oSection.m_iFontSize, GetWidth(), GetHeight(), ox, oy);
+
+	float flLeft = oSection.m_rArea.x + ax + ox;
+	float flTop = oSection.m_rArea.y + ay + oy;
+
+	if (Is3D())
+	{
+		float flHeight = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->LineHeight();
+		float flDescender = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Descender();
+		flTop -= flHeight;
+		flTop -= flDescender;
+
+		if (flLeft < mx && flTop < my && flLeft + oSection.m_rArea.w > mx && flTop + oSection.m_rArea.h > my)
+			return true;
+	}
+	else
+	{
+		if (flLeft < mx && flTop < my && flLeft + oSection.m_rArea.w > mx && flTop + oSection.m_rArea.h > my)
+			return true;
+	}
+
+	return false;
+}
+
+bool CLabel::MousePressed(int code, int mx, int my)
+{
+	if (!m_pLinkClickListener)
+		return false;
+
+	for (size_t i = 0; i < m_aLines.size(); i++)
+	{
+		const CLine& oLine = m_aLines[i];
+		for (size_t j = 0; j < oLine.m_aSections.size(); j++)
+		{
+			const CLineSection& oSection = oLine.m_aSections[j];
+
+			if (oSection.m_sLink.length() == 0)
+				continue;
+
+			if (MouseIsInside(oLine, oSection))
+			{
+				m_pfnLinkClickCallback(m_pLinkClickListener, oSection.m_sLink);
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool CLabel::MouseReleased(int code, int mx, int my)
+{
+	return false;
 }
 
 void CLabel::SetText(const tstring& sText)
@@ -246,6 +401,19 @@ float CLabel::GetTextHeight()
 	return m_flTotalHeight;
 }
 
+// Make the label tall enough for one line of text to fit inside.
+void CLabel::EnsureTextFits()
+{
+	float w = GetTextWidth()+4;
+	float h = GetTextHeight()+4;
+
+	if (m_flH < h)
+		SetSize(m_flW, h);
+
+	if (m_flW < w)
+		SetSize(w, m_flH);
+}
+
 void CLabel::ComputeLines(float w, float h)
 {
 	if (w < 0)
@@ -258,6 +426,10 @@ void CLabel::ComputeLines(float w, float h)
 
 	eastl::vector<tstring> aTokens;
 	explode(m_sText, aTokens, sDelimiter);
+
+	// Remove extra empty stuff at the end, caused by newlines at the end of the input text.
+	while (aTokens.size() && aTokens.back().length() == 0)
+		aTokens.erase(aTokens.end()-1);
 
 	m_aLines.clear();
 
@@ -294,14 +466,7 @@ void CLabel::ComputeLines(float w, float h)
 			if (tstrncmp(&sLine[iChar], "[size=", 6) == 0)
 			{
 				// We're ending a section, push our line.
-				oSection = aSectionStack.back();
-				oSection.m_sText = tstring(&sLine[iLastBreak], &sLine[iChar]);
-				oSection.m_flStart = m_aLines.back().m_flLineWidth;
-				if (oSection.m_sText.length())
-				{
-					m_aLines.back().m_aSections.push_back(oSection);
-					m_aLines.back().m_flLineWidth += s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Advance(oSection.m_sText.c_str());
-				}
+				PushSection(aSectionStack.back(), tstring(&sLine[iLastBreak], &sLine[iChar]));
 				iLength = 0;
 				lw = 0;
 
@@ -328,11 +493,46 @@ void CLabel::ComputeLines(float w, float h)
 			else if (tstrncmp(&sLine[iChar], "[/size]", 7) == 0)
 			{
 				// We're ending a section, push our line.
+				PushSection(aSectionStack.back(), tstring(&sLine[iLastBreak], &sLine[iChar]));
+				iLength = 0;
+				lw = 0;
+
+				iChar += 7;
+
+				aSectionStack.pop_back();
 				oSection = aSectionStack.back();
-				oSection.m_sText = tstring(&sLine[iLastBreak], &sLine[iChar]);
-				oSection.m_flStart = m_aLines.back().m_flLineWidth;
-				m_aLines.back().m_aSections.push_back(oSection);
-				m_aLines.back().m_flLineWidth += s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Advance(oSection.m_sText.c_str());
+
+				iLastBreak = iChar;
+			}
+			else if (tstrncmp(&sLine[iChar], "[link=", 6) == 0)
+			{
+				// We're ending a section, push our line.
+				PushSection(aSectionStack.back(), tstring(&sLine[iLastBreak], &sLine[iChar]));
+				iLength = 0;
+				lw = 0;
+
+				iChar += 6;
+
+				int iLink = iChar;
+
+				while (sLine[iChar] != ']')
+					iChar++;
+
+				tstring sLink = sLine.substr(iLink, iChar-iLink);
+
+				iChar++;
+
+				oSection.m_sLink = sLink;
+				oSection.m_sText.clear();
+				aSectionStack.push_back(oSection);
+				AddFontSize(oSection.m_sFont, oSection.m_iFontSize);
+
+				iLastBreak = iChar;
+			}
+			else if (tstrncmp(&sLine[iChar], "[/link]", 7) == 0)
+			{
+				// We're ending a section, push our line.
+				PushSection(aSectionStack.back(), sLine.substr(iLastBreak, iChar-iLastBreak));
 				iLength = 0;
 				lw = 0;
 
@@ -401,14 +601,8 @@ void CLabel::ComputeLines(float w, float h)
 				iLength -= iBackup;
 
 				// We're ending a section, push our line.
-				oSection = aSectionStack.back();
-				oSection.m_sText = tstring(&sLine[iLastBreak], &sLine[iLastBreak+iLength]);
-				oSection.m_flStart = m_aLines.back().m_flLineWidth;
-				if (oSection.m_sText.length())
-				{
-					m_aLines.back().m_aSections.push_back(oSection);
-					m_aLines.back().m_flLineWidth += s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Advance(oSection.m_sText.c_str());
-				}
+				PushSection(aSectionStack.back(), tstring(&sLine[iLastBreak], &sLine[iLastBreak+iLength]));
+
 				m_flTotalHeight += m_aLines.back().m_flLineHeight;
 				m_aLines.push_back(oLine);
 
@@ -426,14 +620,7 @@ void CLabel::ComputeLines(float w, float h)
 		}
 
 		// Push the remainder.
-		oSection = aSectionStack.back();
-		oSection.m_sText = tstring(&sLine[iLastBreak], &sLine[iLastBreak+iLength]);
-		oSection.m_flStart = m_aLines.back().m_flLineWidth;
-		if (oSection.m_sText.length() || !m_aLines.back().m_aSections.size())
-		{
-			m_aLines.back().m_aSections.push_back(oSection);
-			m_aLines.back().m_flLineWidth += s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Advance(oSection.m_sText.c_str());
-		}
+		PushSection(aSectionStack.back(), tstring(&sLine[iLastBreak], &sLine[iLastBreak+iLength]));
 		m_flTotalHeight += m_aLines.back().m_flLineHeight;
 	}
 
@@ -442,17 +629,24 @@ void CLabel::ComputeLines(float w, float h)
 	m_bNeedsCompute = false;
 }
 
-// Make the label tall enough for one line of text to fit inside.
-void CLabel::EnsureTextFits()
+void CLabel::PushSection(const CLineSection& oSection, const tstring& sLine)
 {
-	float w = GetTextWidth()+4;
-	float h = GetTextHeight()+4;
+	if (sLine.length() == 0)
+		return;
 
-	if (m_flH < h)
-		SetSize(m_flW, h);
+	CLineSection s = oSection;
 
-	if (m_flW < w)
-		SetSize(w, m_flH);
+	float flSectionWidth = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Advance(sLine.c_str());
+	float flSectionHeight = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->LineHeight();
+
+	s.m_sText = sLine;
+	s.m_rArea.x = m_aLines.back().m_flLineWidth;
+	s.m_rArea.y = m_flTotalHeight;
+	s.m_rArea.w = flSectionWidth;
+	s.m_rArea.h = flSectionHeight;
+
+	m_aLines.back().m_aSections.push_back(s);
+	m_aLines.back().m_flLineWidth += flSectionWidth;
 }
 
 tstring CLabel::GetText()
@@ -486,6 +680,12 @@ void CLabel::SetAlpha(float a)
 void CLabel::SetScissor(bool bScissor)
 {
 	m_bScissor = bScissor;
+}
+
+void CLabel::SetLinkClickedListener(IEventListener* pListener, IEventListener::Callback pfnCallback)
+{
+	m_pfnLinkClickCallback = pfnCallback;
+	m_pLinkClickListener = pListener;
 }
 
 ::FTFont* CLabel::GetFont(const tstring& sName, size_t iSize)
