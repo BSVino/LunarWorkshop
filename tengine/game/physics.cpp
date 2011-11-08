@@ -7,6 +7,8 @@
 #include "gameserver.h"
 #include "physics_debugdraw.h"
 #include "entities/character.h"
+#include "models/models.h"
+#include "tinker/profiler.h"
 
 class CBulletPhysics : public CPhysicsModel
 {
@@ -16,6 +18,8 @@ protected:
 	public:
 		virtual void getWorldTransform(btTransform& mCenterOfMass) const 
 		{
+			TPROF("CMotionState::getWorldTransform");
+
 			if (m_pPhysics->GetPhysicsEntity(m_hEntity)->m_bCenterMassOffset)
 			{
 				Matrix4x4 mCenter;
@@ -29,6 +33,8 @@ protected:
 
 		virtual void setWorldTransform(const btTransform& mCenterOfMass)
 		{
+			TPROF("CMotionState::setWorldTransform");
+
 			Matrix4x4 mGlobal;
 			mCenterOfMass.getOpenGLMatrix(mGlobal);
 
@@ -108,7 +114,7 @@ protected:
 	};
 
 	eastl::map<size_t, CCollisionMesh>	m_apCollisionMeshes;
-	btCollisionShape*					m_pCharacterShape;
+	eastl::map<tstring, btCollisionShape*>	m_apCharacterShapes;
 
 	CPhysicsDebugDrawer*				m_pDebugDrawer;
 };
@@ -124,7 +130,6 @@ CBulletPhysics::CBulletPhysics()
 	m_pDynamicsWorld->setGravity(btVector3(0, -9.8f, 0));
 
 	m_pDebugDrawer = NULL;
-	m_pCharacterShape = NULL;
 }
 
 CBulletPhysics::~CBulletPhysics()
@@ -174,14 +179,16 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 			flRadius = flRadiusZ;
 		float flHeight = r.m_vecMaxs.y - r.m_vecMins.y;
 
-		if (!m_pCharacterShape)
+		tstring sFilename = CModelLibrary::Get()->GetModel(pEntity->GetModel())->m_sFilename;
+		auto it = m_apCharacterShapes.find(sFilename);
+		if (it == m_apCharacterShapes.end())
 		{
 			TAssert(flHeight > flRadius);	// Couldn't very well make a capsule this way could we?
 
-			m_pCharacterShape = new btCapsuleShape(flRadius, flHeight - flRadius);
+			m_apCharacterShapes[sFilename] = new btCapsuleShape(flRadius, flHeight - flRadius);
 		}
 
-		btCapsuleShape* pCapsuleShape = dynamic_cast<btCapsuleShape*>(m_pCharacterShape);
+		btCapsuleShape* pCapsuleShape = dynamic_cast<btCapsuleShape*>(m_apCharacterShapes[sFilename]);
 
 #ifdef _DEBUG
 		TAssert(pCapsuleShape);
@@ -304,6 +311,8 @@ void CBulletPhysics::LoadCollisionMesh(const tstring& sModel, const eastl::vecto
 
 void CBulletPhysics::Simulate()
 {
+	TPROF("CBulletPhysics::Simulate");
+
 	m_pDynamicsWorld->stepSimulation(GameServer()->GetFrameTime(), 10);
 
 	// Non-rigid bodies don't use motion states and so we must manually update.
@@ -328,6 +337,8 @@ void CBulletPhysics::DebugDraw()
 
 void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform)
 {
+	TPROF("CBulletPhysics::SetEntityTransform");
+
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
 		return;
@@ -359,6 +370,8 @@ void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4
 
 void CBulletPhysics::SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity)
 {
+	TPROF("CBulletPhysics::SetEntityVelocity");
+
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
 		return;
@@ -373,6 +386,8 @@ void CBulletPhysics::SetEntityVelocity(class CBaseEntity* pEnt, const Vector& ve
 
 CBulletPhysics::CPhysicsEntity* CBulletPhysics::GetPhysicsEntity(class CBaseEntity* pEnt)
 {
+	TPROF("CBulletPhysics::GetPhysicsEntity");
+
 	TAssert(pEnt);
 	if (!pEnt)
 		return NULL;

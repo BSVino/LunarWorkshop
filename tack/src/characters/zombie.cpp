@@ -1,5 +1,7 @@
 #include "zombie.h"
 
+#include <game/physics.h>
+
 #include "../tack_game.h"
 
 REGISTER_ENTITY(CZombie);
@@ -25,6 +27,8 @@ void CZombie::Spawn()
 	BaseClass::Spawn();
 
 	SetModel("models/characters/zombie.obj");
+
+	AddToPhysics(CT_CHARACTER);
 }
 
 void CZombie::ZombieThink()
