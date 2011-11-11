@@ -179,16 +179,21 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 			flRadius = flRadiusZ;
 		float flHeight = r.m_vecMaxs.y - r.m_vecMins.y;
 
-		tstring sFilename = CModelLibrary::Get()->GetModel(pEntity->GetModel())->m_sFilename;
-		auto it = m_apCharacterShapes.find(sFilename);
+		tstring sIdentifier;
+		if (pEntity->GetModel() != ~0)
+			sIdentifier = CModelLibrary::Get()->GetModel(pEntity->GetModel())->m_sFilename;
+		else
+			sIdentifier = pEntity->GetClassName();
+
+		auto it = m_apCharacterShapes.find(sIdentifier);
 		if (it == m_apCharacterShapes.end())
 		{
 			TAssert(flHeight > flRadius);	// Couldn't very well make a capsule this way could we?
 
-			m_apCharacterShapes[sFilename] = new btCapsuleShape(flRadius, flHeight - flRadius);
+			m_apCharacterShapes[sIdentifier] = new btCapsuleShape(flRadius, flHeight - flRadius);
 		}
 
-		btCapsuleShape* pCapsuleShape = dynamic_cast<btCapsuleShape*>(m_apCharacterShapes[sFilename]);
+		btCapsuleShape* pCapsuleShape = dynamic_cast<btCapsuleShape*>(m_apCharacterShapes[sIdentifier]);
 
 #ifdef _DEBUG
 		TAssert(pCapsuleShape);
