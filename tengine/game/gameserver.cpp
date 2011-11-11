@@ -24,8 +24,8 @@
 #include <tinker/lobby/lobby_server.h>
 #include <tinker/cvar.h>
 #include <tinker/gamewindow.h>
+#include <physics/physics.h>
 
-#include "physics.h"
 #include "camera.h"
 #include "level.h"
 

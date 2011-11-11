@@ -12,9 +12,9 @@
 #include <network/commands.h>
 #include <models/texturelibrary.h>
 #include <tinker/cvar.h>
+#include <physics/physics.h>
 
 #include "game.h"
-#include "physics.h"
 
 eastl::vector<CBaseEntity*> CBaseEntity::s_apEntityList;
 size_t CBaseEntity::s_iEntities = 0;

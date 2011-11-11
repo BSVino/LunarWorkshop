@@ -4,11 +4,12 @@
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 
-#include "gameserver.h"
+#include <game/gameserver.h>
+#include <game/entities/character.h>
+#include <models/models.h>
+#include <tinker/profiler.h>
+
 #include "physics_debugdraw.h"
-#include "entities/character.h"
-#include "models/models.h"
-#include "tinker/profiler.h"
 
 class CBulletPhysics : public CPhysicsModel
 {

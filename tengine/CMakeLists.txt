@@ -32,8 +32,6 @@ set (TENGINE_GAME_SOURCES
 	game/gameserver.cpp
 	game/level.cpp
 	game/networkedeffect.cpp
-	game/physics.cpp
-	game/physics_debugdraw.cpp
 	game/team.cpp
 	game/entities/counter.cpp
 	game/entities/character.cpp
@@ -50,6 +48,12 @@ set (TENGINE_NETWORK_SOURCES
 	network/commands.cpp
 	network/network.cpp
 	network/replication.cpp
+)
+
+set (TENGINE_PHYSICS_SOURCES
+	physics/character_controller.cpp
+	physics/physics.cpp
+	physics/physics_debugdraw.cpp
 )
 
 set (TENGINE_RENDERER_SOURCES
@@ -75,12 +79,13 @@ set (TENGINE_TINKER_SOURCES
 )
 
 set (TENGINE_SOURCES
-	${TENGINE_GAME_SOURCES} ${TENGINE_MODELS_SOURCES} ${TENGINE_NETWORK_SOURCES} ${TENGINE_RENDERER_SOURCES} ${TENGINE_SOUND_SOURCES} ${TENGINE_TINKER_SOURCES}
+	${TENGINE_GAME_SOURCES} ${TENGINE_MODELS_SOURCES} ${TENGINE_NETWORK_SOURCES} ${TENGINE_PHYSICS_SOURCES} ${TENGINE_RENDERER_SOURCES} ${TENGINE_SOUND_SOURCES} ${TENGINE_TINKER_SOURCES}
 )
 
 source_group(Game FILES ${TENGINE_GAME_SOURCES})
 source_group(Models FILES ${TENGINE_MODELS_SOURCES})
 source_group(Network FILES ${TENGINE_NETWORK_SOURCES})
+source_group(Physics FILES ${TENGINE_PHYSICS_SOURCES})
 source_group(Renderer FILES ${TENGINE_RENDERER_SOURCES})
 source_group(Sound FILES ${TENGINE_SOUND_SOURCES})
 source_group(Tinker FILES ${TENGINE_TINKER_SOURCES})

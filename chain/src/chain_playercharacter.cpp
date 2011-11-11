@@ -1,7 +1,7 @@
 #include "chain_playercharacter.h"
 
 #include <tinker/application.h>
-#include <game/physics.h>
+#include <physics/physics.h>
 
 REGISTER_ENTITY(CPlayerCharacter);
 

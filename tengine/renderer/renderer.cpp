@@ -15,7 +15,7 @@
 #include <game/gameserver.h>
 #include <models/texturelibrary.h>
 #include <game/camera.h>
-#include <game/physics.h>
+#include <physics/physics.h>
 
 #include "renderingcontext.h"
 

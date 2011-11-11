@@ -1,6 +1,6 @@
 #include "world.h"
 
-#include <game/physics.h>
+#include <physics/physics.h>
 
 REGISTER_ENTITY(CWorld);
 

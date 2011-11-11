@@ -3,7 +3,7 @@
 #include <modelconverter/modelconverter.h>
 #include <renderer/renderer.h>
 #include <models/texturelibrary.h>
-#include <game/physics.h>
+#include <physics/physics.h>
 
 CModelLibrary* CModelLibrary::s_pModelLibrary = NULL;
 static CModelLibrary g_ModelLibrary = CModelLibrary();
