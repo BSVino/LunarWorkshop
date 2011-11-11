@@ -3,10 +3,10 @@
 #include <matrix.h>
 #include <tinker/application.h>
 #include <tinker/cvar.h>
-#include <tengine/game/game.h>
-
-#include <tengine/renderer/renderer.h>
-#include <tengine/renderer/renderingcontext.h>
+#include <game/game.h>
+#include <renderer/renderer.h>
+#include <renderer/renderingcontext.h>
+#include <physics/physics.h>
 
 #include "player.h"
 
@@ -139,19 +139,7 @@ void CCharacter::MoveThink()
 
 void CCharacter::Jump()
 {
-	if (!GetGroundEntity())
-		return;
-
-	SetGroundEntity(NULL);
-
-	Vector vecLocalUp = GetUpVector();
-	if (HasMoveParent())
-	{
-		TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
-		vecLocalUp = mGlobalToLocal.TransformVector(vecLocalUp);
-	}
-
-	SetLocalVelocity(GetLocalVelocity() + vecLocalUp * JumpStrength());
+	GamePhysics()->CharacterJump(this);
 }
 
 bool CCharacter::CanAttack() const

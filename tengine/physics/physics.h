@@ -27,6 +27,8 @@ public:
 
 	virtual void			SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform) {};
 	virtual void			SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity) {};
+
+	virtual void			CharacterJump(class CBaseEntity* pEnt) {};
 };
 
 class CPhysicsManager

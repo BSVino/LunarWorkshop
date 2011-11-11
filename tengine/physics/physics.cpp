@@ -94,6 +94,8 @@ public:
 	virtual void			SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform);
 	virtual void			SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity);
 
+	virtual void			CharacterJump(class CBaseEntity* pEnt);
+
 	virtual CPhysicsEntity*	GetPhysicsEntity(class CBaseEntity* pEnt);
 
 protected:
@@ -407,6 +409,19 @@ void CBulletPhysics::SetEntityVelocity(class CBaseEntity* pEnt, const Vector& ve
 		pPhysicsEntity->m_pRigidBody->setLinearVelocity(v);
 	else if (pPhysicsEntity->m_pCharacterController)
 		pPhysicsEntity->m_pCharacterController->setWalkDirection(v * (1.0f/60));	// 1/60 being bullet's fixed time step
+}
+
+void CBulletPhysics::CharacterJump(class CBaseEntity* pEnt)
+{
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
+	if (!pPhysicsEntity)
+		return;
+
+	TAssert(pPhysicsEntity->m_pCharacterController);
+	if (!pPhysicsEntity->m_pCharacterController)
+		return;
+
+	pPhysicsEntity->m_pCharacterController->jump();
 }
 
 CBulletPhysics::CPhysicsEntity* CBulletPhysics::GetPhysicsEntity(class CBaseEntity* pEnt)
