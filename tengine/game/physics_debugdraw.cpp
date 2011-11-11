@@ -6,12 +6,19 @@
 #include <game/gameserver.h>
 #include <tinker/application.h>
 
+btIDebugDraw* debugDrawerPtr;
+
 CPhysicsDebugDrawer::CPhysicsDebugDrawer()
 {
+	// This is so that some of the more special debug commands inside bullet can have access to the debug drawer.
+	debugDrawerPtr = this;
 }
 
 void CPhysicsDebugDrawer::drawLine(const btVector3& from,const btVector3& to,const btVector3& fromColor, const btVector3& toColor)
 {
+	if (!m_bDrawing)
+		return;
+
 	CRenderingContext c(GameServer()->GetRenderer());
 	c.UseProgram("model");
 	c.SetUniform("bDiffuse", false);
@@ -25,11 +32,17 @@ void CPhysicsDebugDrawer::drawLine(const btVector3& from,const btVector3& to,con
 
 void CPhysicsDebugDrawer::drawLine(const btVector3& from,const btVector3& to,const btVector3& color)
 {
+	if (!m_bDrawing)
+		return;
+
 	drawLine(from,to,color,color);
 }
 
 void CPhysicsDebugDrawer::drawSphere (const btVector3& p, btScalar radius, const btVector3& color)
 {
+	if (!m_bDrawing)
+		return;
+
 	CRenderingContext c(GameServer()->GetRenderer());
 	c.UseProgram("model");
 	c.SetUniform("bDiffuse", false);
@@ -41,11 +54,17 @@ void CPhysicsDebugDrawer::drawSphere (const btVector3& p, btScalar radius, const
 
 void CPhysicsDebugDrawer::drawBox (const btVector3& boxMin, const btVector3& boxMax, const btVector3& color, btScalar alpha)
 {
+	if (!m_bDrawing)
+		return;
+
 	TAssert(!"Unimplemented");
 }
 
 void CPhysicsDebugDrawer::drawTriangle(const btVector3& a,const btVector3& b,const btVector3& c,const btVector3& color,btScalar alpha)
 {
+	if (!m_bDrawing)
+		return;
+
 	CRenderingContext r(GameServer()->GetRenderer());
 	r.UseProgram("model");
 	r.SetUniform("bDiffuse", false);
@@ -66,16 +85,25 @@ void CPhysicsDebugDrawer::drawTriangle(const btVector3& a,const btVector3& b,con
 
 void CPhysicsDebugDrawer::draw3dText(const btVector3& location,const char* textString)
 {
+	if (!m_bDrawing)
+		return;
+
 	TAssert(!"Unimplemented");
 }
 
 void CPhysicsDebugDrawer::reportErrorWarning(const char* warningString)
 {
+	if (!m_bDrawing)
+		return;
+
 	TMsg(sprintf(tstring("CPhysicsDebugDrawer: %s\n"), warningString));
 }
 
 void CPhysicsDebugDrawer::drawContactPoint(const btVector3& pointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color)
 {
+	if (!m_bDrawing)
+		return;
+
 	btVector3 to=pointOnB+normalOnB*1;//distance;
 	const btVector3& from = pointOnB;
 

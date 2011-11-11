@@ -83,6 +83,9 @@ void CModel::Load()
 
 	for (size_t i = 0; i < iMaterials; i++)
 	{
+		if (i >= m_aaVertices.size())
+			continue;
+
 		if (m_aaVertices[i].size() == 0)
 			continue;
 

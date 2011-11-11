@@ -9,6 +9,8 @@ public:
 					CPhysicsDebugDrawer();
 
 public:
+	virtual void	SetDrawing(bool bOn) { m_bDrawing = bOn; }
+
 	virtual void	drawLine(const btVector3& from, const btVector3& to, const btVector3& fromColor, const btVector3& toColor);
 
 	virtual void	drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
@@ -27,6 +29,9 @@ public:
 	virtual void	setDebugMode(int debugMode) {};
 
 	virtual int		getDebugMode() const { return btIDebugDraw::DBG_DrawWireframe; }
+
+protected:
+	bool			m_bDrawing;
 };
 
 #endif//GL_DEBUG_DRAWER_H

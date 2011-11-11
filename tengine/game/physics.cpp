@@ -337,7 +337,9 @@ void CBulletPhysics::DebugDraw()
 		m_pDynamicsWorld->setDebugDrawer(m_pDebugDrawer);
 	}
 
+	m_pDebugDrawer->SetDrawing(true);
 	m_pDynamicsWorld->debugDrawWorld();
+	m_pDebugDrawer->SetDrawing(false);
 }
 
 void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform)
