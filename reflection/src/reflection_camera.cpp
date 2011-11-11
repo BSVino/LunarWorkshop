@@ -35,7 +35,7 @@ Vector CReflectionCamera::GetCameraTarget()
 	if (!pCharacter)
 		return BaseClass::GetCameraPosition();
 
-	return pCharacter->GetGlobalOrigin() + pCharacter->EyeHeight() * pCharacter->GetUpVector() + pCharacter->GetGlobalTransform().GetForwardVector();
+	return pCharacter->GetGlobalOrigin() + pCharacter->EyeHeight() * pCharacter->GetUpVector() + AngleVector(pCharacter->GetViewAngles());
 }
 
 float CReflectionCamera::GetCameraFOV()

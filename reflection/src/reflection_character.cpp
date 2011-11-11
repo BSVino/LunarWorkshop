@@ -85,10 +85,14 @@ void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 			Vector vecReflectedVelocity = mReflection.TransformVector(vecVelocity);
 			SetGlobalVelocity(vecReflectedVelocity);
 
-			// Reflect the character's viewing vector
+			// Reflect the character's orientation
 			Vector vecForward = GetGlobalTransform().GetForwardVector();
 			Vector vecReflectedForward = mReflection.TransformVector(vecForward);
 			mNew.SetOrientation(vecReflectedForward);
+
+			// Reflect the character's viewing vector
+			Vector vecView = AngleVector(GetViewAngles());
+			SetViewAngles(VectorAngles(mReflection.TransformVector(vecView)));
 
 			m_vecMoveVelocity.z = -m_vecMoveVelocity.z;
 

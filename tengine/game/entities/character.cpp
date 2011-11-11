@@ -19,6 +19,7 @@ NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_hControllingPlayer);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, EAngle, m_angView);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_hGround);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bTransformMoveByView);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecGoalVelocity);
@@ -118,6 +119,7 @@ void CCharacter::MoveThink()
 			}
 
 			TMatrix m = GetLocalTransform();
+			m.SetAngles(GetViewAngles());
 
 			Vector vecRight = m.GetForwardVector().Cross(vecUp).Normalized();
 			Vector vecForward = vecUp.Cross(vecRight).Normalized();
@@ -206,6 +208,7 @@ void CCharacter::PostRender(bool bTransparent) const
 void CCharacter::ShowPlayerVectors() const
 {
 	TMatrix m = GetGlobalTransform();
+	m.SetAngles(m_angView);
 
 	Vector vecUp = GetUpVector();
 	Vector vecRight = m.GetForwardVector().Cross(vecUp).Normalized();

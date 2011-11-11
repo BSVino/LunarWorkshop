@@ -1,7 +1,7 @@
 #include "reflection_playercharacter.h"
 
 #include <tinker/application.h>
-#include <game/physics.h>
+#include <physics/physics.h>
 
 #include "mirror.h"
 #include "token.h"
@@ -40,15 +40,8 @@ void CPlayerCharacter::PlaceMirror()
 
 	CMirror* pMirror = m_hMirror = GameServer()->Create<CMirror>("CMirror");
 
-	Vector vecForward = GetGlobalTransform().GetForwardVector();
-	vecForward.y = 0;
-	vecForward.Normalize();
-	pMirror->SetGlobalOrigin(GetGlobalOrigin() + vecForward*1.5f);
-
-	EAngle angGlobal = GetGlobalAngles();
-	angGlobal.p = 0;
-	angGlobal.r = 0;
-	pMirror->SetGlobalAngles(angGlobal);
+	pMirror->SetGlobalOrigin(GetGlobalOrigin() + AngleVector(GetViewAngles()).Flattened()*1.5f);
+	pMirror->SetGlobalAngles(EAngle(0, GetViewAngles().y, 0));
 
 	if (IsReflected())
 		m_hMirrorInside = pMirror;
@@ -125,8 +118,8 @@ void CPlayerCharacter::DropToken()
 		return;
 
 	m_hToken->SetMoveParent(nullptr);
-	m_hToken->SetGlobalOrigin(GetGlobalOrigin() + GetGlobalTransform().GetForwardVector().Flattened().Normalized());
-	m_hToken->SetGlobalAngles(EAngle(0, GetGlobalAngles().y, 0));
+	m_hToken->SetGlobalOrigin(GetGlobalOrigin() + AngleVector(GetViewAngles()).Flattened().Normalized());
+	m_hToken->SetGlobalAngles(EAngle(0, GetViewAngles().y, 0));
 	m_hToken->SetVisible(true);
 	m_hToken = nullptr;
 }
