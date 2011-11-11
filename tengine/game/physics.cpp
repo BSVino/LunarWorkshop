@@ -109,8 +109,8 @@ protected:
 	public:
 		btTriangleIndexVertexArray*		m_pIndexVertexArray;
 		btCollisionShape*				m_pCollisionShape;
-		eastl::vector<int>				m_aiIndices;
-		eastl::vector<Vector>			m_avecVertices;
+		eastl::vector<eastl::vector<int> >		m_aiIndices;
+		eastl::vector<eastl::vector<Vector> >	m_avecVertices;
 	};
 
 	eastl::map<size_t, CCollisionMesh>	m_apCollisionMeshes;
@@ -286,31 +286,48 @@ void CBulletPhysics::LoadCollisionMesh(const tstring& sModel, const eastl::vecto
 
 	TAssert(iModel != ~0);
 
-	eastl::vector<int>& aiIndices = m_apCollisionMeshes[iModel].m_aiIndices;
-	eastl::vector<Vector>& avecVertices = m_apCollisionMeshes[iModel].m_avecVertices;
-
-	int iTriangles = 0;
-	for (size_t i = 0; i < aTriangles.size(); i++)
-		iTriangles += aTriangles[i].size()/3;
-
-	aiIndices.set_capacity(iTriangles*3);
-	avecVertices.set_capacity(iTriangles*3);
+	eastl::vector<eastl::vector<int> >& aiIndices = m_apCollisionMeshes[iModel].m_aiIndices;
+	eastl::vector<eastl::vector<Vector> >& avecVertices = m_apCollisionMeshes[iModel].m_avecVertices;
 
 	for (size_t i = 0; i < aTriangles.size(); i++)
 	{
+		aiIndices.push_back();
+		avecVertices.push_back();
+
+		if (!aTriangles[i].size())
+			continue;
+
+		aiIndices.set_capacity(aTriangles[i].size());
+		avecVertices.set_capacity(aTriangles[i].size());
+
 		for (size_t j = 0; j < aTriangles[i].size(); j += 3)
 		{
-			aiIndices.push_back(j);
-			aiIndices.push_back(j+1);
-			aiIndices.push_back(j+2);
+			aiIndices[i].push_back(j);
+			aiIndices[i].push_back(j+1);
+			aiIndices[i].push_back(j+2);
 
-			avecVertices.push_back(aTriangles[i][j].vecPosition);
-			avecVertices.push_back(aTriangles[i][j+1].vecPosition);
-			avecVertices.push_back(aTriangles[i][j+2].vecPosition);
+			avecVertices[i].push_back(aTriangles[i][j].vecPosition);
+			avecVertices[i].push_back(aTriangles[i][j+1].vecPosition);
+			avecVertices[i].push_back(aTriangles[i][j+2].vecPosition);
 		}
 	}
 
-	m_apCollisionMeshes[iModel].m_pIndexVertexArray = new btTriangleIndexVertexArray(iTriangles, aiIndices.data(), sizeof(int)*3, avecVertices.size(), &avecVertices[0].x, sizeof(Vector));
+	m_apCollisionMeshes[iModel].m_pIndexVertexArray = new btTriangleIndexVertexArray();
+	for (size_t i = 0; i < aiIndices.size(); i++)
+	{
+		if (!aiIndices[i].size())
+			continue;
+
+		btIndexedMesh m;
+		m.m_numTriangles = aTriangles[i].size()/3;
+		m.m_triangleIndexBase = (const unsigned char *)&aiIndices[i][0];
+		m.m_triangleIndexStride = sizeof(int)*3;
+		m.m_numVertices = avecVertices[i].size();
+		m.m_vertexBase = (const unsigned char *)&avecVertices[i][0].x;
+		m.m_vertexStride = sizeof(Vector);
+		m_apCollisionMeshes[iModel].m_pIndexVertexArray->addIndexedMesh(m, PHY_INTEGER);
+	}
+
 	m_apCollisionMeshes[iModel].m_pCollisionShape = new btBvhTriangleMeshShape(m_apCollisionMeshes[iModel].m_pIndexVertexArray, true);
 }
 
