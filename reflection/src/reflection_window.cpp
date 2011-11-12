@@ -60,10 +60,12 @@ void CReflectionWindow::SetupReflection()
 	CToken* pToken = GameServer()->Create<CToken>("CToken");
 	pToken->SetGlobalOrigin(Vector(-6, 0, 3));
 	pToken->SetGlobalAngles(EAngle(0, -90, 0));
+	pToken->SetName("Reflection");
 
 	CReceptacle* pReceptacle = GameServer()->Create<CReceptacle>("CReceptacle");
 	pReceptacle->SetGlobalOrigin(Vector(-7.5f, 0.8f, 2.5f));
 	pReceptacle->SetGlobalAngles(EAngle(45, 180, 0));
+	pReceptacle->SetDesiredToken("Reflection");
 }
 
 void CReflectionWindow::RenderLoading()

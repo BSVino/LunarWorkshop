@@ -10,6 +10,7 @@ NETVAR_TABLE_BEGIN(CToken);
 NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CToken);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CReceptacle>, m_hReceptacle);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bReflected);
 SAVEDATA_TABLE_END();
 
@@ -51,7 +52,10 @@ NETVAR_TABLE_BEGIN(CReceptacle);
 NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CReceptacle);
+	SAVEDATA_DEFINE_OUTPUT(OnCorrectToken);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CToken>, m_hToken);
+	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sDesiredToken);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bDesiredReflection);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CReceptacle);
@@ -73,4 +77,10 @@ void CReceptacle::SetToken(CToken* pToken)
 	pToken->SetMoveParent(this);
 	pToken->SetLocalTransform(TMatrix());
 	pToken->m_hReceptacle = this;
+
+	int iReflected = (int)pToken->IsReflected();
+	// For some reason it's not enough to just use an ==
+	int iDesired = !!((int)m_bDesiredReflection);
+	if (iReflected == iDesired && pToken->GetName() == m_sDesiredToken)
+		CallOutput("OnCorrectToken");
 }
