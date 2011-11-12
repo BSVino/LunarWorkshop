@@ -893,56 +893,6 @@ TFloat CBaseEntity::Distance(const TVector& vecSpot) const
 	return flDistance - GetBoundingRadius();
 }
 
-bool CBaseEntity::CollideLocal(const TVector& v1, const TVector& v2, TVector& vecPoint, TVector& vecNormal)
-{
-	if (!ShouldCollide())
-		return false;
-
-	if (GetBoundingRadius() == TFloat(0))
-		return false;
-
-	if (v1 == v2)
-	{
-		vecPoint = v1;
-		TVector vecToV1 = v1-GetLocalCenter();
-		TFloat flLength = vecToV1.Length();
-		vecNormal = vecToV1/flLength;
-
-		bool bLess = flLength < GetBoundingRadius();
-		if (bLess)
-			vecPoint += vecNormal * ((GetBoundingRadius()-flLength) + TFloat(0.0001f));
-
-		return bLess;
-	}
-
-	return LineSegmentIntersectsSphere(v1, v2, GetLocalCenter(), GetBoundingRadius(), vecPoint, vecNormal);
-}
-
-bool CBaseEntity::Collide(const TVector& v1, const TVector& v2, TVector& vecPoint, TVector& vecNormal)
-{
-	if (!ShouldCollide())
-		return false;
-
-	if (GetBoundingRadius() == TFloat(0))
-		return false;
-
-	if (v1 == v2)
-	{
-		vecPoint = v1;
-		TVector vecPosition = v1-GetGlobalCenter();
-		TFloat flLength = vecPosition.Length();
-		vecNormal = vecPosition/flLength;
-
-		bool bLess = flLength < GetBoundingRadius();
-		if (bLess)
-			vecPoint += vecNormal * ((GetBoundingRadius()-flLength) + TFloat(0.0001f));
-
-		return bLess;
-	}
-
-	return LineSegmentIntersectsSphere(v1, v2, GetGlobalCenter(), GetBoundingRadius(), vecPoint, vecNormal);
-}
-
 void CBaseEntity::SetSpawnSeed(size_t iSpawnSeed)
 {
 	m_iSpawnSeed = iSpawnSeed;

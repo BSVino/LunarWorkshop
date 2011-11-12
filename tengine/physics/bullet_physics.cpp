@@ -1,6 +1,5 @@
-#include "physics.h"
+#include "bullet_physics.h"
 
-#include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 
 #include <game/gameserver.h>
@@ -9,118 +8,6 @@
 #include <tinker/profiler.h>
 
 #include "physics_debugdraw.h"
-#include "character_controller.h"
-
-class CBulletPhysics : public CPhysicsModel
-{
-protected:
-	class CMotionState : public btMotionState
-	{
-	public:
-		virtual void getWorldTransform(btTransform& mCenterOfMass) const 
-		{
-			TPROF("CMotionState::getWorldTransform");
-
-			if (m_pPhysics->GetPhysicsEntity(m_hEntity)->m_bCenterMassOffset)
-			{
-				Matrix4x4 mCenter;
-				mCenter.SetTranslation(m_hEntity->GetBoundingBox().Center());
-
-				mCenterOfMass.setFromOpenGLMatrix(mCenter * m_hEntity->GetGlobalTransform());
-			}
-			else
-				mCenterOfMass.setFromOpenGLMatrix(m_hEntity->GetGlobalTransform());
-		}
-
-		virtual void setWorldTransform(const btTransform& mCenterOfMass)
-		{
-			TPROF("CMotionState::setWorldTransform");
-
-			Matrix4x4 mGlobal;
-			mCenterOfMass.getOpenGLMatrix(mGlobal);
-
-			if (m_pPhysics->GetPhysicsEntity(m_hEntity)->m_bCenterMassOffset)
-			{
-				Matrix4x4 mCenter;
-				mCenter.SetTranslation(m_hEntity->GetBoundingBox().Center());
-
-				m_hEntity->SetGlobalTransform(mCenter.InvertedRT() * mGlobal);
-			}
-			else
-				m_hEntity->SetGlobalTransform(mGlobal);
-		}
-
-	public:
-		CBulletPhysics*					m_pPhysics;
-		CEntityHandle<CBaseEntity>		m_hEntity;
-	};
-
-	class CPhysicsEntity
-	{
-	public:
-		CPhysicsEntity()
-		{
-			m_pRigidBody = NULL;
-			m_pGhostObject = NULL;
-			m_pCharacterController = NULL;
-		};
-
-		~CPhysicsEntity()
-		{
-		};
-
-	public:
-		btRigidBody*						m_pRigidBody;
-		btPairCachingGhostObject*			m_pGhostObject;
-		CCharacterController*				m_pCharacterController;
-		CMotionState						m_oMotionState;
-		bool								m_bCenterMassOffset;
-	};
-
-public:
-							CBulletPhysics();
-							~CBulletPhysics();
-
-public:
-	virtual void			AddEntity(class CBaseEntity* pEnt, collision_type_t eCollisionType);
-	virtual void			RemoveEntity(class CBaseEntity* pEnt);
-
-	virtual void			LoadCollisionMesh(const tstring& sModel, const eastl::vector< eastl::vector<Vertex_t> >& aTriangles);
-
-	virtual void			Simulate();
-
-	virtual void			DebugDraw();
-
-	virtual void			SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform);
-	virtual void			SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity);
-
-	virtual void			CharacterJump(class CBaseEntity* pEnt);
-
-	virtual CPhysicsEntity*	GetPhysicsEntity(class CBaseEntity* pEnt);
-
-protected:
-	eastl::vector<CPhysicsEntity>		m_aEntityList;
-
-	btDefaultCollisionConfiguration*	m_pCollisionConfiguration;
-	btCollisionDispatcher*				m_pDispatcher;
-	btDbvtBroadphase*					m_pBroadphase;
-	btGhostPairCallback*				m_pGhostPairCallback;
-	btDiscreteDynamicsWorld*			m_pDynamicsWorld;
-
-	class CCollisionMesh
-	{
-	public:
-		btTriangleIndexVertexArray*		m_pIndexVertexArray;
-		btCollisionShape*				m_pCollisionShape;
-		eastl::vector<eastl::vector<int> >		m_aiIndices;
-		eastl::vector<eastl::vector<Vector> >	m_avecVertices;
-	};
-
-	eastl::map<size_t, CCollisionMesh>	m_apCollisionMeshes;
-	eastl::map<tstring, btCollisionShape*>	m_apCharacterShapes;
-
-	CPhysicsDebugDrawer*				m_pDebugDrawer;
-};
 
 CBulletPhysics::CBulletPhysics()
 {
@@ -216,13 +103,14 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 		pPhysicsEntity->m_pGhostObject->setWorldTransform(mTransform);
 		pPhysicsEntity->m_pGhostObject->setCollisionShape(pCapsuleShape);
 		pPhysicsEntity->m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+		pPhysicsEntity->m_pGhostObject->setUserPointer((void*)iHandle);
 
 		float flStepHeight = 0.2f;
 		CCharacter* pCharacter = dynamic_cast<CCharacter*>(pEntity);
 		if (pCharacter)
 			flStepHeight = pCharacter->GetMaxStepHeight();
 
-		pPhysicsEntity->m_pCharacterController = new CCharacterController(pPhysicsEntity->m_pGhostObject, pCapsuleShape, flStepHeight);
+		pPhysicsEntity->m_pCharacterController = new CCharacterController(pEntity, pPhysicsEntity->m_pGhostObject, pCapsuleShape, flStepHeight);
 
 		m_pDynamicsWorld->addCollisionObject(pPhysicsEntity->m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter|btBroadphaseProxy::DefaultFilter);
 		m_pDynamicsWorld->addAction(pPhysicsEntity->m_pCharacterController);
@@ -256,6 +144,7 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 
 		btRigidBody::btRigidBodyConstructionInfo rbInfo(flMass, &pPhysicsEntity->m_oMotionState, pCollisionShape, vecLocalInertia);
 		pPhysicsEntity->m_pRigidBody = new btRigidBody(rbInfo);
+		pPhysicsEntity->m_pRigidBody->setUserPointer((void*)iHandle);
 
 		m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_pRigidBody);
 	}
@@ -424,7 +313,7 @@ void CBulletPhysics::CharacterJump(class CBaseEntity* pEnt)
 	pPhysicsEntity->m_pCharacterController->jump();
 }
 
-CBulletPhysics::CPhysicsEntity* CBulletPhysics::GetPhysicsEntity(class CBaseEntity* pEnt)
+CPhysicsEntity* CBulletPhysics::GetPhysicsEntity(class CBaseEntity* pEnt)
 {
 	TPROF("CBulletPhysics::GetPhysicsEntity");
 
@@ -451,6 +340,39 @@ CPhysicsManager::CPhysicsManager()
 CPhysicsManager::~CPhysicsManager()
 {
 	delete m_pModel;
+}
+
+void CMotionState::getWorldTransform(btTransform& mCenterOfMass) const
+{
+	TPROF("CMotionState::getWorldTransform");
+
+	if (m_pPhysics->GetPhysicsEntity(m_hEntity)->m_bCenterMassOffset)
+	{
+		Matrix4x4 mCenter;
+		mCenter.SetTranslation(m_hEntity->GetBoundingBox().Center());
+
+		mCenterOfMass.setFromOpenGLMatrix(mCenter * m_hEntity->GetGlobalTransform());
+	}
+	else
+		mCenterOfMass.setFromOpenGLMatrix(m_hEntity->GetGlobalTransform());
+}
+
+void CMotionState::setWorldTransform(const btTransform& mCenterOfMass)
+{
+	TPROF("CMotionState::setWorldTransform");
+
+	Matrix4x4 mGlobal;
+	mCenterOfMass.getOpenGLMatrix(mGlobal);
+
+	if (m_pPhysics->GetPhysicsEntity(m_hEntity)->m_bCenterMassOffset)
+	{
+		Matrix4x4 mCenter;
+		mCenter.SetTranslation(m_hEntity->GetBoundingBox().Center());
+
+		m_hEntity->SetGlobalTransform(mCenter.InvertedRT() * mGlobal);
+	}
+	else
+		m_hEntity->SetGlobalTransform(mGlobal);
 }
 
 CPhysicsModel* GamePhysics()

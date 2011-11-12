@@ -68,7 +68,7 @@ void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 		bool bOldSide = (vecOldGlobalOrigin - mMirror.GetTranslation()).Normalized().Dot(mMirror.GetForwardVector()) > 0;
 		bool bNewSide = (vecNewGlobalOrigin - mMirror.GetTranslation()).Normalized().Dot(mMirror.GetForwardVector()) > 0;
 
-		if(bOldSide != bNewSide && (vecNewGlobalOrigin - mMirror.GetTranslation()).Length2DSqr() < pMirror->GetBoundingBox().Size().Length2DSqr()/2)
+		if(bOldSide != bNewSide && pMirror->IsPointInside(GetGlobalCenter()))
 		{
 			Matrix4x4 mReflection;
 			mReflection.AddReflection(mMirror.GetForwardVector());
@@ -111,4 +111,20 @@ void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 CMirror* CReflectionCharacter::GetMirrorInside() const
 {
 	return m_hMirrorInside;
+}
+
+bool CReflectionCharacter::IsNearMirror(class CMirror* pMirror, const Vector& vecPoint) const
+{
+	if (!pMirror)
+		return false;
+
+	return pMirror->IsPointInside(vecPoint);
+}
+
+bool CReflectionCharacter::ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const
+{
+	if (tstring(pOther->GetClassName()) == "CWorld")
+		return !IsNearMirror(static_cast<CPlayerCharacter*>(ReflectionGame()->GetLocalPlayerCharacter())->GetMirror(), vecPoint);
+
+	return true;
 }

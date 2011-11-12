@@ -10,6 +10,8 @@ class CMirror : public CBaseEntity
 public:
 	void				Precache();
 	void				Spawn();
+
+	bool				IsPointInside(const Vector& vecPoint) const;
 };
 
 #endif

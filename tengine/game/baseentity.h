@@ -450,10 +450,11 @@ public:
 
 	virtual TFloat							Distance(const TVector& vecSpot) const;
 
-	virtual bool							CollideLocal(const TVector& v1, const TVector& v2, TVector& vecPoint, TVector& vecNormal);
-	virtual bool							Collide(const TVector& v1, const TVector& v2, TVector& vecPoint, TVector& vecNormal);
-
-	virtual bool							ShouldCollide() const { return false; }
+	// Physics callback - Should this object collide with pOther at the specified point?
+	// At this point the expensive collision checks have passed and the two objects will
+	// definitely collide if true is returned here. If two objects should never collide,
+	// use collision groups instead to avoid the expensive collision checks.
+	virtual bool							ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const { return true; }
 
 	size_t									GetSpawnSeed() const { return m_iSpawnSeed; }
 	void									SetSpawnSeed(size_t iSpawnSeed);

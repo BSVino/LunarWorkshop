@@ -27,6 +27,11 @@ public:
 	CMirror*					GetMirrorInside() const;
 	virtual void				Reflected() {};
 
+	// Is the point near enough to a mirror to be considered inside of it for physics purposes?
+	bool						IsNearMirror(class CMirror* pMirror, const Vector& vecPoint) const;
+
+	virtual bool				ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const;
+
 protected:
 	bool						m_bReflected;	// Protected and reflected? Rejected? Projected? INFLECTED?!?
 	CEntityHandle<CMirror>		m_hMirrorInside;

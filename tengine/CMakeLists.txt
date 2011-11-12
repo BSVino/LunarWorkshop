@@ -52,7 +52,7 @@ set (TENGINE_NETWORK_SOURCES
 
 set (TENGINE_PHYSICS_SOURCES
 	physics/character_controller.cpp
-	physics/physics.cpp
+	physics/bullet_physics.cpp
 	physics/physics_debugdraw.cpp
 )
 

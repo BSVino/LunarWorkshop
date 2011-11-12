@@ -43,7 +43,6 @@ public:
 	virtual TFloat					EyeHeight() const { return 180.0f; }
 	virtual TFloat					CharacterSpeed() { return 80.0f; }
 	virtual TFloat					JumpStrength() { return 150.0f; }
-	virtual inline TVector			GetGlobalGravity() const;
 
 	virtual float					AttackTime() const { return 0.3f; }
 	virtual float					AttackDamage() const { return 50; }
@@ -55,18 +54,12 @@ public:
 	virtual void					SetViewAngles(const EAngle& angView) { m_angView = angView; }
 	virtual EAngle					GetViewAngles() const { return m_angView; }
 
-	CBaseEntity*					GetGroundEntity() const { return m_hGround; }
-	void							SetGroundEntity(CBaseEntity* pEntity) { m_hGround = pEntity; }
-	virtual void					FindGroundEntity();
-
 	TFloat							GetMaxStepHeight() const { return m_flMaxStepSize; }
 
 protected:
 	CNetworkedHandle<CPlayer>		m_hControllingPlayer;
 
 	EAngle							m_angView;
-
-	CNetworkedHandle<CBaseEntity>	m_hGround;
 
 	bool							m_bTransformMoveByView;
 	Vector							m_vecGoalVelocity;

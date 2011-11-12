@@ -26,3 +26,14 @@ void CMirror::Spawn()
 
 	ReflectionRenderer()->SetMirror(this);
 }
+
+bool CMirror::IsPointInside(const Vector& vecPoint) const
+{
+	if (vecPoint.y < GetGlobalOrigin().y + 0.05f)
+		return false;
+
+	if (vecPoint.y > GetGlobalOrigin().y + GetBoundingBox().Size().y)
+		return false;
+
+	return (vecPoint - GetGlobalOrigin()).Length2DSqr() < GetBoundingBox().Size().Length2DSqr()/2;
+}

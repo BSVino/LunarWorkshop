@@ -14,13 +14,11 @@ REGISTER_ENTITY(CCharacter);
 
 NETVAR_TABLE_BEGIN(CCharacter);
 	NETVAR_DEFINE(CEntityHandle, m_hControllingPlayer);
-	NETVAR_DEFINE(CEntityHandle, m_hGround);
 NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_hControllingPlayer);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, EAngle, m_angView);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_hGround);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bTransformMoveByView);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecGoalVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecMoveVelocity);
@@ -54,8 +52,6 @@ void CCharacter::Spawn()
 
 void CCharacter::Think()
 {
-	FindGroundEntity();
-
 	BaseClass::Think();
 
 	MoveThink();
@@ -256,15 +252,6 @@ void CCharacter::ShowPlayerVectors() const
 	c.Vertex(vecEyeHeight);
 	c.Vertex(vecEyeHeight + vecUp);
 	c.EndRender();
-
-	TVector vecPoint, vecNormal;
-	if (Game()->TraceLine(GetGlobalOrigin(), GetGlobalOrigin() - GetUpVector()*100, vecPoint, vecNormal, NULL))
-	{
-		c.Translate(vecPoint - GetGlobalOrigin());
-		c.Scale(0.1f, 0.1f, 0.1f);
-		c.SetColor(Color(255, 255, 255));
-		c.RenderSphere();
-	}
 }
 
 void CCharacter::SetControllingPlayer(CPlayer* pCharacter)
@@ -275,68 +262,4 @@ void CCharacter::SetControllingPlayer(CPlayer* pCharacter)
 CPlayer* CCharacter::GetControllingPlayer() const
 {
 	return m_hControllingPlayer;
-}
-
-TVector CCharacter::GetGlobalGravity() const
-{
-	if (GetGroundEntity())
-		return TVector();
-
-	return BaseClass::GetGlobalGravity();
-}
-
-void CCharacter::FindGroundEntity()
-{
-	TVector vecVelocity = GetGlobalVelocity();
-
-	if (vecVelocity.Dot(GetUpVector()) > JumpStrength()/2.0f)
-	{
-		SetGroundEntity(NULL);
-		return;
-	}
-
-	TVector vecUp = GetUpVector() * m_flMaxStepSize;
-
-	size_t iMaxEntities = GameServer()->GetMaxEntities();
-	for (size_t j = 0; j < iMaxEntities; j++)
-	{
-		CBaseEntity* pEntity = CBaseEntity::GetEntity(j);
-
-		if (!pEntity)
-			continue;
-
-		if (pEntity->IsDeleted())
-			continue;
-
-		if (!pEntity->ShouldCollide())
-			continue;
-
-		if (pEntity == this)
-			continue;
-
-		TVector vecPoint, vecNormal;
-		if (GetMoveParent() == pEntity)
-		{
-			TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
-			Vector vecUpLocal = mGlobalToLocal.TransformVector(GetUpVector()) * m_flMaxStepSize;
-
-			if (pEntity->CollideLocal(GetLocalOrigin(), GetLocalOrigin() - vecUpLocal, vecPoint, vecNormal))
-			{
-				SetGroundEntity(pEntity);
-
-				return;
-			}
-		}
-		else
-		{
-			if (pEntity->Collide(GetGlobalOrigin(), GetGlobalOrigin() - vecUp, vecPoint, vecNormal))
-			{
-				SetGroundEntity(pEntity);
-
-				return;
-			}
-		}
-	}
-
-	SetGroundEntity(NULL);
 }

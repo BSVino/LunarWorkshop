@@ -7,7 +7,9 @@
 
 #include "BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h"
 
+#include <game/entityhandle.h>
 
+class CBaseEntity;
 class btCollisionShape;
 class btRigidBody;
 class btCollisionWorld;
@@ -23,7 +25,7 @@ class btConvexShape;
 class CCharacterController : public btCharacterControllerInterface
 {
 public:
-	CCharacterController (btPairCachingGhostObject* ghostObject,btConvexShape* convexShape,btScalar stepHeight, int upAxis = 1);
+	CCharacterController (CBaseEntity* pEntity, btPairCachingGhostObject* ghostObject,btConvexShape* convexShape,btScalar stepHeight, int upAxis = 1);
 	~CCharacterController ();
 	
 
@@ -90,6 +92,8 @@ public:
 
 	bool onGround () const;
 
+	class CBaseEntity*	GetEntity() const;
+
 protected:
 	static btVector3* getUpAxisDirections();
 
@@ -104,6 +108,8 @@ protected:
 	void stepDown (btCollisionWorld* collisionWorld, btScalar dt);
 
 protected:
+	CEntityHandle<CBaseEntity>	m_hEntity;
+
 	btScalar m_halfHeight;
 	
 	btPairCachingGhostObject* m_ghostObject;

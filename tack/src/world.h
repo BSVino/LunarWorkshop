@@ -10,11 +10,6 @@ class CWorld : public CBaseEntity
 public:
 	virtual void					Precache();
 	virtual void					Spawn();
-
-	virtual bool					ShouldCollide() const { return true; }
-
-	virtual bool					CollideLocal(const TVector& v1, const TVector& v2, TVector& vecPoint, TVector& vecNormal);
-	virtual bool					Collide(const TVector& v1, const TVector& v2, TVector& vecPoint, TVector& vecNormal);
 };
 
 #endif
