@@ -129,7 +129,7 @@ CCharacterController::CCharacterController (btPairCachingGhostObject* ghostObjec
 	m_verticalOffset = 0.0;
 	m_gravity = 9.8f;
 	m_fallSpeed = 55.0; // Terminal velocity of a sky diver in m/s.
-	m_jumpSpeed = 10.0; // ?
+	m_jumpSpeed = 4.0;
 	m_wasOnGround = false;
 	m_wasJumping = false;
 	setMaxSlope(btRadians(45.0));

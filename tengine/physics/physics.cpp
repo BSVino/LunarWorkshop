@@ -1,7 +1,6 @@
 #include "physics.h"
 
 #include <btBulletDynamicsCommon.h>
-#include <BulletDynamics/Character/btKinematicCharacterController.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 
 #include <game/gameserver.h>
@@ -10,6 +9,7 @@
 #include <tinker/profiler.h>
 
 #include "physics_debugdraw.h"
+#include "character_controller.h"
 
 class CBulletPhysics : public CPhysicsModel
 {
@@ -72,7 +72,7 @@ protected:
 	public:
 		btRigidBody*						m_pRigidBody;
 		btPairCachingGhostObject*			m_pGhostObject;
-		btKinematicCharacterController*		m_pCharacterController;
+		CCharacterController*				m_pCharacterController;
 		CMotionState						m_oMotionState;
 		bool								m_bCenterMassOffset;
 	};
@@ -222,7 +222,7 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 		if (pCharacter)
 			flStepHeight = pCharacter->GetMaxStepHeight();
 
-		pPhysicsEntity->m_pCharacterController = new btKinematicCharacterController(pPhysicsEntity->m_pGhostObject, pCapsuleShape, flStepHeight);
+		pPhysicsEntity->m_pCharacterController = new CCharacterController(pPhysicsEntity->m_pGhostObject, pCapsuleShape, flStepHeight);
 
 		m_pDynamicsWorld->addCollisionObject(pPhysicsEntity->m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter|btBroadphaseProxy::DefaultFilter);
 		m_pDynamicsWorld->addAction(pPhysicsEntity->m_pCharacterController);
