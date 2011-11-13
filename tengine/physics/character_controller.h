@@ -76,8 +76,15 @@ public:
 
 	void jump ();
 
-	void setGravity(btScalar gravity);
-	btScalar getGravity() const;
+	void setGravity(const btVector3& gravity);
+	btVector3 getGravity() const;
+
+	void setVerticalVelocity(btScalar flVerticalVelocity);
+
+	btVector3 getVelocity() const;
+
+	void setUpVector(const btVector3& v) { m_vecUpVector = v; };
+	btVector3 getUpVector() const { return m_vecUpVector; };
 
 	/// The max slope determines the maximum angle that the controller can walk up.
 	/// The slope angle is measured in radians.
@@ -95,8 +102,6 @@ public:
 	class CBaseEntity*	GetEntity() const;
 
 protected:
-	static btVector3* getUpAxisDirections();
-
 	btVector3 computeReflectionDirection (const btVector3& direction, const btVector3& normal);
 	btVector3 parallelComponent (const btVector3& direction, const btVector3& normal);
 	btVector3 perpindicularComponent (const btVector3& direction, const btVector3& normal);
@@ -122,7 +127,9 @@ protected:
 	btScalar m_maxJumpHeight;
 	btScalar m_maxSlopeRadians; // Slope angle that is set (used for returning the exact value)
 	btScalar m_maxSlopeCosine;  // Cosine equivalent of m_maxSlopeRadians (calculated once when set, for optimization)
-	btScalar m_gravity;
+	btVector3 m_gravity;
+
+	btVector3 m_vecUpVector;
 
 	btScalar m_turnAngle;
 	

@@ -129,10 +129,10 @@ void CCharacter::MoveThink()
 		else
 			vecLocalVelocity = vecMove;
 
-		SetLocalVelocity(vecLocalVelocity);
+		GamePhysics()->SetControllerWalkVelocity(this, vecLocalVelocity);
 	}
 	else
-		SetLocalVelocity(TVector());
+		GamePhysics()->SetControllerWalkVelocity(this, Vector(0, 0, 0));
 }
 
 void CCharacter::Jump()

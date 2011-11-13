@@ -123,7 +123,8 @@ CCharacterController::CCharacterController(CBaseEntity* pEntity, btPairCachingGh
 	m_velocityTimeInterval = 0.0;
 	m_verticalVelocity = 0.0;
 	m_verticalOffset = 0.0;
-	m_gravity = 9.8f;
+	m_gravity = btVector3(0, -9.8f, 0);
+	m_vecUpVector = btVector3(0, 1, 0);
 	m_fallSpeed = 55.0; // Terminal velocity of a sky diver in m/s.
 	m_jumpSpeed = 4.0;
 	m_wasOnGround = false;
@@ -163,10 +164,37 @@ bool CCharacterController::recoverFromPenetration ( btCollisionWorld* collisionW
 		for (int j=0;j<m_manifoldArray.size();j++)
 		{
 			btPersistentManifold* manifold = m_manifoldArray[j];
-			btScalar directionSign = manifold->getBody0() == m_ghostObject ? btScalar(-1.0) : btScalar(1.0);
+
+			btCollisionObject* obA = static_cast<btCollisionObject*>(manifold->getBody0());
+			btCollisionObject* obB = static_cast<btCollisionObject*>(manifold->getBody1());
+
+			btScalar directionSign;
+			CEntityHandle<CBaseEntity> hOther;
+			if (obA == m_ghostObject)
+			{
+				directionSign = btScalar(-1.0);
+				hOther = CEntityHandle<CBaseEntity>((size_t)obB->getUserPointer());
+			}
+			else
+			{
+				directionSign = btScalar(1.0);
+				hOther = CEntityHandle<CBaseEntity>((size_t)obA->getUserPointer());
+			}
+
 			for (int p=0;p<manifold->getNumContacts();p++)
 			{
 				const btManifoldPoint&pt = manifold->getContactPoint(p);
+
+				if (obA == m_ghostObject)
+				{
+					if (!m_hEntity->ShouldCollideWith(hOther, Vector(pt.getPositionWorldOnB())))
+						continue;
+				}
+				else
+				{
+					if (!m_hEntity->ShouldCollideWith(hOther, Vector(pt.getPositionWorldOnA())))
+						continue;
+				}
 
 				btScalar dist = pt.getDistance();
 
@@ -199,16 +227,16 @@ void CCharacterController::stepUp ( btCollisionWorld* world)
 {
 	// phase 1: up
 	btTransform start, end;
-	m_targetPosition = m_currentPosition + getUpAxisDirections()[m_upAxis] * (m_stepHeight + (m_verticalOffset > 0.f?m_verticalOffset:0.f));
+	m_targetPosition = m_currentPosition + getUpVector() * (m_stepHeight + (m_verticalOffset > 0.f?m_verticalOffset:0.f));
 
 	start.setIdentity ();
 	end.setIdentity ();
 
 	/* FIXME: Handle penetration properly */
-	start.setOrigin (m_currentPosition + getUpAxisDirections()[m_upAxis] * (m_convexShape->getMargin() + m_addedMargin));
+	start.setOrigin (m_currentPosition + getUpVector() * (m_convexShape->getMargin() + m_addedMargin));
 	end.setOrigin (m_targetPosition);
 
-	btKinematicClosestNotMeConvexResultCallback callback (this, m_ghostObject, -getUpAxisDirections()[m_upAxis], btScalar(0.7071));
+	btKinematicClosestNotMeConvexResultCallback callback (this, m_ghostObject, -getUpVector(), btScalar(0.7071));
 	callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
 	callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
 	
@@ -224,7 +252,7 @@ void CCharacterController::stepUp ( btCollisionWorld* world)
 	if (callback.hasHit())
 	{
 		// Only modify the position if the hit was a slope and not a wall or ceiling.
-		if(callback.m_hitNormalWorld.dot(getUpAxisDirections()[m_upAxis]) > 0.0)
+		if(callback.m_hitNormalWorld.dot(getUpVector()) > 0.0)
 		{
 			// we moved up only a fraction of the step height
 			m_currentStepOffset = m_stepHeight * callback.m_closestHitFraction;
@@ -369,19 +397,24 @@ void CCharacterController::stepDown ( btCollisionWorld* collisionWorld, btScalar
 
 	// phase 3: down
 	/*btScalar additionalDownStep = (m_wasOnGround && !onGround()) ? m_stepHeight : 0.0;
-	btVector3 step_drop = getUpAxisDirections()[m_upAxis] * (m_currentStepOffset + additionalDownStep);
+	btVector3 step_drop = getUpVector() * (m_currentStepOffset + additionalDownStep);
 	btScalar downVelocity = (additionalDownStep == 0.0 && m_verticalVelocity<0.0?-m_verticalVelocity:0.0) * dt;
-	btVector3 gravity_drop = getUpAxisDirections()[m_upAxis] * downVelocity; 
+	btVector3 gravity_drop = getUpVector() * downVelocity; 
 	m_targetPosition -= (step_drop + gravity_drop);*/
 
-	btScalar downVelocity = (m_verticalVelocity<0.f?-m_verticalVelocity:0.f) * dt;
+	btScalar downVelocity;
+	if (m_vecUpVector.y() < 0)
+		downVelocity = (m_verticalVelocity>0.f?m_verticalVelocity:0.f) * dt;
+	else
+		downVelocity = (m_verticalVelocity<0.f?-m_verticalVelocity:0.f) * dt;
+
 	if(downVelocity > 0.0 && downVelocity < m_stepHeight
 		&& (m_wasOnGround || !m_wasJumping))
 	{
 		downVelocity = m_stepHeight;
 	}
 
-	btVector3 step_drop = getUpAxisDirections()[m_upAxis] * (m_currentStepOffset + downVelocity);
+	btVector3 step_drop = getUpVector() * (m_currentStepOffset + downVelocity);
 	m_targetPosition -= step_drop;
 
 	start.setIdentity ();
@@ -390,7 +423,7 @@ void CCharacterController::stepDown ( btCollisionWorld* collisionWorld, btScalar
 	start.setOrigin (m_currentPosition);
 	end.setOrigin (m_targetPosition);
 
-	btKinematicClosestNotMeConvexResultCallback callback (this, m_ghostObject, getUpAxisDirections()[m_upAxis], m_maxSlopeCosine);
+	btKinematicClosestNotMeConvexResultCallback callback (this, m_ghostObject, getUpVector(), m_maxSlopeCosine);
 	callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
 	callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
 	
@@ -464,7 +497,6 @@ void CCharacterController::warp (const btVector3& origin)
 
 void CCharacterController::preStep (  btCollisionWorld* collisionWorld)
 {
-	
 	int numPenetrationLoops = 0;
 	m_touchingContact = false;
 	while (recoverFromPenetration (collisionWorld))
@@ -481,8 +513,6 @@ void CCharacterController::preStep (  btCollisionWorld* collisionWorld)
 	m_currentPosition = m_ghostObject->getWorldTransform().getOrigin();
 	m_targetPosition = m_currentPosition;
 //	printf("m_targetPosition=%f,%f,%f\n",m_targetPosition[0],m_targetPosition[1],m_targetPosition[2]);
-
-	
 }
 
 #include <stdio.h>
@@ -501,16 +531,34 @@ void CCharacterController::playerStep (  btCollisionWorld* collisionWorld, btSca
 	m_wasOnGround = onGround();
 
 	// Update fall velocity.
-	m_verticalVelocity -= m_gravity * dt;
-	if(m_verticalVelocity > 0.0 && m_verticalVelocity > m_jumpSpeed)
+	m_verticalVelocity += m_gravity.y() * dt;
+
+	if (m_vecUpVector.y() > 0)
 	{
-		m_verticalVelocity = m_jumpSpeed;
+		if(m_verticalVelocity > 0.0 && m_verticalVelocity > m_jumpSpeed)
+		{
+			m_verticalVelocity = m_jumpSpeed;
+		}
+		if(m_verticalVelocity < 0.0 && btFabs(m_verticalVelocity) > btFabs(m_fallSpeed))
+		{
+			m_verticalVelocity = -btFabs(m_fallSpeed);
+		}
+
+		m_verticalOffset = m_verticalVelocity * dt;
 	}
-	if(m_verticalVelocity < 0.0 && btFabs(m_verticalVelocity) > btFabs(m_fallSpeed))
+	else
 	{
-		m_verticalVelocity = -btFabs(m_fallSpeed);
+		if(m_verticalVelocity < 0.0 && m_verticalVelocity < -m_jumpSpeed)
+		{
+			m_verticalVelocity = -m_jumpSpeed;
+		}
+		if(m_verticalVelocity > 0.0 && btFabs(m_verticalVelocity) > btFabs(m_fallSpeed))
+		{
+			m_verticalVelocity = btFabs(m_fallSpeed);
+		}
+
+		m_verticalOffset = -m_verticalVelocity * dt;
 	}
-	m_verticalOffset = m_verticalVelocity * dt;
 
 
 	btTransform xform;
@@ -570,7 +618,11 @@ void CCharacterController::jump ()
 	if (!canJump())
 		return;
 
-	m_verticalVelocity = m_jumpSpeed;
+	if (m_vecUpVector.y() > 0)
+		m_verticalVelocity = m_jumpSpeed;
+	else
+		m_verticalVelocity = -m_jumpSpeed;
+
 	m_wasJumping = true;
 
 #if 0
@@ -584,14 +636,24 @@ void CCharacterController::jump ()
 #endif
 }
 
-void CCharacterController::setGravity(btScalar gravity)
+void CCharacterController::setGravity(const btVector3& gravity)
 {
 	m_gravity = gravity;
 }
 
-btScalar CCharacterController::getGravity() const
+btVector3 CCharacterController::getGravity() const
 {
 	return m_gravity;
+}
+
+void CCharacterController::setVerticalVelocity(btScalar flVerticalVelocity)
+{
+	m_verticalVelocity = flVerticalVelocity;
+}
+
+btVector3 CCharacterController::getVelocity() const
+{
+	return btVector3(m_walkDirection.x(), m_verticalVelocity, m_walkDirection.z());
 }
 
 void CCharacterController::setMaxSlope(btScalar slopeRadians)
@@ -608,14 +670,6 @@ btScalar CCharacterController::getMaxSlope() const
 bool CCharacterController::onGround () const
 {
 	return m_verticalVelocity == 0.0 && m_verticalOffset == 0.0;
-}
-
-
-btVector3* CCharacterController::getUpAxisDirections()
-{
-	static btVector3 sUpAxisDirection[3] = { btVector3(1.0f, 0.0f, 0.0f), btVector3(0.0f, 1.0f, 0.0f), btVector3(0.0f, 0.0f, 1.0f) };
-	
-	return sUpAxisDirection;
 }
 
 void CCharacterController::debugDraw(btIDebugDraw* debugDrawer)

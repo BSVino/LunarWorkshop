@@ -297,7 +297,72 @@ void CBulletPhysics::SetEntityVelocity(class CBaseEntity* pEnt, const Vector& ve
 	if (pPhysicsEntity->m_pRigidBody)
 		pPhysicsEntity->m_pRigidBody->setLinearVelocity(v);
 	else if (pPhysicsEntity->m_pCharacterController)
+	{
 		pPhysicsEntity->m_pCharacterController->setWalkDirection(v * (1.0f/60));	// 1/60 being bullet's fixed time step
+		pPhysicsEntity->m_pCharacterController->setVerticalVelocity(v.y());
+	}
+}
+
+Vector CBulletPhysics::GetEntityVelocity(class CBaseEntity* pEnt)
+{
+	TPROF("CBulletPhysics::GetEntityVelocity");
+
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
+	if (!pPhysicsEntity)
+		return Vector();
+
+	if (pPhysicsEntity->m_pRigidBody)
+		return Vector(pPhysicsEntity->m_pRigidBody->getLinearVelocity());
+	else if (pPhysicsEntity->m_pCharacterController)
+		return Vector(pPhysicsEntity->m_pCharacterController->getVelocity());
+
+	return Vector();
+}
+
+void CBulletPhysics::SetControllerWalkVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity)
+{
+	TPROF("CBulletPhysics::SetEntityVelocity");
+
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
+	if (!pPhysicsEntity)
+		return;
+
+	btVector3 v(vecVelocity.x, vecVelocity.y, vecVelocity.z);
+
+	TAssert(pPhysicsEntity->m_pCharacterController);
+	if (pPhysicsEntity->m_pCharacterController)
+		pPhysicsEntity->m_pCharacterController->setWalkDirection(v * (1.0f/60));	// 1/60 being bullet's fixed time step
+}
+
+void CBulletPhysics::SetEntityGravity(class CBaseEntity* pEnt, const Vector& vecGravity)
+{
+	TPROF("CBulletPhysics::SetEntityGravity");
+
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
+	if (!pPhysicsEntity)
+		return;
+
+	btVector3 v(vecGravity.x, vecGravity.y, vecGravity.z);
+
+	if (pPhysicsEntity->m_pRigidBody)
+		pPhysicsEntity->m_pRigidBody->setGravity(v);
+	else if (pPhysicsEntity->m_pCharacterController)
+		pPhysicsEntity->m_pCharacterController->setGravity(v);
+}
+
+void CBulletPhysics::SetEntityUpVector(class CBaseEntity* pEnt, const Vector& vecUp)
+{
+	TPROF("CBulletPhysics::SetEntityUpVector");
+
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
+	if (!pPhysicsEntity)
+		return;
+
+	btVector3 v(vecUp.x, vecUp.y, vecUp.z);
+
+	TAssert(pPhysicsEntity->m_pCharacterController);
+	if (pPhysicsEntity->m_pCharacterController)
+		pPhysicsEntity->m_pCharacterController->setUpVector(v);
 }
 
 void CBulletPhysics::CharacterJump(class CBaseEntity* pEnt)

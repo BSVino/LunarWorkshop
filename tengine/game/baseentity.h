@@ -353,7 +353,7 @@ public:
 	void									SetGlobalVelocity(const TVector& vecVelocity);
 
 	virtual inline TVector					GetGlobalGravity() const { return m_vecGlobalGravity; };
-	void									SetGlobalGravity(const TVector& vecGravity) { m_vecGlobalGravity = vecGravity; };
+	void									SetGlobalGravity(const TVector& vecGravity);
 
 	const TMatrix&							GetLocalTransform() const { return m_mLocalTransform; }
 	void									SetLocalTransform(const TMatrix& m);

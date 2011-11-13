@@ -3,7 +3,8 @@
 
 #include "reflection_character.h"
 
-class CMirror;
+#include "mirror.h"
+
 class CToken;
 
 class CPlayerCharacter : public CReflectionCharacter
@@ -14,7 +15,7 @@ public:
 	void						Precache();
 	void						Spawn();
 
-	void						PlaceMirror();
+	void						PlaceMirror(mirror_t eMirror);
 
 	CMirror*					GetMirror() const;
 
@@ -23,7 +24,7 @@ public:
 	void						PickUpToken(CToken* pToken);
 	CToken*						GetToken() const;
 
-	virtual void				Reflected();
+	virtual void				Reflected(reflection_t eReflectionType);
 
 protected:
 	CEntityHandle<CMirror>		m_hMirror;

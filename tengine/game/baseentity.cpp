@@ -358,6 +358,12 @@ void CBaseEntity::SetGlobalAngles(const EAngle& angAngles)
 
 TVector CBaseEntity::GetGlobalVelocity()
 {
+	if (IsInPhysics())
+	{
+		TAssert(!GetMoveParent());
+		return GamePhysics()->GetEntityVelocity(this);
+	}
+
 	if (HasMoveParent())
 	{
 		TMatrix mParentGlobal = GetMoveParent()->GetGlobalTransform();
@@ -402,6 +408,14 @@ void CBaseEntity::SetGlobalVelocity(const TVector& vecVelocity)
 	{
 		TAssert(!"Unimplemented");
 	}
+}
+
+void CBaseEntity::SetGlobalGravity(const TVector& vecGravity)
+{
+	m_vecGlobalGravity = vecGravity;
+
+	if (IsInPhysics())
+		GamePhysics()->SetEntityGravity(this, vecGravity);
 }
 
 void CBaseEntity::SetLocalTransform(const TMatrix& m)

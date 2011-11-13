@@ -39,11 +39,21 @@ void CToken::ModifyContext(CRenderingContext* pContext, bool bTransparent) const
 	if (bTransparent)
 		return;
 
-	if (m_bReflected)
+	if (IsReflected())
 	{
 		pContext->Scale(1, 1, -1);
 		pContext->SetReverseWinding(true);
 	}
+}
+
+void CToken::Reflected(reflection_t eReflectionType)
+{
+	m_bReflected = !m_bReflected;
+}
+
+bool CToken::IsReflected() const
+{
+	return m_bReflected;
 }
 
 REGISTER_ENTITY(CReceptacle);

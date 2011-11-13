@@ -19,6 +19,7 @@ public:
 
 	virtual void	SetupFrame();
 	virtual void	StartRendering();
+	virtual void	FinishRendering();
 	virtual void	StartRenderingReflection(CMirror* pMirror);
 	virtual void	RenderFullscreenBuffers();
 	bool			IsRenderingReflection() { return m_bRenderingReflection; }

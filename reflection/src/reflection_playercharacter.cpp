@@ -33,18 +33,22 @@ void CPlayerCharacter::Spawn()
 	AddToPhysics(CT_CHARACTER);
 }
 
-void CPlayerCharacter::PlaceMirror()
+void CPlayerCharacter::PlaceMirror(mirror_t eMirror)
 {
 	if (m_hMirror != NULL)
 		m_hMirror->Delete();
 
 	CMirror* pMirror = m_hMirror = GameServer()->Create<CMirror>("CMirror");
+	pMirror->SetMirrorType(eMirror);
 
 	pMirror->SetGlobalOrigin(GetGlobalOrigin() + AngleVector(GetViewAngles()).Flattened()*1.5f);
-	pMirror->SetGlobalAngles(EAngle(0, GetViewAngles().y, 0));
+	pMirror->SetGlobalAngles(EAngle(0, GetViewAngles().y, (IsReflected(REFLECTION_VERTICAL)?180.0f:0.0f)));
 
-	if (IsReflected())
+	if (IsReflected(REFLECTION_ANY))
 		m_hMirrorInside = pMirror;
+
+	if (IsReflected(REFLECTION_LATERAL))
+		m_mLateralReflection.SetReflection(pMirror->GetGlobalTransform().GetForwardVector());
 }
 
 CMirror* CPlayerCharacter::GetMirror() const
@@ -119,7 +123,7 @@ void CPlayerCharacter::DropToken()
 
 	m_hToken->SetMoveParent(nullptr);
 	m_hToken->SetGlobalOrigin(GetGlobalOrigin() + AngleVector(GetViewAngles()).Flattened().Normalized());
-	m_hToken->SetGlobalAngles(EAngle(0, GetViewAngles().y, 0));
+	m_hToken->SetGlobalAngles(EAngle(0, GetViewAngles().y, (IsReflected(REFLECTION_VERTICAL)?180.0f:0.0f)));
 	m_hToken->SetVisible(true);
 	m_hToken = nullptr;
 }
@@ -141,10 +145,10 @@ CToken* CPlayerCharacter::GetToken() const
 	return m_hToken;
 }
 
-void CPlayerCharacter::Reflected()
+void CPlayerCharacter::Reflected(reflection_t eReflectionType)
 {
-	BaseClass::Reflected();
+	BaseClass::Reflected(eReflectionType);
 
 	if (m_hToken != nullptr)
-		m_hToken->Reflected();
+		m_hToken->Reflected(eReflectionType);
 }

@@ -38,6 +38,15 @@ Vector CReflectionCamera::GetCameraTarget()
 	return pCharacter->GetGlobalOrigin() + pCharacter->EyeHeight() * pCharacter->GetUpVector() + AngleVector(pCharacter->GetViewAngles());
 }
 
+TVector CReflectionCamera::GetCameraUp()
+{
+	CReflectionCharacter* pCharacter = ReflectionGame()->GetLocalPlayerCharacter();
+	if (!pCharacter)
+		return BaseClass::GetCameraUp();
+
+	return pCharacter->GetUpVector();
+}
+
 float CReflectionCamera::GetCameraFOV()
 {
 	return 60;

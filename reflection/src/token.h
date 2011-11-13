@@ -3,6 +3,8 @@
 
 #include <game/baseentity.h>
 
+#include "reflection.h"
+
 class CReceptacle;
 
 class CToken : public CBaseEntity
@@ -19,8 +21,8 @@ public:
 
 	virtual void		ModifyContext(class CRenderingContext* pContext, bool bTransparent) const;
 
-	void				Reflected() { m_bReflected = !m_bReflected; }
-	bool				IsReflected() { return m_bReflected; }
+	void				Reflected(reflection_t eReflectionType);
+	bool				IsReflected() const;
 
 protected:
 	CEntityHandle<CReceptacle>	m_hReceptacle;

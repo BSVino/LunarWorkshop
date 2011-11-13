@@ -3,6 +3,7 @@
 #include <tinker/application.h>
 #include <tinker/cvar.h>
 #include <renderer/renderingcontext.h>
+#include <physics/physics.h>
 
 #include "reflection_game.h"
 #include "reflection_renderer.h"
@@ -15,7 +16,9 @@ NETVAR_TABLE_BEGIN(CReflectionCharacter);
 NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CReflectionCharacter);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bReflected);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iReflected);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mLateralReflection);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mVerticalReflection);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CMirror>, m_hMirrorInside);
 SAVEDATA_TABLE_END();
 
@@ -33,17 +36,22 @@ void CReflectionCharacter::Spawn()
 	SetGlobalGravity(Vector(0, -9.8f, 0));
 	m_flMaxStepSize = 0.1f;
 
-	m_bReflected = false;
+	m_iReflected = 0;
 }
 
 TVector CReflectionCharacter::GetGoalVelocity()
 {
 	TVector vecGoalVelocity = BaseClass::GetGoalVelocity();
 
-	if (IsReflected())
+	if (IsReflected(REFLECTION_LATERAL) ^ IsReflected(REFLECTION_VERTICAL))
 		vecGoalVelocity.z = -vecGoalVelocity.z;
 
 	return vecGoalVelocity;
+}
+
+float CReflectionCharacter::EyeHeight() const
+{
+	return 1.8f;
 }
 
 void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
@@ -65,20 +73,29 @@ void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 			vecNewGlobalOrigin = vecNewOrigin;
 
 		Matrix4x4 mMirror = pMirror->GetGlobalTransform();
-		bool bOldSide = (vecOldGlobalOrigin - mMirror.GetTranslation()).Normalized().Dot(mMirror.GetForwardVector()) > 0;
-		bool bNewSide = (vecNewGlobalOrigin - mMirror.GetTranslation()).Normalized().Dot(mMirror.GetForwardVector()) > 0;
+		bool bOldSide = pMirror->GetSide(vecOldGlobalOrigin + GetUpVector() * EyeHeight());
+		bool bNewSide = pMirror->GetSide(vecNewGlobalOrigin + GetUpVector() * EyeHeight());
 
-		if(bOldSide != bNewSide && pMirror->IsPointInside(GetGlobalCenter()))
+		bool bPointInsideCheck = true;
+		if (pMirror->GetMirrorType() == MIRROR_VERTICAL)
+			bPointInsideCheck = pMirror->IsPointInside(vecOldGlobalOrigin + GetUpVector() * EyeHeight());
+
+		// It's impossible to get to the other side of a horizontal mirror without going through the floor,
+		// so we don't need a point inside check for that mirror type.
+
+		if(bOldSide != bNewSide && bPointInsideCheck)
 		{
-			Matrix4x4 mReflection;
-			mReflection.AddReflection(mMirror.GetForwardVector());
+			Matrix4x4 mReflection = pMirror->GetReflection();
 
 			// Write out reflected origin.
 			mNew.SetTranslation(mReflection * (vecNewGlobalOrigin - mMirror.GetTranslation()) + mMirror.GetTranslation());
 
+#ifdef _DEBUG
 			// Should be on the same side as the old side, since it was reflected.
-			bool bReflectedSide = (mNew.GetTranslation() - mMirror.GetTranslation()).Normalized().Dot(mMirror.GetForwardVector()) > 0;
-			TAssert(bReflectedSide == bOldSide);
+			bool bOldReflectedSide = pMirror->GetSide(vecOldGlobalOrigin + GetUpVector() * EyeHeight());
+			bool bNewReflectedSide = pMirror->GetSide(mNew.GetTranslation());
+			TAssert(bOldReflectedSide == bNewReflectedSide);
+#endif
 
 			// Reflect the velocity
 			Vector vecVelocity = GetGlobalVelocity();
@@ -94,23 +111,89 @@ void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 			Vector vecView = AngleVector(GetViewAngles());
 			SetViewAngles(VectorAngles(mReflection.TransformVector(vecView)));
 
-			m_vecMoveVelocity.z = -m_vecMoveVelocity.z;
+			// Reflect the character's gravity
+			Vector vecGravity = GetGlobalGravity();
+			Vector vecReflectedGravity = mReflection.TransformVector(vecGravity);
+			SetGlobalGravity(vecReflectedGravity);
 
-			m_bReflected = !m_bReflected;
+			// Reflect the bounding box
+			Vector vecMaxs = GetBoundingBox().m_vecMaxs;
+			Vector vecMins = GetBoundingBox().m_vecMins;
+			Vector vecReflectedMaxs = mReflection.TransformVector(vecMaxs);
+			Vector vecReflectedMins = mReflection.TransformVector(vecMins);
 
-			if (m_bReflected)
+#define swap_if_greater(x, y) \
+	if ((x) > (y)) \
+	{ \
+		float f = (x); \
+		(x) = (y); \
+		(y) = f; \
+	} \
+
+			swap_if_greater(vecReflectedMins.x, vecReflectedMaxs.x);
+			swap_if_greater(vecReflectedMins.y, vecReflectedMaxs.y);
+			swap_if_greater(vecReflectedMins.z, vecReflectedMaxs.z);
+
+			m_aabbBoundingBox = AABB(vecReflectedMins, vecReflectedMaxs);
+
+			if (pMirror->GetReflectionType() == REFLECTION_LATERAL)
+				m_vecMoveVelocity.z = -m_vecMoveVelocity.z;
+
+			bool bWasReflected = !!(m_iReflected&(1<<pMirror->GetReflectionType()));
+			if (bWasReflected)
+				m_iReflected &= ~(1<<pMirror->GetReflectionType());
+			else
+				m_iReflected |= (1<<pMirror->GetReflectionType());
+
+			if (IsReflected(REFLECTION_ANY))
 				m_hMirrorInside = pMirror;
 			else
 				m_hMirrorInside = NULL;
 
-			Reflected();
+			if (pMirror->GetReflectionType() == REFLECTION_VERTICAL)
+			{
+				if (IsReflected(REFLECTION_VERTICAL))
+					GamePhysics()->SetEntityUpVector(this, Vector(0, -1, 0));
+				else
+					GamePhysics()->SetEntityUpVector(this, Vector(0, 1, 0));
+
+				if (IsReflected(REFLECTION_VERTICAL))
+					m_mVerticalReflection.SetReflection(Vector(0, 1, 0));
+				else
+					m_mVerticalReflection.Identity();
+			}
+			else if (pMirror->GetReflectionType() == REFLECTION_LATERAL)
+			{
+				if (IsReflected(REFLECTION_LATERAL))
+					m_mLateralReflection.SetReflection(pMirror->GetGlobalTransform().GetForwardVector());
+				else
+					m_mLateralReflection.Identity();
+			}
+
+			Reflected(pMirror->GetReflectionType());
 		}
 	}
+}
+
+bool CReflectionCharacter::IsReflected(reflection_t eReflectionType) const
+{
+	if (eReflectionType == REFLECTION_ANY)
+		return !!m_iReflected;
+
+	return !!(m_iReflected&(1<<eReflectionType));
 }
 
 CMirror* CReflectionCharacter::GetMirrorInside() const
 {
 	return m_hMirrorInside;
+}
+
+TVector CReflectionCharacter::GetUpVector() const
+{
+	if (IsReflected(REFLECTION_VERTICAL))
+		return Vector(0, -1, 0);
+	else
+		return Vector(0, 1, 0);
 }
 
 bool CReflectionCharacter::IsNearMirror(class CMirror* pMirror, const Vector& vecPoint) const
@@ -124,7 +207,10 @@ bool CReflectionCharacter::IsNearMirror(class CMirror* pMirror, const Vector& ve
 bool CReflectionCharacter::ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const
 {
 	if (tstring(pOther->GetClassName()) == "CWorld")
-		return !IsNearMirror(static_cast<CPlayerCharacter*>(ReflectionGame()->GetLocalPlayerCharacter())->GetMirror(), vecPoint);
+	{
+		CMirror* pMirror = static_cast<CPlayerCharacter*>(ReflectionGame()->GetLocalPlayerCharacter())->GetMirror();
+		return !IsNearMirror(pMirror, vecPoint);
+	}
 
 	return true;
 }

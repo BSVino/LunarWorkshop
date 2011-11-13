@@ -31,6 +31,19 @@ void CReflectionRenderer::Initialize()
 		{
 			// Here's our reflection surface.
 			pModel->m_aiTextures[i] = GetReflectionTexture();
+			break;
+		}
+	}
+
+	pModel = CModelLibrary::Get()->GetModel(CModelLibrary::Get()->FindModel("models/mirror_horizontal.obj"));
+	for (size_t i = 0; i < pModel->m_aiTextures.size(); i++)
+	{
+		// A bit of a hack, but there's no material library yet so...
+		if (pModel->m_aiTextures[i] == 0)
+		{
+			// Here's our reflection surface.
+			pModel->m_aiTextures[i] = GetReflectionTexture();
+			break;
 		}
 	}
 }
@@ -63,11 +76,19 @@ void CReflectionRenderer::SetupFrame()
 		glColor4f(1, 1, 1, 1);
 
 		m_bRenderingReflection = true;
-		glFrontFace(GL_CW);
+
+		CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
+
+		if (pPlayerCharacter && (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) == pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
+			glFrontFace(GL_CW);
+
 		StartRenderingReflection(m_hMirror);
 		GameServer()->RenderEverything();
 		FinishRendering();
-		glFrontFace(GL_CCW);
+
+		if (pPlayerCharacter && (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) == pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
+			glFrontFace(GL_CCW);
+
 		m_bRenderingReflection = false;
 	}
 
@@ -77,6 +98,11 @@ void CReflectionRenderer::SetupFrame()
 void CReflectionRenderer::StartRendering()
 {
 	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT|GL_CURRENT_BIT);
+
+	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
+
+	if (pPlayerCharacter && (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) ^ pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
+		glFrontFace(GL_CW);
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -94,24 +120,17 @@ void CReflectionRenderer::StartRendering()
 	glPushMatrix();
 	glLoadIdentity();
 
-	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
-
 	Vector vecCameraPosition = m_vecCameraPosition;
 	Vector vecCameraTarget = m_vecCameraTarget;
 	Vector vecCameraUp = m_vecCameraUp;
 
-	if (pPlayerCharacter->IsReflected())
+	CMirror* pMirror = pPlayerCharacter->GetMirrorInside();
+
+	Vector vecMirror = pMirror?pMirror->GetGlobalOrigin():Vector();
+	Matrix4x4 mReflect = pPlayerCharacter->GetReflectionMatrix();
+
+	if (pPlayerCharacter->IsReflected(REFLECTION_ANY))
 	{
-		CMirror* pMirror = pPlayerCharacter->GetMirrorInside();
-
-		TAssert(pMirror);
-
-		Vector vecMirror = pMirror?pMirror->GetGlobalOrigin():Vector();
-		Vector vecMirrorForward = pMirror?pMirror->GetGlobalTransform().GetForwardVector():Vector(1, 0, 0);
-
-		Matrix4x4 mReflect;
-		mReflect.SetReflection(vecMirrorForward);
-
 		Matrix4x4 mTranslate, mInverseTranslate;
 		mTranslate.SetTranslation(vecMirror);
 		mInverseTranslate = mTranslate.InvertedRT();
@@ -124,6 +143,15 @@ void CReflectionRenderer::StartRendering()
 	gluLookAt(vecCameraPosition.x, vecCameraPosition.y, vecCameraPosition.z,
 		vecCameraTarget.x, vecCameraTarget.y, vecCameraTarget.z,
 		vecCameraUp.x, vecCameraUp.y, vecCameraUp.z);
+
+	// Transform back to global space
+	glTranslatef(vecMirror.x, vecMirror.y, vecMirror.z);
+
+	// Do the reflection
+	glMultMatrixf(mReflect);
+
+	// Transform to mirror's space
+	glTranslatef(-vecMirror.x, -vecMirror.y, -vecMirror.z);
 
 	glGetDoublev( GL_MODELVIEW_MATRIX, m_aiModelView );
 	glGetDoublev( GL_PROJECTION_MATRIX, m_aiProjection );
@@ -145,6 +173,16 @@ void CReflectionRenderer::StartRendering()
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_TEXTURE_2D);
+}
+
+void CReflectionRenderer::FinishRendering()
+{
+	BaseClass::FinishRendering();
+
+	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
+
+	if (pPlayerCharacter && (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) ^ pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
+		glFrontFace(GL_CCW);
 }
 
 void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
@@ -174,20 +212,19 @@ void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
 	Vector vecCameraTarget = m_vecCameraTarget;
 	Vector vecCameraUp = m_vecCameraUp;
 
-	Matrix4x4 mReflect;
-	mReflect.SetReflection(vecMirrorForward);
-
 	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
-	if (pPlayerCharacter->IsReflected())
-	{
-		Matrix4x4 mTranslate, mInverseTranslate;
-		mTranslate.SetTranslation(vecMirror);
-		mInverseTranslate = mTranslate.InvertedRT();
 
-		vecCameraPosition = mTranslate * (mReflect * (mInverseTranslate * m_vecCameraPosition));
-		vecCameraTarget = mTranslate * (mReflect * (mInverseTranslate * m_vecCameraTarget));
-		vecCameraUp = mReflect * m_vecCameraUp;
-	}
+	Matrix4x4 mReflect = pPlayerCharacter->GetReflectionMatrix();
+
+	Matrix4x4 mTranslate, mInverseTranslate;
+	mTranslate.SetTranslation(vecMirror);
+	mInverseTranslate = mTranslate.InvertedRT();
+
+	vecCameraPosition = mTranslate * (mReflect * (mInverseTranslate * m_vecCameraPosition));
+	vecCameraTarget = mTranslate * (mReflect * (mInverseTranslate * m_vecCameraTarget));
+	vecCameraUp = mReflect * m_vecCameraUp;
+
+	mReflect *= pMirror->GetReflection();
 
 	gluLookAt(vecCameraPosition.x, vecCameraPosition.y, vecCameraPosition.z,
 		vecCameraTarget.x, vecCameraTarget.y, vecCameraTarget.z,
@@ -237,10 +274,7 @@ void CReflectionRenderer::RenderFullscreenBuffers()
 		if (ShouldUseShaders())
 			SetupSceneShader();
 
-		if (pPlayerCharacter->IsReflected())
-			RenderMapFullscreen(m_oReflectionBuffer.m_iMap);
-		else
-			RenderMapFullscreen(m_oSceneBuffer.m_iMap);
+		RenderMapFullscreen(m_oSceneBuffer.m_iMap);
 
 		if (ShouldUseShaders())
 			ClearProgram();
@@ -260,7 +294,13 @@ void CReflectionRenderer::RenderFullscreenBuffers()
 
 void CReflectionRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial)
 {
-	if (pModel->m_sFilename == "models/mirror.obj" && pModel->m_aiTextures[iMaterial] == GetReflectionTexture())
+	bool bModel = false;
+	if (pModel->m_sFilename == "models/mirror.obj")
+		bModel = true;
+	if (pModel->m_sFilename == "models/mirror_horizontal.obj")
+		bModel = true;
+
+	if (bModel && pModel->m_aiTextures[iMaterial] == GetReflectionTexture())
 	{
 		c->UseProgram("reflection");
 		c->SetUniform("bDiffuse", true);
@@ -272,14 +312,7 @@ void CReflectionRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size
 		c->SetUniform("flScreenWidth", (float)Application()->GetWindowWidth());
 		c->SetUniform("flScreenHeight", (float)Application()->GetWindowHeight());
 
-		CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
-		if (pPlayerCharacter->IsReflected())
-			c->SetUniform("bDiscardReflection", !m_bRenderingReflection);
-		else
-			c->SetUniform("bDiscardReflection", m_bRenderingReflection);
-
-		if (pPlayerCharacter->IsReflected())
-			c->BindTexture(m_oSceneBuffer.m_iMap);
+		c->SetUniform("bDiscardReflection", m_bRenderingReflection);
 
 		return;
 	}

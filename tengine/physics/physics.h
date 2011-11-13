@@ -27,6 +27,10 @@ public:
 
 	virtual void			SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform) {};
 	virtual void			SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity) {};
+	virtual Vector			GetEntityVelocity(class CBaseEntity* pEnt) { return Vector(0, 0, 0); };
+	virtual void			SetControllerWalkVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity) {};
+	virtual void			SetEntityGravity(class CBaseEntity* pEnt, const Vector& vecGravity) {};
+	virtual void			SetEntityUpVector(class CBaseEntity* pEnt, const Vector& vecUp) {};
 
 	virtual void			CharacterJump(class CBaseEntity* pEnt) {};
 };
