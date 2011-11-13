@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 #include <FTGL/ftgl.h>
 
-#include <platform.h>
+#include <tinker_platform.h>
 #include <tinker/keys.h>
 
 #include "label.h"

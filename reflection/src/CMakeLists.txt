@@ -34,5 +34,5 @@ set (REFLECTION_SOURCES
 
 source_group(Characters FILES ${REFLECTION_CHARACTERS_SOURCES})
 
-add_executable (reflection ${REFLECTION_SOURCES})
+add_executable (reflection WIN32 ${REFLECTION_SOURCES})
 target_link_libraries (reflection tinker tengine)

@@ -1356,7 +1356,7 @@ size_t CRenderer::GetTextureHeight(size_t iTexture)
 	return iHeight;
 }
 
-void CRenderer::UnloadTextureData(size_t iTexture)
+void CRenderer::UnloadTextureData(unsigned int iTexture)
 {
 	ilBindImage(0);
 	ilDeleteImages(1, &iTexture);

@@ -27,5 +27,5 @@ set (CHAIN_SOURCES
 	ui/hud.cpp
 )
 
-add_executable (chain ${CHAIN_SOURCES})
+add_executable (chain WIN32 ${CHAIN_SOURCES})
 target_link_libraries (chain tinker tengine)

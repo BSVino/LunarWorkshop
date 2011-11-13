@@ -1,6 +1,6 @@
 #include "console.h"
 
-#include <platform.h>
+#include <tinker_platform.h>
 #include <strutils.h>
 #include <glgui/textfield.h>
 #include <glgui/label.h>

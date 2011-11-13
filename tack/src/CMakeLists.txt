@@ -39,5 +39,5 @@ set (TACK_SOURCES
 
 source_group(Characters FILES ${TACK_CHARACTERS_SOURCES})
 
-add_executable (tack ${TACK_SOURCES})
+add_executable (tack WIN32 ${TACK_SOURCES})
 target_link_libraries (tack tinker tengine)
