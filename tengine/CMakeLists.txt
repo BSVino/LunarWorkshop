@@ -106,9 +106,9 @@ if (WIN32)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Release/ILU.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/pthreads-w32-2-8-0-release/Release/pthread.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/enet-1.3.0/Release/enet.lib)
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/Release/BulletDynamics.lib)
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/Release/BulletCollision.lib)
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/Release/LinearMath.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/RelWithDebInfo/BulletDynamics_RelWithDebugInfo.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/RelWithDebInfo/BulletCollision_RelWithDebugInfo.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/RelWithDebInfo/LinearMath_RelWithDebugInfo.lib)
 
 	target_link_libraries(tengine iphlpapi ws2_32 Winmm)
 
