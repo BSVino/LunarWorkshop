@@ -45,7 +45,13 @@ void CPlayerCharacter::PlaceMirror(mirror_t eMirror)
 	CMirror* pMirror = m_hMirror = GameServer()->Create<CMirror>("CMirror");
 	pMirror->SetMirrorType(eMirror);
 
-	pMirror->SetGlobalOrigin(GetGlobalOrigin() + AngleVector(GetViewAngles()).Flattened()*1.5f);
+	Vector vecDistance = AngleVector(GetViewAngles()).Flattened();
+	if (pMirror->GetMirrorType() == MIRROR_HORIZONTAL)
+		vecDistance *= 2.5f;
+	else
+		vecDistance *= 1.5f;
+
+	pMirror->SetGlobalOrigin(GetGlobalOrigin() + vecDistance);
 	pMirror->SetGlobalAngles(EAngle(0, GetViewAngles().y, (IsReflected(REFLECTION_VERTICAL)?180.0f:0.0f)));
 
 	if (IsReflected(REFLECTION_ANY))

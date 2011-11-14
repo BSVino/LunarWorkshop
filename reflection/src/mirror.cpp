@@ -51,7 +51,7 @@ bool CMirror::IsPointInside(const Vector& vecPoint) const
 				return false;
 		}
 
-		return (vecPoint - GetGlobalOrigin()).Length2DSqr() < GetBoundingBox().Size().Length2DSqr()/2;
+		return (vecPoint - GetGlobalOrigin()).Length2D() < GetBoundingBox().Size().Length2D()/2;
 
 	case MIRROR_HORIZONTAL:
 		if (vecPoint.y < GetGlobalOrigin().y - 0.15f)
@@ -60,7 +60,7 @@ bool CMirror::IsPointInside(const Vector& vecPoint) const
 		if (vecPoint.y > GetGlobalOrigin().y + 0.15f)
 			return false;
 
-		return (vecPoint - GetGlobalOrigin()).Length2DSqr() < GetBoundingBox().Size().Length2DSqr()/2;
+		return (vecPoint - GetGlobalOrigin()).Length2D() < GetBoundingBox().Size().Length2D()/4;
 	}
 
 	return false;
