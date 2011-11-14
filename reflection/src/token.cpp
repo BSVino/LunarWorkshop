@@ -63,6 +63,7 @@ NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CReceptacle);
 	SAVEDATA_DEFINE_OUTPUT(OnCorrectToken);
+	SAVEDATA_DEFINE_OUTPUT(OnCorrectTokenRemoved);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CToken>, m_hToken);
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sDesiredToken);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bDesiredReflection);
@@ -73,6 +74,15 @@ INPUTS_TABLE_END();
 
 void CReceptacle::SetToken(CToken* pToken)
 {
+	if (m_hToken.GetPointer())
+	{
+		int iReflected = (int)m_hToken->IsReflected();
+		// For some reason it's not enough to just use an ==
+		int iDesired = !!((int)m_bDesiredReflection);
+		if (iReflected == iDesired && m_hToken->GetName() == m_sDesiredToken)
+			CallOutput("OnCorrectTokenRemoved");
+	}
+
 	if (!pToken)
 	{
 		if (m_hToken != nullptr)

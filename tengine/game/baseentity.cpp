@@ -19,6 +19,7 @@
 #ifdef _WIN32
 // The linker throws out objects in a .lib that aren't referenced by the .exe, so we need to force some of our registrations to be imported when we link.
 #pragma comment(linker, "/include:?g_RegisterCCounter@@3VCRegisterCCounter@@A")
+#pragma comment(linker, "/include:?g_RegisterCKinematic@@3VCRegisterCKinematic@@A")
 #endif
 
 eastl::vector<CBaseEntity*> CBaseEntity::s_apEntityList;
@@ -178,6 +179,8 @@ void CBaseEntity::SetModel(size_t iModel)
 	CModel* pModel = CModelLibrary::Get()->GetModel(iModel);
 	if (pModel)
 		m_aabbBoundingBox = pModel->m_aabbBoundingBox;
+
+	OnSetModel();
 }
 
 void CBaseEntity::SetMoveParent(CBaseEntity* pParent)

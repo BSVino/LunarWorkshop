@@ -15,6 +15,7 @@
 #include <renderer/renderer.h>
 #include <tinker/cvar.h>
 #include <game/camera.h>
+#include <game/entities/kinematic.h>
 
 #include "reflection_player.h"
 #include "reflection_playercharacter.h"
@@ -66,6 +67,13 @@ void CReflectionWindow::SetupReflection()
 	pReceptacle->SetGlobalOrigin(Vector(-7.5f, 0.8f, 2.5f));
 	pReceptacle->SetGlobalAngles(EAngle(45, 180, 0));
 	pReceptacle->SetDesiredToken("Reflection");
+	pReceptacle->AddOutputTarget("OnCorrectToken", "door1", "LerpTo", "-9.26569 3.84284 5.56737");
+	pReceptacle->AddOutputTarget("OnCorrectTokenRemoved", "door1", "LerpTo", "-9.26569 1.31136 5.56737");
+
+	CKinematic* pDoor = GameServer()->Create<CKinematic>("CKinematic");
+	pDoor->SetName("door1");
+	pDoor->SetModel("models/door.obj");
+	pDoor->SetGlobalOrigin(Vector(-9.26569f, 1.31136f, 5.56737f));
 }
 
 void CReflectionWindow::RenderLoading()

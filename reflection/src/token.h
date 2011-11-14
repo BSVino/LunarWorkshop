@@ -43,6 +43,7 @@ public:
 	void					SetDesiredReflection(bool bReflected) { m_bDesiredReflection = bReflected; }
 
 	DECLARE_ENTITY_OUTPUT(OnCorrectToken);
+	DECLARE_ENTITY_OUTPUT(OnCorrectTokenRemoved);
 
 protected:
 	CEntityHandle<CToken>	m_hToken;

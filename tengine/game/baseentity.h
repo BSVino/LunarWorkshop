@@ -322,6 +322,7 @@ public:
 	void									SetModel(const tstring& sModel);
 	void									SetModel(size_t iModel);
 	size_t									GetModel() const { return m_iModel; };
+	virtual void							OnSetModel() {};
 
 	virtual Matrix4x4						GetRenderTransform() const { return Matrix4x4(GetGlobalTransform()); };
 	virtual Vector							GetRenderOrigin() const { return GetRenderTransform().GetTranslation(); };

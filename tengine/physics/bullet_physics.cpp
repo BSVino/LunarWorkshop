@@ -127,6 +127,13 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 			flMass = 0;
 			pCollisionShape = m_apCollisionMeshes[pEntity->GetModel()].m_pCollisionShape;
 		}
+		else if (eCollisionType == CT_KINEMATIC)
+		{
+			pPhysicsEntity->m_bCenterMassOffset = false;
+
+			flMass = 0;
+			pCollisionShape = m_apCollisionMeshes[pEntity->GetModel()].m_pCollisionShape;
+		}
 		else
 		{
 			TAssert(!"Unimplemented collision type");
@@ -145,6 +152,12 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 		btRigidBody::btRigidBodyConstructionInfo rbInfo(flMass, &pPhysicsEntity->m_oMotionState, pCollisionShape, vecLocalInertia);
 		pPhysicsEntity->m_pRigidBody = new btRigidBody(rbInfo);
 		pPhysicsEntity->m_pRigidBody->setUserPointer((void*)iHandle);
+
+		if (eCollisionType == CT_KINEMATIC)
+		{
+			pPhysicsEntity->m_pRigidBody->setCollisionFlags(pPhysicsEntity->m_pRigidBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+			pPhysicsEntity->m_pRigidBody->setActivationState(DISABLE_DEACTIVATION);
+		}
 
 		m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_pRigidBody);
 	}
