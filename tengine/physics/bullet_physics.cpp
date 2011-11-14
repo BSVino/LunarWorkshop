@@ -11,6 +11,9 @@
 
 CBulletPhysics::CBulletPhysics()
 {
+	// Allocate all memory up front to avoid reallocations
+	m_aEntityList.set_capacity(GameServer()->GetMaxEntities());
+
 	m_pCollisionConfiguration = new btDefaultCollisionConfiguration();
 	m_pDispatcher = new	btCollisionDispatcher(m_pCollisionConfiguration);
 	m_pBroadphase = new btDbvtBroadphase();

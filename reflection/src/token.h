@@ -22,6 +22,7 @@ public:
 	virtual void		ModifyContext(class CRenderingContext* pContext, bool bTransparent) const;
 
 	void				Reflected(reflection_t eReflectionType);
+	void				SetReflected(bool bReflected) { m_bReflected = bReflected; }
 	bool				IsReflected() const;
 
 protected:
@@ -42,8 +43,11 @@ public:
 	// What reflection does the receptacle need to fire its output?
 	void					SetDesiredReflection(bool bReflected) { m_bDesiredReflection = bReflected; }
 
-	DECLARE_ENTITY_OUTPUT(OnCorrectToken);
-	DECLARE_ENTITY_OUTPUT(OnCorrectTokenRemoved);
+	DECLARE_ENTITY_OUTPUT(OnNormalToken);
+	DECLARE_ENTITY_OUTPUT(OnNormalTokenRemoved);
+	DECLARE_ENTITY_OUTPUT(OnReflectedToken);
+	DECLARE_ENTITY_OUTPUT(OnReflectedTokenRemoved);
+	DECLARE_ENTITY_OUTPUT(OnTokenRemoved);
 
 protected:
 	CEntityHandle<CToken>	m_hToken;

@@ -20,12 +20,11 @@ INPUTS_TABLE_END();
 void CToken::Precache()
 {
 	PrecacheModel("models/r.obj");
+	PrecacheModel("models/powersource.obj");
 }
 
 void CToken::Spawn()
 {
-	SetModel("models/r.obj");
-
 	m_bReflected = false;
 }
 
@@ -62,8 +61,11 @@ NETVAR_TABLE_BEGIN(CReceptacle);
 NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CReceptacle);
-	SAVEDATA_DEFINE_OUTPUT(OnCorrectToken);
-	SAVEDATA_DEFINE_OUTPUT(OnCorrectTokenRemoved);
+	SAVEDATA_DEFINE_OUTPUT(OnNormalToken);
+	SAVEDATA_DEFINE_OUTPUT(OnNormalTokenRemoved);
+	SAVEDATA_DEFINE_OUTPUT(OnReflectedToken);
+	SAVEDATA_DEFINE_OUTPUT(OnReflectedTokenRemoved);
+	SAVEDATA_DEFINE_OUTPUT(OnTokenRemoved);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CToken>, m_hToken);
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sDesiredToken);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bDesiredReflection);
@@ -76,11 +78,14 @@ void CReceptacle::SetToken(CToken* pToken)
 {
 	if (m_hToken.GetPointer())
 	{
-		int iReflected = (int)m_hToken->IsReflected();
-		// For some reason it's not enough to just use an ==
-		int iDesired = !!((int)m_bDesiredReflection);
-		if (iReflected == iDesired && m_hToken->GetName() == m_sDesiredToken)
-			CallOutput("OnCorrectTokenRemoved");
+		if (m_hToken->GetName() == m_sDesiredToken)
+		{
+			if (m_hToken->IsReflected())
+				CallOutput("OnReflectedTokenRemoved");
+			else
+				CallOutput("OnNormalTokenRemoved");
+			CallOutput("OnTokenRemoved");
+		}
 	}
 
 	if (!pToken)
@@ -98,9 +103,11 @@ void CReceptacle::SetToken(CToken* pToken)
 	pToken->SetLocalTransform(TMatrix());
 	pToken->m_hReceptacle = this;
 
-	int iReflected = (int)pToken->IsReflected();
-	// For some reason it's not enough to just use an ==
-	int iDesired = !!((int)m_bDesiredReflection);
-	if (iReflected == iDesired && pToken->GetName() == m_sDesiredToken)
-		CallOutput("OnCorrectToken");
+	if (pToken->GetName() == m_sDesiredToken)
+	{
+		if (pToken->IsReflected())
+			CallOutput("OnReflectedToken");
+		else
+			CallOutput("OnNormalToken");
+	}
 }

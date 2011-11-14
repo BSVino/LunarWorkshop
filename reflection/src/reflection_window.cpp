@@ -59,21 +59,46 @@ void CReflectionWindow::SetupReflection()
 	pPlayer->SetCharacter(pCharacter);
 
 	CToken* pToken = GameServer()->Create<CToken>("CToken");
+	pToken->SetModel("models/r.obj");
 	pToken->SetGlobalOrigin(Vector(-6, 0, 3));
-	pToken->SetGlobalAngles(EAngle(0, -90, 0));
+	pToken->SetGlobalAngles(EAngle(0, 90, 0));
 	pToken->SetName("Reflection");
+	pToken->SetReflected(true);
 
 	CReceptacle* pReceptacle = GameServer()->Create<CReceptacle>("CReceptacle");
 	pReceptacle->SetGlobalOrigin(Vector(-7.5f, 0.8f, 2.5f));
 	pReceptacle->SetGlobalAngles(EAngle(45, 180, 0));
 	pReceptacle->SetDesiredToken("Reflection");
-	pReceptacle->AddOutputTarget("OnCorrectToken", "door1", "LerpTo", "-9.26569 3.84284 5.56737");
-	pReceptacle->AddOutputTarget("OnCorrectTokenRemoved", "door1", "LerpTo", "-9.26569 1.31136 5.56737");
+	pReceptacle->AddOutputTarget("OnNormalToken", "door1", "LerpTo", "-9.26569 3.84284 5.56737");
+	pReceptacle->AddOutputTarget("OnNormalTokenRemoved", "door1", "LerpTo", "-9.26569 1.31136 5.56737");
 
 	CKinematic* pDoor = GameServer()->Create<CKinematic>("CKinematic");
 	pDoor->SetName("door1");
 	pDoor->SetModel("models/door.obj");
 	pDoor->SetGlobalOrigin(Vector(-9.26569f, 1.31136f, 5.56737f));
+	pDoor->SetLerpTime(0.5f);
+
+	pToken = GameServer()->Create<CToken>("CToken");
+	pToken->SetModel("models/powersource.obj");
+	pToken->SetGlobalOrigin(Vector(-28.586233f, 0.13499284f, -3.1609130f));
+	pToken->SetGlobalAngles(EAngle(0, 90, 0));
+	pToken->SetName("ps1");
+	pToken->SetReflected(true);
+
+	pReceptacle = GameServer()->Create<CReceptacle>("CReceptacle");
+	pReceptacle->SetGlobalOrigin(Vector(-35.042164f, 8.3557692f, 0.0f));
+	pReceptacle->SetGlobalAngles(EAngle(-135.0f, 0, 0));
+	pReceptacle->SetDesiredToken("ps1");
+	pReceptacle->AddOutputTarget("OnNormalToken", "door2", "LerpAnglesTo", "0 0 180");
+	pReceptacle->AddOutputTarget("OnReflectedToken", "door2", "LerpAnglesTo", "0 0 0");
+	pReceptacle->AddOutputTarget("OnTokenRemoved", "door2", "LerpAnglesTo", "0 0 90");
+
+	pDoor = GameServer()->Create<CKinematic>("CKinematic");
+	pDoor->SetName("door2");
+	pDoor->SetModel("models/vaultdoor.obj");
+	pDoor->SetGlobalOrigin(Vector(-41.62f, 4.62605f, -0.107501f));
+	pDoor->SetGlobalAngles(EAngle(0, 0, 90));
+	pDoor->SetAngleLerpTime(5);
 }
 
 void CReflectionWindow::RenderLoading()

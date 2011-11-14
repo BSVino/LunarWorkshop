@@ -13,11 +13,17 @@ SAVEDATA_TABLE_BEGIN(CKinematic);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLerpEnd);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecLerpGoal);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecLerpGoal);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flAngleLerpTime);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flAngleLerpStart);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flAngleLerpEnd);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, EAngle, m_angLerpStart);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, EAngle, m_angLerpGoal);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bLerping);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CKinematic);
 	INPUT_DEFINE(LerpTo);
+	INPUT_DEFINE(LerpAnglesTo);
 INPUTS_TABLE_END();
 
 void CKinematic::Spawn()
@@ -26,6 +32,8 @@ void CKinematic::Spawn()
 
 	m_flLerpTime = 1;
 	m_flLerpStart = -1;
+	m_flAngleLerpTime = 1;
+	m_flAngleLerpStart = -1;
 }
 
 void CKinematic::OnSetModel()
@@ -59,6 +67,20 @@ void CKinematic::Think()
 		if (flRamp >= 1)
 			m_flLerpStart = -1;
 	}
+
+	if (m_flAngleLerpStart > 0)
+	{
+		float flTime = GameServer()->GetGameTime() - m_flAngleLerpStart;
+		float flLerp = RemapVal(flTime, 0, m_flAngleLerpEnd - m_flAngleLerpStart, 0, 1);
+		float flRamp = SLerp(flLerp, 0.2f);
+
+		m_bLerping = true;
+		SetGlobalAngles(m_angLerpStart * (1-flRamp) + m_angLerpGoal * flRamp);
+		m_bLerping = false;
+
+		if (flRamp >= 1)
+			m_flAngleLerpStart = -1;
+	}
 }
 
 void CKinematic::OnSetLocalTransform(TMatrix& m)
@@ -67,6 +89,7 @@ void CKinematic::OnSetLocalTransform(TMatrix& m)
 		return;
 
 	m_flLerpStart = -1;
+	m_flAngleLerpStart = -1;
 }
 
 void CKinematic::LerpTo(const eastl::vector<tstring>& sArgs)
@@ -84,4 +107,21 @@ void CKinematic::LerpTo(const eastl::vector<tstring>& sArgs)
 
 	m_vecLerpStart = GetGlobalOrigin();
 	m_vecLerpGoal = Vector(stof(sArgs[0]), stof(sArgs[1]), stof(sArgs[2]));
+}
+
+void CKinematic::LerpAnglesTo(const eastl::vector<tstring>& sArgs)
+{
+	TAssert(sArgs.size() == 3);
+
+	if (sArgs.size() < 3)
+	{
+		TMsg("Not enough arguments for LerpTo.\n");
+		return;
+	}
+
+	m_flAngleLerpStart = GameServer()->GetGameTime();
+	m_flAngleLerpEnd = m_flAngleLerpStart + m_flAngleLerpTime;
+
+	m_angLerpStart = GetGlobalAngles();
+	m_angLerpGoal = EAngle(stof(sArgs[0]), stof(sArgs[1]), stof(sArgs[2]));
 }
