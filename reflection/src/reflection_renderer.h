@@ -28,14 +28,12 @@ public:
 
 	float			BloomBrightnessCutoff() const { return 1.25f; }
 
-	size_t			GetReflectionTexture();
-	void			SetMirror(CMirror* pMirror);
+	size_t			GetReflectionTexture(size_t i);
 
 protected:
-	CFrameBuffer	m_oReflectionBuffer;
-	CEntityHandle<CMirror>	m_hMirror;
+	eastl::vector<CFrameBuffer>	m_aoReflectionBuffers;
 
-	bool			m_bRenderingReflection;
+	bool						m_bRenderingReflection;
 };
 
 CReflectionRenderer* ReflectionRenderer();

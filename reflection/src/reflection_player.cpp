@@ -52,8 +52,8 @@ void CReflectionPlayer::MouseInput(int iButton, int iState)
 	if (!GetPlayerCharacter())
 		return;
 
-	if (iButton == TINKER_KEY_MOUSE_LEFT && iState == 1)
-		GetPlayerCharacter()->PlaceMirror(m_eCurrentMirror);
+//	if (iButton == TINKER_KEY_MOUSE_LEFT && iState == 1)
+//		GetPlayerCharacter()->PlaceMirror(m_eCurrentMirror);
 }
 
 void CReflectionPlayer::KeyPress(int c)

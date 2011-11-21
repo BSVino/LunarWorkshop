@@ -17,10 +17,13 @@ class CMirror : public CBaseEntity
 	REGISTER_ENTITY_CLASS(CMirror, CBaseEntity);
 
 public:
+	virtual				~CMirror();
+
+public:
 	void				Precache();
 	void				Spawn();
 
-	bool				IsPointInside(const Vector& vecPoint) const;
+	bool				IsPointInside(const Vector& vecPoint, bool bPhysics = true) const;
 
 	void				SetMirrorType(mirror_t eType);
 	mirror_t			GetMirrorType() const { return m_eMirrorType; }
@@ -31,8 +34,17 @@ public:
 	bool				GetSide(const Vector& vecPoint) const;
 	Matrix4x4			GetReflection() const;
 
+	void				SetBuffer(size_t i) { m_iBuffer = i; }
+	size_t				GetBuffer() const { return m_iBuffer; }
+
+	static size_t		GetNumMirrors() { return m_ahMirrors.size(); };
+	static CMirror*		GetMirror(size_t i) { return m_ahMirrors[i]; };
+
 protected:
 	mirror_t			m_eMirrorType;
+	size_t				m_iBuffer;
+
+	static eastl::vector<CEntityHandle<CMirror> >	m_ahMirrors;
 };
 
 #endif

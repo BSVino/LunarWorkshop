@@ -73,8 +73,8 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 		float flHeight = r.m_vecMaxs.y - r.m_vecMins.y;
 
 		tstring sIdentifier;
-		if (pEntity->GetModel() != ~0)
-			sIdentifier = CModelLibrary::Get()->GetModel(pEntity->GetModel())->m_sFilename;
+		if (pEntity->GetModel())
+			sIdentifier = pEntity->GetModel()->m_sFilename;
 		else
 			sIdentifier = pEntity->GetClassName();
 
@@ -128,14 +128,14 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 			pPhysicsEntity->m_bCenterMassOffset = false;
 
 			flMass = 0;
-			pCollisionShape = m_apCollisionMeshes[pEntity->GetModel()].m_pCollisionShape;
+			pCollisionShape = m_apCollisionMeshes[pEntity->GetModelID()].m_pCollisionShape;
 		}
 		else if (eCollisionType == CT_KINEMATIC)
 		{
 			pPhysicsEntity->m_bCenterMassOffset = false;
 
 			flMass = 0;
-			pCollisionShape = m_apCollisionMeshes[pEntity->GetModel()].m_pCollisionShape;
+			pCollisionShape = m_apCollisionMeshes[pEntity->GetModelID()].m_pCollisionShape;
 		}
 		else
 		{

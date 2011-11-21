@@ -58,6 +58,14 @@ void CReflectionWindow::SetupReflection()
 	pCharacter->SetGlobalOrigin(Vector(-1, 0, -1));
 	pPlayer->SetCharacter(pCharacter);
 
+	CMirror* pMirror = GameServer()->Create<CMirror>("CMirror");
+	pMirror->SetGlobalOrigin(Vector(-6, 0, -3));
+	pMirror->SetGlobalAngles(EAngle(0, 90, 0));
+
+	pMirror = GameServer()->Create<CMirror>("CMirror");
+	pMirror->SetGlobalOrigin(Vector(0, 0, 0));
+	pMirror->SetGlobalAngles(EAngle(0, 0, 0));
+
 	CToken* pToken = GameServer()->Create<CToken>("CToken");
 	pToken->SetModel("models/r.toy");
 	pToken->SetGlobalOrigin(Vector(-6, 0, 3));
@@ -77,6 +85,21 @@ void CReflectionWindow::SetupReflection()
 	pDoor->SetModel("models/door.toy");
 	pDoor->SetGlobalOrigin(Vector(-9.26569f, 1.31136f, 5.56737f));
 	pDoor->SetLerpTime(0.5f);
+
+	pMirror = GameServer()->Create<CMirror>("CMirror");
+	pMirror->SetMirrorType(MIRROR_HORIZONTAL);
+	pMirror->SetGlobalOrigin(Vector(-12.391769f, 0.13496184f, 0.55572152f));
+	pMirror->SetGlobalAngles(EAngle(0, 0, 0));
+
+	pMirror = GameServer()->Create<CMirror>("CMirror");
+	pMirror->SetMirrorType(MIRROR_HORIZONTAL);
+	pMirror->SetGlobalOrigin(Vector(-29.102150f, 9.1320658f, -2.0262783f));
+	pMirror->SetGlobalAngles(EAngle(180, 0, 0));
+
+	pMirror = GameServer()->Create<CMirror>("CMirror");
+	pMirror->SetMirrorType(MIRROR_HORIZONTAL);
+	pMirror->SetGlobalOrigin(Vector(-29.102150f, 0.13496184f, -4.55572152f));
+	pMirror->SetGlobalAngles(EAngle(0, 0, 0));
 
 	pToken = GameServer()->Create<CToken>("CToken");
 	pToken->SetModel("models/powersource.toy");

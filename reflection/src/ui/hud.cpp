@@ -22,7 +22,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 	CPlayerCharacter* pPlayerCharacter = static_cast<CPlayerCharacter*>(ReflectionGame()->GetLocalPlayerCharacter());
 	CReflectionPlayer* pPlayer = static_cast<CReflectionPlayer*>(ReflectionGame()->GetLocalPlayer());
 
-	if (pPlayer)
+/*	if (pPlayer)
 	{
 		tstring sTip = "1 - Vertical Mirror";
 		float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
@@ -37,7 +37,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 		if (pPlayer->GetCurrentMirror() == MIRROR_HORIZONTAL)
 			glgui::CBaseControl::PaintRect(50 - 5, h/4 + 50 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
 		glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, 50, h/4 + 50);
-	}
+	}*/
 
 	if (pPlayerCharacter && pPlayerCharacter->GetToken())
 	{
@@ -54,7 +54,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 			c.SetReverseWinding(true);
 		}
 
-		c.RenderModel(pPlayerCharacter->GetToken()->GetModel());
+		c.RenderModel(pPlayerCharacter->GetToken()->GetModelID());
 	}
 
 	float flTokenRadius = 1.5f;

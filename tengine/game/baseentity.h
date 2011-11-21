@@ -321,7 +321,8 @@ public:
 
 	void									SetModel(const tstring& sModel);
 	void									SetModel(size_t iModel);
-	size_t									GetModel() const { return m_iModel; };
+	size_t									GetModelID() const { return m_iModel; };
+	class CModel*							GetModel() const;
 	virtual void							OnSetModel() {};
 
 	virtual Matrix4x4						GetRenderTransform() const { return Matrix4x4(GetGlobalTransform()); };

@@ -183,6 +183,11 @@ void CBaseEntity::SetModel(size_t iModel)
 	OnSetModel();
 }
 
+CModel* CBaseEntity::GetModel() const
+{
+	return CModelLibrary::Get()->GetModel(GetModelID());
+}
+
 void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 {
 	if (IsInPhysics())
@@ -698,12 +703,12 @@ void CBaseEntity::Render(bool bTransparent) const
 				if (r.GetBlend() == BLEND_NONE && !bTransparent)
 				{
 					TPROF("CRenderingContext::RenderModel(Opaque)");
-					r.RenderModel(GetModel());
+					r.RenderModel(GetModelID(), this);
 				}
 				if (r.GetBlend() != BLEND_NONE && bTransparent)
 				{
 					TPROF("CRenderingContext::RenderModel(Transparent)");
-					r.RenderModel(GetModel());
+					r.RenderModel(GetModelID(), this);
 				}
 			}
 

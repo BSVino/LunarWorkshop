@@ -15,37 +15,13 @@
 CReflectionRenderer::CReflectionRenderer()
 	: CRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
 {
-	m_oReflectionBuffer = CreateFrameBuffer(m_iWidth, m_iHeight, true, true);
+	for (size_t i = 0; i < 5; i++)
+		m_aoReflectionBuffers.push_back(CreateFrameBuffer(m_iWidth, m_iHeight, true, true));
 }
-
 
 void CReflectionRenderer::Initialize()
 {
 	BaseClass::Initialize();
-
-	CModel* pModel = CModelLibrary::Get()->GetModel(CModelLibrary::Get()->FindModel("models/mirror.toy"));
-	for (size_t i = 0; i < pModel->m_aiTextures.size(); i++)
-	{
-		// A bit of a hack, but there's no material library yet so...
-		if (pModel->m_aiTextures[i] == 0)
-		{
-			// Here's our reflection surface.
-			pModel->m_aiTextures[i] = GetReflectionTexture();
-			break;
-		}
-	}
-
-	pModel = CModelLibrary::Get()->GetModel(CModelLibrary::Get()->FindModel("models/mirror_horizontal.toy"));
-	for (size_t i = 0; i < pModel->m_aiTextures.size(); i++)
-	{
-		// A bit of a hack, but there's no material library yet so...
-		if (pModel->m_aiTextures[i] == 0)
-		{
-			// Here's our reflection surface.
-			pModel->m_aiTextures[i] = GetReflectionTexture();
-			break;
-		}
-	}
 }
 
 void CReflectionRenderer::LoadShaders()
@@ -64,13 +40,40 @@ void CReflectionRenderer::SetupFrame()
 
 	m_bBatchThisFrame = r_batch.GetBool();
 
-	if (m_hMirror != NULL)
+	eastl::vector<CEntityHandle<CMirror> > apMirrors;
+	apMirrors.reserve(CMirror::GetNumMirrors());
+
+	// None of these had better get deleted while we're doing this since they're not handles.
+	for (size_t i = 0; i < CMirror::GetNumMirrors(); i++)
+	{
+		CMirror* pMirror = CMirror::GetMirror(i);
+		if (!pMirror)
+			continue;
+
+		if (!pMirror->ShouldRender())
+			continue;
+
+		pMirror->SetBuffer(~0);
+
+		if (!IsSphereInFrustum(pMirror->GetGlobalCenter(), (float)pMirror->GetBoundingRadius()))
+			continue;
+
+		pMirror->SetBuffer(apMirrors.size());
+		apMirrors.push_back(pMirror);
+	}
+
+	for (size_t i = 0; i < apMirrors.size(); i++)
 	{
 		TPROF("Reflection rendering");
 
+		if (i > m_aoReflectionBuffers.size())
+			continue;
+
+		CMirror* pMirror = apMirrors[i];
+
 		// Render a reflected world to our reflection buffer.
-		glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)m_oReflectionBuffer.m_iFB);
-		glViewport(0, 0, (GLsizei)m_oReflectionBuffer.m_iWidth, (GLsizei)m_oReflectionBuffer.m_iHeight);
+		glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)m_aoReflectionBuffers[i].m_iFB);
+		glViewport(0, 0, (GLsizei)m_aoReflectionBuffers[i].m_iWidth, (GLsizei)m_aoReflectionBuffers[i].m_iHeight);
 
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glColor4f(1, 1, 1, 1);
@@ -82,7 +85,7 @@ void CReflectionRenderer::SetupFrame()
 		if (pPlayerCharacter && (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) == pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
 			glFrontFace(GL_CW);
 
-		StartRenderingReflection(m_hMirror);
+		StartRenderingReflection(pMirror);
 		GameServer()->RenderEverything();
 		FinishRendering();
 
@@ -300,8 +303,14 @@ void CReflectionRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size
 	if (pModel->m_sFilename == "models/mirror_horizontal.toy")
 		bModel = true;
 
-	if (bModel && pModel->m_aiTextures[iMaterial] == GetReflectionTexture())
+	size_t iBuffer = ~0;
+	if (bModel)
+		iBuffer = static_cast<const CMirror*>(m_pRendering)->GetBuffer();
+
+	if (bModel && pModel->m_aiTextures[iMaterial] == 0 && iBuffer != ~0)
 	{
+		c->BindTexture(GetReflectionTexture(iBuffer));
+
 		c->UseProgram("reflection");
 		c->SetUniform("bDiffuse", true);
 		c->SetUniform("iDiffuse", 0);
@@ -320,14 +329,9 @@ void CReflectionRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size
 	BaseClass::SetupShader(c, pModel, iMaterial);
 }
 
-size_t CReflectionRenderer::GetReflectionTexture()
+size_t CReflectionRenderer::GetReflectionTexture(size_t i)
 {
-	return m_oReflectionBuffer.m_iMap;
-}
-
-void CReflectionRenderer::SetMirror(CMirror* pMirror)
-{
-	m_hMirror = pMirror;
+	return m_aoReflectionBuffers[i].m_iMap;
 }
 
 CReflectionRenderer* ReflectionRenderer()

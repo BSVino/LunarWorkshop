@@ -24,6 +24,7 @@ public:
 	virtual TFloat				JumpStrength() { return 3.0f; }
 
 	virtual void				OnSetLocalTransform(Matrix4x4& mNew);
+	virtual void				TestMirror(CMirror* pMirror, Matrix4x4& mNew);
 
 	bool						IsReflected(reflection_t eReflectionType) const;
 	CMirror*					GetMirrorInside() const;

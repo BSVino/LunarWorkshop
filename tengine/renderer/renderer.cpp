@@ -64,6 +64,8 @@ CRenderer::CRenderer(size_t iWidth, size_t iHeight)
 	m_bBatchThisFrame = r_batch.GetBool();
 
 	DisableSkybox();
+
+	m_pRendering = nullptr;
 }
 
 void CRenderer::Initialize()
@@ -851,10 +853,9 @@ void CRenderer::BeginBatching()
 		it->second.clear();
 }
 
-void CRenderer::AddToBatch(class CModel* pModel, const Matrix4x4& mTransformations, const Color& clrRender, bool bClrSwap, const Color& clrSwap, bool bReverseWinding)
+void CRenderer::AddToBatch(class CModel* pModel, const CBaseEntity* pEntity, const Matrix4x4& mTransformations, const Color& clrRender, bool bClrSwap, const Color& clrSwap, bool bReverseWinding)
 {
 	TAssert(pModel);
-
 	if (!pModel)
 		return;
 
@@ -862,6 +863,7 @@ void CRenderer::AddToBatch(class CModel* pModel, const Matrix4x4& mTransformatio
 	{
 		CRenderBatch* pBatch = &m_aBatches[pModel->m_aiTextures[i]].push_back();
 
+		pBatch->pEntity = pEntity;
 		pBatch->pModel = pModel;
 		pBatch->mTransformation = mTransformations;
 		pBatch->bSwap = bClrSwap;
@@ -896,7 +898,9 @@ void CRenderer::RenderBatches()
 			c.ResetTransformations();
 			c.LoadTransform(pBatch->mTransformation);
 
-			c.RenderModel(pBatch->pModel, pBatch->iMaterial);
+			m_pRendering = pBatch->pEntity;
+			c.RenderModel(pBatch->pEntity->GetModel(), pBatch->iMaterial);
+			m_pRendering = nullptr;
 		}
 	}
 }

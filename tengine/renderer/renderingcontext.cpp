@@ -211,7 +211,7 @@ void CRenderingContext::SetReverseWinding(bool bReverse)
 	m_bReverseWinding = bReverse;
 }
 
-void CRenderingContext::RenderModel(size_t iModel)
+void CRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntity)
 {
 	CModel* pModel = CModelLibrary::Get()->GetModel(iModel);
 
@@ -225,10 +225,12 @@ void CRenderingContext::RenderModel(size_t iModel)
 		Matrix4x4 mTransformations;
 		glGetFloatv(GL_MODELVIEW_MATRIX, mTransformations);
 
-		m_pRenderer->AddToBatch(pModel, mTransformations, m_clrRender, m_bColorSwap, m_clrSwap, m_bReverseWinding);
+		m_pRenderer->AddToBatch(pModel, pEntity, mTransformations, m_clrRender, m_bColorSwap, m_clrSwap, m_bReverseWinding);
 	}
 	else
 	{
+		m_pRenderer->m_pRendering = pEntity;
+
 		glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT|GL_LIGHTING_BIT|GL_TEXTURE_BIT);
 
 		for (size_t m = 0; m < pModel->m_aiVertexBuffers.size(); m++)
@@ -246,6 +248,8 @@ void CRenderingContext::RenderModel(size_t iModel)
 
 		glUseProgram(0);
 		glPopAttrib();
+
+		m_pRenderer->m_pRendering = nullptr;
 	}
 }
 

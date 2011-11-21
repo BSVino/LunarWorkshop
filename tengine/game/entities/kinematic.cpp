@@ -44,7 +44,7 @@ void CKinematic::OnSetModel()
 	if (IsInPhysics())
 		RemoveFromPhysics();
 
-	if (GetModel() == ~0)
+	if (GetModelID() == ~0)
 		return;
 
 	AddToPhysics(CT_KINEMATIC);

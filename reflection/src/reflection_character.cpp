@@ -59,9 +59,20 @@ void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 	if (!ReflectionGame()->GetLocalPlayerCharacter())
 		return;
 
+	for (size_t i = 0; i < CMirror::GetNumMirrors(); i++)
+	{
+		CMirror* pMirror = CMirror::GetMirror(i);
+		if (!pMirror)
+			continue;
+
+		TestMirror(pMirror, mNew);
+	}
+}
+
+void CReflectionCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
+{
 	Vector vecNewOrigin = mNew.GetTranslation();
 
-	CMirror* pMirror = static_cast<CPlayerCharacter*>(ReflectionGame()->GetLocalPlayerCharacter())->GetMirror();
 	if (pMirror && vecNewOrigin != m_vecLocalOrigin)
 	{
 		Vector vecOldGlobalOrigin = GetGlobalOrigin();
@@ -76,12 +87,7 @@ void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 		bool bOldSide = pMirror->GetSide(vecOldGlobalOrigin + GetUpVector() * EyeHeight());
 		bool bNewSide = pMirror->GetSide(vecNewGlobalOrigin + GetUpVector() * EyeHeight());
 
-		bool bPointInsideCheck = true;
-		if (pMirror->GetMirrorType() == MIRROR_VERTICAL)
-			bPointInsideCheck = pMirror->IsPointInside(vecOldGlobalOrigin + GetUpVector() * EyeHeight());
-
-		// It's impossible to get to the other side of a horizontal mirror without going through the floor,
-		// so we don't need a point inside check for that mirror type.
+		bool bPointInsideCheck = pMirror->IsPointInside(vecOldGlobalOrigin + GetUpVector() * EyeHeight(), false);
 
 		if(bOldSide != bNewSide && bPointInsideCheck)
 		{
@@ -208,8 +214,15 @@ bool CReflectionCharacter::ShouldCollideWith(CBaseEntity* pOther, const TVector&
 {
 	if (tstring(pOther->GetClassName()) == "CWorld")
 	{
-		CMirror* pMirror = static_cast<CPlayerCharacter*>(ReflectionGame()->GetLocalPlayerCharacter())->GetMirror();
-		return !IsNearMirror(pMirror, vecPoint);
+		for (size_t i = 0; i < CMirror::GetNumMirrors(); i++)
+		{
+			CMirror* pMirror = CMirror::GetMirror(i);
+			if (!pMirror)
+				continue;
+
+			if (IsNearMirror(pMirror, vecPoint))
+				return false;
+		}
 	}
 
 	return true;

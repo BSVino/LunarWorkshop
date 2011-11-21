@@ -11,10 +11,25 @@ NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CMirror);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iBuffer);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CMirror);
 INPUTS_TABLE_END();
+
+eastl::vector<CEntityHandle<CMirror> > CMirror::m_ahMirrors;
+
+CMirror::~CMirror()
+{
+	for (size_t i = 0; i < m_ahMirrors.size(); i++)
+	{
+		if (m_ahMirrors[i] == (const CMirror*)this)
+		{
+			m_ahMirrors.erase(m_ahMirrors.begin()+i);
+			break;
+		}
+	}
+}
 
 void CMirror::Precache()
 {
@@ -24,12 +39,12 @@ void CMirror::Precache()
 
 void CMirror::Spawn()
 {
-	SetMirrorType(MIRROR_HORIZONTAL);
+	SetMirrorType(MIRROR_VERTICAL);
 
-	ReflectionRenderer()->SetMirror(this);
+	m_ahMirrors.push_back(this);
 }
 
-bool CMirror::IsPointInside(const Vector& vecPoint) const
+bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 {
 	switch(m_eMirrorType)
 	{
@@ -60,7 +75,11 @@ bool CMirror::IsPointInside(const Vector& vecPoint) const
 		if (vecPoint.y > GetGlobalOrigin().y + 0.15f)
 			return false;
 
-		return (vecPoint - GetGlobalOrigin()).Length2D() < GetBoundingBox().Size().Length2D()/4;
+		// Use a tighter radius for physics to make sure we never fall outside the level
+		if (bPhysics)
+			return (vecPoint - GetGlobalOrigin()).Length2D() < GetBoundingBox().Size().Length2D()/4;
+		else
+			return (vecPoint - GetGlobalOrigin()).Length2D() < GetBoundingBox().Size().Length2D()/2;
 	}
 
 	return false;

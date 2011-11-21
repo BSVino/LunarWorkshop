@@ -34,19 +34,22 @@ public:
 class CRenderBatch
 {
 public:
-	class CModel*	pModel;
-	Matrix4x4		mTransformation;
-	bool			bSwap;
-	bool			bReverseWinding;
-	Color			clrSwap;
-	Color			clrRender;
-	size_t			iMaterial;
+	const class CBaseEntity*	pEntity;
+	class CModel*				pModel;
+	Matrix4x4					mTransformation;
+	bool						bSwap;
+	bool						bReverseWinding;
+	Color						clrSwap;
+	Color						clrRender;
+	size_t						iMaterial;
 };
 
 #define BLOOM_FILTERS 3
 
 class CRenderer
 {
+	friend class CRenderingContext;
+
 public:
 					CRenderer(size_t iWidth, size_t iHeight);
 
@@ -101,7 +104,7 @@ public:
 
 	bool			ShouldBatchThisFrame() { return m_bBatchThisFrame; }
 	void			BeginBatching();
-	void			AddToBatch(class CModel* pModel, const Matrix4x4& mTransformations, const Color& clrRender, bool bClrSwap, const Color& clrSwap, bool bReverseWinding);
+	void			AddToBatch(class CModel* pModel, const class CBaseEntity* pEntity, const Matrix4x4& mTransformations, const Color& clrRender, bool bClrSwap, const Color& clrSwap, bool bReverseWinding);
 	void			RenderBatches();
 	bool			IsBatching() { return m_bBatching; };
 
@@ -127,6 +130,8 @@ public:
 
 	bool			ShouldUseShaders() { return m_bUseShaders; }
 	bool			HardwareSupportsShaders();
+
+	const class CBaseEntity*	GetRenderingEntity() { return m_pRendering; }
 
 public:
 	static size_t	LoadVertexDataIntoGL(size_t iVerts, float* aflVertices);
@@ -187,6 +192,8 @@ protected:
 	bool			m_bBatchThisFrame;
 	bool			m_bBatching;
 	eastl::map<size_t, eastl::vector<CRenderBatch> > m_aBatches;
+
+	const CBaseEntity*	m_pRendering;
 
 	CFrameBuffer	m_oSceneBuffer;
 
