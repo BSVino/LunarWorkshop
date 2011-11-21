@@ -497,22 +497,12 @@ void CCharacterController::warp (const btVector3& origin)
 
 void CCharacterController::preStep (  btCollisionWorld* collisionWorld)
 {
-	int numPenetrationLoops = 0;
 	m_touchingContact = false;
-	while (recoverFromPenetration (collisionWorld))
-	{
-		numPenetrationLoops++;
+	if (recoverFromPenetration (collisionWorld))
 		m_touchingContact = true;
-		if (numPenetrationLoops > 4)
-		{
-			//printf("character could not recover from penetration = %d\n", numPenetrationLoops);
-			break;
-		}
-	}
 
 	m_currentPosition = m_ghostObject->getWorldTransform().getOrigin();
 	m_targetPosition = m_currentPosition;
-//	printf("m_targetPosition=%f,%f,%f\n",m_targetPosition[0],m_targetPosition[1],m_targetPosition[2]);
 }
 
 #include <stdio.h>
