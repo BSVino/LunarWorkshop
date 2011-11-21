@@ -15,13 +15,13 @@ INPUTS_TABLE_END();
 
 void CWorld::Precache()
 {
-	PrecacheModel("levels/test.obj");
+	PrecacheModel("levels/test.toy");
 }
 
 void CWorld::Spawn()
 {
 	BaseClass::Spawn();
 
-	SetModel("levels/test.obj");
+	SetModel("levels/test.toy");
 	AddToPhysics(CT_STATIC_MESH);
 }

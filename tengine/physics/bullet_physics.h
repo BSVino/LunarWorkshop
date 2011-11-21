@@ -60,7 +60,7 @@ public:
 	virtual void			AddEntity(class CBaseEntity* pEnt, collision_type_t eCollisionType);
 	virtual void			RemoveEntity(class CBaseEntity* pEnt);
 
-	virtual void			LoadCollisionMesh(const tstring& sModel, const eastl::vector< eastl::vector<Vertex_t> >& aTriangles);
+	virtual void			LoadCollisionMesh(const tstring& sModel, size_t iTris, int* aiTris, size_t iVerts, float* aflVerts);
 
 	virtual void			Simulate();
 
@@ -91,8 +91,6 @@ protected:
 	public:
 		btTriangleIndexVertexArray*				m_pIndexVertexArray;
 		btCollisionShape*						m_pCollisionShape;
-		eastl::vector<eastl::vector<int> >		m_aiIndices;
-		eastl::vector<eastl::vector<Vector> >	m_avecVertices;
 	};
 
 	eastl::map<size_t, CCollisionMesh>		m_apCollisionMeshes;

@@ -87,6 +87,8 @@ tstring CModelConverter::GetDirectory(const tstring& sFilename)
 
 	if (iLastSlash >= 0)
 		sResult[iLastSlash] = _T('\0');
+	else
+		return ".";
 
 	return sResult;
 }

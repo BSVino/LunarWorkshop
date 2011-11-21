@@ -129,7 +129,7 @@ public:
 	bool			HardwareSupportsShaders();
 
 public:
-	static size_t	LoadVertexDataIntoGL(const eastl::vector<Vertex_t>& aVertices);
+	static size_t	LoadVertexDataIntoGL(size_t iVerts, float* aflVertices);
 	static size_t	LoadTextureIntoGL(tstring sFilename, int iClamp = 0);
 	static size_t	LoadTextureIntoGL(size_t iImageID, int iClamp = 0);
 	static size_t	LoadTextureIntoGL(Color* pclrData, int iClamp = 0);

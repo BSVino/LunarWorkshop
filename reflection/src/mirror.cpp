@@ -18,8 +18,8 @@ INPUTS_TABLE_END();
 
 void CMirror::Precache()
 {
-	PrecacheModel("models/mirror.obj");
-	PrecacheModel("models/mirror_horizontal.obj");
+	PrecacheModel("models/mirror.toy");
+	PrecacheModel("models/mirror_horizontal.toy");
 }
 
 void CMirror::Spawn()
@@ -72,11 +72,11 @@ void CMirror::SetMirrorType(mirror_t eType)
 	switch(m_eMirrorType)
 	{
 	case MIRROR_VERTICAL:
-		SetModel("models/mirror.obj");
+		SetModel("models/mirror.toy");
 		break;
 
 	case MIRROR_HORIZONTAL:
-		SetModel("models/mirror_horizontal.obj");
+		SetModel("models/mirror_horizontal.toy");
 		break;
 	}
 }

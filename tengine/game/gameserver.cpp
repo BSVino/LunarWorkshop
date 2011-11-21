@@ -7,12 +7,12 @@
 #include <tinker_platform.h>
 #include <configfile.h>
 #include <strutils.h>
+#include <worklistener.h>
 
 #include <tinker/application.h>
 #include <tinker/profiler.h>
 #include <renderer/renderer.h>
 #include <renderer/particles.h>
-#include <renderer/dissolver.h>
 #include <sound/sound.h>
 #include <network/network.h>
 #include <network/commands.h>
@@ -452,7 +452,6 @@ void CGameServer::Think(float flHostTime)
 	}
 
 	CParticleSystemLibrary::Simulate();
-	CModelDissolver::Simulate();
 
 	TPortal_Think();
 }
@@ -535,7 +534,6 @@ void CGameServer::RenderEverything()
 		m_apRenderList[i]->Render(true);
 
 	CParticleSystemLibrary::Render();
-	CModelDissolver::Render();
 }
 
 void CGameServer::GenerateSaveCRC(size_t iInput)

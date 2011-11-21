@@ -51,6 +51,8 @@ add_definitions(-DTINKER_NO_REGISTRATION)
 add_subdirectory (lwbase)
 
 add_subdirectory (modelconverter)
+add_subdirectory (toys)
+add_subdirectory (tools)
 
 add_subdirectory (tinker)
 add_subdirectory (tengine)

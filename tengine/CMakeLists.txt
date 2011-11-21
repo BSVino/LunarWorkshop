@@ -62,7 +62,6 @@ set (TENGINE_PHYSICS_SOURCES
 )
 
 set (TENGINE_RENDERER_SOURCES
-	renderer/dissolver.cpp
 	renderer/particles.cpp
 	renderer/renderer.cpp
 	renderer/renderingcontext.cpp
@@ -97,7 +96,7 @@ source_group(Sound FILES ${TENGINE_SOUND_SOURCES})
 source_group(Tinker FILES ${TENGINE_TINKER_SOURCES})
 
 add_library(tengine STATIC ${TENGINE_SOURCES})
-target_link_libraries (tengine tinker modelconverter)
+target_link_libraries (tengine tinker modelconverter toys)
 
 if (WIN32)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Debug/DevIL.lib)

@@ -4,16 +4,11 @@
 #include <EASTL/vector.h>
 #include <EASTL/string.h>
 
-#include <modelconverter/convmesh.h>
 #include <color.h>
+#include <geometry.h>
+#include <tstring.h>
 
-typedef struct
-{
-	Vector		vecPosition;
-	Vector		vecNormal;
-	Vector2D	vecUV;
-	Color		clrColor;
-} Vertex_t;
+class CToy;
 
 class CModel
 {
@@ -23,17 +18,11 @@ public:
 
 public:
 	void					Load();
-	void					LoadSceneIntoBuffer();
-	void					LoadSceneNodeIntoBuffer(CConversionSceneNode* pNode, const Matrix4x4& mTransformations = Matrix4x4());
-	void					LoadMeshInstanceIntoBuffer(CConversionMeshInstance* pMeshInstance, const Matrix4x4& mTransformations);
 	size_t					LoadBufferIntoGL(size_t iMaterial);
-	size_t					LoadTextureIntoGL(size_t iMaterial);
 
 public:
 	tstring					m_sFilename;
-	CConversionScene*		m_pScene;
-
-	eastl::vector< eastl::vector<Vertex_t> >	m_aaVertices;
+	CToy*					m_pToy;
 
 	// Graphics library handles.
 	eastl::vector<size_t>	m_aiTextures;

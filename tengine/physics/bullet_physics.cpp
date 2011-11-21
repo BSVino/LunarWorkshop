@@ -188,53 +188,22 @@ void CBulletPhysics::RemoveEntity(CBaseEntity* pEntity)
 	pPhysicsEntity->m_pCharacterController = NULL;
 }
 
-void CBulletPhysics::LoadCollisionMesh(const tstring& sModel, const eastl::vector< eastl::vector<Vertex_t> >& aTriangles)
+void CBulletPhysics::LoadCollisionMesh(const tstring& sModel, size_t iTris, int* aiTris, size_t iVerts, float* aflVerts)
 {
 	size_t iModel = CModelLibrary::Get()->FindModel(sModel);
 
 	TAssert(iModel != ~0);
 
-	eastl::vector<eastl::vector<int> >& aiIndices = m_apCollisionMeshes[iModel].m_aiIndices;
-	eastl::vector<eastl::vector<Vector> >& avecVertices = m_apCollisionMeshes[iModel].m_avecVertices;
-
-	for (size_t i = 0; i < aTriangles.size(); i++)
-	{
-		aiIndices.push_back();
-		avecVertices.push_back();
-
-		if (!aTriangles[i].size())
-			continue;
-
-		aiIndices.set_capacity(aTriangles[i].size());
-		avecVertices.set_capacity(aTriangles[i].size());
-
-		for (size_t j = 0; j < aTriangles[i].size(); j += 3)
-		{
-			aiIndices[i].push_back(j);
-			aiIndices[i].push_back(j+1);
-			aiIndices[i].push_back(j+2);
-
-			avecVertices[i].push_back(aTriangles[i][j].vecPosition);
-			avecVertices[i].push_back(aTriangles[i][j+1].vecPosition);
-			avecVertices[i].push_back(aTriangles[i][j+2].vecPosition);
-		}
-	}
-
 	m_apCollisionMeshes[iModel].m_pIndexVertexArray = new btTriangleIndexVertexArray();
-	for (size_t i = 0; i < aiIndices.size(); i++)
-	{
-		if (!aiIndices[i].size())
-			continue;
 
-		btIndexedMesh m;
-		m.m_numTriangles = aTriangles[i].size()/3;
-		m.m_triangleIndexBase = (const unsigned char *)&aiIndices[i][0];
-		m.m_triangleIndexStride = sizeof(int)*3;
-		m.m_numVertices = avecVertices[i].size();
-		m.m_vertexBase = (const unsigned char *)&avecVertices[i][0].x;
-		m.m_vertexStride = sizeof(Vector);
-		m_apCollisionMeshes[iModel].m_pIndexVertexArray->addIndexedMesh(m, PHY_INTEGER);
-	}
+	btIndexedMesh m;
+	m.m_numTriangles = iTris;
+	m.m_triangleIndexBase = (const unsigned char *)aiTris;
+	m.m_triangleIndexStride = sizeof(int)*3;
+	m.m_numVertices = iVerts;
+	m.m_vertexBase = (const unsigned char *)aflVerts;
+	m.m_vertexStride = sizeof(Vector);
+	m_apCollisionMeshes[iModel].m_pIndexVertexArray->addIndexedMesh(m, PHY_INTEGER);
 
 	m_apCollisionMeshes[iModel].m_pCollisionShape = new btBvhTriangleMeshShape(m_apCollisionMeshes[iModel].m_pIndexVertexArray, true);
 }

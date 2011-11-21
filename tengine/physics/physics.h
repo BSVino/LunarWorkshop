@@ -1,6 +1,8 @@
 #ifndef TINKER_PHYSICS_H
 #define TINKER_PHYSICS_H
 
+#include <matrix.h>
+
 #include <models/models.h>
 
 typedef enum collision_type_e
@@ -20,7 +22,7 @@ public:
 	virtual void			AddEntity(class CBaseEntity* pEnt, collision_type_t eCollisionType) {};
 	virtual void			RemoveEntity(class CBaseEntity* pEnt) {};
 
-	virtual void			LoadCollisionMesh(const tstring& sModel, const eastl::vector< eastl::vector<Vertex_t> >& aTriangles) {};
+	virtual void			LoadCollisionMesh(const tstring& sModel, size_t iTris, int* aiTris, size_t iVerts, float* aflVerts) {};
 
 	virtual void			Simulate() {};
 

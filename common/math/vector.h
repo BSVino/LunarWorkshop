@@ -442,6 +442,14 @@ public:
 	TemplateVector2D<unit_t>	operator*(float s) const;
 	TemplateVector2D<unit_t>	operator/(float s) const;
 
+	bool	operator==(const TemplateVector2D<unit_t>& v) const
+	{
+		float flEp = 0.000001f;
+		if (fabs(v.x - x) < flEp && fabs(v.y - y) < flEp)
+			return true;
+		return false;
+	}
+
 	operator float*()
 	{
 		return(&x);

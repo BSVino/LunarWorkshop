@@ -4,7 +4,6 @@
 
 #include <renderer/renderer.h>
 #include <renderer/particles.h>
-#include <renderer/dissolver.h>
 #include <sound/sound.h>
 #include <network/network.h>
 #include <tinker/application.h>

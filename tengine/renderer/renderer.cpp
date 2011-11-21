@@ -7,7 +7,7 @@
 #include <maths.h>
 #include <simplex.h>
 
-#include <modelconverter/convmesh.h>
+#include <common/worklistener.h>
 #include <renderer/shaders.h>
 #include <tinker/application.h>
 #include <tinker/cvar.h>
@@ -1129,14 +1129,13 @@ bool CRenderer::HardwareSupportsShaders()
 	return m_bHardwareSupportsShaders;
 }
 
-size_t CRenderer::LoadVertexDataIntoGL(const eastl::vector<Vertex_t>& aVertices)
+size_t CRenderer::LoadVertexDataIntoGL(size_t iVerts, float* aflVertices)
 {
 	GLuint iVBO;
 	glGenBuffersARB(1, &iVBO);
 	glBindBufferARB(GL_ARRAY_BUFFER, iVBO);
 
-	size_t iTotalSize = sizeof(Vertex_t)*aVertices.size();
-	glBufferDataARB(GL_ARRAY_BUFFER, iTotalSize, &aVertices[0], GL_STATIC_DRAW);
+	glBufferDataARB(GL_ARRAY_BUFFER, iVerts, aflVertices, GL_STATIC_DRAW);
 
 	return iVBO;
 }

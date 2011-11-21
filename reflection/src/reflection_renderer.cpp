@@ -23,7 +23,7 @@ void CReflectionRenderer::Initialize()
 {
 	BaseClass::Initialize();
 
-	CModel* pModel = CModelLibrary::Get()->GetModel(CModelLibrary::Get()->FindModel("models/mirror.obj"));
+	CModel* pModel = CModelLibrary::Get()->GetModel(CModelLibrary::Get()->FindModel("models/mirror.toy"));
 	for (size_t i = 0; i < pModel->m_aiTextures.size(); i++)
 	{
 		// A bit of a hack, but there's no material library yet so...
@@ -35,7 +35,7 @@ void CReflectionRenderer::Initialize()
 		}
 	}
 
-	pModel = CModelLibrary::Get()->GetModel(CModelLibrary::Get()->FindModel("models/mirror_horizontal.obj"));
+	pModel = CModelLibrary::Get()->GetModel(CModelLibrary::Get()->FindModel("models/mirror_horizontal.toy"));
 	for (size_t i = 0; i < pModel->m_aiTextures.size(); i++)
 	{
 		// A bit of a hack, but there's no material library yet so...
@@ -295,9 +295,9 @@ void CReflectionRenderer::RenderFullscreenBuffers()
 void CReflectionRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial)
 {
 	bool bModel = false;
-	if (pModel->m_sFilename == "models/mirror.obj")
+	if (pModel->m_sFilename == "models/mirror.toy")
 		bModel = true;
-	if (pModel->m_sFilename == "models/mirror_horizontal.obj")
+	if (pModel->m_sFilename == "models/mirror_horizontal.toy")
 		bModel = true;
 
 	if (bModel && pModel->m_aiTextures[iMaterial] == GetReflectionTexture())

@@ -7,7 +7,6 @@
 #include <maths.h>
 #include <simplex.h>
 
-#include <modelconverter/convmesh.h>
 #include <models/models.h>
 #include <renderer/shaders.h>
 #include <tinker/application.h>

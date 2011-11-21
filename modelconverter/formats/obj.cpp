@@ -452,7 +452,8 @@ void CModelConverter::ReadMTL(const tstring& sFilename)
 		}
 		else if (tstrncmp(pszToken, _T("map_Kd"), 6) == 0)
 		{
-			pszToken = asTokens[1].c_str();
+			tstring sFile = sLine.substr(7);
+			pszToken = sFile.c_str();
 
 			FILE* fpTest = tfopen(pszToken, _T("r"));
 

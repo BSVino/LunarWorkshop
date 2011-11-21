@@ -59,7 +59,7 @@ void CReflectionWindow::SetupReflection()
 	pPlayer->SetCharacter(pCharacter);
 
 	CToken* pToken = GameServer()->Create<CToken>("CToken");
-	pToken->SetModel("models/r.obj");
+	pToken->SetModel("models/r.toy");
 	pToken->SetGlobalOrigin(Vector(-6, 0, 3));
 	pToken->SetGlobalAngles(EAngle(0, 90, 0));
 	pToken->SetName("Reflection");
@@ -74,12 +74,12 @@ void CReflectionWindow::SetupReflection()
 
 	CKinematic* pDoor = GameServer()->Create<CKinematic>("CKinematic");
 	pDoor->SetName("door1");
-	pDoor->SetModel("models/door.obj");
+	pDoor->SetModel("models/door.toy");
 	pDoor->SetGlobalOrigin(Vector(-9.26569f, 1.31136f, 5.56737f));
 	pDoor->SetLerpTime(0.5f);
 
 	pToken = GameServer()->Create<CToken>("CToken");
-	pToken->SetModel("models/powersource.obj");
+	pToken->SetModel("models/powersource.toy");
 	pToken->SetGlobalOrigin(Vector(-28.586233f, 0.13499284f, -3.1609130f));
 	pToken->SetGlobalAngles(EAngle(0, 90, 0));
 	pToken->SetName("ps1");
@@ -95,7 +95,7 @@ void CReflectionWindow::SetupReflection()
 
 	pDoor = GameServer()->Create<CKinematic>("CKinematic");
 	pDoor->SetName("door2");
-	pDoor->SetModel("models/vaultdoor.obj");
+	pDoor->SetModel("models/vaultdoor.toy");
 	pDoor->SetGlobalOrigin(Vector(-41.62f, 4.62605f, -0.107501f));
 	pDoor->SetGlobalAngles(EAngle(0, 0, 90));
 	pDoor->SetAngleLerpTime(5);

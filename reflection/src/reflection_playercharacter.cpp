@@ -23,8 +23,8 @@ void CPlayerCharacter::Precache()
 {
 	// REMOVE ME
 	// Here I precache entities that I know I'll need but can't precache elsewhere.
-	PrecacheModel("models/door.obj");
-	PrecacheModel("models/vaultdoor.obj");
+	PrecacheModel("models/door.toy");
+	PrecacheModel("models/vaultdoor.toy");
 }
 
 void CPlayerCharacter::Spawn()

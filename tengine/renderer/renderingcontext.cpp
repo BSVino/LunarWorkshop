@@ -7,7 +7,6 @@
 #include <maths.h>
 #include <simplex.h>
 
-#include <modelconverter/convmesh.h>
 #include <models/models.h>
 #include <renderer/shaders.h>
 #include <tinker/application.h>
@@ -16,6 +15,7 @@
 #include <game/gameserver.h>
 #include <models/texturelibrary.h>
 #include <renderer/renderer.h>
+#include <toys/toy.h>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -265,32 +265,30 @@ void CRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 		iWinding = (m_bInitialWinding?GL_CW:GL_CCW);
 	glFrontFace(iWinding);
 
-	Vertex_t v;
-
 	glBindBuffer(GL_ARRAY_BUFFER, pModel->m_aiVertexBuffers[iMaterial]);
 
-	if (m_pShader->m_iNormalAttribute != ~0)
-		glEnableVertexAttribArray(m_pShader->m_iNormalAttribute);
-	if (m_pShader->m_iColorAttribute != ~0)
-		glEnableVertexAttribArray(m_pShader->m_iColorAttribute);
+//	if (m_pShader->m_iNormalAttribute != ~0)
+//		glEnableVertexAttribArray(m_pShader->m_iNormalAttribute);
+//	if (m_pShader->m_iColorAttribute != ~0)
+//		glEnableVertexAttribArray(m_pShader->m_iColorAttribute);
 
 	glEnableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
 	glEnableVertexAttribArray(m_pShader->m_iPositionAttribute);
 
-	if (m_pShader->m_iNormalAttribute != ~0)
-		glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecNormal) - ((size_t)&v)));
-	if (m_pShader->m_iColorAttribute != ~0)
-		glVertexAttribPointer(m_pShader->m_iColorAttribute, 3, GL_UNSIGNED_BYTE, true, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.clrColor) - ((size_t)&v)));
+//	if (m_pShader->m_iNormalAttribute != ~0)
+//		glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecNormal) - ((size_t)&v)));
+//	if (m_pShader->m_iColorAttribute != ~0)
+//		glVertexAttribPointer(m_pShader->m_iColorAttribute, 3, GL_UNSIGNED_BYTE, true, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.clrColor) - ((size_t)&v)));
 
-	glVertexAttribPointer(m_pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecUV) - ((size_t)&v)));
-	glVertexAttribPointer(m_pShader->m_iPositionAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecPosition) - ((size_t)&v)));
+	glVertexAttribPointer(m_pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, pModel->m_pToy->GetVertexSize(), BUFFER_OFFSET(pModel->m_pToy->GetVertexUV()));
+	glVertexAttribPointer(m_pShader->m_iPositionAttribute, 3, GL_FLOAT, false, pModel->m_pToy->GetVertexSize(), BUFFER_OFFSET(pModel->m_pToy->GetVertexPosition()));
 
 	glDrawArrays(GL_TRIANGLES, 0, pModel->m_aiVertexBufferSizes[iMaterial]);
 
-	if (m_pShader->m_iNormalAttribute != ~0)
-		glDisableVertexAttribArray(m_pShader->m_iNormalAttribute);
-	if (m_pShader->m_iColorAttribute != ~0)
-		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
+//	if (m_pShader->m_iNormalAttribute != ~0)
+//		glDisableVertexAttribArray(m_pShader->m_iNormalAttribute);
+//	if (m_pShader->m_iColorAttribute != ~0)
+//		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
 
 	glDisableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
 	glDisableVertexAttribArray(m_pShader->m_iPositionAttribute);
