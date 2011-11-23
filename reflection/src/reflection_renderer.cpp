@@ -58,7 +58,10 @@ void CReflectionRenderer::SetupFrame()
 		if (!IsSphereInFrustum(pMirror->GetGlobalCenter(), (float)pMirror->GetBoundingRadius()))
 			continue;
 
-		pMirror->SetBuffer(apMirrors.size());
+		if (apMirrors.size() >= m_aoReflectionBuffers.size())
+			pMirror->SetBuffer(0);
+		else
+			pMirror->SetBuffer(apMirrors.size());
 		apMirrors.push_back(pMirror);
 	}
 
@@ -66,7 +69,7 @@ void CReflectionRenderer::SetupFrame()
 	{
 		TPROF("Reflection rendering");
 
-		if (i > m_aoReflectionBuffers.size())
+		if (i >= m_aoReflectionBuffers.size())
 			continue;
 
 		CMirror* pMirror = apMirrors[i];
