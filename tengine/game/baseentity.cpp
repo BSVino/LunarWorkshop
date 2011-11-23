@@ -16,11 +16,23 @@
 
 #include "game.h"
 
-#ifdef _WIN32
-// The linker throws out objects in a .lib that aren't referenced by the .exe, so we need to force some of our registrations to be imported when we link.
-#pragma comment(linker, "/include:?g_RegisterCCounter@@3VCRegisterCCounter@@A")
-#pragma comment(linker, "/include:?g_RegisterCKinematic@@3VCRegisterCKinematic@@A")
-#endif
+bool g_bAutoImporting = false;
+#include "entities/counter.h"
+#include "entities/kinematic.h"
+// Use this to force import of required entities.
+class CAutoImport
+{
+public:
+	CAutoImport()
+	{
+		g_bAutoImporting = true;
+		{
+			CCounter c;
+			CKinematic k;
+		}
+		g_bAutoImporting = false;
+	}
+} g_AutoImport = CAutoImport();
 
 eastl::vector<CBaseEntity*> CBaseEntity::s_apEntityList;
 size_t CBaseEntity::s_iEntities = 0;
@@ -96,6 +108,9 @@ INPUTS_TABLE_END();
 
 CBaseEntity::CBaseEntity()
 {
+	if (g_bAutoImporting)
+		return;
+
 	if (s_iOverrideEntityListIndex == ~0)
 		m_iHandle = s_iNextEntityListIndex;
 	else
@@ -136,6 +151,9 @@ CBaseEntity::CBaseEntity()
 
 CBaseEntity::~CBaseEntity()
 {
+	if (g_bAutoImporting)
+		return;
+
 	if (IsInPhysics())
 		RemoveFromPhysics();
 
