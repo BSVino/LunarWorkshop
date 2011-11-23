@@ -40,6 +40,8 @@ set (TENGINE_GAME_ENTITY_SOURCES
 	game/entities/counter.cpp
 	game/entities/character.cpp
 	game/entities/kinematic.cpp
+	game/entities/logicgate.cpp
+	game/entities/mathgate.cpp
 	game/entities/player.cpp
 )
 

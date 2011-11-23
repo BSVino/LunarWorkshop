@@ -422,6 +422,17 @@ inline EAngle VectorAngles( const Vector& vecForward )
 	return angReturn;
 }
 
+template <class T> T LerpValue(T from, T to, float flLerp);
+
+template <>
+inline EAngle LerpValue(EAngle from, EAngle to, float flLerp)
+{
+	float p = from.p + (AngleDifference(to.p, from.p) * flLerp);
+	float y = from.y + (AngleDifference(to.y, from.y) * flLerp);
+	float r = from.r + (AngleDifference(to.r, from.r) * flLerp);
+	return EAngle(p, y, r);
+}
+
 template <class unit_t>
 class TemplateVector2D
 {

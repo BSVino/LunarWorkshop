@@ -78,7 +78,7 @@ void CReceptacle::SetToken(CToken* pToken)
 {
 	if (m_hToken.GetPointer())
 	{
-		if (m_hToken->GetName() == m_sDesiredToken)
+		if (!m_sDesiredToken.length() || m_hToken->GetName() == m_sDesiredToken)
 		{
 			if (m_hToken->IsReflected())
 				CallOutput("OnReflectedTokenRemoved");
@@ -103,7 +103,7 @@ void CReceptacle::SetToken(CToken* pToken)
 	pToken->SetLocalTransform(TMatrix());
 	pToken->m_hReceptacle = this;
 
-	if (pToken->GetName() == m_sDesiredToken)
+	if (!m_sDesiredToken.length() || pToken->GetName() == m_sDesiredToken)
 	{
 		if (pToken->IsReflected())
 			CallOutput("OnReflectedToken");

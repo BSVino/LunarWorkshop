@@ -1,0 +1,68 @@
+#include "mathgate.h"
+
+REGISTER_ENTITY(CMathGate);
+
+NETVAR_TABLE_BEGIN(CMathGate);
+NETVAR_TABLE_END();
+
+SAVEDATA_TABLE_BEGIN(CMathGate);
+	SAVEDATA_DEFINE_OUTPUT(OnResult);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flBase);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLeft);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flRight);
+SAVEDATA_TABLE_END();
+
+INPUTS_TABLE_BEGIN(CMathGate);
+	INPUT_DEFINE(InputLeft);
+	INPUT_DEFINE(InputRight);
+INPUTS_TABLE_END();
+
+void CMathGate::Spawn()
+{
+	BaseClass::Spawn();
+
+	m_flBase = 0;
+	m_flLeft = 0;
+	m_flRight = 0;
+}
+
+void CMathGate::InputLeft(const eastl::vector<tstring>& sArgs)
+{
+	TAssert(sArgs.size() == 1);
+
+	if (sArgs.size() < 1)
+	{
+		TMsg("Not enough arguments for InputLeft.\n");
+		return;
+	}
+
+	float flNewLeft = stof(sArgs[0]);
+
+	m_flLeft = flNewLeft;
+
+	CallOutput("OnResult");
+}
+
+void CMathGate::InputRight(const eastl::vector<tstring>& sArgs)
+{
+	TAssert(sArgs.size() == 1);
+
+	if (sArgs.size() < 1)
+	{
+		TMsg("Not enough arguments for InputRight.\n");
+		return;
+	}
+
+	float flNewRight = stof(sArgs[0]);
+
+	m_flRight = flNewRight;
+
+	CallOutput("OnResult");
+}
+
+tstring CMathGate::GetOutputValue(const tstring& sOutput, size_t iValue)
+{
+	TAssert(sOutput == "OnResult" && iValue == 0);
+
+	return sprintf("%f", m_flBase + m_flLeft + m_flRight);
+}

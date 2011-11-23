@@ -92,6 +92,11 @@ public:
 	void									AddTarget(const eastl::string& sTargetName, const eastl::string& sInput, const eastl::string& sArgs, bool bKill);
 	void									Clear();
 
+	tstring									FormatArgs(tstring sArgs);
+
+	void									SetEntity(class CBaseEntity* pEnt) { m_pEnt = pEnt; }
+	void									SetOutputName(const eastl::string& sOutputName) { m_sOutputName = sOutputName; }
+
 public:
 	class CEntityOutputTarget
 	{
@@ -103,6 +108,8 @@ public:
 	};
 
 	eastl::vector<CEntityOutputTarget>		m_aTargets;
+	class CBaseEntity*						m_pEnt;
+	eastl::string							m_sOutputName;
 };
 
 #define DECLARE_ENTITY_OUTPUT(name) \
@@ -443,6 +450,7 @@ public:
 	void									CallOutput(const eastl::string& sName);
 	void									AddOutputTarget(const eastl::string& sName, const eastl::string& sTargetName, const eastl::string& sInput, const eastl::string& sArgs = "", bool bKill = false);
 	void									RemoveOutputs(const eastl::string& sName);
+	virtual tstring							GetOutputValue(const tstring& sOutput, size_t iValue) { return ""; }
 	DECLARE_ENTITY_INPUT(RemoveOutput);
 
 	void									EmitSound(const tstring& sSound, float flVolume = 1.0f, bool bLoop = false);

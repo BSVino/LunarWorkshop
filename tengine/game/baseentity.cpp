@@ -19,6 +19,8 @@
 bool g_bAutoImporting = false;
 #include "entities/counter.h"
 #include "entities/kinematic.h"
+#include "entities/logicgate.h"
+#include "entities/mathgate.h"
 // Use this to force import of required entities.
 class CAutoImport
 {
@@ -29,6 +31,8 @@ public:
 		{
 			CCounter c;
 			CKinematic k;
+			CLogicGate l;
+			CMathGate m;
 		}
 		g_bAutoImporting = false;
 	}
@@ -795,6 +799,8 @@ void CBaseEntity::CallOutput(const eastl::string& sName)
 	}
 
 	CEntityOutput* pOutput = (CEntityOutput*)((size_t)this + (size_t)pData->m_iOffset);
+	pOutput->SetEntity(this);
+	pOutput->SetOutputName(sName);
 	pOutput->Call();
 }
 
@@ -858,7 +864,7 @@ void CEntityOutput::Call()
 		CBaseEntity::FindEntitiesByName(pTarget->m_sTargetName, apEntities);
 
 		for (size_t i = 0; i < apEntities.size(); i++)
-			apEntities[i]->CallInput(pTarget->m_sInput, convertstring<char, tchar>(pTarget->m_sArgs));
+			apEntities[i]->CallInput(pTarget->m_sInput, FormatArgs(pTarget->m_sArgs));
 	}
 
 	for (size_t i = 0; i < m_aTargets.size(); i++)
@@ -885,6 +891,23 @@ void CEntityOutput::AddTarget(const eastl::string& sTargetName, const eastl::str
 void CEntityOutput::Clear()
 {
 	m_aTargets.clear();
+}
+
+tstring CEntityOutput::FormatArgs(tstring sArgs)
+{
+	size_t iArg = 0;
+
+	while (true)
+	{
+		tstring sArg = sprintf("[%d]", iArg);
+		auto i = sArgs.find(sArg);
+		if (i == tstring::npos)
+			return sArgs;
+
+		sArgs.replace(i, sArg.length(), m_pEnt->GetOutputValue(m_sOutputName, iArg));
+
+		iArg++;
+	}
 }
 
 SERVER_GAME_COMMAND(EmitSound)

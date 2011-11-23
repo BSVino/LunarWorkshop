@@ -75,7 +75,7 @@ void CKinematic::Think()
 		float flRamp = SLerp(flLerp, 0.2f);
 
 		m_bLerping = true;
-		SetGlobalAngles(m_angLerpStart * (1-flRamp) + m_angLerpGoal * flRamp);
+		SetGlobalAngles(LerpValue(m_angLerpStart, m_angLerpGoal, flRamp));
 		m_bLerping = false;
 
 		if (flRamp >= 1)
