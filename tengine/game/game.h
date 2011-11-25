@@ -20,6 +20,8 @@ public:
 public:
 	virtual void								Spawn();
 
+	virtual void								SetupGame(tstring sType) {};
+
 	virtual void								Simulate() {};
 	virtual bool								ShouldRunSimulation() { return true; };
 

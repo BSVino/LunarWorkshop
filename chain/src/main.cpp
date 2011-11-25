@@ -5,7 +5,6 @@ void CreateApplication(int argc, char** argv)
 	CChainWindow oWindow(argc, argv);
 
 	oWindow.OpenWindow();
-	oWindow.SetupEngine();
 	oWindow.Run();
 }
 

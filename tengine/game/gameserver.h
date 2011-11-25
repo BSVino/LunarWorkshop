@@ -162,5 +162,7 @@ extern class CGame* CreateGame();
 extern class CRenderer* CreateRenderer();
 extern class CCamera* CreateCamera();
 extern class CLevel* CreateLevel();
+extern class CHUDViewport* CreateHUD();
+extern tstring GetInitialGameMode();
 
 #endif

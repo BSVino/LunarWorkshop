@@ -9,6 +9,7 @@
 #include "chain_renderer.h"
 #include "chain_playercharacter.h"
 #include "story.h"
+#include "ui/hud.h"
 
 CGame* CreateGame()
 {
@@ -31,6 +32,17 @@ CLevel* CreateLevel()
 	return new CLevel();
 }
 
+CHUDViewport* CreateHUD()
+{
+	CHUDViewport* pHUD = new CChainHUD();
+	return pHUD;
+}
+
+tstring GetInitialGameMode()
+{
+	return "demo";
+}
+
 REGISTER_ENTITY(CChainGame);
 
 NETVAR_TABLE_BEGIN(CChainGame);
@@ -42,6 +54,18 @@ SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CChainGame);
 INPUTS_TABLE_END();
+
+void CChainGame::SetupGame(tstring sType)
+{
+	CChainPlayer* pPlayer = GameServer()->Create<CChainPlayer>("CChainPlayer");
+	Game()->AddPlayer(pPlayer);
+
+	CPlayerCharacter* pCharacter = GameServer()->Create<CPlayerCharacter>("CPlayerCharacter");
+	pCharacter->SetGlobalOrigin(Vector(0, 0, 0));
+	pPlayer->SetCharacter(pCharacter);
+
+	CStory* pStory = GameServer()->Create<CStory>("CStory");
+}
 
 void CChainGame::Precache()
 {

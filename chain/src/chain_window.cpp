@@ -27,34 +27,6 @@ CChainWindow::CChainWindow(int argc, char** argv)
 {
 }
 
-void CChainWindow::SetupEngine()
-{
-	mtsrand((size_t)time(NULL));
-
-	GameServer()->Initialize();
-
-	glgui::CRootPanel::Get()->AddControl(m_pHUD = new CChainHUD());
-
-	glgui::CRootPanel::Get()->SetLighting(false);
-	glgui::CRootPanel::Get()->Layout();
-
-	SetupChain();
-
-	GameServer()->SetLoading(false);
-}
-
-void CChainWindow::SetupChain()
-{
-	CChainPlayer* pPlayer = GameServer()->Create<CChainPlayer>("CChainPlayer");
-	Game()->AddPlayer(pPlayer);
-
-	CPlayerCharacter* pCharacter = GameServer()->Create<CPlayerCharacter>("CPlayerCharacter");
-	pCharacter->SetGlobalOrigin(Vector(0, 0, 0));
-	pPlayer->SetCharacter(pCharacter);
-
-	CStory* pStory = GameServer()->Create<CStory>("CStory");
-}
-
 void CChainWindow::RenderLoading()
 {
 	glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);

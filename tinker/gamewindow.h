@@ -16,6 +16,10 @@ public:
 public:
 	void						OpenWindow();
 
+	void						CreateGame(const tstring& eRequestedGameType);
+	void						DestroyGame();
+	void						Restart(tstring sGameType);
+
 	void						Run();
 	virtual void				PreFrame();
 	virtual void				PostFrame();
@@ -48,6 +52,10 @@ protected:
 	bool						m_bHaveLastMouse;
 	int							m_iLastMouseX;
 	int							m_iLastMouseY;
+
+	class CHUDViewport*			m_pHUD;
+
+	tstring						m_sRestartGameMode;
 };
 
 inline CGameWindow* GameWindow()

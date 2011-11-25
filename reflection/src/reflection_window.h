@@ -14,7 +14,6 @@ public:
 	virtual eastl::string		WindowTitle() { return "Reflection"; }
 	virtual tstring				AppDirectory() { return _T("Reflection"); }
 
-	void						SetupEngine();
 	void						SetupReflection();
 
 	virtual void				RenderLoading();

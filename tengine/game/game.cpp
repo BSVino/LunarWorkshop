@@ -25,8 +25,6 @@ SAVEDATA_TABLE_END();
 INPUTS_TABLE_BEGIN(CGame);
 INPUTS_TABLE_END();
 
-CVar game_level("game_level", "");
-
 CGame::CGame()
 {
 }

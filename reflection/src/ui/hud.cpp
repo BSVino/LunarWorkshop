@@ -12,11 +12,6 @@
 #include "../reflection_player.h"
 #include "../token.h"
 
-CReflectionHUD::CReflectionHUD()
-	: glgui::CPanel(0, 0, glgui::CRootPanel::Get()->GetWidth(), glgui::CRootPanel::Get()->GetHeight())
-{
-}
-
 void CReflectionHUD::Paint(float x, float y, float w, float h)
 {
 	CPlayerCharacter* pPlayerCharacter = static_cast<CPlayerCharacter*>(ReflectionGame()->GetLocalPlayerCharacter());

@@ -16,4 +16,6 @@ void CLevel::OnReadData(const CData* pData)
 {
 	if (pData->GetKey() == _T("Name"))
 		m_sName = pData->GetValueTString();
+	else if (pData->GetKey() == _T("GameMode"))
+		m_sGameMode = pData->GetValueTString();
 }

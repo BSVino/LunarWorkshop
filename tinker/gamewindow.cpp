@@ -1,13 +1,19 @@
 #include "gamewindow.h"
 
+#include <time.h>
+
 #include <tinker_platform.h>
+#include <mtrand.h>
 
 #include <tinker/profiler.h>
+#include <tinker/cvar.h>
 #include <game/gameserver.h>
 #include <glgui/rootpanel.h>
 #include <game/camera.h>
 #include <renderer/renderer.h>
 #include <tengine/game/game.h>
+#include <ui/hudviewport.h>
+#include <game/level.h>
 
 CGameWindow::CGameWindow(int argc, char** argv)
 	: CApplication(argc, argv)
@@ -32,6 +38,19 @@ void CGameWindow::OpenWindow()
 
 	m_pRenderer = CreateRenderer();
 	m_pRenderer->Initialize();
+
+	mtsrand((size_t)time(NULL));
+
+	GameServer()->Initialize();
+
+	glgui::CRootPanel::Get()->AddControl(m_pHUD = CreateHUD());
+
+	glgui::CRootPanel::Get()->SetLighting(false);
+	glgui::CRootPanel::Get()->Layout();
+
+	GameServer()->SetLoading(false);
+
+	CApplication::Get()->SetMouseCursorEnabled(false);
 }
 
 CGameWindow::~CGameWindow()
@@ -43,8 +62,126 @@ CGameWindow::~CGameWindow()
 		delete m_pGameServer;
 }
 
+void LoadLevel(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+{
+	if (asTokens.size() == 1)
+	{
+		if (!GameServer())
+		{
+			TMsg("Use load_level 'levelpath' to specify the level.\n");
+			return;
+		}
+
+		CLevel* pLevel = GameServer()->GetLevel(CVar::GetCVarValue(_T("game_level")));
+
+		if (!pLevel)
+		{
+			TMsg(tstring(_T("Can't find file '")) + CVar::GetCVarValue(_T("game_level")) + _T("'.\n"));
+			return;
+		}
+
+		GameWindow()->CreateGame(pLevel->GetGameMode());
+		return;
+	}
+
+	CLevel* pLevel = GameServer()->GetLevel(asTokens[1]);
+
+	if (!pLevel)
+	{
+		TMsg(tstring(_T("Can't find file '")) + asTokens[1] + _T("'.\n"));
+		return;
+	}
+
+	CVar::SetCVar(_T("game_level"), pLevel->GetFile());
+
+	GameWindow()->CreateGame(pLevel->GetGameMode());
+
+	CApplication::CloseConsole();
+}
+
+CCommand load_level("load_level", ::LoadLevel);
+CVar game_mode("game_mode", "");		// Are we in the menu or in the game or what?
+CVar game_level("game_level", "");
+
+void CGameWindow::CreateGame(const tstring& eRequestedGameMode)
+{
+	game_mode.SetValue(eRequestedGameMode);
+
+	// Suppress all network commands until the game is done loading.
+	GameNetwork()->SetLoading(true);
+
+	RenderLoading();
+
+	mtsrand((size_t)time(NULL));
+
+	const char* pszPort = GetCommandLineSwitchValue("--port");
+	int iPort = pszPort?atoi(pszPort):0;
+
+	if (!m_pGameServer)
+	{
+		m_pHUD = CreateHUD();
+		glgui::CRootPanel::Get()->AddControl(m_pHUD);
+
+		m_pGameServer = new CGameServer();
+
+		if (!m_pRenderer)
+		{
+			m_pRenderer = CreateRenderer();
+			m_pRenderer->Initialize();
+		}
+	}
+
+	if (GameServer())
+	{
+		GameServer()->SetServerPort(iPort);
+		GameServer()->Initialize();
+
+		GameNetwork()->SetCallbacks(m_pGameServer, CGameServer::ClientConnectCallback, CGameServer::ClientEnterGameCallback, CGameServer::ClientDisconnectCallback);
+	}
+
+	// Now turn the network on and connect all clients.
+	GameNetwork()->SetLoading(false);
+
+	// Must set player nickname after teams have been set up or it won't stick.
+	if (GameServer())
+		GameServer()->SetPlayerNickname("");
+
+	glgui::CRootPanel::Get()->Layout();
+
+	Game()->SetupGame(game_mode.GetValue());
+
+	GameServer()->SetLoading(false);
+}
+
+void CGameWindow::DestroyGame()
+{
+	TMsg(_T("Destroying game.\n"));
+
+	RenderLoading();
+
+	if (m_pGameServer)
+		delete m_pGameServer;
+
+	if (m_pHUD)
+	{
+		glgui::CRootPanel::Get()->RemoveControl(m_pHUD);
+		delete m_pHUD;
+	}
+
+	m_pGameServer = NULL;
+	m_pHUD = NULL;
+}
+
+void CGameWindow::Restart(tstring sGameMode)
+{
+	m_sRestartGameMode = sGameMode;
+	GameServer()->Halt();
+}
+
 void CGameWindow::Run()
 {
+	CreateGame(GetInitialGameMode());
+
 	while (IsOpen())
 	{
 		CProfiler::BeginFrame();
@@ -57,8 +194,8 @@ void CGameWindow::Run()
 
 			if (GameServer()->IsHalting())
 			{
-				//DestroyGame();
-				//CreateGame(m_eRestartAction);
+				DestroyGame();
+				CreateGame(m_sRestartGameMode);
 			}
 
 			float flTime = GetTime();
@@ -73,8 +210,8 @@ void CGameWindow::Run()
 				}
 				else if (GameServer()->IsClient() && !GameNetwork()->IsConnected())
 				{
-					//DestroyGame();
-					//CreateGame(GAMETYPE_MENU);
+					DestroyGame();
+					CreateGame(m_sRestartGameMode);
 				}
 				else
 				{

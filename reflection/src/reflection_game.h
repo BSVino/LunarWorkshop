@@ -8,6 +8,8 @@ class CReflectionGame : public CGame
 	REGISTER_ENTITY_CLASS(CReflectionGame, CGame);
 
 public:
+	virtual void				SetupGame(tstring sType);
+
 	virtual void				Precache();
 
 	virtual void				Think();

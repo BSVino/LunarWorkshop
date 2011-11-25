@@ -12,14 +12,18 @@ public:
 	void					ReadFromData(const class CData* pData);
 	virtual void			OnReadData(const class CData* pData);
 
-	tstring					GetName() { return m_sName; }
-	tstring					GetFile() { return m_sFile; }
+	const tstring&			GetName() { return m_sName; }
+	const tstring&			GetFile() { return m_sFile; }
 
-	void					SetFile(tstring sFile) { m_sFile = sFile; }
+	void					SetFile(const tstring& sFile) { m_sFile = sFile; }
+
+	const tstring&			GetGameMode() { return m_sGameMode; }
 
 protected:
 	tstring					m_sName;
 	tstring					m_sFile;
+
+	tstring					m_sGameMode;
 };
 
 #endif

@@ -5,7 +5,6 @@ void CreateApplication(int argc, char** argv)
 	CReflectionWindow oWindow(argc, argv);
 
 	oWindow.OpenWindow();
-	oWindow.SetupEngine();
 	oWindow.Run();
 }
 
