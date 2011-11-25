@@ -22,7 +22,7 @@ void CDataSerializer::Read(std::basic_istream<tchar>& sStream, CData* pData)
 	{
 		sLine = tstring(szLine);
 
-		size_t iComment = sLine.find(_T("//"));
+		size_t iComment = sLine.find("//");
 		if (iComment != eastl::string::npos)
 			sLine = sLine.substr(0, iComment);
 
@@ -44,12 +44,12 @@ void CDataSerializer::Read(std::basic_istream<tchar>& sStream, CData* pData)
 		}
 
 		eastl::vector<tstring> asTokens;
-		tstrtok(sLine, asTokens, _T(":"));
+		tstrtok(sLine, asTokens, ":");
 
 		if (asTokens.size() == 1)
 			pLastData = pCurrentData->AddChild(trim(sLine));
 		else if (asTokens.size() >= 2)
-			pLastData = pCurrentData->AddChild(trim(asTokens[0]), trim(sLine.substr(sLine.find(_T(':'))+1)));
+			pLastData = pCurrentData->AddChild(trim(asTokens[0]), trim(sLine.substr(sLine.find(':')+1)));
 	}
 }
 
@@ -57,22 +57,22 @@ static void SaveData(std::basic_ostream<tchar>& sStream, CData* pData, size_t iL
 {
 	tstring sTabs;
 	for (size_t i = 0; i < iLevel; i++)
-		sTabs += _T("\t");
+		sTabs += "\t";
 
 	for (size_t i = 0; i < pData->GetNumChildren(); i++)
 	{
 		CData* pChild = pData->GetChild(i);
 
 		if (pChild->GetValueTString().length())
-			sStream << (sTabs + pChild->GetKey() + _T(": ") + pChild->GetValueTString() + _T("\n")).c_str();
+			sStream << (sTabs + pChild->GetKey() + ": " + pChild->GetValueTString() + "\n").c_str();
 		else
-			sStream << (sTabs + pChild->GetKey() + _T("\n")).c_str();
+			sStream << (sTabs + pChild->GetKey() + "\n").c_str();
 
 		if (pChild->GetNumChildren())
 		{
-			sStream << (sTabs + _T("{\n")).c_str();
+			sStream << (sTabs + "{\n").c_str();
 			SaveData(sStream, pChild, iLevel+1);
-			sStream << (sTabs + _T("}\n")).c_str();
+			sStream << (sTabs + "}\n").c_str();
 		}
 	}
 }

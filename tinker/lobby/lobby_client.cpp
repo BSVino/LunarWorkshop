@@ -26,7 +26,7 @@ SERVER_COMMAND(CONNECTION_LOBBY, LobbyInfo)
 		return;
 	}
 
-	tstring sValue = sParameters.substr(sParameters.find(_T(' '))+1);
+	tstring sValue = sParameters.substr(sParameters.find(' ')+1);
 	CGameLobbyClient::R_UpdateLobby(pCmd->Arg(0), sValue);
 }
 
@@ -38,9 +38,9 @@ SERVER_COMMAND(CONNECTION_LOBBY, LobbyPlayerInfo)
 		return;
 	}
 
-	if (pCmd->Arg(1) == _T("add"))
+	if (pCmd->Arg(1) == "add")
 		CGameLobbyClient::R_AddPlayer(pCmd->ArgAsUInt(0), pCmd->ArgAsUInt(2));
-	else if (pCmd->Arg(1) == _T("remove"))
+	else if (pCmd->Arg(1) == "remove")
 		CGameLobbyClient::R_RemovePlayer(pCmd->ArgAsUInt(0));
 	else
 	{
@@ -53,7 +53,7 @@ SERVER_COMMAND(CONNECTION_LOBBY, LobbyPlayerInfo)
 			return;
 		}
 
-		tstring sValue = sParameters.substr(sParameters.find(_T(' '), sParameters.find(_T(' '))+1)+1);
+		tstring sValue = sParameters.substr(sParameters.find(' ', sParameters.find(' ')+1)+1);
 		CGameLobbyClient::R_UpdatePlayer(pCmd->ArgAsUInt(0), pCmd->Arg(1), sValue);
 	}
 }
@@ -85,9 +85,9 @@ void CGameLobbyClient::S_JoinLobby(size_t iLobby)
 void CGameLobbyClient::S_LeaveLobby()
 {
 	if (CVar::GetCVarBool("lobby_debug"))
-		TMsg(_T("CGameLobbyClient::S_LeaveLobby()\n"));
+		TMsg("CGameLobbyClient::S_LeaveLobby()\n");
 
-	::LeaveLobby.RunCommand(_T(""));
+	::LeaveLobby.RunCommand("");
 	LobbyNetwork()->Disconnect();
 	s_aClients.clear();
 
@@ -200,12 +200,12 @@ void CGameLobbyClient::R_RemovePlayer(size_t iID)
 
 void CGameLobbyClient::S_AddLocalPlayer()
 {
-	::AddLocalPlayer.RunCommand(_T(""));
+	::AddLocalPlayer.RunCommand("");
 }
 
 void CGameLobbyClient::S_AddBot()
 {
-	::AddBot.RunCommand(_T(""));
+	::AddBot.RunCommand("");
 }
 
 void CGameLobbyClient::S_RemovePlayer(size_t iID)
@@ -215,7 +215,7 @@ void CGameLobbyClient::S_RemovePlayer(size_t iID)
 
 void CGameLobbyClient::S_UpdateLobby(const tstring& sKey, const tstring& sValue)
 {
-	::UpdateLobbyInfo.RunCommand(sKey + _T(" ") + sValue);
+	::UpdateLobbyInfo.RunCommand(sKey + " " + sValue);
 }
 
 void CGameLobbyClient::R_UpdateLobby(const tstring& sKey, const tstring& sValue)
@@ -230,7 +230,7 @@ tstring CGameLobbyClient::L_GetInfoValue(const tstring& sKey)
 	eastl::map<tstring, tstring>::iterator it = s_asInfo.find(sKey);
 
 	if (it == s_asInfo.end())
-		return _T("");
+		return "";
 
 	return it->second;
 }
@@ -242,7 +242,7 @@ void CGameLobbyClient::S_UpdatePlayer(const tstring& sKey, const tstring& sValue
 
 void CGameLobbyClient::S_UpdatePlayer(size_t iID, const tstring& sKey, const tstring& sValue)
 {
-	::UpdatePlayerInfo.RunCommand(sprintf(tstring(_T("%d ")) + sKey + _T(" ") + sValue, iID));
+	::UpdatePlayerInfo.RunCommand(sprintf(tstring("%d ") + sKey + " " + sValue, iID));
 }
 
 void CGameLobbyClient::R_UpdatePlayer(size_t iID, const tstring& sKey, const tstring& sValue)
@@ -259,7 +259,7 @@ void CGameLobbyClient::R_UpdatePlayer(size_t iID, const tstring& sKey, const tst
 void CGameLobbyClient::R_Clear()
 {
 	if (CVar::GetCVarBool("lobby_debug"))
-		TMsg(_T("CGameLobbyClient::R_Clear()\n"));
+		TMsg("CGameLobbyClient::R_Clear()\n");
 
 	s_aClients.clear();
 	s_asInfo.clear();
@@ -272,7 +272,7 @@ bool CGameLobbyClient::L_IsHost()
 	if (!pPlayer)
 		return false;
 
-	return pPlayer->GetInfoValue(_T("host")) == _T("1");
+	return pPlayer->GetInfoValue("host") == "1";
 }
 
 void CGameLobbyClient::SetLobbyUpdateCallback(INetworkListener::Callback pfnCallback)

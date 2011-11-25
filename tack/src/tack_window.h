@@ -12,7 +12,7 @@ public:
 
 public:
 	virtual eastl::string		WindowTitle() { return "Tack Johnson: Attorney At Law!"; }
-	virtual tstring				AppDirectory() { return _T("TackJohnson"); }
+	virtual tstring				AppDirectory() { return "TackJohnson"; }
 
 	void						SetupEngine();
 	void						SetupTack();

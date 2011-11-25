@@ -22,12 +22,12 @@ bool TPortal_IsAvailable()
 
 tstring TPortal_GetPortalIdentifier()
 {
-	return _T("Tinker");
+	return "Tinker";
 }
 
 tstring TPortal_GetPlayerNickname()
 {
-	return _T("");
+	return "";
 }
 
 #endif

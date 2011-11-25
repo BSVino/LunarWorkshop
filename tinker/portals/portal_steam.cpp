@@ -40,13 +40,13 @@ bool TPortal_IsAvailable()
 
 tstring TPortal_GetPortalIdentifier()
 {
-	return _T("Steam";
+	return "Steam";
 }
 
 tstring TPortal_GetPlayerNickname()
 {
 	if (!SteamFriends())
-		return _T("";
+		return "";
 
 	const char* pszNickname = SteamFriends()->GetPersonaName();
 

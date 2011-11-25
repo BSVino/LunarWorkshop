@@ -66,7 +66,7 @@ void CShaderLibrary::CompileShaders()
 	Get()->ClearLog();
 
 	if (GameServer()->GetWorkListener())
-		GameServer()->GetWorkListener()->SetAction(_T("Compiling shaders"), Get()->m_aShaders.size());
+		GameServer()->GetWorkListener()->SetAction("Compiling shaders", Get()->m_aShaders.size());
 
 	bool bShadersCompiled = true;
 	for (size_t i = 0; i < Get()->m_aShaders.size(); i++)
@@ -104,12 +104,12 @@ void CShaderLibrary::WriteLog(const char* pszLog, const char* pszShaderText)
 	if (!pszLog || strlen(pszLog) == 0)
 		return;
 
-	tstring sFile = GetAppDataDirectory(Application()->AppDirectory(), _T("shaders.txt"));
+	tstring sFile = GetAppDataDirectory(Application()->AppDirectory(), "shaders.txt");
 
 	if (m_bLogNeedsClearing)
 	{
 		// Only clear it if we're actually going to write to it so we don't create the file.
-		FILE* fp = tfopen(sFile, _T("w"));
+		FILE* fp = tfopen(sFile, "w");
 		fclose(fp);
 		m_bLogNeedsClearing = false;
 	}
@@ -118,7 +118,7 @@ void CShaderLibrary::WriteLog(const char* pszLog, const char* pszShaderText)
 	strncpy(szText, pszShaderText, 99);
 	szText[99] = '\0';
 
-	FILE* fp = tfopen(sFile, _T("a"));
+	FILE* fp = tfopen(sFile, "a");
 	fprintf(fp, "Shader compile output %d\n", (int)time(NULL));
 	fprintf(fp, "%s\n\n", pszLog);
 	fprintf(fp, "%s...\n\n", szText);

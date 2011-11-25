@@ -23,7 +23,7 @@ public:
 	void						DumpGLInfo();
 
 	virtual eastl::string		WindowTitle() { return "Tinker"; }
-	virtual tstring				AppDirectory() { return _T("Tinker"); }
+	virtual tstring				AppDirectory() { return "Tinker"; }
 
 	void						SwapBuffers();
 	float						GetTime();
@@ -134,7 +134,7 @@ inline CApplication* Application()
 // Tinker messages and errors
 #undef TMsg
 #define TMsg CApplication::PrintConsole
-#define TError(x) CApplication::PrintConsole(tstring(_T("Error: ")) + x)
+#define TError(x) CApplication::PrintConsole(tstring("Error: ") + x)
 
 typedef void (*CreateApplicationCallback)(int argc, char** argv);
 void CreateApplicationWithErrorHandling(CreateApplicationCallback pfnCallback, int argc, char** argv);

@@ -45,10 +45,10 @@ CLIENT_COMMAND(CONNECTION_LOBBY, UpdateLobbyInfo)
 	if (!pPlayer)
 		return;
 
-	if (pPlayer->GetInfoValue(_T("host")) != _T("1"))
+	if (pPlayer->GetInfoValue("host") != "1")
 		return;
 
-	tstring sValue = sParameters.substr(sParameters.find(_T(' '))+1);
+	tstring sValue = sParameters.substr(sParameters.find(' ')+1);
 	CGameLobbyServer::UpdateLobby(CGameLobbyServer::GetPlayerLobby(iID), pCmd->Arg(0), sValue);
 }
 
@@ -70,10 +70,10 @@ CLIENT_COMMAND(CONNECTION_LOBBY, UpdatePlayerInfo)
 	if (!pPlayer)
 		return;
 
-	if (pPlayer->GetInfoValue(_T("host")) != _T("1") && pPlayer->iClient != iClient)
+	if (pPlayer->GetInfoValue("host") != "1" && pPlayer->iClient != iClient)
 		return;
 
-	tstring sValue = sParameters.substr(sParameters.find(_T(' '), sParameters.find(_T(' '))+1)+1);
+	tstring sValue = sParameters.substr(sParameters.find(' ', sParameters.find(' ')+1)+1);
 	CGameLobbyServer::UpdatePlayer(pCmd->ArgAsUInt(0), pCmd->Arg(1), sValue);
 }
 
@@ -87,13 +87,13 @@ CLIENT_COMMAND(CONNECTION_LOBBY, AddLocalPlayer)
 	if (!pSender)
 		return;
 
-	if (pSender->GetInfoValue(_T("host")) != _T("1"))
+	if (pSender->GetInfoValue("host") != "1")
 		return;
 
 	size_t iID = CGameLobbyServer::AddPlayer(iLobby, NETWORK_LOCAL);
-	CGameLobbyServer::UpdatePlayer(iID, _T("bot"), _T("0"));
-	CGameLobbyServer::UpdatePlayer(iID, _T("name"), _T("Player"));
-	CGameLobbyServer::UpdatePlayer(iID, _T("ready"), _T("1"));
+	CGameLobbyServer::UpdatePlayer(iID, "bot", "0");
+	CGameLobbyServer::UpdatePlayer(iID, "name", "Player");
+	CGameLobbyServer::UpdatePlayer(iID, "ready", "1");
 }
 
 CLIENT_COMMAND(CONNECTION_LOBBY, AddBot)
@@ -106,13 +106,13 @@ CLIENT_COMMAND(CONNECTION_LOBBY, AddBot)
 	if (!pSender)
 		return;
 
-	if (pSender->GetInfoValue(_T("host")) != _T("1"))
+	if (pSender->GetInfoValue("host") != "1")
 		return;
 
 	size_t iID = CGameLobbyServer::AddPlayer(iLobby, NETWORK_BOT);
-	CGameLobbyServer::UpdatePlayer(iID, _T("bot"), _T("1"));
-	CGameLobbyServer::UpdatePlayer(iID, _T("name"), _T("Bot"));
-	CGameLobbyServer::UpdatePlayer(iID, _T("ready"), _T("1"));
+	CGameLobbyServer::UpdatePlayer(iID, "bot", "1");
+	CGameLobbyServer::UpdatePlayer(iID, "name", "Bot");
+	CGameLobbyServer::UpdatePlayer(iID, "ready", "1");
 }
 
 CLIENT_COMMAND(CONNECTION_LOBBY, RemovePlayer)
@@ -131,7 +131,7 @@ CLIENT_COMMAND(CONNECTION_LOBBY, RemovePlayer)
 	if (!pSender)
 		return;
 
-	if (pSender->GetInfoValue(_T("host")) != _T("1"))
+	if (pSender->GetInfoValue("host") != "1")
 		return;
 
 	CGameLobbyServer::RemovePlayer(pCmd->ArgAsUInt(0));
@@ -318,8 +318,8 @@ void CGameLobbyServer::ClientEnterGame(int iConnection, class INetworkListener*,
 		}
 	}
 
-	if (s_aLobbies[0].GetInfoValue(_T("gameactive")) == _T("1"))
-		::BeginGame.RunCommand(_T(""), iClient);
+	if (s_aLobbies[0].GetInfoValue("gameactive") == "1")
+		::BeginGame.RunCommand("", iClient);
 }
 
 void CGameLobbyServer::ClientDisconnect(int iConnection, class INetworkListener*, class CNetworkParameters* pParameters)
@@ -357,7 +357,7 @@ void CGameLobby::Initialize()
 	m_aClients.clear();
 	m_asInfo.clear();
 
-	m_asInfo[_T("gameactive")] = _T("0");
+	m_asInfo["gameactive"] = "0";
 }
 
 void CGameLobby::Shutdown()
@@ -434,7 +434,7 @@ void CGameLobby::RemovePlayer(size_t iID)
 	if (lobby_debug.GetBool())
 		TMsg(sprintf(tstring("CGameLobby::RemovePlayer(%d)\n"), iID));
 
-	::ServerChatSay.RunCommand(CONNECTION_LOBBY, GetPlayer(iPlayer)->GetInfoValue(_T("name")) + _T(" has left the lobby.\n"));
+	::ServerChatSay.RunCommand(CONNECTION_LOBBY, GetPlayer(iPlayer)->GetInfoValue("name") + " has left the lobby.\n");
 
 	m_aClients.erase(m_aClients.begin()+iPlayer);
 
@@ -445,7 +445,7 @@ void CGameLobby::UpdateInfo(const tstring& sKey, const tstring& sValue)
 {
 	m_asInfo[sKey] = sValue;
 
-	tstring sCommand = sprintf(sKey + _T(" ") + sValue);
+	tstring sCommand = sprintf(sKey + " " + sValue);
 	::LobbyInfo.RunCommand(sCommand);
 }
 
@@ -454,7 +454,7 @@ tstring CGameLobby::GetInfoValue(const tstring& sKey)
 	eastl::map<tstring, tstring>::iterator it = m_asInfo.find(sKey);
 
 	if (it == m_asInfo.end())
-		return _T("");
+		return "";
 
 	return it->second;
 }
@@ -466,23 +466,23 @@ void CGameLobby::UpdatePlayer(size_t iID, const tstring& sKey, const tstring& sV
 		return;
 
 	tstring sPreviousValue = pPlayer->asInfo[sKey];
-	if (sKey == _T("name"))
+	if (sKey == "name")
 	{
-		if (sPreviousValue == _T("") && sValue.length() > 0)
-			::ServerChatSay.RunCommand(CONNECTION_LOBBY, sValue + _T(" has joined the lobby.\n"));
+		if (sPreviousValue == "" && sValue.length() > 0)
+			::ServerChatSay.RunCommand(CONNECTION_LOBBY, sValue + " has joined the lobby.\n");
 		else if (sPreviousValue != sValue)
-			::ServerChatSay.RunCommand(CONNECTION_LOBBY, sPreviousValue + _T(" is now known as ") + sValue + _T(".\n"));
+			::ServerChatSay.RunCommand(CONNECTION_LOBBY, sPreviousValue + " is now known as " + sValue + ".\n");
 	}
 
 	pPlayer->asInfo[sKey] = sValue;
 
-	tstring sCommand = sprintf(tstring(_T("%d ")) + sKey + _T(" ") + sValue, iID);
+	tstring sCommand = sprintf(tstring("%d ") + sKey + " " + sValue, iID);
 	::LobbyPlayerInfo.RunCommand(sCommand);
 
 	bool bBeginGame = true;
 	for (size_t i = 0; i < m_aClients.size(); i++)
 	{
-		if (m_aClients[i].GetInfoValue(_T("ready")) != _T("1"))
+		if (m_aClients[i].GetInfoValue("ready") != "1")
 		{
 			bBeginGame = false;
 			break;
@@ -494,18 +494,18 @@ void CGameLobby::UpdatePlayer(size_t iID, const tstring& sKey, const tstring& sV
 
 	if (bBeginGame)
 	{
-		::BeginGame.RunCommand(_T(""));
-		m_asInfo[_T("gameactive")] = _T("1");
+		::BeginGame.RunCommand("");
+		m_asInfo["gameactive"] = "1";
 	}
 }
 
 void CGameLobby::SendFullUpdate(size_t iClient)
 {
-	::FullUpdate.RunCommand(_T(""), iClient);
+	::FullUpdate.RunCommand("", iClient);
 
 	for (eastl::map<tstring, tstring>::iterator it = m_asInfo.begin(); it != m_asInfo.end(); it++)
 	{
-		tstring sCommand = it->first + _T(" ") + it->second;
+		tstring sCommand = it->first + " " + it->second;
 		::LobbyInfo.RunCommand(sCommand, iClient);
 	}
 
@@ -517,7 +517,7 @@ void CGameLobby::SendFullUpdate(size_t iClient)
 
 		for (eastl::map<tstring, tstring>::iterator it = pPlayer->asInfo.begin(); it != pPlayer->asInfo.end(); it++)
 		{
-			tstring sCommand = sprintf(tstring(_T("%d ")) + it->first + _T(" ") + it->second, pPlayer->iID);
+			tstring sCommand = sprintf(tstring("%d ") + it->first + " " + it->second, pPlayer->iID);
 			::LobbyPlayerInfo.RunCommand(sCommand, iClient);
 		}
 	}

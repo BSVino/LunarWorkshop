@@ -31,7 +31,7 @@
 
 CGameServer* CGameServer::s_pGameServer = NULL;
 
-ConfigFile g_cfgEngine(_T("scripts/engine.cfg"));
+ConfigFile g_cfgEngine("scripts/engine.cfg");
 
 CGameServer::CGameServer(IWorkListener* pWorkListener)
 {
@@ -42,7 +42,7 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 
 	m_pWorkListener = pWorkListener;
 
-	m_iMaxEnts = g_cfgEngine.read(_T("MaxEnts"), 1024);
+	m_iMaxEnts = g_cfgEngine.read("MaxEnts", 1024);
 
 	CBaseEntity::s_apEntityList.resize(m_iMaxEnts);
 
@@ -63,14 +63,14 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 	if (m_pWorkListener)
 		m_pWorkListener->BeginProgress();
 
-	TMsg("Creating physics model...");
+	TMsg("Creating physics model... ");
 	m_pPhysicsManager = new CPhysicsManager();
 	TMsg("Done\n");
 
-	TMsg(_T("Precaching entities... "));
+	TMsg("Precaching entities... ");
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Loading polygons"), CBaseEntity::GetEntityRegistration().size());
+		m_pWorkListener->SetAction("Loading polygons", CBaseEntity::GetEntityRegistration().size());
 
 	size_t i = 0;
 	for (eastl::map<tstring, CEntityRegistration>::iterator it = CBaseEntity::GetEntityRegistration().begin(); it != CBaseEntity::GetEntityRegistration().end(); it++)
@@ -81,7 +81,7 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 		if (m_pWorkListener)
 			m_pWorkListener->WorkProgress(++i);
 	}
-	TMsg(_T("Done.\n"));
+	TMsg("Done.\n");
 	TMsg(sprintf(tstring("%d models, %d textures, %d sounds and %d particle systems precached.\n"), CModelLibrary::GetNumModels(), CTextureLibrary::GetNumTextures(), CSoundLibrary::GetNumSounds(), CParticleSystemLibrary::GetNumParticleSystems()));
 
 	mtsrand(iPostSeed);
@@ -105,7 +105,7 @@ CGameServer::~CGameServer()
 		m_pWorkListener->BeginProgress();
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Scrubbing database"), CBaseEntity::GetEntityRegistration().size());
+		m_pWorkListener->SetAction("Scrubbing database", CBaseEntity::GetEntityRegistration().size());
 
 	delete m_pPhysicsManager;
 
@@ -147,7 +147,7 @@ void CGameServer::Initialize()
 	m_bGotClientInfo = false;
 	m_bLoading = true;
 
-	TMsg(_T("Initializing game server\n"));
+	TMsg("Initializing game server\n");
 
 	ReadLevels();
 
@@ -166,7 +166,7 @@ void CGameServer::Initialize()
 		m_pWorkListener->EndProgress();
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Pending network actions"), 0);
+		m_pWorkListener->SetAction("Pending network actions", 0);
 }
 
 void CGameServer::ReadLevels()
@@ -177,9 +177,9 @@ void CGameServer::ReadLevels()
 	m_apLevels.clear();
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Reading meta-structures"), 0);
+		m_pWorkListener->SetAction("Reading meta-structures", 0);
 
-	ReadLevels(_T("levels"));
+	ReadLevels("levels");
 
 	TMsg(sprintf(tstring("Read %d levels from disk.\n"), m_apLevels.size()));
 }
@@ -190,9 +190,9 @@ void CGameServer::ReadLevels(tstring sDirectory)
 
 	for (size_t i = 0; i < asFiles.size(); i++)
 	{
-		tstring sFile = sDirectory + _T("/") + asFiles[i];
+		tstring sFile = sDirectory + "/" + asFiles[i];
 
-		if (IsFile(sFile) && sFile.substr(sFile.length()-4).compare(_T(".txt")) == 0)
+		if (IsFile(sFile) && sFile.substr(sFile.length()-4).compare(".txt") == 0)
 			ReadLevel(sFile);
 
 		if (IsDirectory(sFile))
@@ -208,7 +208,7 @@ void CGameServer::ReadLevel(tstring sFile)
 	CDataSerializer::Read(f, pData);
 
 	CLevel* pLevel = CreateLevel();
-	pLevel->SetFile(str_replace(sFile, _T("\\"), _T("/")));
+	pLevel->SetFile(str_replace(sFile, "\\", "/"));
 	pLevel->ReadFromData(pData);
 	m_apLevels.push_back(pLevel);
 
@@ -217,18 +217,18 @@ void CGameServer::ReadLevel(tstring sFile)
 
 CLevel* CGameServer::GetLevel(tstring sFile)
 {
-	sFile = str_replace(sFile, _T("\\"), _T("/"));
+	sFile = str_replace(sFile, "\\", "/");
 	for (size_t i = 0; i < m_apLevels.size(); i++)
 	{
 		CLevel* pLevel = m_apLevels[i];
 		tstring sLevelFile = pLevel->GetFile();
 		if (sLevelFile == sFile)
 			return pLevel;
-		if (sLevelFile == sFile + _T(".txt"))
+		if (sLevelFile == sFile + ".txt")
 			return pLevel;
-		if (sLevelFile == tstring(_T("levels/")) + sFile)
+		if (sLevelFile == tstring("levels/") + sFile)
 			return pLevel;
-		if (sLevelFile == tstring(_T("levels/")) + sFile + _T(".txt"))
+		if (sLevelFile == tstring("levels/") + sFile + ".txt")
 			return pLevel;
 	}
 
@@ -298,7 +298,7 @@ SERVER_GAME_COMMAND(CreateEntity)
 
 void CGameServer::ClientEnterGame(int iClient)
 {
-	TMsg(sprintf(tstring("Client %d (") + GameNetwork()->GetClientNickname(iClient) + _T(") entering game.\n"), iClient));
+	TMsg(sprintf(tstring("Client %d (") + GameNetwork()->GetClientNickname(iClient) + ") entering game.\n", iClient));
 
 	if (GetGame())
 		GetGame()->OnClientEnterGame(iClient);
@@ -335,11 +335,11 @@ void CGameServer::ClientDisconnect(int iClient)
 {
 	if (!GameNetwork()->IsHost() && iClient == GameNetwork()->GetClientID())
 	{
-		TMsg(_T("Disconnected from server.\n"));
+		TMsg("Disconnected from server.\n");
 	}
 	else
 	{
-		TMsg(sprintf(tstring("Client %d (") + GameNetwork()->GetClientNickname(iClient) + _T(") disconnected.\n"), iClient));
+		TMsg(sprintf(tstring("Client %d (") + GameNetwork()->GetClientNickname(iClient) + ") disconnected.\n", iClient));
 
 		CApplication::Get()->OnClientDisconnect(iClient);
 
@@ -628,7 +628,7 @@ bool CGameServer::LoadFromFile(const tchar* pFileName)
 	Game()->EnterGame();
 
 	if (GameServer()->GetWorkListener())
-		GameServer()->GetWorkListener()->SetAction(_T("Encountering resistance"), 0);
+		GameServer()->GetWorkListener()->SetAction("Encountering resistance", 0);
 
 	GameServer()->SetLoading(false);
 
@@ -741,7 +741,7 @@ void CGameServer::DestroyAllEntities(const eastl::vector<eastl::string>& asSpare
 		return;
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Locating dead nodes"), GameServer()->GetMaxEntities());
+		m_pWorkListener->SetAction("Locating dead nodes", GameServer()->GetMaxEntities());
 
 	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
 	{
@@ -769,7 +769,7 @@ void CGameServer::DestroyAllEntities(const eastl::vector<eastl::string>& asSpare
 	}
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Clearing buffers"), GameServer()->m_ahDeletedEntities.size());
+		m_pWorkListener->SetAction("Clearing buffers", GameServer()->m_ahDeletedEntities.size());
 
 	for (size_t i = 0; i < GameServer()->m_ahDeletedEntities.size(); i++)
 	{
@@ -866,7 +866,7 @@ void ShowStatus(class CCommand* pCommand, eastl::vector<tstring>& asTokens, cons
 	}
 }
 
-CCommand status(_T("status"), ::ShowStatus);
+CCommand status("status", ::ShowStatus);
 
 void KickPlayer(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
 {
@@ -876,4 +876,4 @@ void KickPlayer(class CCommand* pCommand, eastl::vector<tstring>& asTokens, cons
 	GameNetwork()->DisconnectClient(stoi(asTokens[0]));
 }
 
-CCommand kick(_T("kick"), ::KickPlayer);
+CCommand kick("kick", ::KickPlayer);

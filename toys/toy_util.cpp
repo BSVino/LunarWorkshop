@@ -117,7 +117,7 @@ bool CToyUtil::Write(const tstring& sFilename)
 		}
 	}
 
-	FILE* fp = tfopen(sFilename, _T("w"));
+	FILE* fp = tfopen(sFilename, "w");
 
 	TAssert(fp);
 	if (!fp)
@@ -152,7 +152,7 @@ bool CToyUtil::Write(const tstring& sFilename)
 
 	if (m_aaflData.size())
 	{
-		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".mesh.toy", _T("w"));
+		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".mesh.toy", "w");
 
 		TAssert(fp);
 		if (!fp)
@@ -176,7 +176,7 @@ bool CToyUtil::Write(const tstring& sFilename)
 
 	if (m_avecPhysVerts.size())
 	{
-		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".phys.toy", _T("w"));
+		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".phys.toy", "w");
 
 		TAssert(fp);
 		if (!fp)
@@ -200,7 +200,7 @@ bool CToyUtil::Write(const tstring& sFilename)
 
 void CToyUtil::Read(const tstring& sFilename, CToy* pToy)
 {
-	FILE* fp = tfopen(sFilename, _T("r"));
+	FILE* fp = tfopen(sFilename, "r");
 
 	TAssert(fp);
 	if (!fp)
@@ -220,7 +220,7 @@ void CToyUtil::Read(const tstring& sFilename, CToy* pToy)
 
 	if (pToy->GetNumMaterials())
 	{
-		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".mesh.toy", _T("r"));
+		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".mesh.toy", "r");
 
 		fseek(fp, 0L, SEEK_END);
 		iToySize = ftell(fp);
@@ -235,7 +235,7 @@ void CToyUtil::Read(const tstring& sFilename, CToy* pToy)
 		fclose(fp);
 	}
 
-	fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".phys.toy", _T("r"));
+	fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".phys.toy", "r");
 	if (fp)
 	{
 		fseek(fp, 0L, SEEK_END);

@@ -72,11 +72,11 @@ void LoadLevel(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const
 			return;
 		}
 
-		CLevel* pLevel = GameServer()->GetLevel(CVar::GetCVarValue(_T("game_level")));
+		CLevel* pLevel = GameServer()->GetLevel(CVar::GetCVarValue("game_level"));
 
 		if (!pLevel)
 		{
-			TMsg(tstring(_T("Can't find file '")) + CVar::GetCVarValue(_T("game_level")) + _T("'.\n"));
+			TMsg(tstring("Can't find file '") + CVar::GetCVarValue("game_level") + "'.\n");
 			return;
 		}
 
@@ -88,11 +88,11 @@ void LoadLevel(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const
 
 	if (!pLevel)
 	{
-		TMsg(tstring(_T("Can't find file '")) + asTokens[1] + _T("'.\n"));
+		TMsg(tstring("Can't find file '") + asTokens[1] + "'.\n");
 		return;
 	}
 
-	CVar::SetCVar(_T("game_level"), pLevel->GetFile());
+	CVar::SetCVar("game_level", pLevel->GetFile());
 
 	GameWindow()->CreateGame(pLevel->GetGameMode());
 
@@ -155,7 +155,7 @@ void CGameWindow::CreateGame(const tstring& eRequestedGameMode)
 
 void CGameWindow::DestroyGame()
 {
-	TMsg(_T("Destroying game.\n"));
+	TMsg("Destroying game.\n");
 
 	RenderLoading();
 

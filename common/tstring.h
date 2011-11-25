@@ -8,9 +8,6 @@
 typedef eastl::string tstring;
 typedef tstring::value_type tchar;
 
-// No support for the c++0x string literals yet
-#define _T(x) x
-
 #include "strutils.h"
 #include <string>
 
@@ -20,7 +17,7 @@ inline FILE* tfopen(const tstring& sFile, const tstring& sMode)
 	bool bHasB = false;
 	for (size_t i = 0; i < sBinaryMode.length(); i++)
 	{
-		if (sMode[i] == _T('b'))
+		if (sMode[i] == 'b')
 		{
 			bHasB = true;
 			break;
@@ -29,7 +26,7 @@ inline FILE* tfopen(const tstring& sFile, const tstring& sMode)
 
 	// Open all files in binary mode to preserve unicodeness.
 	if (!bHasB)
-		sBinaryMode = sMode + _T("b");
+		sBinaryMode = sMode + "b";
 
 	return fopen(convertstring<tchar, char>(sFile).c_str(), convertstring<tchar, char>(sBinaryMode).c_str());
 }

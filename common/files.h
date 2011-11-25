@@ -9,14 +9,14 @@ inline tstring GetFilename(const tstring& sFilename)
 	int i = -1;
 
 	while (++i < (int)sFilename.length())
-		if (sFilename[i] == _T('\\') || sFilename[i] == _T('/'))
+		if (sFilename[i] == '\\' || sFilename[i] == '/')
 			iLastChar = i;
 
 	tstring sReturn = sFilename.c_str() + iLastChar + 1;
 
 	i = -1;
 	while (++i < (int)sReturn.length())
-		if (sReturn[i] == _T('.'))
+		if (sReturn[i] == '.')
 			iLastChar = i;
 
 	if (iLastChar >= 0)
@@ -32,7 +32,7 @@ inline tstring GetFilenameAndExtension(const tstring& sFilename)
 	int i = -1;
 
 	while (++i < (int)sFilename.length())
-		if (sFilename[i] == _T('\\') || sFilename[i] == _T('/'))
+		if (sFilename[i] == '\\' || sFilename[i] == '/')
 			iLastChar = i;
 
 	tstring sReturn = sFilename.c_str() + iLastChar + 1;
@@ -47,7 +47,7 @@ inline tstring GetDirectory(const tstring& sFilename)
 	tstring sResult = sFilename;
 
 	while (++i < (int)sResult.length())
-		if (sResult[i] == _T('\\') || sResult[i] == _T('/'))
+		if (sResult[i] == '\\' || sResult[i] == '/')
 			iLastSlash = i;
 
 	if (iLastSlash >= 0)

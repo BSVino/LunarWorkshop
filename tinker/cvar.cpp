@@ -23,7 +23,7 @@ void CCommand::Run(tstring sCommand)
 	eastl::map<tstring, CCommand*>::iterator it = GetCommands().find(asTokens[0]);
 	if (it == GetCommands().end())
 	{
-		TMsg(_T("Unrecognized command.\n"));
+		TMsg("Unrecognized command.\n");
 		return;
 	}
 
@@ -125,9 +125,9 @@ void CVar::CalculateValues()
 
 	m_flValue = (float)atof(convertstring<tchar, char>(m_sValue).c_str());
 	m_iValue = atoi(convertstring<tchar, char>(m_sValue).c_str());
-	m_bValue = (m_sValue.comparei(_T("yes")) == 0 ||
-		m_sValue.comparei(_T("true")) == 0 ||
-		m_sValue.comparei(_T("on")) == 0 ||
+	m_bValue = (m_sValue.comparei("yes") == 0 ||
+		m_sValue.comparei("true") == 0 ||
+		m_sValue.comparei("on") == 0 ||
 		atoi(convertstring<tchar, char>(m_sValue).c_str()) != 0);
 
 	m_bDirtyValues = false;
@@ -174,7 +174,7 @@ tstring CVar::GetCVarValue(tstring sName)
 {
 	CVar* pVar = FindCVar(sName);
 	if (!pVar)
-		return _T("");
+		return "";
 
 	return pVar->GetValue();
 }

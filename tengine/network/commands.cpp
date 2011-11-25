@@ -83,7 +83,7 @@ void CNetworkCommand::RunCommand(int iConnection, const tstring& sParameters, in
 
 	if (!bNoNetwork && Network(iConnection)->IsConnected())
 	{
-		tstring sCommand = m_sName + _T(" ") + sParameters;
+		tstring sCommand = m_sName + " " + sParameters;
 
 		CNetworkParameters p;
 		p.CreateExtraData(sizeof(tstring::value_type) * (sCommand.length() + 1));
@@ -106,7 +106,7 @@ void CNetworkCommand::RunCommand(int iConnection, const tstring& sParameters, in
 			else
 				TMsg(sprintf(tstring("Cxn %d to client %d: "), iConnection, iTarget));
 
-			TMsg(sCommand + _T("\n"));
+			TMsg(sCommand + "\n");
 		}
 	}
 
@@ -122,9 +122,9 @@ void CNetworkCommand::RunCallback(int iConnection, size_t iClient, const tstring
 	if (net_debug.GetBool())
 	{
 		if (Network(iConnection)->IsHost())
-			TMsg(sprintf(tstring("Cxn %d cmd from client %d: "), iConnection, iClient) + m_sName + _T(" ") + sParameters + _T("\n"));
+			TMsg(sprintf(tstring("Cxn %d cmd from client %d: "), iConnection, iClient) + m_sName + " " + sParameters + "\n");
 		else
-			TMsg(sprintf(tstring("Cxn %d cmd from server: "), iConnection) + m_sName + _T(" ") + sParameters + _T("\n"));
+			TMsg(sprintf(tstring("Cxn %d cmd from server: "), iConnection) + m_sName + " " + sParameters + "\n");
 	}
 
 	tstrtok(sParameters, m_asArguments);

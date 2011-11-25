@@ -184,7 +184,7 @@ namespace glgui
 	{
 	public:
 		CTreeNodeObject(T* pObject, CTreeNode* pParent, class CTree* pTree, const tstring& sName)
-			: CTreeNode(pParent, pTree, sName, _T("sans-serif"))
+			: CTreeNode(pParent, pTree, sName, "sans-serif")
 		{
 			m_pObject = pObject;
 		}
@@ -215,14 +215,14 @@ namespace glgui
 
 		virtual void AddVisibilityButton()
 		{
-			m_pVisibilityButton = new CPictureButton(_T("@"), m_pTree->m_iVisibilityTexture);
+			m_pVisibilityButton = new CPictureButton("@", m_pTree->m_iVisibilityTexture);
 			m_pVisibilityButton->SetClickedListener(this, Visibility);
 			AddControl(m_pVisibilityButton);
 		}
 
 		virtual void AddEditButton(EditFnCallback pfnCallback)
 		{
-			m_pEditButton = new CPictureButton(_T("*"), m_pTree->m_iEditTexture);
+			m_pEditButton = new CPictureButton("*", m_pTree->m_iEditTexture);
 			m_pEditButton->SetClickedListener(this, Edit);
 			AddControl(m_pEditButton);
 			m_pfnCallback = pfnCallback;

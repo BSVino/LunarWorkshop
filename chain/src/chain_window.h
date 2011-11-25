@@ -12,7 +12,7 @@ public:
 
 public:
 	virtual eastl::string		WindowTitle() { return "Chain"; }
-	virtual tstring				AppDirectory() { return _T("Chain"); }
+	virtual tstring				AppDirectory() { return "Chain"; }
 
 	void						SetupEngine();
 	void						SetupChain();

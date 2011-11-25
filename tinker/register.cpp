@@ -61,7 +61,7 @@ void CApplication::InitRegistrationFile()
 	if (m_oRegFile.isFileValid() || m_sCode.length())
 		return;
 
-	m_oRegFile = ConfigFile(GetAppDataDirectory(AppDirectory(), _T("reg.cfg")));
+	m_oRegFile = ConfigFile(GetAppDataDirectory(AppDirectory(), "reg.cfg")));
 	ReadProductCode();
 }
 
@@ -79,23 +79,23 @@ bool CApplication::IsRegistered()
 
 void CApplication::SaveProductCode()
 {
-	m_oRegFile.add(_T("code"), m_sCode.c_str());
-	m_oRegFile.add(_T("key"), m_sKey.c_str());
+	m_oRegFile.add("code"), m_sCode.c_str());
+	m_oRegFile.add("key"), m_sKey.c_str());
 
 	// Apparently you can't modify a hidden file so we need to make it normal before changing it.
 #ifdef _WIN32
-	SetFileAttributes(convertstring<tchar, wchar_t>(GetAppDataDirectory(AppDirectory(), _T("reg.cfg"))).c_str(), FILE_ATTRIBUTE_NORMAL);
+	SetFileAttributes(convertstring<tchar, wchar_t>(GetAppDataDirectory(AppDirectory(), "reg.cfg"))).c_str(), FILE_ATTRIBUTE_NORMAL);
 #endif
 
 	do
 	{
 		std::basic_ofstream<tchar> o;
-		o.open(convertstring<tchar, char>(GetAppDataDirectory(AppDirectory(), _T("reg.cfg"))).c_str(), std::ios_base::out);
+		o.open(convertstring<tchar, char>(GetAppDataDirectory(AppDirectory(), "reg.cfg"))).c_str(), std::ios_base::out);
 		o << m_oRegFile;
 	} while (false);
 
 #ifdef _WIN32
-	SetFileAttributes(convertstring<tchar, wchar_t>(GetAppDataDirectory(AppDirectory(), _T("reg.cfg"))).c_str(), FILE_ATTRIBUTE_HIDDEN);
+	SetFileAttributes(convertstring<tchar, wchar_t>(GetAppDataDirectory(AppDirectory(), "reg.cfg"))).c_str(), FILE_ATTRIBUTE_HIDDEN);
 #endif
 }
 
@@ -147,13 +147,13 @@ void CApplication::ReadProductCode()
 {
 	if (m_oRegFile.isFileValid())
 	{
-		if (m_oRegFile.keyExists(_T("code")))
-			m_sCode = convertstring<tchar, char>(m_oRegFile.read<tstring>(_T("code")));
+		if (m_oRegFile.keyExists("code")))
+			m_sCode = convertstring<tchar, char>(m_oRegFile.read<tstring>("code")));
 		else
 			m_sCode = GenerateCode();
 
-		if (m_oRegFile.keyExists(_T("key")))
-			m_sKey = convertstring<tchar, char>(m_oRegFile.read<tstring>(_T("key")));
+		if (m_oRegFile.keyExists("key")))
+			m_sKey = convertstring<tchar, char>(m_oRegFile.read<tstring>("key")));
 	}
 	else
 		m_sCode = GenerateCode();
@@ -223,17 +223,17 @@ bool CApplication::QueryRegistrationKey(tstring sServer, tstring sURI, tstring s
 		SaveProductCode();
 
 		// Register.
-		sError = _T("Thank you for registering!");
+		sError = "Thank you for registering!");
 		bReturn = true;
 	}
 	else if (iCode == 1)
-		sError = _T("Looks like that key has already been registered. Please contact support <support@lunarworkshop.com> to register your game.");
+		sError = "Looks like that key has already been registered. Please contact support <support@lunarworkshop.com> to register your game.");
 	else if (iCode == 2)
-		sError = _T("Sorry, that registration key doesn't look valid. Double check it and try again.");
+		sError = "Sorry, that registration key doesn't look valid. Double check it and try again.");
 	else if (iCode == -1)
-		sError = _T("Looks like there's something wrong with the server at the moment, try again in a bit or contact support <support@lunarworkshop.com> if it continues.");
+		sError = "Looks like there's something wrong with the server at the moment, try again in a bit or contact support <support@lunarworkshop.com> if it continues.");
 	else
-		sError = _T("Looks like there's something wrong, please contact support <support@lunarworkshop.com> if it continues.");
+		sError = "Looks like there's something wrong, please contact support <support@lunarworkshop.com> if it continues.");
 
 	return bReturn;
 }

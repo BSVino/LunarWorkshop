@@ -201,7 +201,7 @@ void CProfiler::Render(CPerfBlock* pBlock, float& flLeft, float& flTop)
 	tstring sName = convertstring<char, tchar>(pBlock->GetName());
 	sName += sprintf(tstring(": %d ms"), (int)(pBlock->GetTime()*1000));
 	glColor4ubv(clrBlock);
-	glgui::CLabel::PaintText(sName, sName.length(), _T("sans-serif"), 10, (float)flLeft, (float)flTop);
+	glgui::CLabel::PaintText(sName, sName.length(), "sans-serif", 10, (float)flLeft, (float)flTop);
 
 	for (eastl::map<eastl::string, CPerfBlock*>::iterator it = pBlock->m_apPerfBlocks.begin(); it != pBlock->m_apPerfBlocks.end(); it++)
 		Render(it->second, flLeft, flTop);

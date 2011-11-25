@@ -69,9 +69,9 @@ protected:
 // Methods
 public:
 	ConfigFile( tstring filename,
-	            tstring delimiter = _T("="),
-	            tstring comment = _T("#"),
-				tstring sentry = _T("EndConfigFile") );
+	            tstring delimiter = "=",
+	            tstring comment = "#",
+				tstring sentry = "EndConfigFile" );
 	ConfigFile();
 	
 	// Search for key and read value or optional default value
@@ -165,9 +165,9 @@ inline bool ConfigFile::string_as_T<bool>( const tstring& s )
 	tstring sup = s;
 	for( tstring::iterator p = sup.begin(); p != sup.end(); ++p )
 		*p = toupper(*p);  // make string all caps
-	if( sup==tstring(_T("FALSE")) || sup==tstring(_T("F")) ||
-	    sup==tstring(_T("NO")) || sup==tstring(_T("N")) ||
-	    sup==tstring(_T("0")) || sup==tstring(_T("NONE"))|| sup==tstring(_T("OFF")) )
+	if( sup==tstring("FALSE") || sup==tstring("F") ||
+	    sup==tstring("NO") || sup==tstring("N") ||
+	    sup==tstring("0") || sup==tstring("NONE") || sup==tstring("OFF") )
 		b = false;
 	return b;
 }

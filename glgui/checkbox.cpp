@@ -7,7 +7,7 @@
 using namespace glgui;
 
 CCheckBox::CCheckBox()
-	: CButton(0, 0, 10, 10, _T(""), true)
+	: CButton(0, 0, 10, 10, "", true)
 {
 }
 

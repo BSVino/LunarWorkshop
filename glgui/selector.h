@@ -23,7 +23,7 @@ namespace glgui
 	class CScrollSelector : public CPanel
 	{
 	public:
-		CScrollSelector(const tstring& sFont=_T("sans-serif"), size_t iSize=13)
+		CScrollSelector(const tstring& sFont="sans-serif", size_t iSize=13)
 			: CPanel(0, 0, 100, 16)
 		{
 			m_flHandlePositionGoal = 0;
@@ -35,7 +35,7 @@ namespace glgui
 			m_pfnSelectedCallback = NULL;
 			m_pSelectedListener = NULL;
 
-			m_pOption = new CLabel(0, 0, 100, 100, _T(""));
+			m_pOption = new CLabel(0, 0, 100, 100, "");
 			m_pOption->SetWrap(false);
 			m_pOption->SetFont(sFont, iSize);
 			AddControl(m_pOption);
@@ -46,8 +46,8 @@ namespace glgui
 			m_pOption->SetSize(1, 1);
 
 			// Make sure there's some text to be fit to.
-			if (m_pOption->GetText() == _T(""))
-				m_pOption->SetText(_T("-"));
+			if (m_pOption->GetText() == "")
+				m_pOption->SetText("-");
 
 			m_pOption->EnsureTextFits();
 			m_pOption->SetPos(GetWidth()/2 - m_pOption->GetWidth()/2, GetHeight()-15);

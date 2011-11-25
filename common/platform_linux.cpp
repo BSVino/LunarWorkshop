@@ -116,13 +116,13 @@ tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile)
 	char* pszVar = getenv("HOME");
 
 	tstring sSuffix;
-	sSuffix.append(_T(".")).append(sDirectory).append(_T("/")).append(sFile);
+	sSuffix.append(".").append(sDirectory).append("/").append(sFile);
 
 	tstring sReturn(convertstring<char, tchar>(pszVar));
 
-	mkdir(convertstring<tchar, char>(tstring(sReturn).append(_T("/")).append(_T(".")).append(sDirectory)).c_str(), 0777);
+	mkdir(convertstring<tchar, char>(tstring(sReturn).append("/").append(".").append(sDirectory)).c_str(), 0777);
 
-	sReturn.append(_T("/")).append(sSuffix);
+	sReturn.append("/").append(sSuffix);
 	return sReturn;
 }
 
@@ -139,10 +139,10 @@ eastl::vector<tstring> ListDirectory(tstring sDirectory, bool bDirectories)
 			continue;
 
 		tstring sName = convertstring<char, tchar>(dp->d_name);
-		if (sName == _T("."))
+		if (sName == ".")
 			continue;
 
-		if (sName == _T(".."))
+		if (sName == "..")
 			continue;
 
 		asResult.push_back(sName);

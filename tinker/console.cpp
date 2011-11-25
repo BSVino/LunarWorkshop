@@ -25,7 +25,7 @@ CConsole::CConsole()
 {
 	glgui::CRootPanel::Get()->AddControl(this, true);
 
-	m_pOutput = new glgui::CLabel(0, 0, 100, 100, _T(""));
+	m_pOutput = new glgui::CLabel(0, 0, 100, 100, "");
 	m_pOutput->SetAlign(glgui::CLabel::TA_BOTTOMLEFT);
 	AddControl(m_pOutput);
 
@@ -107,7 +107,7 @@ void CConsole::Paint(float x, float y, float w, float h)
 	BaseClass::Paint(x, y, w, h);
 
 	tstring sInput = m_pInput->GetText();
-	if (sInput.length() && sInput.find(_T(' ')) == ~0)
+	if (sInput.length() && sInput.find(' ') == ~0)
 	{
 		eastl::vector<tstring> asCommands = CCommand::GetCommandsBeginningWith(sInput);
 
@@ -144,12 +144,12 @@ void CConsole::Paint(float x, float y, float w, float h)
 
 		int iCommandsPainted = 0;
 		for (size_t i = iCommandsToSkip; i < iCommandsToShow+iCommandsToSkip; i++)
-			glgui::CLabel::PaintText(asCommands[i], asCommands[i].length(), _T("sans-serif"), 13, (float)(x + 5), (float)(y + h + iCommandsPainted++*13));
+			glgui::CLabel::PaintText(asCommands[i], asCommands[i].length(), "sans-serif", 13, (float)(x + 5), (float)(y + h + iCommandsPainted++*13));
 
 		if (bAbbreviated)
 		{
-			tstring sDotDotDot = _T("...");
-			glgui::CLabel::PaintText(sDotDotDot, sDotDotDot.length(), _T("sans-serif"), 13, (float)(x + 5), (float)(y + h + iCommandsPainted++*13));
+			tstring sDotDotDot = "...";
+			glgui::CLabel::PaintText(sDotDotDot, sDotDotDot.length(), "sans-serif", 13, (float)(x + 5), (float)(y + h + iCommandsPainted++*13));
 		}
 	}
 }
@@ -191,7 +191,7 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 		else if (code != TINKER_KEY_TAB)
 		{
 			tstring sInput = m_pInput->GetText();
-			if (sInput.length() && sInput.find(_T(' ')) == ~0)
+			if (sInput.length() && sInput.find(' ') == ~0)
 			{
 				eastl::vector<tstring> asCommands = CCommand::GetCommandsBeginningWith(sInput);
 
@@ -213,7 +213,7 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 		tstring sText = m_pInput->GetText();
 		m_pInput->SetText("");
 
-		PrintConsole(tstring(_T("] ")) + sText + _T("\n"));
+		PrintConsole(tstring("] ") + sText + "\n");
 
 		CCommand::Run(sText);
 
@@ -315,7 +315,7 @@ CConsole* CApplication::GetConsole()
 		m_pConsole->SetVisible(false);
 
 		if (developer.GetBool())
-			TMsg(_T("Developer mode ON.\n"));
+			TMsg("Developer mode ON.\n");
 	}
 
 	return m_pConsole;

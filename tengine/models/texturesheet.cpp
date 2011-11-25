@@ -19,7 +19,7 @@ CTextureSheet::CTextureSheet(tstring sFile)
 	for (size_t i = 0; i < pFile->GetNumChildren(); i++)
 	{
 		CData* pChild = pFile->GetChild(i);
-		if (pChild->GetKey() == _T("Texture"))
+		if (pChild->GetKey() == "Texture")
 		{
 			tstring sTexture = pChild->GetValueTString();
 			const CTexture* pTex = CTextureLibrary::AddTexture(sTexture);
@@ -27,33 +27,33 @@ CTextureSheet::CTextureSheet(tstring sFile)
 			m_iDefaultSheetWidth = pTex->m_iWidth;
 			m_iDefaultSheetHeight = pTex->m_iHeight;
 		}
-		else if (pChild->GetKey() == _T("Area"))
+		else if (pChild->GetKey() == "Area")
 		{
 			int x = 0;
 			int y = 0;
 			int w = 0;
 			int h = 0;
 
-			CData* pData = pChild->FindChild(_T("x"));
+			CData* pData = pChild->FindChild("x");
 			if (pData)
 				x = pData->GetValueInt();
 
-			pData = pChild->FindChild(_T("y"));
+			pData = pChild->FindChild("y");
 			if (pData)
 				y = pData->GetValueInt();
 
-			pData = pChild->FindChild(_T("w"));
+			pData = pChild->FindChild("w");
 			if (pData)
 				w = pData->GetValueInt();
 
-			pData = pChild->FindChild(_T("h"));
+			pData = pChild->FindChild("h");
 			if (pData)
 				h = pData->GetValueInt();
 
 			m_aAreas[pChild->GetValueTString()].m_rRect = Rect(x, y, w, h);
 
 			m_aAreas[pChild->GetValueTString()].m_iSheet = ~0;
-			pData = pChild->FindChild(_T("Texture"));
+			pData = pChild->FindChild("Texture");
 			if (pData)
 			{
 				tstring sTexture = pData->GetValueTString();

@@ -128,8 +128,8 @@ void CBaseControl::Paint(float x, float y, float w, float h)
 	{
 		int iFontSize = 12;
 
-		float flFontHeight = CLabel::GetFontHeight(_T("sans-serif"), iFontSize);
-		float flTextWidth = CLabel::GetTextWidth(m_sTip, m_sTip.length(), _T("sans-serif"), iFontSize);
+		float flFontHeight = CLabel::GetFontHeight("sans-serif", iFontSize);
+		float flTextWidth = CLabel::GetTextWidth(m_sTip, m_sTip.length(), "sans-serif", iFontSize);
 
 		int mx, my;
 		CRootPanel::GetFullscreenMousePos(mx, my);
@@ -140,7 +140,7 @@ void CBaseControl::Paint(float x, float y, float w, float h)
 
 		PaintRect((float)mx-3, my-flFontHeight+1, flTextWidth+6, flFontHeight+6); 
 		glColor4ubv(Color(255, 255, 255, 255));
-		CLabel::PaintText(m_sTip, m_sTip.length(), _T("sans-serif"), iFontSize, (float)mx, (float)my);
+		CLabel::PaintText(m_sTip, m_sTip.length(), "sans-serif", iFontSize, (float)mx, (float)my);
 	}
 }
 

@@ -23,7 +23,7 @@ CLIENT_COMMAND(CONNECTION_UNDEFINED, ClientChatSay)
 {
 	// Once the server gets it, send it to all of the clients, but with the speaker's name in there.
 
-	tstring sName = _T("Player");
+	tstring sName = "Player";
 
 	if (iConnection == CONNECTION_LOBBY)
 	{
@@ -33,7 +33,7 @@ CLIENT_COMMAND(CONNECTION_UNDEFINED, ClientChatSay)
 		{
 			CLobbyPlayer* pPlayer = pLobby->GetPlayerByClient(iClient);
 			if (pPlayer)
-				sName = pPlayer->GetInfoValue(_T("name"));
+				sName = pPlayer->GetInfoValue("name");
 		}
 	}
 	else
@@ -60,15 +60,15 @@ CLIENT_COMMAND(CONNECTION_UNDEFINED, ClientChatSay)
 		}
 	}
 
-	ServerChatSay.RunCommand(iConnection, sName + _T(": ") + sParameters + _T("\n"));
+	ServerChatSay.RunCommand(iConnection, sName + ": " + sParameters + "\n");
 }
 
 void ChatSay(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
 {
 	if (LobbyNetwork()->IsConnected())
-		ClientChatSay.RunCommand(CONNECTION_LOBBY, sCommand.substr(sCommand.find(_T(' '))));
+		ClientChatSay.RunCommand(CONNECTION_LOBBY, sCommand.substr(sCommand.find(' ')));
 	else
-		ClientChatSay.RunCommand(CONNECTION_GAME, sCommand.substr(sCommand.find(_T(' '))));
+		ClientChatSay.RunCommand(CONNECTION_GAME, sCommand.substr(sCommand.find(' ')));
 }
 
 CCommand chat_say("say", ::ChatSay);
@@ -87,7 +87,7 @@ CChatBox::CChatBox(bool bFloating)
 	if (bFloating)
 		glgui::CRootPanel::Get()->AddControl(this, true);
 
-	m_pOutput = new glgui::CLabel(0, 0, 100, 100, _T(""));
+	m_pOutput = new glgui::CLabel(0, 0, 100, 100, "");
 	m_pOutput->SetAlign(glgui::CLabel::TA_BOTTOMLEFT);
 	m_pOutput->SetScissor(true);
 	AddControl(m_pOutput);
@@ -215,7 +215,7 @@ bool CChatBox::KeyPressed(int code, bool bCtrlDown)
 		tstring sText = m_pInput->GetText();
 		m_pInput->SetText("");
 
-		CCommand::Run(tstring(_T("say ")) + sText);
+		CCommand::Run(tstring("say ") + sText);
 
 		GameWindow()->CloseChat();
 

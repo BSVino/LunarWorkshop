@@ -10,12 +10,6 @@
 #include <tchar.h>
 #include <dbghelp.h>
 
-// tchar.h defines it so reset it
-#ifdef _T
-#undef _T
-#define _T(x) x
-#endif
-
 #include <tstring.h>
 
 void GetMACAddresses(unsigned char*& paiAddresses, size_t& iAddresses)
@@ -190,7 +184,7 @@ tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile)
 	_wgetenv_s(&iSize, NULL, 0, L"APPDATA");
 
 	tstring sSuffix;
-	sSuffix.append(sDirectory).append(_T("\\")).append(sFile);
+	sSuffix.append(sDirectory).append("\\").append(sFile);
 
 	if (!iSize)
 		return sSuffix;
@@ -205,9 +199,9 @@ tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile)
 
 	free(pszVar);
 
-	CreateDirectory(convertstring<tchar, wchar_t>(tstring(sReturn).append(_T("\\")).append(sDirectory)).c_str(), NULL);
+	CreateDirectory(convertstring<tchar, wchar_t>(tstring(sReturn).append("\\").append(sDirectory)).c_str(), NULL);
 
-	sReturn.append(_T("\\")).append(sSuffix);
+	sReturn.append("\\").append(sSuffix);
 	return sReturn;
 }
 

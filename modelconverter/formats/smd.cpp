@@ -18,15 +18,15 @@ void CModelConverter::WriteSMD(size_t iMesh, const tstring& sFilename)
 	if (sFilename.length())
 	{
 		sFile.append(sFilename);
-		sFile.append(_T("_"));
+		sFile.append("_");
 	}
 	sFile.append(pMesh->GetBoneName(0));
 
 	sFile = GetFilename(sFile.c_str());
 
-	sFile.append(_T(".smd"));
+	sFile.append(".smd");
 
-	FILE* fp = tfopen(sFile, _T("w"));
+	FILE* fp = tfopen(sFile, "w");
 
 	// SMD file format: http://developer.valvesoftware.com/wiki/SMD
 

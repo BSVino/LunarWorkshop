@@ -37,7 +37,7 @@ inline void strtok(const eastl::string& str, eastl::vector<eastl::string>& token
 }
 
 // It's inline so I don't have to make a strutils.cpp :P
-inline void tstrtok(const tstring& str, eastl::vector<tstring>& tokens, const tstring& delimiters = _T(" \r\n\t"))
+inline void tstrtok(const tstring& str, eastl::vector<tstring>& tokens, const tstring& delimiters = " \r\n\t")
 {
 	tokens.clear();
 
@@ -60,7 +60,7 @@ inline void tstrtok(const tstring& str, eastl::vector<tstring>& tokens, const ts
 // explode is slightly different in that repeated delineators return multiple tokens.
 // ie "a|b||c" returns { "a", "b", "", "c" } whereas strtok will cut out the blank result.
 // Basically it works like PHP's explode.
-inline void explode(const tstring& str, eastl::vector<tstring>& tokens, const tstring& delimiter = _T(" "))
+inline void explode(const tstring& str, eastl::vector<tstring>& tokens, const tstring& delimiter = " ")
 {
     tstring::size_type lastPos = str.find_first_of(delimiter, 0);
     tstring::size_type pos = 0;
@@ -125,7 +125,7 @@ inline eastl::string readstring(std::istream& i)
 
 	eastl::string s;
 	eastl::string::value_type c[2];
-	c[1] = _T('\0');
+	c[1] = '\0';
 	for (size_t j = 0; j < iStringSize; j++)
 	{
 		i.read((char*)&c[0], sizeof(eastl::string::value_type));
@@ -149,7 +149,7 @@ inline tstring readtstring(std::istream& i)
 
 	tstring s;
 	tstring::value_type c[2];
-	c[1] = _T('\0');
+	c[1] = '\0';
 	for (size_t j = 0; j < iStringSize; j++)
 	{
 		i.read((char*)&c[0], sizeof(tstring::value_type));

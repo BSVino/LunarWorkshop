@@ -21,7 +21,7 @@ CLabel::CLabel()
 	m_bWrap = true;
 	m_b3D = false;
 	m_bNeedsCompute = false;
-	m_sText = _T("");
+	m_sText = "";
 	m_eAlign = TA_MIDDLECENTER;
 	m_FGColor = Color(255, 255, 255, 255);
 	m_bScissor = false;
@@ -42,7 +42,7 @@ CLabel::CLabel(float x, float y, float w, float h, const tstring& sText, const t
 	m_bWrap = true;
 	m_b3D = false;
 	m_bNeedsCompute = false;
-	m_sText = _T("");
+	m_sText = "";
 	m_eAlign = TA_MIDDLECENTER;
 	m_FGColor = Color(255, 255, 255, 255);
 	m_bScissor = false;
@@ -585,7 +585,7 @@ void CLabel::ComputeLines(float w, float h)
 			{
 				// Then add this letter on to our current line.
 				iLength++;
-				if (sLine[iChar] == _T(' '))
+				if (sLine[iChar] == ' ')
 					iLastSpace = iChar;
 				lw += cw;
 			}
@@ -610,7 +610,7 @@ void CLabel::ComputeLines(float w, float h)
 				lw = 0;
 
 				// Proceed to the end of any string of whitespace characters
-				while (iChar < sLine.length() && sLine[iChar] == _T(' '))
+				while (iChar < sLine.length() && sLine[iChar] == ' ')
 					iChar++;
 
 				iLastBreak = iLastSpace = iChar--;	// Skip over any following spaces, but leave iSource at the space 'cause it's incremented again below.
@@ -692,7 +692,7 @@ void CLabel::SetLinkClickedListener(IEventListener* pListener, IEventListener::C
 {
 	tstring sRealName = sName;
 	if (s_apFontNames.find(sName) == s_apFontNames.end())
-		sRealName = _T("sans-serif");
+		sRealName = "sans-serif";
 
 	if (s_apFontNames.find(sRealName) == s_apFontNames.end())
 	{
@@ -701,10 +701,10 @@ void CLabel::SetLinkClickedListener(IEventListener* pListener, IEventListener::C
 #ifdef _WIN32
 		sFont = sprintf(tstring("%s\\Fonts\\Arial.ttf"), convertstring<char, tchar>(getenv("windir")));
 #else
-		sFont = _T("/usr/share/fonts/truetype/freefont/FreeSans.ttf");
+		sFont = "/usr/share/fonts/truetype/freefont/FreeSans.ttf");
 #endif
 
-		AddFont(_T("sans-serif"), sFont);
+		AddFont("sans-serif", sFont);
 	}
 
 	return s_apFonts[sRealName][iSize];

@@ -25,7 +25,7 @@ CData::~CData()
 
 CData* CData::AddChild(tstring sKey)
 {
-	return AddChild(sKey, _T(""));
+	return AddChild(sKey, "");
 }
 
 CData* CData::AddChild(tstring sKey, tstring sValue)
@@ -62,9 +62,9 @@ bool CData::GetValueBool() const
 	for( tstring::iterator p = sValue.begin(); p != sValue.end(); ++p )
 		*p = toupper(*p);  // make string all caps
 
-	if( sValue == tstring(_T("FALSE")) || sValue == tstring(_T("F")) ||
-	    sValue == tstring(_T("NO")) || sValue == tstring(_T("N")) ||
-	    sValue == tstring(_T("0")) || sValue == tstring(_T("NONE")) || sValue == tstring(_T("OFF")) )
+	if( sValue == tstring("FALSE") || sValue == tstring("F") ||
+	    sValue == tstring("NO") || sValue == tstring("N") ||
+	    sValue == tstring("0") || sValue == tstring("NONE") || sValue == tstring("OFF") )
 		return false;
 
 	return true;
@@ -88,7 +88,7 @@ float CData::GetValueFloat() const
 Vector2D CData::GetValueVector2D() const
 {
 	eastl::vector<tstring> asTokens;
-	tstrtok(GetValueTString(), asTokens, _T(","));
+	tstrtok(GetValueTString(), asTokens, ",");
 
 	Vector2D vecResult;
 	if (asTokens.size() > 0)
@@ -102,7 +102,7 @@ Vector2D CData::GetValueVector2D() const
 EAngle CData::GetValueEAngle() const
 {
 	eastl::vector<tstring> asTokens;
-	tstrtok(GetValueTString(), asTokens, _T(","));
+	tstrtok(GetValueTString(), asTokens, ",");
 
 	EAngle vecResult;
 	if (asTokens.size() > 0)
@@ -117,7 +117,7 @@ EAngle CData::GetValueEAngle() const
 
 void CData::SetValue(bool bValue)
 {
-	m_sValue = bValue?_T("true"):_T("false");
+	m_sValue = bValue?"true":"false";
 }
 
 void CData::SetValue(int iValue)

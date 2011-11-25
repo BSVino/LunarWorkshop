@@ -211,7 +211,7 @@ public:
 	size_t							GetNumFaces() { return m_aFaces.size(); };
 	CConversionFace*				GetFace(size_t i) { return &m_aFaces[i]; };
 
-	size_t							AddMaterialStub(const tstring& sName = _T(""));
+	size_t							AddMaterialStub(const tstring& sName = "");
 	size_t							GetNumMaterialStubs() { return m_aMaterialStubs.size(); };
 	size_t							FindMaterialStub(const tstring& sName);
 	CConversionMaterialStub*		GetMaterialStub(size_t i) { return &m_aMaterialStubs[i]; };

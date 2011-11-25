@@ -54,7 +54,7 @@ void CModelConverter::ReadDAE(const tstring& sFilename)
 	FCDocument* pDoc = FCollada::NewTopDocument();
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Reading file", 0);
+		m_pWorkListener->SetAction("Reading file", 0);
 
 	if (FCollada::LoadDocumentFromFile(pDoc, sFilename.c_str()))
 	{
@@ -66,7 +66,7 @@ void CModelConverter::ReadDAE(const tstring& sFilename)
 		size_t iEntities = pMatLib->GetEntityCount();
 
 		if (m_pWorkListener)
-			m_pWorkListener->SetAction(_T("Reading materials", iEntities);
+			m_pWorkListener->SetAction("Reading materials", iEntities);
 
 		for (i = 0; i < iEntities; ++i)
 		{
@@ -132,7 +132,7 @@ void CModelConverter::ReadDAE(const tstring& sFilename)
 		iEntities = pGeoLib->GetEntityCount();
 
 		if (m_pWorkListener)
-			m_pWorkListener->SetAction(_T("Loading entities", iEntities);
+			m_pWorkListener->SetAction("Loading entities", iEntities);
 
 		for (i = 0; i < iEntities; ++i)
 		{
@@ -323,7 +323,7 @@ void CModelConverter::ReadDAESceneTree(FCDSceneNode* pNode, CConversionSceneNode
 			{
 				FCDMaterialInstance* pMaterialInstance = pGeometryInstance->GetMaterialInstance(m);
 				FCDMaterial* pMaterial = pMaterialInstance->GetMaterial();
-				tstring sMaterial = pMaterial?pMaterialInstance->GetMaterial()->GetName():_T("";
+				tstring sMaterial = pMaterial?pMaterialInstance->GetMaterial()->GetName():"";
 				tstring sMaterialStub = pMaterialInstance->GetSemantic();
 
 				size_t iMaterial = pScene->m_pScene->FindMaterial(sMaterial);
@@ -357,12 +357,12 @@ void CModelConverter::SaveDAE(const tstring& sFilename)
 
 	FCDAsset* pAsset = pDoc->GetAsset();
 	FCDAssetContributor* pContributor = pAsset->AddContributor();
-	pContributor->SetAuthoringTool(_T("Created by SMAK using FCollada");
+	pContributor->SetAuthoringTool("Created by SMAK using FCollada");
 
 	FCDMaterialLibrary* pMatLib = pDoc->GetMaterialLibrary();
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Saving materials", m_pScene->GetNumMaterials());
+		m_pWorkListener->SetAction("Saving materials", m_pScene->GetNumMaterials());
 
 	for (size_t iMaterial = 0; iMaterial < m_pScene->GetNumMaterials(); iMaterial++)
 	{
@@ -399,7 +399,7 @@ void CModelConverter::SaveDAE(const tstring& sFilename)
 
 			pSurface->SetInitMethod(new FCDEffectParameterSurfaceInitFrom());
 			pSurface->AddImage(pSurfaceImage);
-			pSurface->SetReference(convertstring<tchar, char>(pConversionMaterial->GetName() + _T("-surface").c_str());
+			pSurface->SetReference(convertstring<tchar, char>(pConversionMaterial->GetName() + "-surface").c_str());
 
 			pSampler->SetSurface(pSurface);
 		}
@@ -409,7 +409,7 @@ void CModelConverter::SaveDAE(const tstring& sFilename)
 	}
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Saving geometry", m_pScene->GetNumMeshes());
+		m_pWorkListener->SetAction("Saving geometry", m_pScene->GetNumMeshes());
 
 	FCDGeometryLibrary* pGeoLib = pDoc->GetGeometryLibrary();
 
@@ -423,7 +423,7 @@ void CModelConverter::SaveDAE(const tstring& sFilename)
 		FCDGeometryMesh* pMesh = pGeometry->GetMesh();
 
 		FCDGeometrySource* pPositionSource = pMesh->AddSource(FUDaeGeometryInput::POSITION);
-		pPositionSource->SetName((pConversionMesh->GetName() + _T("-position").c_str());
+		pPositionSource->SetName((pConversionMesh->GetName() + "-position").c_str());
 		pPositionSource->SetStride(3);
 		pPositionSource->SetValueCount(pConversionMesh->GetNumVertices());
 		for (size_t j = 0; j < pConversionMesh->GetNumVertices(); j++)
@@ -432,7 +432,7 @@ void CModelConverter::SaveDAE(const tstring& sFilename)
 		pMesh->AddVertexSource(pPositionSource);
 
 		FCDGeometrySource* pNormalSource = pMesh->AddSource(FUDaeGeometryInput::NORMAL);
-		pNormalSource->SetName((pConversionMesh->GetName() + _T("-normal").c_str());
+		pNormalSource->SetName((pConversionMesh->GetName() + "-normal").c_str());
 		pNormalSource->SetStride(3);
 		pNormalSource->SetValueCount(pConversionMesh->GetNumNormals());
 		for (size_t j = 0; j < pConversionMesh->GetNumNormals(); j++)
@@ -442,7 +442,7 @@ void CModelConverter::SaveDAE(const tstring& sFilename)
 		if (pConversionMesh->GetNumUVs())
 		{
 			pUVSource = pMesh->AddSource(FUDaeGeometryInput::TEXCOORD);
-			pUVSource->SetName((pConversionMesh->GetName() + _T("-texcoord").c_str());
+			pUVSource->SetName((pConversionMesh->GetName() + "-texcoord").c_str());
 			pUVSource->SetStride(2);
 			pUVSource->SetValueCount(pConversionMesh->GetNumUVs());
 			for (size_t j = 0; j < pConversionMesh->GetNumUVs(); j++)
@@ -487,7 +487,7 @@ void CModelConverter::SaveDAE(const tstring& sFilename)
 	}
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Saving scenes", m_pScene->GetNumScenes());
+		m_pWorkListener->SetAction("Saving scenes", m_pScene->GetNumScenes());
 
 	FCDVisualSceneNodeLibrary* pVisualScenes = pDoc->GetVisualSceneLibrary();
 	for (size_t i = 0; i < m_pScene->GetNumScenes(); ++i)
@@ -501,7 +501,7 @@ void CModelConverter::SaveDAE(const tstring& sFilename)
 	}
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Writing to disk...", 0);
+		m_pWorkListener->SetAction("Writing to disk...", 0);
 
 	FCollada::SaveDocument(pDoc, sFilename.c_str());
 

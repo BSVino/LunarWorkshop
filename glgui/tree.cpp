@@ -183,7 +183,7 @@ void CTree::ClearTree()
 
 size_t CTree::AddNode(const tstring& sName)
 {
-	return AddNode(new CTreeNode(NULL, this, sName, _T("sans-serif")));
+	return AddNode(new CTreeNode(NULL, this, sName, "sans-serif"));
 }
 
 size_t CTree::AddNode(CTreeNode* pNode, size_t iPosition)
@@ -270,7 +270,7 @@ CTreeNode::CTreeNode(CTreeNode* pParent, CTree* pTree, const tstring& sText, con
 	m_pVisibilityButton = NULL;
 	m_pEditButton = NULL;
 
-	m_pLabel = new CLabel(0, 0, GetWidth(), GetHeight(), _T(""));
+	m_pLabel = new CLabel(0, 0, GetWidth(), GetHeight(), "");
 	m_pLabel->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pLabel->SetText(sText.c_str());
 	m_pLabel->SetFont(sFont, 11);
@@ -296,7 +296,7 @@ CTreeNode::CTreeNode(const CTreeNode& c)
 
 	m_pLabel = new CLabel(c.m_pLabel->GetLeft(), c.m_pLabel->GetTop(), c.m_pLabel->GetWidth(), c.m_pLabel->GetHeight(), c.m_pLabel->GetText());
 	m_pLabel->SetAlign(c.m_pLabel->GetAlign());
-	m_pLabel->SetFont(_T("sans-serif"), c.m_pLabel->GetFontFaceSize());
+	m_pLabel->SetFont("sans-serif", c.m_pLabel->GetFontFaceSize());
 	AddControl(m_pLabel);
 
 	m_pExpandButton = new CExpandButton(m_pTree->m_iArrowTexture);
@@ -407,7 +407,7 @@ void CTreeNode::Paint(float x, float y, float w, float h, bool bFloating)
 
 size_t CTreeNode::AddNode(const tstring& sName)
 {
-	return AddNode(new CTreeNode(this, m_pTree, sName, _T("sans-serif")));
+	return AddNode(new CTreeNode(this, m_pTree, sName, "sans-serif"));
 }
 
 size_t CTreeNode::AddNode(CTreeNode* pNode)
@@ -487,7 +487,7 @@ void CTreeNode::ExpandCallback(const tstring& sArgs)
 }
 
 CTreeNode::CExpandButton::CExpandButton(size_t iTexture)
-	: CPictureButton(_T("*"), iTexture, false)
+	: CPictureButton("*", iTexture, false)
 {
 	m_bExpanded = false;
 	m_flExpandedGoal = m_flExpandedCurrent = 0;

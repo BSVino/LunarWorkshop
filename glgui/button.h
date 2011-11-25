@@ -11,7 +11,7 @@ namespace glgui
 		friend class CSlidingPanel;
 
 	public:
-						CButton(float x, float y, float w, float h, const tstring& sText, bool bToggle = false, const tstring& sFont=_T("sans-serif"), size_t iSize=13);
+						CButton(float x, float y, float w, float h, const tstring& sText, bool bToggle = false, const tstring& sFont="sans-serif", size_t iSize=13);
 
 	public:
 		virtual void	Think();

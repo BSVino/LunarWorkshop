@@ -31,7 +31,7 @@ void CConversionMesh::CalculateEdgeData()
 	if (!GetNumEdges())
 	{
 		if (m_pScene->m_pWorkListener)
-			m_pScene->m_pWorkListener->SetAction(_T("Generating edges"), GetNumFaces());
+			m_pScene->m_pWorkListener->SetAction("Generating edges", GetNumFaces());
 
 		// For every face, find and create edges.
 		for (size_t iFace = 0; iFace < GetNumFaces(); iFace++)
@@ -117,7 +117,7 @@ void CConversionMesh::CalculateEdgeData()
 	else
 	{
 		if (m_pScene->m_pWorkListener)
-			m_pScene->m_pWorkListener->SetAction(_T("Finding edges"), GetNumFaces());
+			m_pScene->m_pWorkListener->SetAction("Finding edges", GetNumFaces());
 
 		// For every edge, mark the vertexes it contains.
 		for (size_t iFace = 0; iFace < GetNumFaces(); iFace++)
@@ -139,7 +139,7 @@ void CConversionMesh::CalculateEdgeData()
 	}
 
 	if (m_pScene->m_pWorkListener)
-		m_pScene->m_pWorkListener->SetAction(_T("Calculating edge data"), GetNumEdges());
+		m_pScene->m_pWorkListener->SetAction("Calculating edge data", GetNumEdges());
 
 	// For every conversion vertex, mark the edges it meets.
 	for (size_t iEdge = 0; iEdge < GetNumEdges(); iEdge++)
@@ -168,7 +168,7 @@ void CConversionMesh::CalculateEdgeData()
 void CConversionMesh::CalculateVertexNormals()
 {
 	if (m_pScene->m_pWorkListener)
-		m_pScene->m_pWorkListener->SetAction(_T("Calculating vertex normals"), GetNumFaces());
+		m_pScene->m_pWorkListener->SetAction("Calculating vertex normals", GetNumFaces());
 
 	m_aNormals.clear();
 
@@ -219,7 +219,7 @@ void CConversionMesh::CalculateVertexNormals()
 void CConversionMesh::CalculateVertexTangents()
 {
 	if (m_pScene->m_pWorkListener)
-		m_pScene->m_pWorkListener->SetAction(_T("Calculating tangents and bitangents"), GetNumFaces());
+		m_pScene->m_pWorkListener->SetAction("Calculating tangents and bitangents", GetNumFaces());
 
 	m_aTangents.clear();
 	m_aBitangents.clear();
@@ -328,7 +328,7 @@ void CConversionScene::CalculateExtends()
 	}
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Calculating extends"), GetNumMeshes() + GetNumScenes());
+		m_pWorkListener->SetAction("Calculating extends", GetNumMeshes() + GetNumScenes());
 
 	for (size_t m = 0; m < GetNumMeshes(); m++)
 	{
@@ -425,7 +425,7 @@ CConversionSceneNode* CConversionScene::GetDefaultSceneMeshInstance(CConversionS
 		return NULL;
 
 	// Put it in its own child node so that it can be moved around on its own.
-	size_t iChild = pScene->AddChild(_T("Mesh node"));
+	size_t iChild = pScene->AddChild("Mesh node");
 	pScene->GetChild(iChild)->AddMeshInstance(FindMesh(pMesh));
 
 	return pScene->GetChild(iChild);

@@ -35,8 +35,8 @@ public:
 	void				SaveDAE(const tstring& sFilename);
 	void				SaveDAEScene(class FCDSceneNode* pNode, CConversionSceneNode* pScene);
 
-	void				WriteSMDs(const tstring& sFilename = _T(""));
-	void				WriteSMD(size_t iMesh, const tstring& sFilename = _T(""));
+	void				WriteSMDs(const tstring& sFilename = "");
+	void				WriteSMD(size_t iMesh, const tstring& sFilename = "");
 
 	tstring				GetFilename(const tstring& sFilename);
 	tstring				GetDirectory(const tstring& sFilename);

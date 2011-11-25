@@ -34,7 +34,7 @@ namespace glgui
 
 	public:
 						CLabel();
-						CLabel(float x, float y, float w, float h, const tstring& sText, const tstring& sFont=_T("sans-serif"), size_t iSize=13);
+						CLabel(float x, float y, float w, float h, const tstring& sText, const tstring& sFont="sans-serif", size_t iSize=13);
 
 	public:
 		typedef enum
