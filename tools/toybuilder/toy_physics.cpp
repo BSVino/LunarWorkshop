@@ -11,22 +11,19 @@ void LoadMeshInstanceIntoToyPhysics(CConversionScene* pScene, CConversionMeshIns
 	for (size_t v = 0; v < pMesh->GetNumVertices(); v++)
 		pToy->AddPhysVertex(pMesh->GetVertex(v));
 
-	for (size_t m = 0; m < pScene->GetNumMaterials(); m++)
+	for (size_t j = 0; j < pMesh->GetNumFaces(); j++)
 	{
-		for (size_t j = 0; j < pMesh->GetNumFaces(); j++)
+		size_t k;
+		CConversionFace* pFace = pMesh->GetFace(j);
+
+		CConversionVertex* pVertex0 = pFace->GetVertex(0);
+
+		for (k = 2; k < pFace->GetNumVertices(); k++)
 		{
-			size_t k;
-			CConversionFace* pFace = pMesh->GetFace(j);
+			CConversionVertex* pVertex1 = pFace->GetVertex(k-1);
+			CConversionVertex* pVertex2 = pFace->GetVertex(k);
 
-			CConversionVertex* pVertex0 = pFace->GetVertex(0);
-
-			for (k = 2; k < pFace->GetNumVertices(); k++)
-			{
-				CConversionVertex* pVertex1 = pFace->GetVertex(k-1);
-				CConversionVertex* pVertex2 = pFace->GetVertex(k);
-
-				pToy->AddPhysTriangle(pVertex0->v, pVertex1->v, pVertex2->v);
-			}
+			pToy->AddPhysTriangle(pVertex0->v, pVertex1->v, pVertex2->v);
 		}
 	}
 }
