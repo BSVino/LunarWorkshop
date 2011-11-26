@@ -695,7 +695,7 @@ void CreateApplicationWithErrorHandling(CreateApplicationCallback pfnCallback, i
 
 #if defined(_WIN32) && !defined(_DEBUG)
 	}
-	__except (CreateMinidump(GetExceptionInformation(), "Digitanks")), EXCEPTION_EXECUTE_HANDLER)
+	__except (CreateMinidump(GetExceptionInformation(), "Tinker"), EXCEPTION_EXECUTE_HANDLER)
 	{
 	}
 #endif
