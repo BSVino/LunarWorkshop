@@ -561,6 +561,7 @@ public:
 
 	static CSaveData*						GetSaveData(const char* pszClassName, const char* pszName);
 	static CSaveData*						GetSaveDataByHandle(const char* pszClassName, const char* pszHandle);
+	static CSaveData*						GetOutput(const char* pszClassName, const tstring& sOutput);
 
 	static void								SerializeEntity(std::ostream& o, CBaseEntity* pEntity);
 	static bool								UnserializeEntity(std::istream& i);

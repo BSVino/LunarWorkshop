@@ -276,18 +276,67 @@ void CGameServer::LoadLevel(tstring sFile)
 				tstring sHandle = pField->GetKey();
 				tstring sValue = pField->GetValueTString();
 
-				CSaveData* pSaveData = CBaseEntity::GetSaveDataByHandle(sClass.c_str(), sHandle.c_str());
-				if (!pSaveData)
+				if (sHandle == "Output")
 				{
-					TAssert(!(tstring("Unknown handle '") + sHandle + "'\n").c_str());
-					continue;
+					CSaveData* pSaveData = CBaseEntity::GetOutput(sClass.c_str(), sValue);
+					TAssert(pSaveData);
+					if (!pSaveData)
+					{
+						TError("Unknown output '" + sValue + "'\n");
+						continue;
+					}
+
+					tstring sTarget;
+					tstring sInput;
+					tstring sArgs;
+					bool bKill = false;
+
+					for (size_t o = 0; o < pField->GetNumChildren(); o++)
+					{
+						CData* pOutputData = pField->GetChild(o);
+
+						if (pOutputData->GetKey() == "Target")
+							sTarget = pOutputData->GetValueString();
+						else if (pOutputData->GetKey() == "Input")
+							sInput = pOutputData->GetValueString();
+						else if (pOutputData->GetKey() == "Args")
+							sArgs = pOutputData->GetValueString();
+						else if (pOutputData->GetKey() == "Kill")
+							bKill = pOutputData->GetValueBool();
+					}
+
+					if (!sTarget.length())
+					{
+						TAssert(false);
+						TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing a target.\n");
+						continue;
+					}
+
+					if (!sInput.length())
+					{
+						TAssert(false);
+						TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing an input.\n");
+						continue;
+					}
+
+					pEntity->AddOutputTarget(sValue, sTarget, sInput, sArgs, bKill);
 				}
+				else
+				{
+					CSaveData* pSaveData = CBaseEntity::GetSaveDataByHandle(sClass.c_str(), sHandle.c_str());
+					TAssert(pSaveData);
+					if (!pSaveData)
+					{
+						TError("Unknown handle '" + sHandle + "'\n");
+						continue;
+					}
 
-				TAssert(pSaveData->m_pfnUnserializeString);
-				if (!pSaveData->m_pfnUnserializeString)
-					continue;
+					TAssert(pSaveData->m_pfnUnserializeString);
+					if (!pSaveData->m_pfnUnserializeString)
+						continue;
 
-				pSaveData->m_pfnUnserializeString(sValue, pSaveData, pEntity);
+					pSaveData->m_pfnUnserializeString(sValue, pSaveData, pEntity);
+				}
 			}
 		}
 	}

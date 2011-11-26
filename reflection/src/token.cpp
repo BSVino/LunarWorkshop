@@ -19,8 +19,6 @@ INPUTS_TABLE_END();
 
 void CToken::Precache()
 {
-	PrecacheModel("models/r.toy");
-	PrecacheModel("models/powersource.toy");
 }
 
 void CToken::Spawn()

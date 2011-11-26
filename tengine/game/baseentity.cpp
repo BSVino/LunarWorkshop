@@ -1461,6 +1461,11 @@ CSaveData* CBaseEntity::GetSaveDataByHandle(const char* pszClassName, const char
 	return NULL;
 }
 
+CSaveData* CBaseEntity::GetOutput(const char* pszClassName, const tstring& sOutput)
+{
+	return GetSaveData(pszClassName, ("m_Output_" + sOutput).c_str());
+}
+
 CEntityRegistration* CBaseEntity::GetRegisteredEntity(tstring sClassName)
 {
 	if (GetEntityRegistration().find(sClassName) == GetEntityRegistration().end())
@@ -1501,10 +1506,36 @@ void CBaseEntity::FindEntitiesByName(const eastl::string& sName, eastl::vector<C
 
 void UnserializeString_bool(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
+	bool bValue = (sData.comparei("yes") == 0 || sData.comparei("true") == 0 || sData.comparei("on") == 0 || stoi(sData) != 0);
+
+	bool* pData = (bool*)((char*)pEntity + pSaveData->m_iOffset);
+	switch(pSaveData->m_eType)
+	{
+	case CSaveData::DATA_COPYTYPE:
+		*pData = bValue;
+		break;
+
+	case CSaveData::DATA_NETVAR:
+	{
+		TAssert(false);
+		CNetworkedVariable<bool>* pVariable = (CNetworkedVariable<bool>*)pData;
+		(*pVariable) = bValue;
+		break;
+	}
+
+	case CSaveData::DATA_COPYARRAY:
+	case CSaveData::DATA_COPYVECTOR:
+	case CSaveData::DATA_STRING:
+	case CSaveData::DATA_STRING16:
+	case CSaveData::DATA_OUTPUT:
+		TAssert(false);
+		break;
+	}
 }
 
 void UnserializeString_int(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
+	TAssert(false);
 }
 
 void UnserializeString_size_t(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
@@ -1512,10 +1543,6 @@ void UnserializeString_size_t(const tstring& sData, CSaveData* pSaveData, CBaseE
 	TAssert(false);
 
 	size_t i = stoi(sData);
-
-	TAssert(i != ~0);
-	if (i == ~0)
-		return;
 
 	size_t* pData = (size_t*)((char*)pEntity + pSaveData->m_iOffset);
 	switch(pSaveData->m_eType)
@@ -1543,10 +1570,58 @@ void UnserializeString_size_t(const tstring& sData, CSaveData* pSaveData, CBaseE
 
 void UnserializeString_float(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
+	float f = stof(sData);
+
+	float* pData = (float*)((char*)pEntity + pSaveData->m_iOffset);
+	switch(pSaveData->m_eType)
+	{
+	case CSaveData::DATA_COPYTYPE:
+		*pData = f;
+		break;
+
+	case CSaveData::DATA_NETVAR:
+	{
+		TAssert(false);
+		CNetworkedVariable<float>* pVariable = (CNetworkedVariable<float>*)pData;
+		(*pVariable) = f;
+		break;
+	}
+
+	case CSaveData::DATA_COPYARRAY:
+	case CSaveData::DATA_COPYVECTOR:
+	case CSaveData::DATA_STRING:
+	case CSaveData::DATA_STRING16:
+	case CSaveData::DATA_OUTPUT:
+		TAssert(false);
+		break;
+	}
 }
 
 void UnserializeString_tstring(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
+	tstring* psData = (tstring*)((char*)pEntity + pSaveData->m_iOffset);
+	switch(pSaveData->m_eType)
+	{
+	case CSaveData::DATA_STRING:
+		*psData = sData;
+		break;
+
+	case CSaveData::DATA_NETVAR:
+	{
+		TAssert(false);
+		CNetworkedString* pVariable = (CNetworkedString*)psData;
+		(*pVariable) = sData;
+		break;
+	}
+
+	case CSaveData::DATA_COPYARRAY:
+	case CSaveData::DATA_COPYVECTOR:
+	case CSaveData::DATA_COPYTYPE:
+	case CSaveData::DATA_STRING16:
+	case CSaveData::DATA_OUTPUT:
+		TAssert(false);
+		break;
+	}
 }
 
 void UnserializeString_TVector(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
@@ -1596,10 +1671,12 @@ void UnserializeString_Vector(const tstring& sData, CSaveData* pSaveData, CBaseE
 
 void UnserializeString_EAngle(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
+	TAssert(false);
 }
 
 void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
+	TAssert(false);
 }
 
 void UnserializeString_ModelID(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
