@@ -70,10 +70,7 @@ void CReflectionGame::SetupGame(tstring sType)
 
 	GameServer()->LoadLevel("levels/1.txt");
 
-/*	CMirror* pMirror = GameServer()->Create<CMirror>("CMirror");
-	pMirror->SetGlobalOrigin(Vector(-6, 0, -3));
-	pMirror->SetGlobalAngles(EAngle(0, 90, 0));
-
+/*
 	CToken* pToken = GameServer()->Create<CToken>("CToken");
 	pToken->SetModel("models/r.toy");
 	pToken->SetGlobalOrigin(Vector(-6, 0, 3));

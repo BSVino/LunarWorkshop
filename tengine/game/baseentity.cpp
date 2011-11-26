@@ -62,6 +62,9 @@ NETVAR_TABLE_BEGIN(CBaseEntity);
 	NETVAR_DEFINE(float, m_flSpawnTime);
 NETVAR_TABLE_END();
 
+void UnserializeString_LocalOrigin(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity);
+void UnserializeString_LocalAngles(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity);
+
 SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_OUTPUT(OnSpawn);
 	SAVEDATA_DEFINE_OUTPUT(OnTakeDamage);
@@ -79,9 +82,9 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, TVector, m_vecGlobalGravity, "GlobalGravity");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TMatrix, m_mLocalTransform);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Quaternion, m_qLocalRotation);
-	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, TVector, m_vecLocalOrigin, "LocalOrigin");
+	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, TVector, m_vecLocalOrigin, "LocalOrigin", UnserializeString_LocalOrigin);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TVector, m_vecLastLocalOrigin);
-	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, EAngle, m_angLocalAngles, "LocalAngles");
+	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, EAngle, m_angLocalAngles, "LocalAngles", UnserializeString_LocalAngles);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, TVector, m_vecLocalVelocity, "LocalVelocity");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iHandle);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, bool, m_bTakeDamage, "TakeDamage");
@@ -1330,23 +1333,59 @@ bool CBaseEntity::Unserialize(std::istream& i, const char* pszClassName, void* p
 
 void CBaseEntity::PrecacheModel(const tstring& sModel)
 {
+	CEntityRegistration* pReg = &GetEntityRegistration()[GetClassName()];
+	for (size_t i = 0; i < pReg->m_asPrecaches.size(); i++)
+	{
+		if (pReg->m_asPrecaches[i] == sModel)
+			return;
+	}
+
 	CModelLibrary::AddModel(sModel);
+
+	pReg->m_asPrecaches.push_back(sModel);
 }
 
 void CBaseEntity::PrecacheParticleSystem(const tstring& sSystem)
 {
+	CEntityRegistration* pReg = &GetEntityRegistration()[GetClassName()];
+	for (size_t i = 0; i < pReg->m_asPrecaches.size(); i++)
+	{
+		if (pReg->m_asPrecaches[i] == sSystem)
+			return;
+	}
+
 	size_t iSystem = CParticleSystemLibrary::Get()->FindParticleSystem(sSystem);
 	CParticleSystemLibrary::Get()->LoadParticleSystem(iSystem);
+
+	pReg->m_asPrecaches.push_back(sSystem);
 }
 
 void CBaseEntity::PrecacheSound(const tstring& sSound)
 {
+	CEntityRegistration* pReg = &GetEntityRegistration()[GetClassName()];
+	for (size_t i = 0; i < pReg->m_asPrecaches.size(); i++)
+	{
+		if (pReg->m_asPrecaches[i] == sSound)
+			return;
+	}
+
 	CSoundLibrary::Get()->AddSound(sSound);
+
+	pReg->m_asPrecaches.push_back(sSound);
 }
 
 void CBaseEntity::PrecacheTexture(const tstring& sTexture)
 {
+	CEntityRegistration* pReg = &GetEntityRegistration()[GetClassName()];
+	for (size_t i = 0; i < pReg->m_asPrecaches.size(); i++)
+	{
+		if (pReg->m_asPrecaches[i] == sTexture)
+			return;
+	}
+
 	CTextureLibrary::AddTexture(sTexture);
+
+	pReg->m_asPrecaches.push_back(sTexture);
 }
 
 eastl::map<tstring, CEntityRegistration>& CBaseEntity::GetEntityRegistration()
@@ -1472,7 +1511,7 @@ void UnserializeString_size_t(const tstring& sData, CSaveData* pSaveData, CBaseE
 {
 	TAssert(false);
 
-	size_t i = atoi(sData);
+	size_t i = stoi(sData);
 
 	TAssert(i != ~0);
 	if (i == ~0)
@@ -1512,10 +1551,47 @@ void UnserializeString_tstring(const tstring& sData, CSaveData* pSaveData, CBase
 
 void UnserializeString_TVector(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	TAssert(asTokens.size() == 3);
+	if (asTokens.size() != 3)
+	{
+		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") wrong number of arguments for a vector\n");
+		return;
+	}
+
+	Vector vecData(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+
+	Vector* pData = (Vector*)((char*)pEntity + pSaveData->m_iOffset);
+	switch(pSaveData->m_eType)
+	{
+	case CSaveData::DATA_COPYTYPE:
+		TAssert(false);
+		*pData = vecData;
+		break;
+
+	case CSaveData::DATA_NETVAR:
+	{
+		TAssert(false);
+		CNetworkedVector* pVariable = (CNetworkedVector*)pData;
+		(*pVariable) = vecData;
+		break;
+	}
+
+	case CSaveData::DATA_COPYARRAY:
+	case CSaveData::DATA_COPYVECTOR:
+	case CSaveData::DATA_STRING:
+	case CSaveData::DATA_STRING16:
+	case CSaveData::DATA_OUTPUT:
+		TAssert(false);
+		break;
+	}
 }
 
 void UnserializeString_Vector(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
+	UnserializeString_TVector(sData, pSaveData, pEntity);
 }
 
 void UnserializeString_EAngle(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
@@ -1532,7 +1608,42 @@ void UnserializeString_ModelID(const tstring& sData, CSaveData* pSaveData, CBase
 
 	TAssert(iID != ~0);
 	if (iID == ~0)
+	{
+		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") couldn't find or load model '" + sData + "'\n");
 		return;
+	}
 
 	pEntity->SetModel(iID);
+}
+
+void UnserializeString_LocalOrigin(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	TAssert(asTokens.size() == 3);
+	if (asTokens.size() != 3)
+	{
+		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") wrong number of arguments for a vector\n");
+		return;
+	}
+
+	Vector vecData(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+	pEntity->SetLocalOrigin(vecData);
+}
+
+void UnserializeString_LocalAngles(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	TAssert(asTokens.size() == 3);
+	if (asTokens.size() != 3)
+	{
+		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") wrong number of arguments for a vector\n");
+		return;
+	}
+
+	EAngle angData(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+	pEntity->SetLocalAngles(angData);
 }

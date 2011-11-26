@@ -132,6 +132,12 @@ void CGameServer::AllowPrecaches()
 	CTextureLibrary::ResetReferenceCounts();
 	CSoundLibrary::ResetReferenceCounts();
 	CParticleSystemLibrary::ResetReferenceCounts();
+
+	for (eastl::map<tstring, CEntityRegistration>::iterator it = CBaseEntity::GetEntityRegistration().begin(); it != CBaseEntity::GetEntityRegistration().end(); it++)
+	{
+		CEntityRegistration* pRegistration = &it->second;
+		pRegistration->m_asPrecaches.clear();
+	}
 }
 
 void CGameServer::AddToPrecacheList(const tstring& sClass)

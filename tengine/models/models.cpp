@@ -19,7 +19,13 @@ CModelLibrary::CModelLibrary()
 CModelLibrary::~CModelLibrary()
 {
 	for (size_t i = 0; i < m_apModels.size(); i++)
-		delete m_apModels[i];
+	{
+		if (m_apModels[i])
+		{
+			m_apModels[i]->m_iReferences = 0;
+			delete m_apModels[i];
+		}
+	}
 
 	s_pModelLibrary = NULL;
 }

@@ -9,8 +9,10 @@ REGISTER_ENTITY(CMirror);
 NETVAR_TABLE_BEGIN(CMirror);
 NETVAR_TABLE_END();
 
+void UnserializeString_MirrorType(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity);
+
 SAVEDATA_TABLE_BEGIN(CMirror);
-	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", UnserializeString_int);
+	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", UnserializeString_MirrorType);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iBuffer);
 SAVEDATA_TABLE_END();
 
@@ -87,6 +89,8 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 
 void CMirror::SetMirrorType(mirror_t eType)
 {
+	Precache();
+
 	m_eMirrorType = eType;
 	switch(m_eMirrorType)
 	{
@@ -136,4 +140,14 @@ Matrix4x4 CMirror::GetReflection() const
 		return Matrix4x4().AddReflection(Vector(0, 1, 0));
 
 	return Matrix4x4();
+}
+
+void UnserializeString_MirrorType(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+	CMirror* pMirror = static_cast<CMirror*>(pEntity);
+
+	if (sData == "horizontal")
+		pMirror->SetMirrorType(MIRROR_HORIZONTAL);
+	else
+		pMirror->SetMirrorType(MIRROR_VERTICAL);
 }

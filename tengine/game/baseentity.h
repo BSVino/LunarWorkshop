@@ -141,6 +141,7 @@ public:
 	eastl::vector<CSaveData>	m_aSaveData;
 	eastl::vector<CNetworkedVariableData>	m_aNetworkVariables;
 	eastl::map<eastl::string, CEntityInput>		m_aInputs;
+	eastl::vector<tstring>		m_asPrecaches;
 };
 
 #define REGISTER_ENTITY_CLASS_NOBASE(entity) \
@@ -547,10 +548,10 @@ public:
 
 	static size_t							GetNumEntities();
 
-	static void								PrecacheModel(const tstring& sModel);
-	static void								PrecacheParticleSystem(const tstring& sSystem);
-	static void								PrecacheSound(const tstring& sSound);
-	static void								PrecacheTexture(const tstring& sTexture);
+	void									PrecacheModel(const tstring& sModel);
+	void									PrecacheParticleSystem(const tstring& sSystem);
+	void									PrecacheSound(const tstring& sSound);
+	void									PrecacheTexture(const tstring& sTexture);
 
 public:
 	static void								RegisterEntity(const char* pszClassName, const char* pszParentClass, EntityRegisterCallback pfnRegisterCallback, EntityPrecacheCallback pfnPrecacheCallback, EntityCreateCallback pfnCreateCallback);
