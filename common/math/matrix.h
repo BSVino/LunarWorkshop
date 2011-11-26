@@ -35,6 +35,7 @@ public:
 				Matrix4x4(float* aflValues);
 				Matrix4x4(const Vector& vecForward, const Vector& vecUp, const Vector& vecRight, const Vector& vecPosition = Vector(0,0,0));
 				Matrix4x4(const Quaternion& q);
+				Matrix4x4(const EAngle& angDirection, const Vector& vecPosition);
 
 public:
 	void		Identity();

@@ -35,6 +35,9 @@ class CReceptacle : public CBaseEntity
 	REGISTER_ENTITY_CLASS(CReceptacle, CBaseEntity);
 
 public:
+	void					Precache();
+	void					Spawn();
+
 	void					SetToken(CToken* pToken);
 	CToken*					GetToken() const { return m_hToken; }
 

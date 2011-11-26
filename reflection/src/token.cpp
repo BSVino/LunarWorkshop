@@ -1,6 +1,7 @@
 #include "token.h"
 
 #include <renderer/renderingcontext.h>
+#include <physics/physics.h>
 
 #include "reflection_renderer.h"
 
@@ -72,6 +73,21 @@ SAVEDATA_TABLE_END();
 INPUTS_TABLE_BEGIN(CReceptacle);
 INPUTS_TABLE_END();
 
+void CReceptacle::Precache()
+{
+	PrecacheModel("models/pedestal.toy");
+}
+
+void CReceptacle::Spawn()
+{
+	Precache();
+
+	BaseClass::Spawn();
+
+	SetModel("models/pedestal.toy");
+	AddToPhysics(CT_STATIC_MESH);
+}
+
 void CReceptacle::SetToken(CToken* pToken)
 {
 	if (m_hToken.GetPointer())
@@ -98,7 +114,7 @@ void CReceptacle::SetToken(CToken* pToken)
 		return;
 
 	pToken->SetMoveParent(this);
-	pToken->SetLocalTransform(TMatrix());
+	pToken->SetLocalTransform(TMatrix(EAngle(45, 180, 0), Vector(0, 0.742105f, 0)));
 	pToken->m_hReceptacle = this;
 
 	if (!m_sDesiredToken.length() || pToken->GetName() == m_sDesiredToken)

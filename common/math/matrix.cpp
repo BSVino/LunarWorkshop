@@ -39,6 +39,17 @@ Matrix4x4::Matrix4x4(const Quaternion& q)
 	SetRotation(q);
 }
 
+Matrix4x4::Matrix4x4(const EAngle& angDirection, const Vector& vecPosition)
+{
+	SetAngles(angDirection);
+	SetTranslation(vecPosition);
+
+	m[0][3] = 0;
+	m[1][3] = 0;
+	m[2][3] = 0;
+	m[3][3] = 1;
+}
+
 void Matrix4x4::Identity()
 {
 	memset(this, 0, sizeof(Matrix4x4));

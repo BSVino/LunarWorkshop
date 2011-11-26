@@ -191,7 +191,15 @@ TFloat CBaseEntity::GetBoundingRadius() const
 
 void CBaseEntity::SetModel(const tstring& sModel)
 {
-	SetModel(CModelLibrary::FindModel(sModel));
+	size_t iModel = CModelLibrary::FindModel(sModel);
+
+	if (iModel == ~0)
+	{
+		TError("Couldn't find model " + sModel + "\n");
+		return;
+	}
+
+	SetModel(iModel);
 }
 
 void CBaseEntity::SetModel(size_t iModel)
