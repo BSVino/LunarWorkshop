@@ -10,7 +10,7 @@ NETVAR_TABLE_BEGIN(CMirror);
 NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CMirror);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType);
+	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", UnserializeString_int);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iBuffer);
 SAVEDATA_TABLE_END();
 

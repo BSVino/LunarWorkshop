@@ -1,5 +1,6 @@
 #include "reflection_game.h"
 
+#include <tinker/cvar.h>
 #include <tinker/application.h>
 #include <renderer/renderer.h>
 #include <game/level.h>
@@ -60,8 +61,6 @@ INPUTS_TABLE_END();
 
 void CReflectionGame::SetupGame(tstring sType)
 {
-	CWorld* pWorld = GameServer()->Create<CWorld>("CWorld");
-
 	CReflectionPlayer* pPlayer = GameServer()->Create<CReflectionPlayer>("CReflectionPlayer");
 	Game()->AddPlayer(pPlayer);
 
@@ -69,7 +68,9 @@ void CReflectionGame::SetupGame(tstring sType)
 	pCharacter->SetGlobalOrigin(Vector(0, 0, 0));
 	pPlayer->SetCharacter(pCharacter);
 
-	CMirror* pMirror = GameServer()->Create<CMirror>("CMirror");
+	GameServer()->LoadLevel("levels/1.txt");
+
+/*	CMirror* pMirror = GameServer()->Create<CMirror>("CMirror");
 	pMirror->SetGlobalOrigin(Vector(-6, 0, -3));
 	pMirror->SetGlobalAngles(EAngle(0, 90, 0));
 
@@ -183,7 +184,7 @@ void CReflectionGame::SetupGame(tstring sType)
 	pDoor->SetName("p3_door");
 	pDoor->SetModel("models/door.toy");
 	pDoor->SetGlobalOrigin(Vector(-59.8467f, 1.31136f, -0.132385f));
-	pDoor->SetLerpTime(0.5f);
+	pDoor->SetLerpTime(0.5f);*/
 }
 
 void CReflectionGame::Precache()

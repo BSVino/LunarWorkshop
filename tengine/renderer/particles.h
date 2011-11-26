@@ -84,23 +84,25 @@ class CParticleSystem
 {
 public:
 									CParticleSystem(tstring sName);
+									~CParticleSystem();
 
 public:
 	bool							IsLoaded() { return m_bLoaded; }
 	void							Load();
+	void							Unload();
 
-	tstring					GetName() { return m_sName; }
+	tstring							GetName() { return m_sName; }
 
 	void							SetTexture(tstring sTexture) { m_sTexture = sTexture; };
 	void							SetTexture(size_t iTexture) { m_iTexture = iTexture; };
 
-	tstring					GetTextureName() { return m_sTexture; }
+	tstring							GetTextureName() { return m_sTexture; }
 	inline size_t					GetTexture() { return m_iTexture; }
 
 	void							SetModel(tstring sModel) { m_sModel = sModel; };
 	void							SetModel(size_t iModel) { m_iModel = iModel; };
 
-	tstring					GetModelName() { return m_sModel; }
+	tstring							GetModelName() { return m_sModel; }
 	inline size_t					GetModel() { return m_iModel; }
 
 	bool							IsRenderable();
@@ -172,15 +174,20 @@ public:
 	size_t							GetNumChildren() { return m_aiChildren.size(); };
 	size_t							GetChild(size_t iChild) { return m_aiChildren[iChild]; };
 
+	void							SetReferences(size_t i) { m_iReferences = i; }
+	size_t							GetReferences() { return m_iReferences; }
+
 protected:
+	size_t							m_iReferences;
+
 	bool							m_bLoaded;
 
-	tstring					m_sName;
+	tstring							m_sName;
 
-	tstring					m_sTexture;
+	tstring							m_sTexture;
 	size_t							m_iTexture;
 
-	tstring					m_sModel;
+	tstring							m_sModel;
 	size_t							m_iModel;
 
 	blendtype_t						m_eBlend;
@@ -236,6 +243,9 @@ public:
 	static void						ClearInstances();
 
 	static void						ReloadSystems();
+
+	static void						ResetReferenceCounts();
+	static void						ClearUnreferenced();
 
 	static CParticleSystemLibrary*	Get() { return s_pParticleSystemLibrary; };
 

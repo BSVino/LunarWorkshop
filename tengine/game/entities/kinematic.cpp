@@ -8,12 +8,12 @@ NETVAR_TABLE_BEGIN(CKinematic);
 NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CKinematic);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLerpTime);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, float, m_flLerpTime, "LerpTime");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLerpStart);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLerpEnd);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecLerpStart);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecLerpGoal);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecLerpGoal);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flAngleLerpTime);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, float, m_flAngleLerpTime, "AngleLerpTime");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flAngleLerpStart);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flAngleLerpEnd);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, EAngle, m_angLerpStart);

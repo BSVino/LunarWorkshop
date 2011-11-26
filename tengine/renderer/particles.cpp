@@ -224,6 +224,42 @@ void CParticleSystemLibrary::ReloadSystems()
 		pPSL->LoadParticleSystem(i);
 }
 
+void CParticleSystemLibrary::ResetReferenceCounts()
+{
+	for (size_t i = 0; i < Get()->m_apParticleSystems.size(); i++)
+	{
+		if (!Get()->m_apParticleSystems[i])
+			continue;
+
+		Get()->m_apParticleSystems[i]->SetReferences(0);
+	}
+}
+
+void CParticleSystemLibrary::ClearUnreferenced()
+{
+	while (true)
+	{
+		bool bUnloaded = false;
+
+		for (size_t i = 0; i < Get()->m_apParticleSystems.size(); i++)
+		{
+			if (!Get()->m_apParticleSystems[i])
+				continue;
+
+			if (!Get()->m_apParticleSystems[i]->GetReferences())
+			{
+				Get()->m_apParticleSystems[i]->Unload();
+				bUnloaded = true;
+				break;
+			}
+		}
+
+		// If we unloaded something we need to start again in case it had a dependency earlier in the list.
+		if (!bUnloaded)
+			break;
+	}
+}
+
 void ReloadParticles(CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
 {
 	CParticleSystemLibrary::ReloadSystems();
@@ -259,6 +295,11 @@ CParticleSystem::CParticleSystem(tstring sName)
 	m_bRandomAngleVelocity = false;
 }
 
+CParticleSystem::~CParticleSystem()
+{
+	Unload();
+}
+
 void CParticleSystem::Load()
 {
 	if (IsLoaded())
@@ -270,10 +311,29 @@ void CParticleSystem::Load()
 		SetTexture(CTextureLibrary::AddTextureID(GetTextureName()));
 
 	if (GetModelName().length() > 0)
-		SetModel(CModelLibrary::Get()->AddModel(GetModelName()));
+		SetModel(CModelLibrary::AddModel(GetModelName()));
 
 	for (size_t i = 0; i < GetNumChildren(); i++)
 		CParticleSystemLibrary::Get()->GetParticleSystem(GetChild(i))->Load();
+}
+
+void CParticleSystem::Unload()
+{
+	if (!IsLoaded())
+		return;
+
+	TAssert(m_iReferences == 0);
+
+	m_bLoaded = false;
+
+	if (GetTextureName().length() > 0)
+		CTextureLibrary::ReleaseTexture(GetTextureName());
+
+	if (GetModelName().length() > 0)
+		CModelLibrary::ReleaseModel(GetModelName());
+
+	for (size_t i = 0; i < GetNumChildren(); i++)
+		CParticleSystemLibrary::Get()->GetParticleSystem(GetChild(i))->Unload();
 }
 
 bool CParticleSystem::IsRenderable()

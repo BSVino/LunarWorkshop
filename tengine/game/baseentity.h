@@ -29,6 +29,7 @@ typedef enum
 } damagetype_t;
 
 typedef void (*EntityRegisterCallback)();
+typedef void (*EntityPrecacheCallback)();
 typedef size_t (*EntityCreateCallback)();
 
 template<typename T>
@@ -45,6 +46,17 @@ void ResizeVectorTmpl(char* pData, size_t iVectorSize)
 	pVector->resize(iVectorSize);
 }
 
+void UnserializeString_bool(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_int(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_size_t(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_float(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_tstring(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_TVector(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_Vector(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_EAngle(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_AABB(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_ModelID(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+
 class CSaveData
 {
 public:
@@ -60,13 +72,16 @@ public:
 		DATA_OUTPUT,
 	} datatype_t;
 
+	typedef void (*UnserializeString)(const tstring& sData, CSaveData* pData, class CBaseEntity* pEntity);
 	typedef void (*ResizeVector)(char* pData, size_t iVectorSize);
 
 	datatype_t				m_eType;
 	const char*				m_pszVariableName;
+	const char*				m_pszHandle;
 	size_t					m_iOffset;
 	size_t					m_iSizeOfVariable;
 	size_t					m_iSizeOfType;
+	UnserializeString		m_pfnUnserializeString;
 	ResizeVector			m_pfnResizeVector;
 };
 
@@ -118,10 +133,11 @@ public:
 class CEntityRegistration
 {
 public:
-	const char*				m_pszEntityName;
-	const char*				m_pszParentClass;
-	EntityRegisterCallback	m_pfnRegisterCallback;
-	EntityCreateCallback	m_pfnCreateCallback;
+	const char*					m_pszEntityClass;
+	const char*					m_pszParentClass;
+	EntityRegisterCallback		m_pfnRegisterCallback;
+	EntityPrecacheCallback		m_pfnPrecacheCallback;
+	EntityCreateCallback		m_pfnCreateCallback;
 	eastl::vector<CSaveData>	m_aSaveData;
 	eastl::vector<CNetworkedVariableData>	m_aNetworkVariables;
 	eastl::map<eastl::string, CEntityInput>		m_aInputs;
@@ -135,6 +151,13 @@ static void RegisterCallback##entity() \
 	entity* pEntity = new entity(); \
 	pEntity->m_sClassName = #entity; \
 	CBaseEntity::Register(pEntity); \
+	delete pEntity; \
+} \
+static void PrecacheCallback##entity() \
+{ \
+	entity* pEntity = new entity(); \
+	pEntity->m_sClassName = #entity; \
+	CBaseEntity::PrecacheCallback(pEntity); \
 	delete pEntity; \
 } \
 static const char* Get##entity##ParentClass() { return NULL; } \
@@ -168,6 +191,13 @@ static void RegisterCallback##entity() \
 	entity* pEntity = new entity(); \
 	pEntity->m_sClassName = #entity; \
 	CBaseEntity::Register(pEntity); \
+	delete pEntity; \
+} \
+static void PrecacheCallback##entity() \
+{ \
+	entity* pEntity = new entity(); \
+	pEntity->m_sClassName = #entity; \
+	CBaseEntity::PrecacheCallback(pEntity); \
 	delete pEntity; \
 } \
 static const char* Get##entity##ParentClass() { return #base; } \
@@ -237,7 +267,7 @@ void entity::RegisterSaveData() \
 	CGameServer* pGameServer = GameServer(); \
 	CSaveData* pSaveData = NULL; \
 
-#define SAVEDATA_DEFINE(copy, type, name) \
+#define SAVEDATA_DEFINE_COMMON(copy, type, name) \
 	pSaveData = &pRegistration->m_aSaveData.push_back(); \
 	pSaveData->m_eType = copy; \
 	pSaveData->m_pszVariableName = #name; \
@@ -253,10 +283,26 @@ void entity::RegisterSaveData() \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfVariable); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfType); \
 
+#define SAVEDATA_DEFINE_HANDLE(copy, type, name, handle) \
+	SAVEDATA_DEFINE_COMMON(copy, type, name) \
+	pSaveData->m_pszHandle = handle; \
+	pSaveData->m_pfnUnserializeString = &UnserializeString_##type; \
+
+#define SAVEDATA_DEFINE(copy, type, name) \
+	SAVEDATA_DEFINE_COMMON(copy, type, name) \
+	pSaveData->m_pszHandle = nullptr; \
+	pSaveData->m_pfnUnserializeString = nullptr; \
+
+#define SAVEDATA_DEFINE_HANDLE_FUNCTION(copy, type, name, handle, function) \
+	SAVEDATA_DEFINE_COMMON(copy, type, name) \
+	pSaveData->m_pszHandle = handle; \
+	pSaveData->m_pfnUnserializeString = &function; \
+
 #define SAVEDATA_OMIT(name) \
 	pSaveData = &pRegistration->m_aSaveData.push_back(); \
 	pSaveData->m_eType = CSaveData::DATA_OMIT; \
 	pSaveData->m_pszVariableName = #name; \
+	pSaveData->m_pszHandle = ""; \
 	pSaveData->m_iOffset = (((size_t)((void*)&name))) - ((size_t)((void*)this)); \
 	pSaveData->m_iSizeOfVariable = sizeof(name); \
 	pSaveData->m_iSizeOfType = 0; \
@@ -270,6 +316,7 @@ void entity::RegisterSaveData() \
 	pSaveData = &pRegistration->m_aSaveData.push_back(); \
 	pSaveData->m_eType = CSaveData::DATA_OUTPUT; \
 	pSaveData->m_pszVariableName = "m_Output_" #name; \
+	pSaveData->m_pszHandle = #name; \
 	pSaveData->m_iOffset = (((size_t)((void*)&m_Output_##name))) - ((size_t)((void*)this)); \
 	pSaveData->m_iSizeOfVariable = sizeof(m_Output_##name); \
 	pSaveData->m_iSizeOfType = sizeof(CEntityOutput); \
@@ -477,6 +524,7 @@ public:
 	virtual void							ClientSpawn();
 
 	CSaveData*								GetSaveData(const char* pszName);
+	CSaveData*								GetSaveDataByHandle(const char* pszHandle);
 	CNetworkedVariableData*					GetNetworkVariable(const char* pszName);
 	CEntityInput*							GetInput(const char* pszName);
 
@@ -505,9 +553,13 @@ public:
 	static void								PrecacheTexture(const tstring& sTexture);
 
 public:
-	static void								RegisterEntity(const char* pszClassName, const char* pszParentClass, EntityCreateCallback pfnCreateCallback, EntityRegisterCallback pfnRegisterCallback);
+	static void								RegisterEntity(const char* pszClassName, const char* pszParentClass, EntityRegisterCallback pfnRegisterCallback, EntityPrecacheCallback pfnPrecacheCallback, EntityCreateCallback pfnCreateCallback);
 	static void								Register(CBaseEntity* pEntity);
 	static CEntityRegistration*				GetRegisteredEntity(tstring sClassName);
+	static void								PrecacheCallback(CBaseEntity* pEntity);
+
+	static CSaveData*						GetSaveData(const char* pszClassName, const char* pszName);
+	static CSaveData*						GetSaveDataByHandle(const char* pszClassName, const char* pszHandle);
 
 	static void								SerializeEntity(std::ostream& o, CBaseEntity* pEntity);
 	static bool								UnserializeEntity(std::istream& i);
@@ -524,7 +576,7 @@ protected:
 	static eastl::map<tstring, CEntityRegistration>& GetEntityRegistration();
 
 protected:
-	eastl::string							m_sName;
+	tstring									m_sName;
 	tstring									m_sClassName;
 
 	float									m_flMass;
@@ -584,7 +636,7 @@ class CRegister##entity \
 public: \
 	CRegister##entity() \
 	{ \
-		CBaseEntity::RegisterEntity(#entity, entity::Get##entity##ParentClass(), &NewEntity<entity>, &entity::RegisterCallback##entity); \
+		CBaseEntity::RegisterEntity(#entity, entity::Get##entity##ParentClass(), &entity::RegisterCallback##entity, &entity::PrecacheCallback##entity, &NewEntity<entity>); \
 	} \
 } g_Register##entity = CRegister##entity(); \
 

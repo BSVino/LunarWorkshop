@@ -21,6 +21,8 @@ public:
 	size_t					LoadBufferIntoGL(size_t iMaterial);
 
 public:
+	size_t					m_iReferences;
+
 	tstring					m_sFilename;
 	CToy*					m_pToy;
 
@@ -41,11 +43,14 @@ public:
 public:
 	static size_t			GetNumModels() { return Get()->m_apModels.size(); }
 
-	size_t					AddModel(const tstring& sModel);
-	size_t					FindModel(const tstring& sModel);
-	CModel*					GetModel(size_t i);
+	static size_t			AddModel(const tstring& sModel);
+	static size_t			FindModel(const tstring& sModel);
+	static CModel*			GetModel(size_t i);
+	static void				ReleaseModel(const tstring& sModel);
 
-public:
+	static void				ResetReferenceCounts();
+	static void				ClearUnreferenced();
+
 	static CModelLibrary*	Get() { return s_pModelLibrary; };
 
 protected:

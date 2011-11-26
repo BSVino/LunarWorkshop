@@ -68,36 +68,36 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_OUTPUT(OnKilled);
 	SAVEDATA_DEFINE_OUTPUT(OnActivated);
 	SAVEDATA_DEFINE_OUTPUT(OnDeactivated);
-	SAVEDATA_DEFINE(CSaveData::DATA_STRING, eastl::string, m_sName);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sName, "Name");
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sClassName);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flMass);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, float, m_flMass, "Mass");
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hMoveParent);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_ahMoveChildren);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, AABB, m_aabbBoundingBox);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, AABB, m_aabbBoundingBox, "BoundingBox");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bGlobalTransformsDirty);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TMatrix, m_mGlobalTransform);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, TVector, m_vecGlobalGravity);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, TVector, m_vecGlobalGravity, "GlobalGravity");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TMatrix, m_mLocalTransform);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Quaternion, m_qLocalRotation);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, TVector, m_vecLocalOrigin);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, TVector, m_vecLocalOrigin, "LocalOrigin");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TVector, m_vecLastLocalOrigin);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, EAngle, m_angLocalAngles);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, TVector, m_vecLocalVelocity);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, EAngle, m_angLocalAngles, "LocalAngles");
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, TVector, m_vecLocalVelocity, "LocalVelocity");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iHandle);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, bool, m_bTakeDamage);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, float, m_flTotalHealth);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, float, m_flHealth);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, bool, m_bTakeDamage, "TakeDamage");
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, float, m_flTotalHealth, "TotalHealth");
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, float, m_flHealth, "Health");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flTimeKilled);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLastTakeDamage);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, bool, m_bActive);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, bool, m_bActive, "Active");
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CTeam>, m_hTeam);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bVisible);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bVisible, "Visible");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bInPhysics);
 	SAVEDATA_DEFINE(CSaveData::DATA_OMIT, bool, m_bDeleted);	// Deleted entities are not saved.
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bClientSpawn);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYVECTOR, CEntityHandle<CBaseEntity>, m_ahTouching);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, size_t, m_iModel);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup, "CollisionGroup");
+	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", UnserializeString_ModelID);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, float, m_flSpawnTime);
 SAVEDATA_TABLE_END();
@@ -188,7 +188,7 @@ TFloat CBaseEntity::GetBoundingRadius() const
 
 void CBaseEntity::SetModel(const tstring& sModel)
 {
-	SetModel(CModelLibrary::Get()->FindModel(sModel));
+	SetModel(CModelLibrary::FindModel(sModel));
 }
 
 void CBaseEntity::SetModel(size_t iModel)
@@ -198,7 +198,7 @@ void CBaseEntity::SetModel(size_t iModel)
 	if (m_iModel.Get() == ~0)
 		return;
 
-	CModel* pModel = CModelLibrary::Get()->GetModel(iModel);
+	CModel* pModel = CModelLibrary::GetModel(iModel);
 	if (pModel)
 		m_aabbBoundingBox = pModel->m_aabbBoundingBox;
 
@@ -207,7 +207,7 @@ void CBaseEntity::SetModel(size_t iModel)
 
 CModel* CBaseEntity::GetModel() const
 {
-	return CModelLibrary::Get()->GetModel(GetModelID());
+	return CModelLibrary::GetModel(GetModelID());
 }
 
 void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
@@ -1004,25 +1004,12 @@ void CBaseEntity::ClientSpawn()
 
 CSaveData* CBaseEntity::GetSaveData(const char* pszName)
 {
-	const tchar* pszClassName = GetClassName();
-	CEntityRegistration* pRegistration = NULL;
-	
-	do
-	{
-		pRegistration = CBaseEntity::GetRegisteredEntity(pszClassName);
+	return GetSaveData(GetClassName(), pszName);
+}
 
-		for (size_t i = 0; i < pRegistration->m_aSaveData.size(); i++)
-		{
-			CSaveData* pVarData = &pRegistration->m_aSaveData[i];
-
-			if (strcmp(pVarData->m_pszVariableName, pszName) == 0)
-				return pVarData;
-		}
-
-		pszClassName = pRegistration->m_pszParentClass;
-	} while (pRegistration->m_pszParentClass);
-
-	return NULL;
+CSaveData* CBaseEntity::GetSaveDataByHandle(const char* pszHandle)
+{
+	return GetSaveDataByHandle(GetClassName(), pszHandle);
 }
 
 CNetworkedVariableData* CBaseEntity::GetNetworkVariable(const char* pszName)
@@ -1343,7 +1330,7 @@ bool CBaseEntity::Unserialize(std::istream& i, const char* pszClassName, void* p
 
 void CBaseEntity::PrecacheModel(const tstring& sModel)
 {
-	CModelLibrary::Get()->AddModel(sModel);
+	CModelLibrary::AddModel(sModel);
 }
 
 void CBaseEntity::PrecacheParticleSystem(const tstring& sSystem)
@@ -1368,21 +1355,71 @@ eastl::map<tstring, CEntityRegistration>& CBaseEntity::GetEntityRegistration()
 	return aEntityRegistration;
 }
 
-void CBaseEntity::RegisterEntity(const char* pszClassName, const char* pszParentClass, EntityCreateCallback pfnCreateCallback, EntityRegisterCallback pfnRegisterCallback)
+void CBaseEntity::RegisterEntity(const char* pszClassName, const char* pszParentClass, EntityRegisterCallback pfnRegisterCallback, EntityPrecacheCallback pfnPrecacheCallback, EntityCreateCallback pfnCreateCallback)
 {
 	CEntityRegistration* pEntity = &GetEntityRegistration()[pszClassName];
-	pEntity->m_pszEntityName = pszClassName;
+	pEntity->m_pszEntityClass = pszClassName;
 	pEntity->m_pszParentClass = pszParentClass;
-	pEntity->m_pfnCreateCallback = pfnCreateCallback;
 	pEntity->m_pfnRegisterCallback = pfnRegisterCallback;
+	pEntity->m_pfnPrecacheCallback = pfnPrecacheCallback;
+	pEntity->m_pfnCreateCallback = pfnCreateCallback;
 }
 
 void CBaseEntity::Register(CBaseEntity* pEntity)
 {
-	pEntity->Precache();
 	pEntity->RegisterSaveData();
 	pEntity->RegisterNetworkVariables();
 	pEntity->RegisterInputData();
+}
+
+void CBaseEntity::PrecacheCallback(CBaseEntity* pEntity)
+{
+	pEntity->Precache();
+}
+
+CSaveData* CBaseEntity::GetSaveData(const char* pszClassName, const char* pszName)
+{
+	CEntityRegistration* pRegistration;
+	do
+	{
+		pRegistration = CBaseEntity::GetRegisteredEntity(pszClassName);
+
+		for (size_t i = 0; i < pRegistration->m_aSaveData.size(); i++)
+		{
+			CSaveData* pVarData = &pRegistration->m_aSaveData[i];
+
+			if (strcmp(pVarData->m_pszVariableName, pszName) == 0)
+				return pVarData;
+		}
+
+		pszClassName = pRegistration->m_pszParentClass;
+	} while (pRegistration->m_pszParentClass);
+
+	return NULL;
+}
+
+CSaveData* CBaseEntity::GetSaveDataByHandle(const char* pszClassName, const char* pszHandle)
+{
+	CEntityRegistration* pRegistration;
+	do
+	{
+		pRegistration = CBaseEntity::GetRegisteredEntity(pszClassName);
+
+		for (size_t i = 0; i < pRegistration->m_aSaveData.size(); i++)
+		{
+			CSaveData* pVarData = &pRegistration->m_aSaveData[i];
+
+			if (!pVarData->m_pszHandle)
+				continue;
+
+			if (strcmp(pVarData->m_pszHandle, pszHandle) == 0)
+				return pVarData;
+		}
+
+		pszClassName = pRegistration->m_pszParentClass;
+	} while (pRegistration->m_pszParentClass);
+
+	return NULL;
 }
 
 CEntityRegistration* CBaseEntity::GetRegisteredEntity(tstring sClassName)
@@ -1421,4 +1458,81 @@ void CBaseEntity::FindEntitiesByName(const eastl::string& sName, eastl::vector<C
 
 		apEntities.push_back(pEntity);
 	}
+}
+
+void UnserializeString_bool(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+}
+
+void UnserializeString_int(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+}
+
+void UnserializeString_size_t(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+	TAssert(false);
+
+	size_t i = atoi(sData);
+
+	TAssert(i != ~0);
+	if (i == ~0)
+		return;
+
+	size_t* pData = (size_t*)((char*)pEntity + pSaveData->m_iOffset);
+	switch(pSaveData->m_eType)
+	{
+	case CSaveData::DATA_COPYTYPE:
+		*pData = i;
+		break;
+
+	case CSaveData::DATA_NETVAR:
+	{
+		CNetworkedVariable<size_t>* pVariable = (CNetworkedVariable<size_t>*)pData;
+		(*pVariable) = i;
+		break;
+	}
+
+	case CSaveData::DATA_COPYARRAY:
+	case CSaveData::DATA_COPYVECTOR:
+	case CSaveData::DATA_STRING:
+	case CSaveData::DATA_STRING16:
+	case CSaveData::DATA_OUTPUT:
+		TAssert(false);
+		break;
+	}
+}
+
+void UnserializeString_float(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+}
+
+void UnserializeString_tstring(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+}
+
+void UnserializeString_TVector(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+}
+
+void UnserializeString_Vector(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+}
+
+void UnserializeString_EAngle(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+}
+
+void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+}
+
+void UnserializeString_ModelID(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+	size_t iID = CModelLibrary::AddModel(sData);
+
+	TAssert(iID != ~0);
+	if (iID == ~0)
+		return;
+
+	pEntity->SetModel(iID);
 }

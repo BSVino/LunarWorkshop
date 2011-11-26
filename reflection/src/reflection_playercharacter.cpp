@@ -21,10 +21,6 @@ INPUTS_TABLE_END();
 
 void CPlayerCharacter::Precache()
 {
-	// REMOVE ME
-	// Here I precache entities that I know I'll need but can't precache elsewhere.
-	PrecacheModel("models/door.toy");
-	PrecacheModel("models/vaultdoor.toy");
 }
 
 void CPlayerCharacter::Spawn()

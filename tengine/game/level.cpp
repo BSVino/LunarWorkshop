@@ -2,17 +2,17 @@
 
 #include <datamanager/data.h>
 
-void CLevel::ReadFromData(const CData* pData)
+void CLevel::ReadInfoFromData(const CData* pData)
 {
 	for (size_t i = 0; i < pData->GetNumChildren(); i++)
 	{
 		CData* pChildData = pData->GetChild(i);
 
-		OnReadData(pChildData);
+		OnReadInfo(pChildData);
 	}
 }
 
-void CLevel::OnReadData(const CData* pData)
+void CLevel::OnReadInfo(const CData* pData)
 {
 	if (pData->GetKey() == "Name")
 		m_sName = pData->GetValueTString();

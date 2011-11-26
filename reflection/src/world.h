@@ -8,8 +8,7 @@ class CWorld : public CBaseEntity
 	REGISTER_ENTITY_CLASS(CWorld, CBaseEntity);
 
 public:
-	virtual void					Precache();
-	virtual void					Spawn();
+	virtual void		OnSetModel();
 };
 
 #endif

@@ -41,8 +41,6 @@ void CGameWindow::OpenWindow()
 
 	mtsrand((size_t)time(NULL));
 
-	GameServer()->Initialize();
-
 	glgui::CRootPanel::Get()->AddControl(m_pHUD = CreateHUD());
 
 	glgui::CRootPanel::Get()->SetLighting(false);
@@ -131,24 +129,21 @@ void CGameWindow::CreateGame(const tstring& eRequestedGameMode)
 		}
 	}
 
-	if (GameServer())
-	{
-		GameServer()->SetServerPort(iPort);
-		GameServer()->Initialize();
+	GameServer()->AllowPrecaches();
 
-		GameNetwork()->SetCallbacks(m_pGameServer, CGameServer::ClientConnectCallback, CGameServer::ClientEnterGameCallback, CGameServer::ClientDisconnectCallback);
-	}
+	GameServer()->SetServerPort(iPort);
+	GameServer()->Initialize();
+
+	GameNetwork()->SetCallbacks(m_pGameServer, CGameServer::ClientConnectCallback, CGameServer::ClientEnterGameCallback, CGameServer::ClientDisconnectCallback);
 
 	// Now turn the network on and connect all clients.
 	GameNetwork()->SetLoading(false);
 
-	// Must set player nickname after teams have been set up or it won't stick.
-	if (GameServer())
-		GameServer()->SetPlayerNickname("");
-
 	glgui::CRootPanel::Get()->Layout();
 
 	Game()->SetupGame(game_mode.GetValue());
+
+	GameServer()->PrecacheList();
 
 	GameServer()->SetLoading(false);
 }

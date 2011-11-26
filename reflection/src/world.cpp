@@ -13,15 +13,16 @@ SAVEDATA_TABLE_END();
 INPUTS_TABLE_BEGIN(CWorld);
 INPUTS_TABLE_END();
 
-void CWorld::Precache()
+void CWorld::OnSetModel()
 {
-	PrecacheModel("levels/test.toy");
-}
+	BaseClass::OnSetModel();
 
-void CWorld::Spawn()
-{
-	BaseClass::Spawn();
+	// In case the model has changed.
+	if (IsInPhysics())
+		RemoveFromPhysics();
 
-	SetModel("levels/test.toy");
+	if (GetModelID() == ~0)
+		return;
+
 	AddToPhysics(CT_STATIC_MESH);
 }

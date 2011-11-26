@@ -213,7 +213,7 @@ void CRenderingContext::SetReverseWinding(bool bReverse)
 
 void CRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntity)
 {
-	CModel* pModel = CModelLibrary::Get()->GetModel(iModel);
+	CModel* pModel = CModelLibrary::GetModel(iModel);
 
 	if (!pModel)
 		return;

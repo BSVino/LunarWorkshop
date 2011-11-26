@@ -11,7 +11,7 @@ NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CToken);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CReceptacle>, m_hReceptacle);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bReflected);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bReflected, "Reflected");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CToken);
@@ -67,8 +67,8 @@ SAVEDATA_TABLE_BEGIN(CReceptacle);
 	SAVEDATA_DEFINE_OUTPUT(OnReflectedTokenRemoved);
 	SAVEDATA_DEFINE_OUTPUT(OnTokenRemoved);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CToken>, m_hToken);
-	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sDesiredToken);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bDesiredReflection);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sDesiredToken, "DesiredToken");
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bDesiredReflection, "DesiredReflection");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CReceptacle);

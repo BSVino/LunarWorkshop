@@ -18,7 +18,7 @@ NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_hControllingPlayer);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, EAngle, m_angView);
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, EAngle, m_angView, "ViewAngles");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bTransformMoveByView);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecGoalVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecMoveVelocity);

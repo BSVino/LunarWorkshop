@@ -20,6 +20,18 @@ typedef enum
 	SERVER_CLIENT,
 } servertype_t;
 
+class CPrecacheItem
+{
+public:
+	CPrecacheItem()
+	{
+	}
+
+public:
+	tstring						m_sClass;
+	CEntityHandle<CBaseEntity>	m_hEntity;
+};
+
 class CGameServer : public INetworkListener
 {
 public:
@@ -27,6 +39,11 @@ public:
 	virtual										~CGameServer();
 
 public:
+	void										AllowPrecaches();
+	bool										PrecachesAllowed() { return m_bAllowPrecaches; };
+	void										AddToPrecacheList(const tstring& sClass);
+	void										PrecacheList();
+
 	void										SetServerType(servertype_t eServerType) { m_eServerType = eServerType; };
 	void										SetServerPort(int iPort) { m_iPort = iPort; };
 
@@ -35,12 +52,14 @@ public:
 
 	void										Initialize();
 
+	void										LoadLevel(tstring sFile);
+
 	void										SetupFromLobby(bool bFromLobby) { m_bSetupFromLobby = bFromLobby; };
 	bool										ShouldSetupFromLobby() { return m_bSetupFromLobby; };
 
 	void										ReadLevels();
 	void										ReadLevels(tstring sDirectory);
-	void										ReadLevel(tstring sFile);
+	void										ReadLevelInfo(tstring sFile);
 
 	size_t										GetNumLevels() { return m_apLevels.size(); }
 	class CLevel*								GetLevel(size_t i) { return m_apLevels[i]; }
@@ -109,7 +128,10 @@ public:
 	class CPhysicsManager*						GetPhysics() { return m_pPhysicsManager; }
 
 protected:
-	tstring				m_sNickname;
+	bool										m_bAllowPrecaches;
+	static eastl::map<tstring, CPrecacheItem>	s_aPrecacheClasses;
+
+	tstring										m_sNickname;
 
 	eastl::vector<CEntityHandle<CBaseEntity> >	m_ahDeletedEntities;
 

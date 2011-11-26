@@ -29,6 +29,7 @@
 #include "camera.h"
 #include "level.h"
 
+eastl::map<tstring, CPrecacheItem> CGameServer::s_aPrecacheClasses;
 CGameServer* CGameServer::s_pGameServer = NULL;
 
 ConfigFile g_cfgEngine("scripts/engine.cfg");
@@ -37,6 +38,8 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 {
 	TAssert(!s_pGameServer);
 	s_pGameServer = this;
+
+	m_bAllowPrecaches = false;
 
 	GameNetwork()->SetCallbacks(this, CGameServer::ClientConnectCallback, CGameServer::ClientEnterGameCallback, CGameServer::ClientDisconnectCallback);
 
@@ -67,10 +70,10 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 	m_pPhysicsManager = new CPhysicsManager();
 	TMsg("Done\n");
 
-	TMsg("Precaching entities... ");
+	TMsg("Registering entities... ");
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction("Loading polygons", CBaseEntity::GetEntityRegistration().size());
+		m_pWorkListener->SetAction("Registering entities", CBaseEntity::GetEntityRegistration().size());
 
 	size_t i = 0;
 	for (eastl::map<tstring, CEntityRegistration>::iterator it = CBaseEntity::GetEntityRegistration().begin(); it != CBaseEntity::GetEntityRegistration().end(); it++)
@@ -82,7 +85,6 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 			m_pWorkListener->WorkProgress(++i);
 	}
 	TMsg("Done.\n");
-	TMsg(sprintf(tstring("%d models, %d textures, %d sounds and %d particle systems precached.\n"), CModelLibrary::GetNumModels(), CTextureLibrary::GetNumTextures(), CSoundLibrary::GetNumSounds(), CParticleSystemLibrary::GetNumParticleSystems()));
 
 	mtsrand(iPostSeed);
 
@@ -120,6 +122,70 @@ CGameServer::~CGameServer()
 
 	TAssert(s_pGameServer == this);
 	s_pGameServer = NULL;
+}
+
+void CGameServer::AllowPrecaches()
+{
+	m_bAllowPrecaches = true;
+
+	CModelLibrary::ResetReferenceCounts();
+	CTextureLibrary::ResetReferenceCounts();
+	CSoundLibrary::ResetReferenceCounts();
+	CParticleSystemLibrary::ResetReferenceCounts();
+}
+
+void CGameServer::AddToPrecacheList(const tstring& sClass)
+{
+	TAssert(m_bAllowPrecaches);
+
+	auto it = s_aPrecacheClasses.find(sClass);
+	if (it != s_aPrecacheClasses.end())
+		return;
+
+	auto it2 = CBaseEntity::GetEntityRegistration().find(sClass);
+	if (it2 == CBaseEntity::GetEntityRegistration().end())
+		return;
+
+	CPrecacheItem o;
+	o.m_sClass = sClass;
+
+	s_aPrecacheClasses[sClass] = o;
+
+	if (it2->second.m_pszParentClass)
+		AddToPrecacheList(it2->second.m_pszParentClass);
+}
+
+void CGameServer::PrecacheList()
+{
+	TMsg("Precaching entities... ");
+
+	size_t iPrecaches = s_aPrecacheClasses.size();
+	if (m_pWorkListener)
+		m_pWorkListener->SetAction("Precaching entities", iPrecaches);
+
+	size_t i = 0;
+
+	for (auto it = s_aPrecacheClasses.begin(); it != s_aPrecacheClasses.end(); it++)
+	{
+		CPrecacheItem* pPrecacheItem = &it->second;
+
+		CEntityRegistration* pRegistration = &CBaseEntity::GetEntityRegistration()[pPrecacheItem->m_sClass];
+		pRegistration->m_pfnPrecacheCallback();
+
+		if (m_pWorkListener)
+			m_pWorkListener->WorkProgress(++i);
+	}
+
+	// Do this in this order, dependencies matter
+	CParticleSystemLibrary::ClearUnreferenced();
+	CModelLibrary::ClearUnreferenced();
+	CTextureLibrary::ClearUnreferenced();
+	CSoundLibrary::ClearUnreferenced();
+
+	TMsg("Done.\n");
+	TMsg(sprintf(tstring("%d models, %d textures, %d sounds and %d particle systems precached.\n"), CModelLibrary::GetNumModels(), CTextureLibrary::GetNumTextures(), CSoundLibrary::GetNumSounds(), CParticleSystemLibrary::GetNumParticleSystems()));
+
+	m_bAllowPrecaches = false;
 }
 
 CLIENT_GAME_COMMAND(SendNickname)
@@ -169,6 +235,60 @@ void CGameServer::Initialize()
 		m_pWorkListener->SetAction("Pending network actions", 0);
 }
 
+void CGameServer::LoadLevel(tstring sFile)
+{
+	CLevel* pLevel = GetLevel(sFile);
+
+	std::basic_ifstream<tchar> f(convertstring<tchar, char>(sFile).c_str());
+
+	CData* pData = new CData();
+	CDataSerializer::Read(f, pData);
+
+	for (size_t i = 0; i < pData->GetNumChildren(); i++)
+	{
+		CData* pChildData = pData->GetChild(i);
+
+		if (pChildData->GetKey() == "Entity")
+		{
+			tstring sClass = "C" + pChildData->GetValueTString();
+
+			auto it = CBaseEntity::GetEntityRegistration().find(sClass);
+			if (it == CBaseEntity::GetEntityRegistration().end())
+			{
+				TAssert(!(tstring("Unregistered entity '") + sClass + "'\n").c_str());
+				continue;
+			}
+
+			AddToPrecacheList(sClass);
+
+			CBaseEntity* pEntity = Create<CBaseEntity>(sClass.c_str());
+
+			for (size_t k = 0; k < pChildData->GetNumChildren(); k++)
+			{
+				CData* pField = pChildData->GetChild(k);
+
+				tstring sHandle = pField->GetKey();
+				tstring sValue = pField->GetValueTString();
+
+				CSaveData* pSaveData = CBaseEntity::GetSaveDataByHandle(sClass.c_str(), sHandle.c_str());
+				if (!pSaveData)
+				{
+					TAssert(!(tstring("Unknown handle '") + sHandle + "'\n").c_str());
+					continue;
+				}
+
+				TAssert(pSaveData->m_pfnUnserializeString);
+				if (!pSaveData->m_pfnUnserializeString)
+					continue;
+
+				pSaveData->m_pfnUnserializeString(sValue, pSaveData, pEntity);
+			}
+		}
+	}
+
+	delete pData;
+}
+
 void CGameServer::ReadLevels()
 {
 	for (size_t i = 0; i < m_apLevels.size(); i++)
@@ -193,14 +313,14 @@ void CGameServer::ReadLevels(tstring sDirectory)
 		tstring sFile = sDirectory + "/" + asFiles[i];
 
 		if (IsFile(sFile) && sFile.substr(sFile.length()-4).compare(".txt") == 0)
-			ReadLevel(sFile);
+			ReadLevelInfo(sFile);
 
 		if (IsDirectory(sFile))
 			ReadLevels(sFile);
 	}
 }
 
-void CGameServer::ReadLevel(tstring sFile)
+void CGameServer::ReadLevelInfo(tstring sFile)
 {
 	std::basic_ifstream<tchar> f(convertstring<tchar, char>(sFile).c_str());
 
@@ -209,7 +329,7 @@ void CGameServer::ReadLevel(tstring sFile)
 
 	CLevel* pLevel = CreateLevel();
 	pLevel->SetFile(str_replace(sFile, "\\", "/"));
-	pLevel->ReadFromData(pData);
+	pLevel->ReadInfoFromData(pData);
 	m_apLevels.push_back(pLevel);
 
 	delete pData;
@@ -650,6 +770,8 @@ CEntityHandle<CBaseEntity> CGameServer::Create(const char* pszEntityName)
 	// If I ever go back to multiplayer, the code needs to be split into a
 	// client portion and a server portion to help minimize bugs like this.
 	//::CreateEntity.RunCommand(sprintf(tstring("%s %d %d"), pszEntityName, hEntity->GetHandle(), hEntity->GetSpawnSeed()));
+
+	AddToPrecacheList(pszEntityName);
 
 	return hEntity;
 }

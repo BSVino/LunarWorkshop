@@ -25,9 +25,7 @@ CSoundLibrary::CSoundLibrary()
 CSoundLibrary::~CSoundLibrary()
 {
 	for (size_t i = 0; i < m_apSounds.size(); i++)
-	{
 		delete m_apSounds[i];
-	}
 
 	Mix_CloseAudio();
 
@@ -38,27 +36,50 @@ size_t CSoundLibrary::AddSound(const tstring& pszFilename)
 {
 	size_t iSound = FindSound(pszFilename);
 	if (iSound != ~0)
+	{
+		Get()->m_apSounds[iSound]->m_iReferences++;
 		return iSound;
+	}
 
-	m_apSounds.push_back(new CSound(pszFilename));
+	size_t iLocation = ~0;
+	for (size_t i = 0; i < Get()->m_apSounds.size(); i++)
+	{
+		if (!Get()->m_apSounds[i])
+		{
+			iLocation = i;
+			break;
+		}
+	}
 
-	iSound = m_apSounds.size()-1;
+	if (iLocation == ~0)
+	{
+		iLocation = Get()->m_apSounds.size();
+		Get()->m_apSounds.push_back();
+	}
+
+	Get()->m_apSounds[iLocation] = new CSound(pszFilename);
+
+	iSound = Get()->m_apSounds.size()-1;
+	Get()->m_apSounds[iSound]->m_iReferences++;
 	return iSound;
 }
 
 CSound* CSoundLibrary::GetSound(size_t i)
 {
-	if (i >= m_apSounds.size())
+	if (i >= Get()->m_apSounds.size())
 		return NULL;
 
-	return m_apSounds[i];
+	return Get()->m_apSounds[i];
 }
 
 size_t CSoundLibrary::FindSound(const tstring& pszFilename)
 {
-	for (size_t i = 0; i < m_apSounds.size(); i++)
+	for (size_t i = 0; i < Get()->m_apSounds.size(); i++)
 	{
-		if (m_apSounds[i]->m_sFilename == pszFilename)
+		if (!Get()->m_apSounds[i])
+			continue;
+
+		if (Get()->m_apSounds[i]->m_sFilename == pszFilename)
 			return i;
 	}
 
@@ -79,6 +100,9 @@ void CSoundLibrary::PlaySound(CBaseEntity* pEntity, const tstring& pszFilename, 
 		return;
 
 	CSound* pSound = Get()->m_apSounds[iSound];
+
+	if (!pSound)
+		return;
 
 	if( pSound->m_pSound == NULL )
 		return;
@@ -244,8 +268,36 @@ void CSoundLibrary::EntityDeleted(CBaseEntity* pEntity)
 		Get()->m_aiActiveSounds.erase(Get()->m_aiActiveSounds.find(pEntity));
 }
 
+void CSoundLibrary::ResetReferenceCounts()
+{
+	for (size_t i = 0; i < Get()->m_apSounds.size(); i++)
+	{
+		if (!Get()->m_apSounds[i])
+			continue;
+
+		Get()->m_apSounds[i]->m_iReferences = 0;
+	}
+}
+
+void CSoundLibrary::ClearUnreferenced()
+{
+	for (size_t i = 0; i < Get()->m_apSounds.size(); i++)
+	{
+		if (!Get()->m_apSounds[i])
+			continue;
+
+		if (!Get()->m_apSounds[i]->m_iReferences)
+		{
+			delete Get()->m_apSounds[i];
+			Get()->m_apSounds[i] = nullptr;
+		}
+	}
+}
+
 CSound::CSound(const tstring& pszFilename)
 {
+	m_iReferences = 0;
+
 	SDL_RWops* pRW = SDL_RWFromFile(convertstring<tchar, char>(pszFilename).c_str(), "rb");
 
 	m_pSound = Mix_LoadWAV_RW(pRW, 1);

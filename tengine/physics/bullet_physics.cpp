@@ -190,7 +190,7 @@ void CBulletPhysics::RemoveEntity(CBaseEntity* pEntity)
 
 void CBulletPhysics::LoadCollisionMesh(const tstring& sModel, size_t iTris, int* aiTris, size_t iVerts, float* aflVerts)
 {
-	size_t iModel = CModelLibrary::Get()->FindModel(sModel);
+	size_t iModel = CModelLibrary::FindModel(sModel);
 
 	TAssert(iModel != ~0);
 

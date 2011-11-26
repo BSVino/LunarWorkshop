@@ -14,8 +14,10 @@ public:
 							~CSound();
 
 public:
+	size_t					m_iReferences;
+
 	struct Mix_Chunk*		m_pSound;
-	tstring			m_sFilename;
+	tstring					m_sFilename;
 };
 
 class CSoundLibrary
@@ -27,9 +29,9 @@ public:
 public:
 	static size_t			GetNumSounds() { return Get()->m_apSounds.size(); };
 
-	size_t					AddSound(const tstring& pszFilename);
-	size_t					FindSound(const tstring& pszFilename);
-	CSound*					GetSound(size_t i);
+	static size_t			AddSound(const tstring& pszFilename);
+	static size_t			FindSound(const tstring& pszFilename);
+	static CSound*			GetSound(size_t i);
 
 public:
 	static void				PlaySound(CBaseEntity* pEntity, const tstring& pszFilename, float flVolume = 1.0f, bool bLoop = false);
@@ -47,6 +49,9 @@ public:
 
 	static void				ChannelFinished(int iChannel);
 	static void				EntityDeleted(CBaseEntity* pEntity);
+
+	static void				ResetReferenceCounts();
+	static void				ClearUnreferenced();
 
 	static CSoundLibrary*	Get() { return s_pSoundLibrary; };
 
