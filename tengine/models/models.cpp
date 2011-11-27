@@ -38,7 +38,11 @@ size_t CModelLibrary::AddModel(const tstring& sModel)
 	size_t iModel = FindModel(sModel);
 	if (iModel != ~0)
 	{
-		Get()->m_apModels[iModel]->m_iReferences++;
+		CModel* pModel = Get()->m_apModels[iModel];
+		pModel->m_iReferences++;
+
+		for (size_t i = 0; i < pModel->m_aiTextures.size(); i++)
+			CTextureLibrary::AddTexture(CTextureLibrary::FindTextureByID(pModel->m_aiTextures[i]));
 
 		return iModel;
 	}
@@ -126,6 +130,19 @@ void CModelLibrary::ClearUnreferenced()
 			delete Get()->m_apModels[i];
 			Get()->m_apModels[i] = nullptr;
 		}
+	}
+}
+
+void CModelLibrary::LoadAllIntoPhysics()
+{
+	for (size_t i = 0; i < GetNumModels(); i++)
+	{
+		CModel* pModel = GetModel(i);
+		if (!pModel)
+			continue;
+
+		if (pModel->m_pToy->GetPhysicsNumTris())
+			GamePhysics()->LoadCollisionMesh(pModel->m_sFilename, pModel->m_pToy->GetPhysicsNumTris(), pModel->m_pToy->GetPhysicsTris(), pModel->m_pToy->GetPhysicsNumVerts(), pModel->m_pToy->GetPhysicsVerts());
 	}
 }
 

@@ -37,6 +37,7 @@ public:
 	static size_t			AddTextureID(const tstring& sTexture, int iClamp = 0);
 	static const CTexture*	FindTexture(const tstring& sTexture);
 	static size_t			FindTextureID(const tstring& sTexture);
+	static tstring			FindTextureByID(size_t iID);
 	static void				ReleaseTexture(const tstring& sTexture);
 
 	static size_t			GetTextureGLID(const tstring& sTexture);

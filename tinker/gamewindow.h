@@ -16,9 +16,10 @@ public:
 public:
 	void						OpenWindow();
 
-	void						CreateGame(const tstring& eRequestedGameType);
+	void						CreateGame(const tstring& sRequestedGameType);
 	void						DestroyGame();
 	void						Restart(tstring sGameType);
+	void						ReloadLevel();
 
 	void						Run();
 	virtual void				PreFrame();

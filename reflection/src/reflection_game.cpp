@@ -78,6 +78,10 @@ void CReflectionGame::SetupGame(tstring sType)
 	{
 		Application()->SetMouseCursorEnabled(true);
 	}
+	else
+	{
+		TError("Unrecognized game type: " + sType + "\n");
+	}
 }
 
 void CReflectionGame::Precache()

@@ -51,6 +51,8 @@ public:
 	static void				ResetReferenceCounts();
 	static void				ClearUnreferenced();
 
+	static void				LoadAllIntoPhysics();
+
 	static CModelLibrary*	Get() { return s_pModelLibrary; };
 
 protected:

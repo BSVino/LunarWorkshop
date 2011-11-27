@@ -246,6 +246,9 @@ void CParticleSystemLibrary::ClearUnreferenced()
 			if (!Get()->m_apParticleSystems[i])
 				continue;
 
+			if (!Get()->m_apParticleSystems[i]->IsLoaded())
+				continue;
+
 			if (!Get()->m_apParticleSystems[i]->GetReferences())
 			{
 				Get()->m_apParticleSystems[i]->Unload();

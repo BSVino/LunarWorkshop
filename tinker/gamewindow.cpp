@@ -14,6 +14,7 @@
 #include <tengine/game/game.h>
 #include <ui/hudviewport.h>
 #include <game/level.h>
+#include <renderer/particles.h>
 
 CGameWindow::CGameWindow(int argc, char** argv)
 	: CApplication(argc, argv)
@@ -80,6 +81,7 @@ void LoadLevel(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const
 			return;
 		}
 
+		GameWindow()->DestroyGame();
 		GameWindow()->CreateGame(pLevel->GetGameMode());
 		return;
 	}
@@ -94,18 +96,22 @@ void LoadLevel(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const
 
 	CVar::SetCVar("game_level", pLevel->GetFile());
 
-	GameWindow()->CreateGame(pLevel->GetGameMode());
+	// Need to tuck this away since levels are deleted when the GameServer is destroyed
+	tstring sGameMode = pLevel->GetGameMode();
+
+	GameWindow()->DestroyGame();
+	GameWindow()->CreateGame(sGameMode);
 
 	CApplication::CloseConsole();
 }
 
-CCommand load_level("load_level", ::LoadLevel);
+CCommand level_load("level_load", ::LoadLevel);
 CVar game_mode("game_mode", "");		// Are we in the menu or in the game or what?
 CVar game_level("game_level", "");
 
-void CGameWindow::CreateGame(const tstring& eRequestedGameMode)
+void CGameWindow::CreateGame(const tstring& sRequestedGameMode)
 {
-	game_mode.SetValue(eRequestedGameMode);
+	game_mode.SetValue(sRequestedGameMode);
 
 	// Suppress all network commands until the game is done loading.
 	GameNetwork()->SetLoading(true);
@@ -167,6 +173,37 @@ void CGameWindow::DestroyGame()
 
 	m_pGameServer = NULL;
 	m_pHUD = NULL;
+}
+
+void ReloadLevel(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+{
+	GameWindow()->ReloadLevel();
+}
+
+CCommand level_reload("level_reload", ::ReloadLevel);
+
+void CGameWindow::ReloadLevel()
+{
+	GameServer()->SetLoading(true);
+
+	// Suppress all network commands until the game is done loading.
+	GameNetwork()->SetLoading(true);
+
+	RenderLoading();
+
+	mtsrand((size_t)time(NULL));
+
+	CParticleSystemLibrary::ClearInstances();
+	GameServer()->DestroyAllEntities(eastl::vector<eastl::string>(), true);
+
+	// Now turn the network on and connect all clients.
+	GameNetwork()->SetLoading(false);
+
+	glgui::CRootPanel::Get()->Layout();
+
+	Game()->SetupGame(game_mode.GetValue());
+
+	GameServer()->SetLoading(false);
 }
 
 void CGameWindow::Restart(tstring sGameMode)

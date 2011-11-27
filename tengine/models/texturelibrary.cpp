@@ -76,6 +76,17 @@ size_t CTextureLibrary::FindTextureID(const tstring& sTexture)
 	return pTex->m_iGLID;
 }
 
+tstring CTextureLibrary::FindTextureByID(size_t iID)
+{
+	for (auto it = Get()->m_aTextures.begin(); it != Get()->m_aTextures.end(); it++)
+	{
+		if (it->second.m_iGLID == iID)
+			return it->first;
+	}
+
+	return "";
+}
+
 void CTextureLibrary::ReleaseTexture(const tstring& sTexture)
 {
 	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);

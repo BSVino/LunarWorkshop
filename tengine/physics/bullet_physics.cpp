@@ -142,6 +142,8 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 			TAssert(!"Unimplemented collision type");
 		}
 
+		TAssert(pCollisionShape);
+
 		btTransform mTransform;
 		mTransform.setIdentity();
 		mTransform.setFromOpenGLMatrix(&pEntity->GetGlobalTransform().m[0][0]);

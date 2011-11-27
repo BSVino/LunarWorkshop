@@ -52,7 +52,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 	if (pPlayerCharacter && pPlayerCharacter->GetToken())
 	{
 		CRenderingContext c(GameServer()->GetRenderer());
-		c.Translate(Vector((float)w, (float)h-100, 0));
+		c.Translate(Vector((float)w-100, (float)h-100, 0));
 		c.Scale(300, 300, 300);
 		c.Rotate(-90.0f, Vector(0, 0, 1));
 		c.Rotate(-90.0f, Vector(1, 0, 0));

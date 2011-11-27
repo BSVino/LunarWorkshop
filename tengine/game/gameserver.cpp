@@ -68,6 +68,9 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 
 	TMsg("Creating physics model... ");
 	m_pPhysicsManager = new CPhysicsManager();
+
+	// If the server has been reset, reload all models back into the physics model.
+	CModelLibrary::LoadAllIntoPhysics();
 	TMsg("Done\n");
 
 	TMsg("Registering entities... ");
@@ -109,6 +112,8 @@ CGameServer::~CGameServer()
 	if (m_pWorkListener)
 		m_pWorkListener->SetAction("Scrubbing database", CBaseEntity::GetEntityRegistration().size());
 
+	DestroyAllEntities(eastl::vector<eastl::string>());
+
 	delete m_pPhysicsManager;
 
 	for (size_t i = 0; i < m_apLevels.size(); i++)
@@ -142,7 +147,7 @@ void CGameServer::AllowPrecaches()
 
 void CGameServer::AddToPrecacheList(const tstring& sClass)
 {
-	TAssert(m_bAllowPrecaches);
+	TAssert(m_bAllowPrecaches || IsLoading());
 
 	auto it = s_aPrecacheClasses.find(sClass);
 	if (it != s_aPrecacheClasses.end())
@@ -181,6 +186,8 @@ void CGameServer::PrecacheList()
 		if (m_pWorkListener)
 			m_pWorkListener->WorkProgress(++i);
 	}
+
+	s_aPrecacheClasses.clear();
 
 	// Do this in this order, dependencies matter
 	CParticleSystemLibrary::ClearUnreferenced();
