@@ -45,7 +45,7 @@ CHUDViewport* CreateHUD()
 
 tstring GetInitialGameMode()
 {
-	return "demo";
+	return "menu";
 }
 
 REGISTER_ENTITY(CReflectionGame);
@@ -61,14 +61,23 @@ INPUTS_TABLE_END();
 
 void CReflectionGame::SetupGame(tstring sType)
 {
-	CReflectionPlayer* pPlayer = GameServer()->Create<CReflectionPlayer>("CReflectionPlayer");
-	Game()->AddPlayer(pPlayer);
+	if (sType == "level")
+	{
+		CReflectionPlayer* pPlayer = GameServer()->Create<CReflectionPlayer>("CReflectionPlayer");
+		Game()->AddPlayer(pPlayer);
 
-	CPlayerCharacter* pCharacter = GameServer()->Create<CPlayerCharacter>("CPlayerCharacter");
-	pCharacter->SetGlobalOrigin(Vector(0, 0, 0));
-	pPlayer->SetCharacter(pCharacter);
+		CPlayerCharacter* pCharacter = GameServer()->Create<CPlayerCharacter>("CPlayerCharacter");
+		pCharacter->SetGlobalOrigin(Vector(0, 0, 0));
+		pPlayer->SetCharacter(pCharacter);
 
-	GameServer()->LoadLevel("levels/1.txt");
+		GameServer()->LoadLevel(CVar::GetCVarValue("game_level"));
+
+		Application()->SetMouseCursorEnabled(false);
+	}
+	else if (sType == "menu")
+	{
+		Application()->SetMouseCursorEnabled(true);
+	}
 }
 
 void CReflectionGame::Precache()

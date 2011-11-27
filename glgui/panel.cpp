@@ -1,11 +1,26 @@
 #include "panel.h"
 
+#include <GL/glew.h>
+
+#include "rootpanel.h"
+
 using namespace glgui;
+
+CPanel::CPanel()
+	: CBaseControl(0, 0, 100, 100)
+{
+	SetBorder(BT_NONE);
+	SetBackgroundColor(Color(0, 0, 0, 0));
+	m_pHasCursor = NULL;
+	m_bHighlight = false;
+	m_bDestructing = false;
+}
 
 CPanel::CPanel(float x, float y, float w, float h)
 	: CBaseControl(x, y, w, h)
 {
-	SetBorder(BT_SOME);
+	SetBorder(BT_NONE);
+	SetBackgroundColor(Color(0, 0, 0, 0));
 	m_pHasCursor = NULL;
 	m_bHighlight = false;
 	m_bDestructing = false;
@@ -278,6 +293,9 @@ void CPanel::Paint(float x, float y, float w, float h)
 	if (!IsVisible())
 		return;
 
+	if (m_clrBackground.a())
+		CRootPanel::PaintRect(x, y, w, h, m_clrBackground);
+
 	if (m_eBorder == BT_SOME)
 		PaintBorder(x, y, w, h);
 
@@ -300,6 +318,31 @@ void CPanel::Paint(float x, float y, float w, float h)
 
 void CPanel::PaintBorder(float x, float y, float w, float h)
 {
+	glBegin(GL_LINES);
+		// Bottom line
+		glNormal3f(-0.707106781f, 0.707106781f, 0);
+		glVertex2f(x, y);
+		glNormal3f(0.707106781f, 0.707106781f, 0);
+		glVertex2f(x+w-1, y);
+
+		// Top line
+		glNormal3f(-0.707106781f, -0.707106781f, 0);
+		glVertex2f(x, y+h-1);
+		glNormal3f(0.707106781f, -0.707106781f, 0);
+		glVertex2f(x+w-1, y+h-1);
+
+		// Left line
+		glNormal3f(-0.707106781f, 0.707106781f, 0);
+		glVertex2f(x, y+1);
+		glNormal3f(-0.707106781f, -0.707106781f, 0);
+		glVertex2f(x, y+h-1);
+
+		// Right line
+		glNormal3f(0.707106781f, 0.707106781f, 0);
+		glVertex2f(x+w, y+1);
+		glNormal3f(0.707106781f, -0.707106781f, 0);
+		glVertex2f(x+w, y+h-1);
+	glEnd();
 }
 
 void CPanel::Think()

@@ -335,6 +335,9 @@ void CTreeNode::LayoutNode()
 	SetPos(x, y);
 	SetSize(w, h);
 
+	m_pLabel->SetHeight(h);
+	m_pLabel->SetPos(x+h, y);
+
 	m_pExpandButton->SetPos(0, 0);
 	m_pExpandButton->SetSize(flHeight, flHeight);
 
@@ -393,7 +396,7 @@ void CTreeNode::Paint(float x, float y, float w, float h, bool bFloating)
 		glPopAttrib();
 	}
 
-	m_pLabel->Paint(x+h+flIconSize, y, w-h-flIconSize, h);
+	m_pLabel->Paint();
 
 	if (m_pVisibilityButton)
 		m_pVisibilityButton->Paint();

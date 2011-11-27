@@ -34,6 +34,8 @@ void CGameWindow::OpenWindow()
 
 	RenderLoading();
 
+	CVar::SetCVar("game_mode", GetInitialGameMode());
+
 	m_pGameServer = new CGameServer();
 
 	m_pRenderer = CreateRenderer();
@@ -181,17 +183,17 @@ void CGameWindow::Run()
 	{
 		CProfiler::BeginFrame();
 
+		if (GameServer()->IsHalting())
+		{
+			DestroyGame();
+			CreateGame(m_sRestartGameMode);
+		}
+
 		if (true)
 		{
 			TPROF("CGameWindow::Run");
 
 			PreFrame();
-
-			if (GameServer()->IsHalting())
-			{
-				DestroyGame();
-				CreateGame(m_sRestartGameMode);
-			}
 
 			float flTime = GetTime();
 			if (GameServer())

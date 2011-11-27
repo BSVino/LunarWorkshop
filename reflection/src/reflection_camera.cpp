@@ -19,6 +19,9 @@ Vector CReflectionCamera::GetCameraPosition()
 	if (m_bFreeMode)
 		return BaseClass::GetCameraPosition();
 
+	if (CVar::GetCVarValue("game_mode") == "menu")
+		return BaseClass::GetCameraPosition();
+
 	CReflectionCharacter* pCharacter = ReflectionGame()->GetLocalPlayerCharacter();
 	if (!pCharacter)
 		return BaseClass::GetCameraPosition();
@@ -31,6 +34,9 @@ Vector CReflectionCamera::GetCameraTarget()
 	if (m_bFreeMode)
 		return BaseClass::GetCameraPosition();
 
+	if (CVar::GetCVarValue("game_mode") == "menu")
+		return BaseClass::GetCameraPosition();
+
 	CReflectionCharacter* pCharacter = ReflectionGame()->GetLocalPlayerCharacter();
 	if (!pCharacter)
 		return BaseClass::GetCameraPosition();
@@ -40,6 +46,9 @@ Vector CReflectionCamera::GetCameraTarget()
 
 TVector CReflectionCamera::GetCameraUp()
 {
+	if (CVar::GetCVarValue("game_mode") == "menu")
+		return BaseClass::GetCameraPosition();
+
 	CReflectionCharacter* pCharacter = ReflectionGame()->GetLocalPlayerCharacter();
 	if (!pCharacter)
 		return BaseClass::GetCameraUp();

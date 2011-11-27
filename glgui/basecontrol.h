@@ -39,6 +39,10 @@ namespace glgui
 		virtual void	GetBR(float &x, float &y) { x = m_flX + m_flW; y = m_flY + m_flH; };
 		virtual void	SetAlpha(int a) { m_iAlpha = a; };
 		virtual int		GetAlpha() { return m_iAlpha; };
+		virtual void	SetWidth(float w);
+		virtual void	SetHeight(float h);
+		virtual void	SetLeft(float l);
+		virtual void	SetTop(float t);
 		virtual void	SetRight(float r);
 		virtual void	SetBottom(float b);
 		virtual float	GetLeft() { return m_flX; };

@@ -18,6 +18,7 @@ namespace glgui
 #endif
 
 	public:
+								CPanel();
 								CPanel(float x, float y, float w, float h);
 		virtual					~CPanel();
 
@@ -56,6 +57,8 @@ namespace glgui
 
 		void					SetBorder(Border b) { m_eBorder = b; };
 
+		void					SetBackgroundColor(Color c) { m_clrBackground = c; };
+
 	protected:
 		virtual void			PaintBorder(float x, float y, float w, float h);
 
@@ -66,6 +69,7 @@ namespace glgui
 		IControl*				m_pHasCursor;
 
 		Border					m_eBorder;
+		Color					m_clrBackground;
 
 		bool					m_bHighlight;
 		bool					m_bDestructing;

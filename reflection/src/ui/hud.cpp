@@ -5,15 +5,30 @@
 #include <tengine/renderer/renderingcontext.h>
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
+#include <tinker/cvar.h>
 
 #include "../reflection_character.h"
 #include "../reflection_playercharacter.h"
 #include "../reflection_game.h"
 #include "../reflection_player.h"
 #include "../token.h"
+#include "levelselector.h"
+
+CReflectionHUD::CReflectionHUD()
+{
+	m_pSelector = new CLevelSelector();
+	AddControl(m_pSelector);
+
+	m_pSelector->SetVisible(CVar::GetCVarValue("game_mode") == "menu");
+}
 
 void CReflectionHUD::Paint(float x, float y, float w, float h)
 {
+	BaseClass::Paint(x, y, w, h);
+
+	if (CVar::GetCVarValue("game_mode") == "menu")
+		return;
+
 	CPlayerCharacter* pPlayerCharacter = static_cast<CPlayerCharacter*>(ReflectionGame()->GetLocalPlayerCharacter());
 	CReflectionPlayer* pPlayer = static_cast<CReflectionPlayer*>(ReflectionGame()->GetLocalPlayer());
 

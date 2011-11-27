@@ -78,6 +78,26 @@ FRect CBaseControl::GetAbsDimensions()
 	return r;
 }
 
+void CBaseControl::SetWidth(float w)
+{
+	m_flW = w;
+}
+
+void CBaseControl::SetHeight(float h)
+{
+	m_flH = h;
+}
+
+void CBaseControl::SetLeft(float l)
+{
+	m_flY = l;
+}
+
+void CBaseControl::SetTop(float t)
+{
+	m_flX = t;
+}
+
 void CBaseControl::SetRight(float r)
 {
 	m_flW = r - m_flX;

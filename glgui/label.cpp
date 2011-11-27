@@ -35,6 +35,27 @@ CLabel::CLabel()
 	m_iPrintChars = -1;
 }
 
+CLabel::CLabel(const tstring& sText, const tstring& sFont, size_t iSize)
+	: CBaseControl(0, 0, 100, 20)
+{
+	m_bEnabled = true;
+	m_bWrap = true;
+	m_b3D = false;
+	m_bNeedsCompute = false;
+	m_sText = "";
+	m_eAlign = TA_MIDDLECENTER;
+	m_FGColor = Color(255, 255, 255, 255);
+	m_bScissor = false;
+
+	m_pLinkClickListener = NULL;
+
+	SetFont(sFont, iSize);
+
+	SetText(sText);
+
+	m_iPrintChars = -1;
+}
+
 CLabel::CLabel(float x, float y, float w, float h, const tstring& sText, const tstring& sFont, size_t iSize)
 	: CBaseControl(x, y, w, h)
 {
@@ -182,7 +203,6 @@ void CLabel::GetAlignmentOffset(float flLineWidth, float flLineHeight, const tst
 {
 	float lw = flLineWidth;
 	float lh = flLineHeight;
-	float th = m_flTotalHeight - lh;
 	float w = flAreaWidth;
 	float h = flAreaHeight;
 
@@ -190,17 +210,18 @@ void CLabel::GetAlignmentOffset(float flLineWidth, float flLineHeight, const tst
 	{
 	case TA_MIDDLECENTER:
 		x = w/2 - lw/2;
-		y = h/2 - th/2;
+		y = h/2 - lh/2;
 		break;
 
 	case TA_LEFTCENTER:
 		x = 0;
-		y = h/2 - th/2;
+		y = h/2 - lh/2;
 		break;
 
 	case TA_RIGHTCENTER:
+		TAssert(false);
 		x = w - lw;
-		y = h/2 - th/2;
+		y = h/2 - lh/2;
 		break;
 
 	case TA_TOPCENTER:
@@ -209,6 +230,7 @@ void CLabel::GetAlignmentOffset(float flLineWidth, float flLineHeight, const tst
 		break;
 
 	case TA_BOTTOMCENTER:
+		TAssert(false);
 		x = w/2 - lw/2;
 		y = h - m_flTotalHeight;
 		break;
@@ -220,6 +242,7 @@ void CLabel::GetAlignmentOffset(float flLineWidth, float flLineHeight, const tst
 
 	default:
 	case TA_TOPLEFT:
+		TAssert(false);
 		x = 0;
 		y = 0;
 		break;

@@ -103,6 +103,12 @@ void CReflectionRenderer::SetupFrame()
 
 void CReflectionRenderer::StartRendering()
 {
+	if (CVar::GetCVarValue("game_mode") == "menu")
+	{
+		BaseClass::StartRendering();
+		return;
+	}
+
 	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT|GL_CURRENT_BIT);
 
 	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
@@ -184,6 +190,9 @@ void CReflectionRenderer::StartRendering()
 void CReflectionRenderer::FinishRendering()
 {
 	BaseClass::FinishRendering();
+
+	if (CVar::GetCVarValue("game_mode") == "menu")
+		return;
 
 	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
 
@@ -272,8 +281,6 @@ extern CVar r_bloom;
 void CReflectionRenderer::RenderFullscreenBuffers()
 {
 	TPROF("CReflectionRenderer::RenderFullscreenBuffers");
-
-	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
 
 	if (ShouldUseFramebuffers())
 	{
