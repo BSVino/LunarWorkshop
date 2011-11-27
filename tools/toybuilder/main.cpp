@@ -128,14 +128,14 @@ int main(int argc, char** args)
 
 	if (g_pszPhys)
 	{
-		printf("Reading physics model '%s' ...", args[1]);
+		printf("Reading physics model '%s' ...", g_pszPhys);
 		CConversionScene* pScene = new CConversionScene();
 		CModelConverter c(pScene);
 
 		c.ReadModel(g_pszPhys);
 		printf(" Done.\n");
 
-		printf("Building physics model ...", args[2]);
+		printf("Building physics model ...");
 		LoadSceneIntoToyPhysics(pScene, &t);
 		printf(" Done.\n");
 
