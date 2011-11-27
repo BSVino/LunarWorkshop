@@ -22,3 +22,7 @@ void CPlayerCharacter::Spawn()
 {
 	BaseClass::Spawn();
 }
+
+void CPlayerCharacter::MoveThink()
+{
+}

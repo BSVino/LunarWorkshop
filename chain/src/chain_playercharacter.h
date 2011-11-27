@@ -10,6 +10,8 @@ class CPlayerCharacter : public CCharacter
 public:
 	void						Precache();
 	void						Spawn();
+
+	virtual void				MoveThink();
 };
 
 #endif
