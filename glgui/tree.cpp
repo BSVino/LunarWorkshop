@@ -336,7 +336,7 @@ void CTreeNode::LayoutNode()
 	SetSize(w, h);
 
 	m_pLabel->SetHeight(h);
-	m_pLabel->SetPos(x+h, y);
+	m_pLabel->SetPos(x+h, 0);
 
 	m_pExpandButton->SetPos(0, 0);
 	m_pExpandButton->SetSize(flHeight, flHeight);
