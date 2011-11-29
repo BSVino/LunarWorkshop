@@ -28,6 +28,8 @@ public:
 
 	virtual void			DebugDraw() {};
 
+	virtual collision_type_t	GetEntityCollisionType(class CBaseEntity* pEnt) { return CT_NONE; };
+
 	virtual void			SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform) {};
 	virtual void			SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity) {};
 	virtual Vector			GetEntityVelocity(class CBaseEntity* pEnt) { return Vector(0, 0, 0); };

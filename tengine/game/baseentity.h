@@ -56,6 +56,7 @@ void UnserializeString_Vector(const tstring& sData, class CSaveData* pData, clas
 void UnserializeString_EAngle(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_AABB(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_ModelID(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_EntityHandle(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 
 class CSaveData
 {
@@ -298,6 +299,11 @@ void entity::RegisterSaveData() \
 	SAVEDATA_DEFINE_COMMON(copy, type, name) \
 	pSaveData->m_pszHandle = handle; \
 	pSaveData->m_pfnUnserializeString = &function; \
+
+#define SAVEDATA_DEFINE_HANDLE_ENTITY(copy, type, name, handle) \
+	SAVEDATA_DEFINE_COMMON(copy, type, name) \
+	pSaveData->m_pszHandle = handle; \
+	pSaveData->m_pfnUnserializeString = &UnserializeString_EntityHandle; \
 
 #define SAVEDATA_OMIT(name) \
 	pSaveData = &pRegistration->m_aSaveData.push_back(); \

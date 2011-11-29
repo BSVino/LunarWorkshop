@@ -119,7 +119,7 @@ void CReceptacle::Spawn()
 	BaseClass::Spawn();
 
 	SetModel("models/pedestal.toy");
-	AddToPhysics(CT_STATIC_MESH);
+	AddToPhysics(CT_KINEMATIC);
 }
 
 void CReceptacle::SetToken(CToken* pToken)

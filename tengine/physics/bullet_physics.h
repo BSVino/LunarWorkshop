@@ -36,6 +36,7 @@ public:
 		m_pGhostObject = NULL;
 		m_pCharacterController = NULL;
 		m_bCenterMassOffset = true;
+		m_eCollisionType = CT_NONE;
 	};
 
 	~CPhysicsEntity()
@@ -48,6 +49,7 @@ public:
 	CCharacterController*				m_pCharacterController;
 	CMotionState						m_oMotionState;
 	bool								m_bCenterMassOffset;
+	collision_type_t					m_eCollisionType;
 };
 
 class CBulletPhysics : public CPhysicsModel
@@ -65,6 +67,8 @@ public:
 	virtual void			Simulate();
 
 	virtual void			DebugDraw();
+
+	virtual collision_type_t	GetEntityCollisionType(class CBaseEntity* pEnt);
 
 	virtual void			SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform);
 	virtual void			SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity);

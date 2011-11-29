@@ -57,6 +57,7 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 		m_aEntityList.resize(iHandle+1);
 
 	CPhysicsEntity* pPhysicsEntity = &m_aEntityList[iHandle];
+	pPhysicsEntity->m_eCollisionType = eCollisionType;
 	pPhysicsEntity->m_oMotionState.m_hEntity = pEntity;
 	pPhysicsEntity->m_oMotionState.m_pPhysics = this;
 
@@ -236,6 +237,15 @@ void CBulletPhysics::DebugDraw()
 	m_pDebugDrawer->SetDrawing(true);
 	m_pDynamicsWorld->debugDrawWorld();
 	m_pDebugDrawer->SetDrawing(false);
+}
+
+collision_type_t CBulletPhysics::GetEntityCollisionType(class CBaseEntity* pEnt)
+{
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
+	if (!pPhysicsEntity)
+		return CT_NONE;
+
+	return pPhysicsEntity->m_eCollisionType;
 }
 
 void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform)

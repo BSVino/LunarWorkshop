@@ -64,6 +64,7 @@ NETVAR_TABLE_END();
 
 void UnserializeString_LocalOrigin(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity);
 void UnserializeString_LocalAngles(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity);
+void UnserializeString_MoveParent(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity);
 
 SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_OUTPUT(OnSpawn);
@@ -74,7 +75,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sName, "Name");
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sClassName);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, float, m_flMass, "Mass");
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hMoveParent);
+	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hMoveParent, "MoveParent", UnserializeString_MoveParent);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_ahMoveChildren);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, AABB, m_aabbBoundingBox, "BoundingBox");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bGlobalTransformsDirty);
@@ -223,10 +224,8 @@ CModel* CBaseEntity::GetModel() const
 
 void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 {
-	if (IsInPhysics())
-	{
+	if (IsInPhysics() && GamePhysics()->GetEntityCollisionType(this) != CT_KINEMATIC)
 		TAssert(!pParent);
-	}
 
 	if (m_hMoveParent.GetPointer() == pParent)
 		return;
@@ -517,10 +516,17 @@ void CBaseEntity::SetLocalOrigin(const TVector& vecOrigin)
 
 	if (IsInPhysics())
 	{
-		TAssert(!GetMoveParent());
+		TAssert(GamePhysics()->GetEntityCollisionType(this) == CT_KINEMATIC || !GetMoveParent());
 		Matrix4x4 mLocal = m_mLocalTransform;
 		mLocal.SetTranslation(vecOrigin);
-		GamePhysics()->SetEntityTransform(this, mLocal);
+
+		Matrix4x4 mGlobal;
+		if (GetMoveParent())
+			mGlobal = GetMoveParent()->GetGlobalTransform() * mLocal;
+		else
+			mGlobal = mLocal;
+
+		GamePhysics()->SetEntityTransform(this, mGlobal);
 	}
 
 	if ((vecOrigin - m_vecLocalOrigin).LengthSqr() == TFloat(0))
@@ -1734,6 +1740,44 @@ void UnserializeString_ModelID(const tstring& sData, CSaveData* pSaveData, CBase
 	pEntity->SetModel(iID);
 }
 
+void UnserializeString_EntityHandle(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+	CBaseEntity* pNamedEntity = CBaseEntity::GetEntityByName(sData);
+
+	TAssert(pNamedEntity);
+	if (!pNamedEntity)
+	{
+		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") couldn't find entity named '" + sData + "'\n");
+		return;
+	}
+
+	CEntityHandle<CBaseEntity> hData(pNamedEntity);
+
+	CEntityHandle<CBaseEntity>* pData = (CEntityHandle<CBaseEntity>*)((char*)pEntity + pSaveData->m_iOffset);
+	switch(pSaveData->m_eType)
+	{
+	case CSaveData::DATA_COPYTYPE:
+		TAssert(false);
+		*pData = hData;
+		break;
+
+	case CSaveData::DATA_NETVAR:
+	{
+		CNetworkedHandle<CBaseEntity>* pVariable = (CNetworkedHandle<CBaseEntity>*)pData;
+		(*pVariable) = hData;
+		break;
+	}
+
+	case CSaveData::DATA_COPYARRAY:
+	case CSaveData::DATA_COPYVECTOR:
+	case CSaveData::DATA_STRING:
+	case CSaveData::DATA_STRING16:
+	case CSaveData::DATA_OUTPUT:
+		TAssert(false);
+		break;
+	}
+}
+
 void UnserializeString_LocalOrigin(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
 	eastl::vector<tstring> asTokens;
@@ -1764,4 +1808,18 @@ void UnserializeString_LocalAngles(const tstring& sData, CSaveData* pSaveData, C
 
 	EAngle angData(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
 	pEntity->SetLocalAngles(angData);
+}
+
+void UnserializeString_MoveParent(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+	CBaseEntity* pNamedEntity = CBaseEntity::GetEntityByName(sData);
+
+	TAssert(pNamedEntity);
+	if (!pNamedEntity)
+	{
+		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") couldn't find entity named '" + sData + "'\n");
+		return;
+	}
+
+	pEntity->SetMoveParent(pNamedEntity);
 }
