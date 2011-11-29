@@ -257,6 +257,10 @@ void CGameServer::LoadLevel(tstring sFile)
 	CData* pData = new CData();
 	CDataSerializer::Read(f, pData);
 
+	// Create and name the entities first and add them to this array. This way we avoid a problem where
+	// one entity needs to connect to another entity which has not yet been created.
+	eastl::map<size_t, CBaseEntity*> apEntities;
+
 	for (size_t i = 0; i < pData->GetNumChildren(); i++)
 	{
 		CData* pChildData = pData->GetChild(i);
@@ -276,74 +280,86 @@ void CGameServer::LoadLevel(tstring sFile)
 
 			CBaseEntity* pEntity = Create<CBaseEntity>(sClass.c_str());
 
-			for (size_t k = 0; k < pChildData->GetNumChildren(); k++)
+			apEntities[i] = pEntity;
+
+			CData* pNameData = pChildData->FindChild("Name");
+			if (pNameData)
+				pEntity->SetName(pNameData->GetValueTString());
+		}
+	}
+
+	for (auto it = apEntities.begin(); it != apEntities.end(); it++)
+	{
+		CData* pChildData = pData->GetChild(it->first);
+		CBaseEntity* pEntity = it->second;
+
+		for (size_t k = 0; k < pChildData->GetNumChildren(); k++)
+		{
+			CData* pField = pChildData->GetChild(k);
+
+			tstring sHandle = pField->GetKey();
+			tstring sValue = pField->GetValueTString();
+
+			if (sHandle == "Output")
 			{
-				CData* pField = pChildData->GetChild(k);
-
-				tstring sHandle = pField->GetKey();
-				tstring sValue = pField->GetValueTString();
-
-				if (sHandle == "Output")
+				CSaveData* pSaveData = CBaseEntity::GetOutput(pEntity->GetClassName(), sValue);
+				TAssert(pSaveData);
+				if (!pSaveData)
 				{
-					CSaveData* pSaveData = CBaseEntity::GetOutput(sClass.c_str(), sValue);
-					TAssert(pSaveData);
-					if (!pSaveData)
-					{
-						TError("Unknown output '" + sValue + "'\n");
-						continue;
-					}
-
-					tstring sTarget;
-					tstring sInput;
-					tstring sArgs;
-					bool bKill = false;
-
-					for (size_t o = 0; o < pField->GetNumChildren(); o++)
-					{
-						CData* pOutputData = pField->GetChild(o);
-
-						if (pOutputData->GetKey() == "Target")
-							sTarget = pOutputData->GetValueString();
-						else if (pOutputData->GetKey() == "Input")
-							sInput = pOutputData->GetValueString();
-						else if (pOutputData->GetKey() == "Args")
-							sArgs = pOutputData->GetValueString();
-						else if (pOutputData->GetKey() == "Kill")
-							bKill = pOutputData->GetValueBool();
-					}
-
-					if (!sTarget.length())
-					{
-						TAssert(false);
-						TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing a target.\n");
-						continue;
-					}
-
-					if (!sInput.length())
-					{
-						TAssert(false);
-						TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing an input.\n");
-						continue;
-					}
-
-					pEntity->AddOutputTarget(sValue, sTarget, sInput, sArgs, bKill);
+					TError("Unknown output '" + sValue + "'\n");
+					continue;
 				}
-				else
+
+				tstring sTarget;
+				tstring sInput;
+				tstring sArgs;
+				bool bKill = false;
+
+				for (size_t o = 0; o < pField->GetNumChildren(); o++)
 				{
-					CSaveData* pSaveData = CBaseEntity::GetSaveDataByHandle(sClass.c_str(), sHandle.c_str());
-					TAssert(pSaveData);
-					if (!pSaveData)
-					{
-						TError("Unknown handle '" + sHandle + "'\n");
-						continue;
-					}
+					CData* pOutputData = pField->GetChild(o);
 
-					TAssert(pSaveData->m_pfnUnserializeString);
-					if (!pSaveData->m_pfnUnserializeString)
-						continue;
-
-					pSaveData->m_pfnUnserializeString(sValue, pSaveData, pEntity);
+					if (pOutputData->GetKey() == "Target")
+						sTarget = pOutputData->GetValueString();
+					else if (pOutputData->GetKey() == "Input")
+						sInput = pOutputData->GetValueString();
+					else if (pOutputData->GetKey() == "Args")
+						sArgs = pOutputData->GetValueString();
+					else if (pOutputData->GetKey() == "Kill")
+						bKill = pOutputData->GetValueBool();
 				}
+
+				if (!sTarget.length())
+				{
+					TAssert(false);
+					TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing a target.\n");
+					continue;
+				}
+
+				if (!sInput.length())
+				{
+					TAssert(false);
+					TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing an input.\n");
+					continue;
+				}
+
+				pEntity->AddOutputTarget(sValue, sTarget, sInput, sArgs, bKill);
+			}
+			else
+			{
+				CSaveData* pSaveData = CBaseEntity::GetSaveDataByHandle(pEntity->GetClassName(), sHandle.c_str());
+				TAssert(pSaveData);
+				if (!pSaveData)
+				{
+					TError("Unknown handle '" + sHandle + "'\n");
+					continue;
+				}
+
+				TAssert(pSaveData->m_pfnUnserializeString);
+				if (!pSaveData->m_pfnUnserializeString)
+					continue;
+
+				pSaveData->m_pfnUnserializeString(sValue, pSaveData, pEntity);
 			}
 		}
 	}

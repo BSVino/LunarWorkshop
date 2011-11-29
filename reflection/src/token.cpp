@@ -2,6 +2,7 @@
 
 #include <renderer/renderingcontext.h>
 #include <physics/physics.h>
+#include <tinker/application.h>
 
 #include "reflection_renderer.h"
 
@@ -10,8 +11,10 @@ REGISTER_ENTITY(CToken);
 NETVAR_TABLE_BEGIN(CToken);
 NETVAR_TABLE_END();
 
+void UnserializeString_TokenReceptacle(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity);
+
 SAVEDATA_TABLE_BEGIN(CToken);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CReceptacle>, m_hReceptacle);
+	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_COPYTYPE, CEntityHandle<CReceptacle>, m_hReceptacle, "Receptacle", UnserializeString_TokenReceptacle);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bReflected, "Reflected");
 SAVEDATA_TABLE_END();
 
@@ -54,6 +57,36 @@ bool CToken::IsReflected() const
 	return m_bReflected;
 }
 
+void UnserializeString_TokenReceptacle(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+	CBaseEntity* pReceptacleEntity = CBaseEntity::GetEntityByName(sData);
+
+	TAssert(pReceptacleEntity);
+	if (!pReceptacleEntity)
+	{
+		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") couldn't find entity named '" + sData + "'\n");
+		return;
+	}
+
+	CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pReceptacleEntity);
+	TAssert(pReceptacle);
+	if (!pReceptacle)
+	{
+		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") entity '" + sData + "' is not a receptacle.\n");
+		return;
+	}
+
+	CToken* pToken = dynamic_cast<CToken*>(pEntity);
+	TAssert(pToken);
+	if (!pToken)
+	{
+		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") is not a token.\n");
+		return;
+	}
+
+	pReceptacle->SetToken(pToken);
+}
+
 REGISTER_ENTITY(CReceptacle);
 
 NETVAR_TABLE_BEGIN(CReceptacle);
@@ -64,6 +97,7 @@ SAVEDATA_TABLE_BEGIN(CReceptacle);
 	SAVEDATA_DEFINE_OUTPUT(OnNormalTokenRemoved);
 	SAVEDATA_DEFINE_OUTPUT(OnReflectedToken);
 	SAVEDATA_DEFINE_OUTPUT(OnReflectedTokenRemoved);
+	SAVEDATA_DEFINE_OUTPUT(OnToken);
 	SAVEDATA_DEFINE_OUTPUT(OnTokenRemoved);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CToken>, m_hToken);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sDesiredToken, "DesiredToken");
@@ -123,5 +157,6 @@ void CReceptacle::SetToken(CToken* pToken)
 			CallOutput("OnReflectedToken");
 		else
 			CallOutput("OnNormalToken");
+		CallOutput("OnToken");
 	}
 }

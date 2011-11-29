@@ -876,6 +876,9 @@ void CEntityOutput::Call()
 
 		for (size_t i = 0; i < apEntities.size(); i++)
 			apEntities[i]->CallInput(pTarget->m_sInput, FormatArgs(pTarget->m_sArgs));
+
+		if (!apEntities.size())
+			TError("Couldn't find any entity with name '" + pTarget->m_sTargetName + "'\n");
 	}
 
 	for (size_t i = 0; i < m_aTargets.size(); i++)
@@ -1480,6 +1483,36 @@ CEntityRegistration* CBaseEntity::GetRegisteredEntity(tstring sClassName)
 		return NULL;
 
 	return &GetEntityRegistration()[sClassName];
+}
+
+CBaseEntity* CBaseEntity::GetEntityByName(const eastl::string& sName)
+{
+	if (sName.length() == 0)
+		return NULL;
+
+	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
+	{
+		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
+
+		if (!pEntity)
+			continue;
+
+		if (pEntity->IsDeleted())
+			continue;
+
+		if (sName[0] == '*')
+		{
+			if (eastl::string(pEntity->GetClassName()) == sName.c_str()+1)
+				return pEntity;
+		}
+		else
+		{
+			if (pEntity->GetName() == sName)
+				return pEntity;
+		}
+	}
+
+	return NULL;
 }
 
 void CBaseEntity::FindEntitiesByName(const eastl::string& sName, eastl::vector<CBaseEntity*>& apEntities)

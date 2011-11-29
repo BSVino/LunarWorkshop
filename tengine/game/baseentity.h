@@ -572,6 +572,7 @@ public:
 	template <class T>
 	static T*								FindClosest(const TVector& vecPoint, CBaseEntity* pFurther = NULL);
 
+	static CBaseEntity*						GetEntityByName(const eastl::string& sName);
 	static void								FindEntitiesByName(const eastl::string& sName, eastl::vector<CBaseEntity*>& apEntities);
 
 protected:

@@ -50,6 +50,7 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnNormalTokenRemoved);
 	DECLARE_ENTITY_OUTPUT(OnReflectedToken);
 	DECLARE_ENTITY_OUTPUT(OnReflectedTokenRemoved);
+	DECLARE_ENTITY_OUTPUT(OnToken);
 	DECLARE_ENTITY_OUTPUT(OnTokenRemoved);
 
 protected:
