@@ -9,6 +9,7 @@
 #include "LinearMath/btDefaultMotionState.h"
 
 #include <game/baseentity.h>
+#include <tinker/application.h>
 
 #include "bullet_physics.h"
 
@@ -124,17 +125,27 @@ void CCharacterController::warp(const btVector3& origin)
 	m_pGhostObject->setWorldTransform(mNew);
 }
 
-void CCharacterController::preStep(btCollisionWorld* collisionWorld)
+void CCharacterController::preStep(btCollisionWorld* pCollisionWorld)
 {
 	m_bTouchingContact = false;
-	if (RecoverFromPenetration(collisionWorld))
+	int i = 0;
+	while (RecoverFromPenetration(pCollisionWorld))
+	{
+		i++;
 		m_bTouchingContact = true;
+
+		if (i > 4)
+		{
+			TMsg("Character controller couldn't recover from penetration.\n");
+			break;
+		}
+	}
 
 	m_vecCurrentPosition = m_pGhostObject->getWorldTransform().getOrigin();
 	m_vecTargetPosition = m_vecCurrentPosition;
 }
 
-void CCharacterController::playerStep (  btCollisionWorld* collisionWorld, btScalar dt)
+void CCharacterController::playerStep(btCollisionWorld* pCollisionWorld, btScalar dt)
 {
 	//	printf("playerStep(): ");
 	//	printf("  dt = %f", dt);
@@ -168,11 +179,11 @@ void CCharacterController::playerStep (  btCollisionWorld* collisionWorld, btSca
 	btTransform mWorld;
 	mWorld = m_pGhostObject->getWorldTransform();
 
-	StepUp(collisionWorld);
+	StepUp(pCollisionWorld);
 
-	StepForwardAndStrafe(collisionWorld, m_vecWalkDirection * dt);
+	StepForwardAndStrafe(pCollisionWorld, m_vecWalkDirection * dt);
 
-	StepDown(collisionWorld, dt);
+	StepDown(pCollisionWorld, dt);
 
 	// printf("\n");
 
@@ -262,30 +273,29 @@ CBaseEntity* CCharacterController::GetEntity() const
 
 // Returns the reflection direction of a ray going 'direction' hitting a surface with normal 'normal'
 // from: http://www-cs-students.stanford.edu/~adityagp/final/node3.html
-btVector3 CCharacterController::ComputeReflectionDirection (const btVector3& direction, const btVector3& normal)
+btVector3 CCharacterController::ComputeReflectionDirection(const btVector3& direction, const btVector3& normal)
 {
 	return direction - (btScalar(2.0) * direction.dot(normal)) * normal;
 }
 
 // Returns the portion of 'direction' that is parallel to 'normal'
-btVector3 CCharacterController::ParallelComponent (const btVector3& direction, const btVector3& normal)
+btVector3 CCharacterController::ParallelComponent(const btVector3& direction, const btVector3& normal)
 {
 	btScalar magnitude = direction.dot(normal);
 	return normal * magnitude;
 }
 
 // Returns the portion of 'direction' that is perpindicular to 'normal'
-btVector3 CCharacterController::PerpendicularComponent (const btVector3& direction, const btVector3& normal)
+btVector3 CCharacterController::PerpendicularComponent(const btVector3& direction, const btVector3& normal)
 {
 	return direction - ParallelComponent(direction, normal);
 }
 
-bool CCharacterController::RecoverFromPenetration ( btCollisionWorld* collisionWorld)
+bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWorld)
 {
+	bool bPenetration = false;
 
-	bool penetration = false;
-
-	collisionWorld->getDispatcher()->dispatchAllCollisionPairs(m_pGhostObject->getOverlappingPairCache(), collisionWorld->getDispatchInfo(), collisionWorld->getDispatcher());
+	pCollisionWorld->getDispatcher()->dispatchAllCollisionPairs(m_pGhostObject->getOverlappingPairCache(), pCollisionWorld->getDispatchInfo(), pCollisionWorld->getDispatcher());
 
 	m_vecCurrentPosition = m_pGhostObject->getWorldTransform().getOrigin();
 
@@ -344,8 +354,8 @@ bool CCharacterController::RecoverFromPenetration ( btCollisionWorld* collisionW
 						m_vecTouchingNormal = pt.m_normalWorldOnB * directionSign;//??
 					}
 
-					m_vecCurrentPosition += pt.m_normalWorldOnB * directionSign * dist * btScalar(0.2);
-					penetration = true;
+					m_vecCurrentPosition += pt.m_normalWorldOnB * directionSign * dist * 1.001f;
+					bPenetration = true;
 				} else {
 					//printf("touching %f\n", dist);
 				}
@@ -361,7 +371,7 @@ bool CCharacterController::RecoverFromPenetration ( btCollisionWorld* collisionW
 
 	//printf("m_vecTouchingNormal = %f,%f,%f\n", m_vecTouchingNormal[0], m_vecTouchingNormal[1], m_vecTouchingNormal[2]);
 
-	return penetration;
+	return bPenetration;
 }
 
 void CCharacterController::StepUp(btCollisionWorld* pWorld)
