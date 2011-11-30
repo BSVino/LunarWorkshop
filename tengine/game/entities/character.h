@@ -54,12 +54,17 @@ public:
 	virtual void					SetViewAngles(const EAngle& angView) { m_angView = angView; }
 	virtual EAngle					GetViewAngles() const { return m_angView; }
 
+	CBaseEntity*					GetGroundEntity() const { return m_hGround; }
+	void							SetGroundEntity(const CBaseEntity* pEntity);
+
 	TFloat							GetMaxStepHeight() const { return m_flMaxStepSize; }
 
 protected:
 	CNetworkedHandle<CPlayer>		m_hControllingPlayer;
 
 	EAngle							m_angView;
+
+	CNetworkedHandle<CBaseEntity>	m_hGround;
 
 	bool							m_bTransformMoveByView;
 	Vector							m_vecGoalVelocity;

@@ -14,11 +14,13 @@ REGISTER_ENTITY(CCharacter);
 
 NETVAR_TABLE_BEGIN(CCharacter);
 	NETVAR_DEFINE(CEntityHandle, m_hControllingPlayer);
+	NETVAR_DEFINE(CEntityHandle, m_hGround);
 NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_hControllingPlayer);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, EAngle, m_angView, "ViewAngles");
+	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hGround);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bTransformMoveByView);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecGoalVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecMoveVelocity);
@@ -262,4 +264,12 @@ void CCharacter::SetControllingPlayer(CPlayer* pCharacter)
 CPlayer* CCharacter::GetControllingPlayer() const
 {
 	return m_hControllingPlayer;
+}
+
+void CCharacter::SetGroundEntity(const CBaseEntity* pEntity)
+{
+	if (m_hGround == pEntity)
+		return;
+
+	m_hGround = pEntity;
 }

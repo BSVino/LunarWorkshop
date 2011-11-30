@@ -9,6 +9,7 @@
 #include "LinearMath/btDefaultMotionState.h"
 
 #include <game/baseentity.h>
+#include <game/entities/character.h>
 #include <tinker/application.h>
 
 #include "bullet_physics.h"
@@ -64,9 +65,8 @@ public:
 		}
 
 		btScalar dotUp = m_up.dot(hitNormalWorld);
-		if (dotUp < m_minSlopeDot) {
+		if (dotUp < m_minSlopeDot)
 			return btScalar(1.0);
-		}
 
 		return ClosestConvexResultCallback::addSingleResult (convexResult, normalInWorldSpace);
 	}
@@ -78,7 +78,7 @@ protected:
 	btScalar				m_minSlopeDot;
 };
 
-CCharacterController::CCharacterController(CBaseEntity* pEntity, btPairCachingGhostObject* ghostObject,btConvexShape* convexShape,btScalar stepHeight)
+CCharacterController::CCharacterController(CCharacter* pEntity, btPairCachingGhostObject* ghostObject,btConvexShape* convexShape,btScalar stepHeight)
 {
 	m_hEntity = pEntity;
 	m_flAddedMargin = 0.02f;
@@ -101,10 +101,12 @@ CCharacterController::~CCharacterController ()
 {
 }
 
-void CCharacterController::updateAction(btCollisionWorld* collisionWorld, btScalar deltaTime)
+void CCharacterController::updateAction(btCollisionWorld* pCollisionWorld, btScalar deltaTime)
 {
-	preStep(collisionWorld);
-	playerStep(collisionWorld, deltaTime);
+	preStep(pCollisionWorld);
+	playerStep(pCollisionWorld, deltaTime);
+
+	FindGround(pCollisionWorld);
 }
 
 void CCharacterController::setWalkDirection(const btVector3& walkDirection)
@@ -351,7 +353,7 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 					if (dist < maxPen)
 					{
 						maxPen = dist;
-						m_vecTouchingNormal = pt.m_normalWorldOnB * directionSign;//??
+						m_vecTouchingNormal = pt.m_normalWorldOnB * directionSign;
 					}
 
 					m_vecCurrentPosition += pt.m_normalWorldOnB * directionSign * dist * 1.001f;
@@ -511,7 +513,7 @@ void CCharacterController::StepForwardAndStrafe(btCollisionWorld* pCollisionWorl
 	}
 }
 
-void CCharacterController::StepDown(btCollisionWorld* collisionWorld, btScalar dt)
+void CCharacterController::StepDown(btCollisionWorld* pCollisionWorld, btScalar dt)
 {
 	btTransform mStart, mEnd;
 
@@ -541,7 +543,7 @@ void CCharacterController::StepDown(btCollisionWorld* collisionWorld, btScalar d
 	callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
 	callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
 
-	m_pGhostObject->convexSweepTest (m_pConvexShape, mStart, mEnd, callback, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
+	m_pGhostObject->convexSweepTest (m_pConvexShape, mStart, mEnd, callback, pCollisionWorld->getDispatchInfo().m_allowedCcdPenetration);
 
 	if (callback.hasHit())
 	{
@@ -554,4 +556,44 @@ void CCharacterController::StepDown(btCollisionWorld* collisionWorld, btScalar d
 		// we dropped the full height
 		m_vecCurrentPosition = m_vecTargetPosition;
 	}
+}
+
+void CCharacterController::FindGround(btCollisionWorld* pCollisionWorld)
+{
+	if (GetVelocity().dot(GetUpVector()) > m_flJumpSpeed/2.0f)
+	{
+		m_hEntity->SetGroundEntity(nullptr);
+		return;
+	}
+
+	btTransform mStart, mEnd;
+
+	btVector3 vecStepDrop = GetUpVector() * m_flCurrentStepOffset;
+	btVector3 vecGroundPosition = m_pGhostObject->getWorldTransform().getOrigin() - vecStepDrop;
+
+	mStart.setIdentity();
+	mEnd.setIdentity();
+
+	mStart.setOrigin(m_pGhostObject->getWorldTransform().getOrigin());
+	mEnd.setOrigin(m_vecTargetPosition);
+
+	btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, GetUpVector(), m_flMaxSlopeCosine);
+	callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
+	callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
+
+	m_pGhostObject->convexSweepTest (m_pConvexShape, mStart, mEnd, callback, pCollisionWorld->getDispatchInfo().m_allowedCcdPenetration);
+
+	if (callback.hasHit())
+	{
+		btScalar flDot = GetUpVector().dot(callback.m_hitNormalWorld);
+		if (flDot < m_flMaxSlopeCosine)
+			m_hEntity->SetGroundEntity(nullptr);
+		else
+		{
+			CEntityHandle<CBaseEntity> hOther = CEntityHandle<CBaseEntity>((size_t)callback.m_hitCollisionObject->getUserPointer());
+			m_hEntity->SetGroundEntity(hOther);
+		}
+	}
+	else
+		m_hEntity->SetGroundEntity(nullptr);
 }

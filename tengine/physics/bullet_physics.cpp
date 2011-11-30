@@ -114,7 +114,7 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 		if (pCharacter)
 			flStepHeight = pCharacter->GetMaxStepHeight();
 
-		pPhysicsEntity->m_pCharacterController = new CCharacterController(pEntity, pPhysicsEntity->m_pGhostObject, pCapsuleShape, flStepHeight);
+		pPhysicsEntity->m_pCharacterController = new CCharacterController(pCharacter, pPhysicsEntity->m_pGhostObject, pCapsuleShape, flStepHeight);
 
 		m_pDynamicsWorld->addCollisionObject(pPhysicsEntity->m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter|btBroadphaseProxy::DefaultFilter);
 		m_pDynamicsWorld->addAction(pPhysicsEntity->m_pCharacterController);

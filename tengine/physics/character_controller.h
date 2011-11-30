@@ -10,6 +10,7 @@
 #include <game/entityhandle.h>
 
 class CBaseEntity;
+class CCharacter;
 class btCollisionShape;
 class btRigidBody;
 class btCollisionWorld;
@@ -25,7 +26,7 @@ class btConvexShape;
 class CCharacterController : public btCharacterControllerInterface
 {
 public:
-	CCharacterController (CBaseEntity* pEntity, btPairCachingGhostObject* ghostObject,btConvexShape* convexShape,btScalar stepHeight);
+	CCharacterController (CCharacter* pEntity, btPairCachingGhostObject* ghostObject,btConvexShape* convexShape,btScalar stepHeight);
 	~CCharacterController ();
 
 public:
@@ -79,8 +80,10 @@ protected:
 	void		StepForwardAndStrafe(btCollisionWorld* collisionWorld, const btVector3& walkMove);
 	void		StepDown(btCollisionWorld* collisionWorld, btScalar dt);
 
+	void		FindGround(btCollisionWorld* pCollisionWorld);
+
 protected:
-	CEntityHandle<CBaseEntity>	m_hEntity;
+	CEntityHandle<CCharacter>	m_hEntity;
 
 	btScalar		m_flHalfHeight;
 
