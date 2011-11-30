@@ -441,6 +441,8 @@ public:
 
 	virtual TVector							GetUpVector() const { return TVector(0, 1, 0); };
 
+	virtual bool							TransformsChildUp() const { return false; };
+
 	bool									IsVisible() const { return m_bVisible; }
 	void									SetVisible(bool bVisible) { m_bVisible = bVisible; }
 

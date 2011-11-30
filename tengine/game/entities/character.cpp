@@ -110,7 +110,7 @@ void CCharacter::MoveThink()
 		{
 			Vector vecUp = GetUpVector();
 		
-			if (HasMoveParent())
+			if (HasMoveParent() && GetMoveParent()->TransformsChildUp())
 			{
 				TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
 				vecUp = mGlobalToLocal.TransformVector(vecUp);
