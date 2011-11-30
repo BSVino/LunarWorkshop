@@ -103,6 +103,15 @@ CCharacterController::~CCharacterController ()
 
 void CCharacterController::updateAction(btCollisionWorld* pCollisionWorld, btScalar deltaTime)
 {
+	// Grab the new player transform before doing movement steps in case the player has been moved,
+	// such as by a platform or teleported. No need to do a physics trace for it, the penetration
+	// functions should handle that.
+	btTransform mCharacter;
+	CPhysicsEntity* pPhysicsEntity = static_cast<CBulletPhysics*>(GamePhysics())->GetPhysicsEntity(m_hEntity);
+	pPhysicsEntity->m_oMotionState.getWorldTransform(mCharacter);
+
+	m_pGhostObject->setWorldTransform(mCharacter);
+
 	preStep(pCollisionWorld);
 	playerStep(pCollisionWorld, deltaTime);
 

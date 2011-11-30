@@ -56,6 +56,8 @@ float CReflectionCharacter::EyeHeight() const
 
 void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 {
+	BaseClass::OnSetLocalTransform(mNew);
+
 	if (!ReflectionGame()->GetLocalPlayerCharacter())
 		return;
 
@@ -77,7 +79,6 @@ void CReflectionCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
 	{
 		Vector vecOldGlobalOrigin = GetGlobalOrigin();
 		Vector vecNewGlobalOrigin;
-		TAssert(!HasMoveParent());	// Hasn't been tested with move parents.
 		if (HasMoveParent())
 			vecNewGlobalOrigin = GetMoveParent()->GetGlobalTransform() * vecNewOrigin;
 		else

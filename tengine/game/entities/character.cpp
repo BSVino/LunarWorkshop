@@ -266,10 +266,11 @@ CPlayer* CCharacter::GetControllingPlayer() const
 	return m_hControllingPlayer;
 }
 
-void CCharacter::SetGroundEntity(const CBaseEntity* pEntity)
+void CCharacter::SetGroundEntity(CBaseEntity* pEntity)
 {
-	if (m_hGround == pEntity)
+	if ((CBaseEntity*)m_hGround == pEntity)
 		return;
 
 	m_hGround = pEntity;
+	SetMoveParent(pEntity);
 }

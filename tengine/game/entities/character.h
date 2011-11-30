@@ -55,7 +55,7 @@ public:
 	virtual EAngle					GetViewAngles() const { return m_angView; }
 
 	CBaseEntity*					GetGroundEntity() const { return m_hGround; }
-	void							SetGroundEntity(const CBaseEntity* pEntity);
+	void							SetGroundEntity(CBaseEntity* pEntity);
 
 	TFloat							GetMaxStepHeight() const { return m_flMaxStepSize; }
 

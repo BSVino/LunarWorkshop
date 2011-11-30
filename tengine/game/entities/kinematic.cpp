@@ -85,6 +85,8 @@ void CKinematic::Think()
 
 void CKinematic::OnSetLocalTransform(TMatrix& m)
 {
+	BaseClass::OnSetLocalTransform(m);
+
 	if (m_bLerping)
 		return;
 

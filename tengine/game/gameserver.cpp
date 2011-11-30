@@ -613,8 +613,6 @@ void CGameServer::Think(float flHostTime)
 
 	CNetwork::Think();
 
-	Simulate();
-
 	size_t iMaxEntities = GameServer()->GetMaxEntities();
 	for (size_t i = 0; i < iMaxEntities; i++)
 	{
@@ -627,6 +625,8 @@ void CGameServer::Think(float flHostTime)
 		if (m_bHalting)
 			break;
 	}
+
+	Simulate();
 
 	Think();
 

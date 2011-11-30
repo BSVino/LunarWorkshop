@@ -13,6 +13,7 @@
 #include <models/texturelibrary.h>
 #include <tinker/cvar.h>
 #include <physics/physics.h>
+#include <game/entities/character.h>
 
 #include "game.h"
 
@@ -224,8 +225,11 @@ CModel* CBaseEntity::GetModel() const
 
 void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 {
-	if (IsInPhysics() && GamePhysics()->GetEntityCollisionType(this) != CT_KINEMATIC)
-		TAssert(!pParent);
+	if (IsInPhysics() && pParent)
+	{
+		collision_type_t eCollisionType = GamePhysics()->GetEntityCollisionType(this);
+		TAssert(eCollisionType == CT_KINEMATIC || eCollisionType == CT_CHARACTER);
+	}
 
 	if (m_hMoveParent.GetPointer() == pParent)
 		return;
@@ -277,10 +281,7 @@ void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 
 	TFloat flVelocityLength = vecPreviousVelocity.Length();
 	if (flVelocityLength > TFloat(0))
-	{
-		mGlobalToLocal.SetTranslation(TVector(0, 0, 0));
-		m_vecLocalVelocity = (mGlobalToLocal * (vecPreviousVelocity/flVelocityLength))*flVelocityLength;
-	}
+		m_vecLocalVelocity = mGlobalToLocal.TransformVector(vecPreviousVelocity);
 	else
 		m_vecLocalVelocity = TVector(0, 0, 0);
 
@@ -324,19 +325,29 @@ TMatrix CBaseEntity::GetGlobalTransform() const
 void CBaseEntity::SetGlobalTransform(const TMatrix& m)
 {
 	TMatrix mNew = m;
+	if (HasMoveParent())
+		mNew = GetMoveParent()->GetGlobalToLocalTransform() *  m;
+
 	if (mNew != m_mLocalTransform)
 		OnSetLocalTransform(mNew);
 
-	m_hMoveParent = NULL;
-	m_mGlobalTransform = m_mLocalTransform = mNew;
-	m_bGlobalTransformsDirty = false;
+	if (HasMoveParent())
+	{
+		m_mLocalTransform = mNew;
+		m_bGlobalTransformsDirty = true;
+	}
+	else
+	{
+		m_mGlobalTransform = m_mLocalTransform = mNew;
+		m_bGlobalTransformsDirty = false;
+	}
 
 	m_vecLocalOrigin = m_mLocalTransform.GetTranslation();
 	m_angLocalAngles = m_mLocalTransform.GetAngles();
 	m_qLocalRotation = Quaternion(m_mLocalTransform);
 
 	if (IsInPhysics())
-		GamePhysics()->SetEntityTransform(this, m_mGlobalTransform);
+		GamePhysics()->SetEntityTransform(this, GetGlobalTransform());
 }
 
 TMatrix CBaseEntity::GetGlobalToLocalTransform()
@@ -405,7 +416,6 @@ TVector CBaseEntity::GetGlobalVelocity()
 {
 	if (IsInPhysics())
 	{
-		TAssert(!GetMoveParent());
 		return GamePhysics()->GetEntityVelocity(this);
 	}
 
@@ -450,9 +460,7 @@ void CBaseEntity::SetGlobalVelocity(const TVector& vecVelocity)
 	if (m_hMoveParent == NULL)
 		SetLocalVelocity(vecVelocity);
 	else
-	{
-		TAssert(!"Unimplemented");
-	}
+		SetLocalVelocity(GetMoveParent()->GetGlobalToLocalTransform().TransformVector(vecVelocity));
 }
 
 void CBaseEntity::SetGlobalGravity(const TVector& vecGravity)
@@ -516,7 +524,12 @@ void CBaseEntity::SetLocalOrigin(const TVector& vecOrigin)
 
 	if (IsInPhysics())
 	{
-		TAssert(GamePhysics()->GetEntityCollisionType(this) == CT_KINEMATIC || !GetMoveParent());
+		if (GetMoveParent())
+		{
+			collision_type_t eCollisionType = GamePhysics()->GetEntityCollisionType(this);
+			TAssert(eCollisionType == CT_KINEMATIC || eCollisionType == CT_CHARACTER);
+		}
+
 		Matrix4x4 mLocal = m_mLocalTransform;
 		mLocal.SetTranslation(vecOrigin);
 
@@ -557,8 +570,10 @@ void CBaseEntity::SetLocalVelocity(const TVector& vecVelocity)
 
 	if (IsInPhysics())
 	{
-		TAssert(!GetMoveParent());
-		GamePhysics()->SetEntityVelocity(this, vecVelocity);
+		if (HasMoveParent())
+			GamePhysics()->SetEntityVelocity(this, GetMoveParent()->GetGlobalTransform() * vecVelocity);
+		else
+			GamePhysics()->SetEntityVelocity(this, vecVelocity);
 	}
 
 	if ((vecVelocity - m_vecLocalVelocity).LengthSqr() == TFloat(0))
