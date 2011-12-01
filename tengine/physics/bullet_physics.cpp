@@ -253,8 +253,6 @@ collision_type_t CBulletPhysics::GetEntityCollisionType(class CBaseEntity* pEnt)
 
 void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform)
 {
-	TPROF("CBulletPhysics::SetEntityTransform");
-
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
 		return;
@@ -286,8 +284,6 @@ void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4
 
 void CBulletPhysics::SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity)
 {
-	TPROF("CBulletPhysics::SetEntityVelocity");
-
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
 		return;
@@ -305,8 +301,6 @@ void CBulletPhysics::SetEntityVelocity(class CBaseEntity* pEnt, const Vector& ve
 
 Vector CBulletPhysics::GetEntityVelocity(class CBaseEntity* pEnt)
 {
-	TPROF("CBulletPhysics::GetEntityVelocity");
-
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
 		return Vector();
@@ -321,8 +315,6 @@ Vector CBulletPhysics::GetEntityVelocity(class CBaseEntity* pEnt)
 
 void CBulletPhysics::SetControllerWalkVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity)
 {
-	TPROF("CBulletPhysics::SetEntityVelocity");
-
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
 		return;
@@ -336,8 +328,6 @@ void CBulletPhysics::SetControllerWalkVelocity(class CBaseEntity* pEnt, const Ve
 
 void CBulletPhysics::SetEntityGravity(class CBaseEntity* pEnt, const Vector& vecGravity)
 {
-	TPROF("CBulletPhysics::SetEntityGravity");
-
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
 		return;
@@ -352,8 +342,6 @@ void CBulletPhysics::SetEntityGravity(class CBaseEntity* pEnt, const Vector& vec
 
 void CBulletPhysics::SetEntityUpVector(class CBaseEntity* pEnt, const Vector& vecUp)
 {
-	TPROF("CBulletPhysics::SetEntityUpVector");
-
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
 		return;
@@ -380,8 +368,6 @@ void CBulletPhysics::CharacterJump(class CBaseEntity* pEnt)
 
 CPhysicsEntity* CBulletPhysics::GetPhysicsEntity(class CBaseEntity* pEnt)
 {
-	TPROF("CBulletPhysics::GetPhysicsEntity");
-
 	TAssert(pEnt);
 	if (!pEnt)
 		return NULL;
