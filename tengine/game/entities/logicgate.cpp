@@ -6,8 +6,14 @@ NETVAR_TABLE_BEGIN(CLogicGate);
 NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CLogicGate);
+	SAVEDATA_DEFINE_OUTPUT(OnAndTrue);
+	SAVEDATA_DEFINE_OUTPUT(OnAndFalse);
+	SAVEDATA_DEFINE_OUTPUT(OnOrTrue);
+	SAVEDATA_DEFINE_OUTPUT(OnOrFalse);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bLeft, "Left");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bRight, "Right");
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bAnd);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bOr);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CLogicGate);
@@ -41,7 +47,8 @@ void CLogicGate::InputLeft(const eastl::vector<tstring>& sArgs)
 
 	m_bLeft = bNewLeft;
 
-	SetActive(m_bLeft && m_bRight);
+	SetAndGate(m_bLeft && m_bRight);
+	SetOrGate(m_bLeft || m_bRight);
 }
 
 void CLogicGate::InputRight(const eastl::vector<tstring>& sArgs)
@@ -60,5 +67,28 @@ void CLogicGate::InputRight(const eastl::vector<tstring>& sArgs)
 
 	m_bRight = bNewRight;
 
-	SetActive(m_bLeft && m_bRight);
+	SetAndGate(m_bLeft && m_bRight);
+	SetOrGate(m_bLeft || m_bRight);
+}
+
+void CLogicGate::SetAndGate(bool bAnd)
+{
+	if (bAnd && !m_bAnd)
+		CallOutput("OnAndTrue");
+
+	if (m_bAnd && !bAnd)
+		CallOutput("OnAndFalse");
+
+	m_bAnd = bAnd;
+}
+
+void CLogicGate::SetOrGate(bool bOr)
+{
+	if (bOr && !m_bOr)
+		CallOutput("OnOrTrue");
+
+	if (m_bOr && !bOr)
+		CallOutput("OnOrFalse");
+
+	m_bOr = bOr;
 }

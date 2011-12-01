@@ -285,6 +285,61 @@ void CGameServer::LoadLevel(tstring sFile)
 			CData* pNameData = pChildData->FindChild("Name");
 			if (pNameData)
 				pEntity->SetName(pNameData->GetValueTString());
+
+			// Process outputs here so that they exist when handle callbacks run.
+			for (size_t k = 0; k < pChildData->GetNumChildren(); k++)
+			{
+				CData* pField = pChildData->GetChild(k);
+
+				tstring sHandle = pField->GetKey();
+				tstring sValue = pField->GetValueTString();
+
+				if (sHandle == "Output")
+				{
+					CSaveData* pSaveData = CBaseEntity::GetOutput(pEntity->GetClassName(), sValue);
+					TAssert(pSaveData);
+					if (!pSaveData)
+					{
+						TError("Unknown output '" + sValue + "'\n");
+						continue;
+					}
+
+					tstring sTarget;
+					tstring sInput;
+					tstring sArgs;
+					bool bKill = false;
+
+					for (size_t o = 0; o < pField->GetNumChildren(); o++)
+					{
+						CData* pOutputData = pField->GetChild(o);
+
+						if (pOutputData->GetKey() == "Target")
+							sTarget = pOutputData->GetValueString();
+						else if (pOutputData->GetKey() == "Input")
+							sInput = pOutputData->GetValueString();
+						else if (pOutputData->GetKey() == "Args")
+							sArgs = pOutputData->GetValueString();
+						else if (pOutputData->GetKey() == "Kill")
+							bKill = pOutputData->GetValueBool();
+					}
+
+					if (!sTarget.length())
+					{
+						TAssert(false);
+						TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing a target.\n");
+						continue;
+					}
+
+					if (!sInput.length())
+					{
+						TAssert(false);
+						TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing an input.\n");
+						continue;
+					}
+
+					pEntity->AddOutputTarget(sValue, sTarget, sInput, sArgs, bKill);
+				}
+			}
 		}
 	}
 
@@ -300,52 +355,7 @@ void CGameServer::LoadLevel(tstring sFile)
 			tstring sHandle = pField->GetKey();
 			tstring sValue = pField->GetValueTString();
 
-			if (sHandle == "Output")
-			{
-				CSaveData* pSaveData = CBaseEntity::GetOutput(pEntity->GetClassName(), sValue);
-				TAssert(pSaveData);
-				if (!pSaveData)
-				{
-					TError("Unknown output '" + sValue + "'\n");
-					continue;
-				}
-
-				tstring sTarget;
-				tstring sInput;
-				tstring sArgs;
-				bool bKill = false;
-
-				for (size_t o = 0; o < pField->GetNumChildren(); o++)
-				{
-					CData* pOutputData = pField->GetChild(o);
-
-					if (pOutputData->GetKey() == "Target")
-						sTarget = pOutputData->GetValueString();
-					else if (pOutputData->GetKey() == "Input")
-						sInput = pOutputData->GetValueString();
-					else if (pOutputData->GetKey() == "Args")
-						sArgs = pOutputData->GetValueString();
-					else if (pOutputData->GetKey() == "Kill")
-						bKill = pOutputData->GetValueBool();
-				}
-
-				if (!sTarget.length())
-				{
-					TAssert(false);
-					TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing a target.\n");
-					continue;
-				}
-
-				if (!sInput.length())
-				{
-					TAssert(false);
-					TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing an input.\n");
-					continue;
-				}
-
-				pEntity->AddOutputTarget(sValue, sTarget, sInput, sArgs, bKill);
-			}
-			else
+			if (sHandle != "Output")
 			{
 				CSaveData* pSaveData = CBaseEntity::GetSaveDataByHandle(pEntity->GetClassName(), sHandle.c_str());
 				TAssert(pSaveData);
