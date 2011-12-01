@@ -53,9 +53,18 @@ set (TENGINE_MODELS_SOURCES
 
 set (TENGINE_NETWORK_SOURCES
 	network/commands.cpp
-	network/network.cpp
 	network/replication.cpp
 )
+
+if (WITH_NETWORKING)
+	set (TENGINE_NETWORK_SOURCES ${TENGINE_NETWORK_SOURCES}
+		network/network.cpp
+	)
+else (WITH_NETWORKING)
+	set (TENGINE_NETWORK_SOURCES ${TENGINE_NETWORK_SOURCES}
+		network/network_loopback.cpp
+	)
+endif (WITH_NETWORKING)
 
 set (TENGINE_PHYSICS_SOURCES
 	physics/character_controller.cpp
@@ -109,7 +118,9 @@ if (WIN32)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Debug/DevIL.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Debug/ILU.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/pthreads-w32-2-8-0-release/Debug/pthread.lib)
-	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/enet-1.3.0/Debug/enet.lib)
+	if (WITH_NETWORKING)
+		target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/enet-1.3.0/Debug/enet.lib)
+	endif (WITH_NETWORKING)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/Debug/BulletDynamics_Debug.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/Debug/BulletCollision_Debug.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/Debug/LinearMath_Debug.lib)
@@ -117,7 +128,9 @@ if (WIN32)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Release/DevIL.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Release/ILU.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/pthreads-w32-2-8-0-release/Release/pthread.lib)
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/enet-1.3.0/Release/enet.lib)
+	if (WITH_NETWORKING)
+		target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/enet-1.3.0/Release/enet.lib)
+	endif (WITH_NETWORKING)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/RelWithDebInfo/BulletDynamics_RelWithDebugInfo.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/RelWithDebInfo/BulletCollision_RelWithDebugInfo.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/RelWithDebInfo/LinearMath_RelWithDebugInfo.lib)
@@ -132,7 +145,9 @@ if (WIN32)
 endif (WIN32)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	target_link_libraries (tengine ${CMAKE_SOURCE_DIR}/ext-deps/enet-1.3.0/.libs/libenet.a)
+	if (WITH_NETWORKING)
+		target_link_libraries (tengine ${CMAKE_SOURCE_DIR}/ext-deps/enet-1.3.0/.libs/libenet.a)
+	endif (WITH_NETWORKING)
 	target_link_libraries (tengine ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/lib/.libs/libIL.a)
 	target_link_libraries (tengine ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/lib/.libs/libILU.a)
 	target_link_libraries (tengine /usr/lib/libpng.a)

@@ -20,11 +20,16 @@ if (WIN32)
 	set (CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO	"/ENTRY:mainCRTStartup /DEBUG /INCREMENTAL:NO" CACHE STRING "" FORCE)
 endif (WIN32)
 
+option(WITH_NETWORKING "Build with networking enabled." ON)
 option(OPTIMIZE_SOFTWARE "Build with an eye towards optimization of software implementations." OFF)
 
 if (OPTIMIZE_SOFTWARE)
 	add_definitions(-DTINKER_OPTIMIZE_SOFTWARE)
 endif (OPTIMIZE_SOFTWARE)
+
+if (NOT WITH_NETWORKING)
+	add_definitions(-DTINKER_NO_NETWORKING)
+endif (NOT WITH_NETWORKING)
 
 if (CMAKE_COMPILER_IS_GNUCC)
 	add_definitions(-std=c++0x)
