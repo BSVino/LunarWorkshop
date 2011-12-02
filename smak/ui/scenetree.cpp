@@ -386,7 +386,7 @@ void CMaterialEditor::Layout()
 	m_pAmbientBlueSelector->SetSelection((int)(m_pMaterial->m_vecAmbient.z*20));
 	m_pAmbientBlueSelector->SetRight(GetWidth()/2-5);
 
-	flHeight = flAmbientRight;
+	flHeight = flAmbientHeight;
 
 	m_pDiffuseSelectorLabel->SetPos(GetWidth()/2+5, flHeight);
 	m_pDiffuseSelectorLabel->EnsureTextFits();
