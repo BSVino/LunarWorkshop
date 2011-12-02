@@ -326,7 +326,7 @@ int main(int argc, char** argv)
 
 #if defined(_WIN32) && !defined(_DEBUG)
 	}
-	__except (CreateMinidump(GetExceptionInformation(), _T("SMAK")), EXCEPTION_EXECUTE_HANDLER)
+	__except (CreateMinidump(GetExceptionInformation(), "SMAK"), EXCEPTION_EXECUTE_HANDLER)
 	{
 	}
 #endif
