@@ -1,2 +1,2 @@
-0 ICON "install/smak.ico"
-GLFW_ICON ICON "install/smak.ico"
+0 ICON "smak.ico"
+GLFW_ICON ICON "smak.ico"
