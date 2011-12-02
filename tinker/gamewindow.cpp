@@ -81,8 +81,13 @@ void LoadLevel(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const
 			return;
 		}
 
+		CVar::SetCVar("game_level", pLevel->GetFile());
+
+		// Need to tuck this away since levels are deleted when the GameServer is destroyed
+		tstring sGameMode = pLevel->GetGameMode();
+
 		GameWindow()->DestroyGame();
-		GameWindow()->CreateGame(pLevel->GetGameMode());
+		GameWindow()->CreateGame(sGameMode);
 		return;
 	}
 
