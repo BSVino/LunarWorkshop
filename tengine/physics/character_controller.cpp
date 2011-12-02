@@ -365,7 +365,10 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 						m_vecTouchingNormal = pt.m_normalWorldOnB * directionSign;
 					}
 
-					m_vecCurrentPosition += pt.m_normalWorldOnB * directionSign * dist * 1.001f;
+					if (pt.m_normalWorldOnB.dot(btVector3(0, 1, 0)) > 0.707)
+						m_vecCurrentPosition += btVector3(0, 1, 0) * directionSign * dist * 1.001f;
+					else
+						m_vecCurrentPosition += pt.m_normalWorldOnB * directionSign * dist * 1.001f;
 					bPenetration = true;
 				} else {
 					//printf("touching %f\n", dist);

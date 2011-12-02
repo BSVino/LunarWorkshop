@@ -1,6 +1,7 @@
 #include "mirror.h"
 
 #include <models/models.h>
+#include <physics/physics.h>
 
 #include "reflection_renderer.h"
 
@@ -102,6 +103,10 @@ void CMirror::SetMirrorType(mirror_t eType)
 		SetModel("models/mirror_horizontal.toy");
 		break;
 	}
+
+	if (IsInPhysics())
+		RemoveFromPhysics();
+	AddToPhysics(CT_KINEMATIC);
 }
 
 reflection_t CMirror::GetReflectionType() const
