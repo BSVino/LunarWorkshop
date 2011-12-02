@@ -11,7 +11,7 @@
 #include <matrix.h>
 #include <raytracer/raytracer.h>
 #include "shaders/shaders.h"
-#include <platform.h>
+#include <tinker_platform.h>
 
 #if 0
 #ifdef _DEBUG
@@ -364,7 +364,7 @@ void CAOGenerator::Generate()
 	if (m_pWorkListener)
 	{
 		m_pWorkListener->BeginProgress();
-		m_pWorkListener->SetAction(_T("Setting up"), 0);
+		m_pWorkListener->SetAction("Setting up", 0);
 	}
 
 	m_bIsGenerating = true;
@@ -410,7 +410,7 @@ void CAOGenerator::Generate()
 	size_t i;
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Averaging reads"), m_iWidth*m_iHeight);
+		m_pWorkListener->SetAction("Averaging reads", m_iWidth*m_iHeight);
 
 	// Average out all of the reads.
 	for (i = 0; i < m_iWidth*m_iHeight; i++)
@@ -650,7 +650,7 @@ void CAOGenerator::GenerateShadowMaps()
 	size_t iSamples = (size_t)sqrt((float)m_iSamples);
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Taking exposures"), m_iSamples);
+		m_pWorkListener->SetAction("Taking exposures", m_iSamples);
 
 	for (size_t x = 0; x <= iSamples; x++)
 	{
@@ -818,7 +818,7 @@ void CAOGenerator::GenerateShadowMaps()
 		size_t iBufferSize = m_iWidth*m_iHeight*m_iPixelDepth;
 
 		if (m_pWorkListener)
-			m_pWorkListener->SetAction(_T("Reading pixels"), iBufferSize/m_iPixelDepth);
+			m_pWorkListener->SetAction("Reading pixels", iBufferSize/m_iPixelDepth);
 
 		for (size_t p = 0; p < iBufferSize; p+=m_iPixelDepth)
 		{
@@ -952,7 +952,7 @@ void CAOGenerator::GenerateByTexel()
 	if (m_eAOMethod == AOMETHOD_RAYTRACE)
 	{
 		if (m_pWorkListener)
-			m_pWorkListener->SetAction(_T("Building tree"), 0);
+			m_pWorkListener->SetAction("Building tree", 0);
 
 		pTracer = new raytrace::CRaytracer(m_pScene);
 		pTracer->AddMeshesFromNode(m_pScene->GetScene(0));
@@ -964,9 +964,9 @@ void CAOGenerator::GenerateByTexel()
 	if (m_pWorkListener)
 	{
 		if (m_eAOMethod == AOMETHOD_RAYTRACE && GetNumberOfProcessors() > 1)
-			m_pWorkListener->SetAction(_T("Dispatching jobs"), (size_t)(flTotalArea*m_iWidth*m_iHeight));
+			m_pWorkListener->SetAction("Dispatching jobs", (size_t)(flTotalArea*m_iWidth*m_iHeight));
 		else
-			m_pWorkListener->SetAction(_T("Rendering"), (size_t)(flTotalArea*m_iWidth*m_iHeight));
+			m_pWorkListener->SetAction("Rendering", (size_t)(flTotalArea*m_iWidth*m_iHeight));
 	}
 
 	size_t iRendered = 0;
@@ -1501,7 +1501,7 @@ void CAOGenerator::Bleed()
 	bool* abPixelMask = (bool*)malloc(m_iWidth*m_iHeight*sizeof(bool));
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Bleeding edges"), m_iBleed);
+		m_pWorkListener->SetAction("Bleeding edges", m_iBleed);
 
 	for (size_t i = 0; i < m_iBleed; i++)
 	{

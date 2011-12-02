@@ -34,7 +34,7 @@ public:
 
 	virtual void			SaveToFile(const tstring& sFilename);
 
-	virtual tstring	FileSuffix() { return _T(""); };
+	virtual tstring	FileSuffix() { return ""; };
 	virtual void*			GetData() { return NULL; };
 
 protected:
@@ -64,7 +64,7 @@ public:
 
 	virtual size_t			GenerateDiffuse(bool bInMedias = false);
 
-	virtual tstring	FileSuffix() { return _T("diffuse"); };
+	virtual tstring	FileSuffix() { return "diffuse"; };
 	virtual void*			GetData();
 
 protected:
@@ -93,7 +93,7 @@ public:
 
 	virtual size_t			GenerateAO(bool bInMedias = false);
 
-	virtual tstring	FileSuffix() { return _T("ao"); };
+	virtual tstring	FileSuffix() { return "ao"; };
 	virtual void*			GetData();
 
 protected:
@@ -129,7 +129,7 @@ public:
 
 	virtual void			SaveToFile(const tstring& sFilename);
 
-	virtual tstring	FileSuffix() { return _T("normal"); };
+	virtual tstring	FileSuffix() { return "normal"; };
 	virtual void*			GetData();
 
 protected:

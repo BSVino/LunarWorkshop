@@ -1,10 +1,10 @@
 #ifndef SMAK_MODELWINDOW_UI_H
 #define SMAK_MODELWINDOW_UI_H
 
-#include <glgui/glgui.h>
+#include <glgui/panel.h>
+#include <glgui/button.h>
+#include <glgui/selector.h>
 #include "crunch/crunch.h"
-
-using namespace glgui;
 
 typedef enum
 {
@@ -12,37 +12,44 @@ typedef enum
 	BA_BOTTOM,
 } buttonalignment_t;
 
-class CButtonPanel : public CPanel
+namespace glgui
+{
+	class CLabel;
+	class CTree;
+	class CCheckBox;
+}
+
+class CButtonPanel : public glgui::CPanel
 {
 public:
 							CButtonPanel(buttonalignment_t eAlign);
 
 	virtual void			Layout();
 
-	virtual void			AddButton(CButton* pButton, const tstring& sHints, bool bNewSection, IEventListener* pListener = NULL, IEventListener::Callback pfnCallback = NULL);
+	virtual void			AddButton(glgui::CButton* pButton, const tstring& sHints, bool bNewSection, glgui::IEventListener* pListener = NULL, glgui::IEventListener::Callback pfnCallback = NULL);
 
 	virtual void			Think();
-	virtual void			Paint(int x, int y, int w, int h);
+	virtual void			Paint(float x, float y, float w, float h);
 
 protected:
 	buttonalignment_t		m_eAlign;
 
-	eastl::vector<int>		m_aiSpaces;
-	eastl::vector<CButton*>	m_apButtons;
-	eastl::vector<CLabel*>	m_apHints;
+	eastl::vector<float>	m_aflSpaces;
+	eastl::vector<glgui::CButton*>	m_apButtons;
+	eastl::vector<glgui::CLabel*>	m_apHints;
 };
 
-class CProgressBar : public CPanel
+class CProgressBar : public glgui::CPanel
 {
 public:
 							CProgressBar();
 
 public:
 	void					Layout();
-	void					Paint(int x, int y, int w, int h);
+	void					Paint(float x, float y, float w, float h);
 
 	void					SetTotalProgress(size_t iProgress);
-	void					SetProgress(size_t iProgress, const tstring& sAction = _T(""));
+	void					SetProgress(size_t iProgress, const tstring& sAction = "");
 	void					SetAction(const tstring& sAction);
 
 	static CProgressBar*	Get();
@@ -51,35 +58,35 @@ protected:
 	size_t					m_iTotalProgress;
 	size_t					m_iCurrentProgress;
 
-	CLabel*					m_pAction;
-	tstring			m_sAction;
+	glgui::CLabel*			m_pAction;
+	tstring					m_sAction;
 
 	static CProgressBar*	s_pProgressBar;
 };
 
 #define HEADER_HEIGHT 16
 
-class CCloseButton : public CButton
+class CCloseButton : public glgui::CButton
 {
 public:
-							CCloseButton() : CButton(0, 0, 10, 10, _T("")) {};
+							CCloseButton() : glgui::CButton(0, 0, 10, 10, "") {};
 
 public:
-	virtual void			Paint() { CButton::Paint(); };
-	virtual void			Paint(int x, int y, int w, int h);
+	virtual void			Paint() { glgui::CButton::Paint(); };
+	virtual void			Paint(float x, float y, float w, float h);
 };
 
-class CMinimizeButton : public CButton
+class CMinimizeButton : public glgui::CButton
 {
 public:
-							CMinimizeButton() : CButton(0, 0, 10, 10, _T("")) {};
+							CMinimizeButton() : glgui::CButton(0, 0, 10, 10, "") {};
 
 public:
-	virtual void			Paint() { CButton::Paint(); };
-	virtual void			Paint(int x, int y, int w, int h);
+	virtual void			Paint() { glgui::CButton::Paint(); };
+	virtual void			Paint(float x, float y, float w, float h);
 };
 
-class CMovablePanel : public CPanel, public IEventListener
+class CMovablePanel : public glgui::CPanel, public glgui::IEventListener
 {
 public:
 							CMovablePanel(const tstring& sName);
@@ -89,7 +96,7 @@ public:
 
 	virtual void			Think();
 
-	virtual void			Paint(int x, int y, int w, int h);
+	virtual void			Paint(float x, float y, float w, float h);
 
 	virtual bool			MousePressed(int iButton, int mx, int my);
 	virtual bool			MouseReleased(int iButton, int mx, int my);
@@ -105,38 +112,38 @@ public:
 protected:
 	int						m_iMouseStartX;
 	int						m_iMouseStartY;
-	int						m_iStartX;
-	int						m_iStartY;
+	float					m_flStartX;
+	float					m_flStartY;
 	bool					m_bMoving;
 
 	bool					m_bHasCloseButton;
 	bool					m_bMinimized;
-	int						m_iNonMinimizedHeight;
+	float					m_flNonMinimizedHeight;
 
 	bool					m_bClearBackground;
 
-	CLabel*					m_pName;
+	glgui::CLabel*			m_pName;
 
 	CCloseButton*			m_pCloseButton;
 	CMinimizeButton*		m_pMinimizeButton;
 };
 
-class COptionsButton : public CButton, public IEventListener
+class COptionsButton : public glgui::CButton, public glgui::IEventListener
 {
 public:
-	class COptionsPanel : public CPanel
+	class COptionsPanel : public glgui::CPanel
 	{
-		DECLARE_CLASS(COptionsPanel, CPanel);
+		DECLARE_CLASS(COptionsPanel, glgui::CPanel);
 
 	public:
 						COptionsPanel(COptionsButton* pButton);
 
 	public:
 	virtual void		Layout();
-	virtual void		Paint(int x, int y, int w, int h);
+	virtual void		Paint(float x, float y, float w, float h);
 
 	protected:
-		CButton*		m_pOkay;
+		glgui::CButton*	m_pOkay;
 	};
 
 public:
@@ -165,7 +172,7 @@ public:
 
 	virtual void				Think();
 
-	virtual void				Paint(int x, int y, int w, int h);
+	virtual void				Paint(float x, float y, float w, float h);
 
 	virtual bool				KeyPressed(int iKey);
 
@@ -197,52 +204,52 @@ protected:
 
 	CTexelGenerator				m_oGenerator;
 
-	CLabel*						m_pSizeLabel;
-	CScrollSelector<int>*		m_pSizeSelector;
+	glgui::CLabel*				m_pSizeLabel;
+	glgui::CScrollSelector<int>*	m_pSizeSelector;
 
-	CLabel*						m_pLoResLabel;
-	CTree*						m_pLoRes;
+	glgui::CLabel*				m_pLoResLabel;
+	glgui::CTree*				m_pLoRes;
 
-	CLabel*						m_pHiResLabel;
-	CTree*						m_pHiRes;
+	glgui::CLabel*				m_pHiResLabel;
+	glgui::CTree*				m_pHiRes;
 
 	eastl::vector<CConversionMeshInstance*>	m_apLoResMeshes;
 	eastl::vector<CConversionMeshInstance*>	m_apHiResMeshes;
 
-	CButton*					m_pAddLoRes;
-	CButton*					m_pAddHiRes;
+	glgui::CButton*				m_pAddLoRes;
+	glgui::CButton*				m_pAddHiRes;
 
-	CButton*					m_pRemoveLoRes;
-	CButton*					m_pRemoveHiRes;
+	glgui::CButton*				m_pRemoveLoRes;
+	glgui::CButton*				m_pRemoveHiRes;
 
-	CLabel*						m_pDiffuseLabel;
-	CCheckBox*					m_pDiffuseCheckBox;
+	glgui::CLabel*				m_pDiffuseLabel;
+	glgui::CCheckBox*			m_pDiffuseCheckBox;
 
-	CLabel*						m_pAOLabel;
-	CCheckBox*					m_pAOCheckBox;
+	glgui::CLabel*				m_pAOLabel;
+	glgui::CCheckBox*			m_pAOCheckBox;
 
-	CLabel*						m_pNormalLabel;
-	CCheckBox*					m_pNormalCheckBox;
+	glgui::CLabel*				m_pNormalLabel;
+	glgui::CCheckBox*			m_pNormalCheckBox;
 
 	COptionsButton*				m_pAOOptions;
 
-	CLabel*						m_pBleedLabel;
-	CScrollSelector<int>*		m_pBleedSelector;
+	glgui::CLabel*				m_pBleedLabel;
+	glgui::CScrollSelector<int>*	m_pBleedSelector;
 
-	CLabel*						m_pSamplesLabel;
-	CScrollSelector<int>*		m_pSamplesSelector;
+	glgui::CLabel*				m_pSamplesLabel;
+	glgui::CScrollSelector<int>*	m_pSamplesSelector;
 
-	CLabel*						m_pFalloffLabel;
-	CScrollSelector<float>*		m_pFalloffSelector;
+	glgui::CLabel*				m_pFalloffLabel;
+	glgui::CScrollSelector<float>*	m_pFalloffSelector;
 
-	CLabel*						m_pRandomLabel;
-	CCheckBox*					m_pRandomCheckBox;
+	glgui::CLabel*				m_pRandomLabel;
+	glgui::CCheckBox*			m_pRandomCheckBox;
 
-	CLabel*						m_pGroundOcclusionLabel;
-	CCheckBox*					m_pGroundOcclusionCheckBox;
+	glgui::CLabel*				m_pGroundOcclusionLabel;
+	glgui::CCheckBox*			m_pGroundOcclusionCheckBox;
 
-	CButton*					m_pGenerate;
-	CButton*					m_pSave;
+	glgui::CButton*				m_pGenerate;
+	glgui::CButton*				m_pSave;
 
 	class CMeshInstancePicker*	m_pMeshInstancePicker;
 
@@ -285,35 +292,35 @@ protected:
 
 	CAOGenerator			m_oGenerator;
 
-	CLabel*					m_pSizeLabel;
-	CScrollSelector<int>*	m_pSizeSelector;
+	glgui::CLabel*			m_pSizeLabel;
+	glgui::CScrollSelector<int>*	m_pSizeSelector;
 
-	CLabel*					m_pEdgeBleedLabel;
-	CScrollSelector<int>*	m_pEdgeBleedSelector;
+	glgui::CLabel*			m_pEdgeBleedLabel;
+	glgui::CScrollSelector<int>*	m_pEdgeBleedSelector;
 
-	CLabel*					m_pAOMethodLabel;
-	CScrollSelector<int>*	m_pAOMethodSelector;
+	glgui::CLabel*			m_pAOMethodLabel;
+	glgui::CScrollSelector<int>*	m_pAOMethodSelector;
 
-	CLabel*					m_pRayDensityLabel;
-	CScrollSelector<int>*	m_pRayDensitySelector;
+	glgui::CLabel*			m_pRayDensityLabel;
+	glgui::CScrollSelector<int>*	m_pRayDensitySelector;
 
-	CLabel*					m_pLightsLabel;
-	CScrollSelector<int>*	m_pLightsSelector;
+	glgui::CLabel*			m_pLightsLabel;
+	glgui::CScrollSelector<int>*	m_pLightsSelector;
 
-	CLabel*					m_pFalloffLabel;
-	CScrollSelector<float>*	m_pFalloffSelector;
+	glgui::CLabel*			m_pFalloffLabel;
+	glgui::CScrollSelector<float>*	m_pFalloffSelector;
 
-	CLabel*					m_pRandomLabel;
-	CCheckBox*				m_pRandomCheckBox;
+	glgui::CLabel*			m_pRandomLabel;
+	glgui::CCheckBox*		m_pRandomCheckBox;
 
-	CLabel*					m_pCreaseLabel;
-	CCheckBox*				m_pCreaseCheckBox;
+	glgui::CLabel*			m_pCreaseLabel;
+	glgui::CCheckBox*		m_pCreaseCheckBox;
 
-	CLabel*					m_pGroundOcclusionLabel;
-	CCheckBox*				m_pGroundOcclusionCheckBox;
+	glgui::CLabel*			m_pGroundOcclusionLabel;
+	glgui::CCheckBox*		m_pGroundOcclusionCheckBox;
 
-	CButton*				m_pGenerate;
-	CButton*				m_pSave;
+	glgui::CButton*			m_pGenerate;
+	glgui::CButton*			m_pSave;
 
 	static CAOPanel*		s_pAOPanel;
 	static CAOPanel*		s_pColorAOPanel;
@@ -332,7 +339,7 @@ public:
 
 	virtual void				Think();
 
-	virtual void				Paint(int x, int y, int w, int h);
+	virtual void				Paint(float x, float y, float w, float h);
 
 	virtual bool				KeyPressed(int iKey);
 
@@ -353,24 +360,24 @@ protected:
 
 	CNormalGenerator			m_oGenerator;
 
-	CLabel*						m_pMaterialsLabel;
-	CTree*						m_pMaterials;
+	glgui::CLabel*				m_pMaterialsLabel;
+	glgui::CTree*				m_pMaterials;
 
-	CLabel*						m_pProgressLabel;
+	glgui::CLabel*				m_pProgressLabel;
 
-	CScrollSelector<float>*		m_pDepthSelector;
-	CLabel*						m_pDepthLabel;
+	glgui::CScrollSelector<float>*	m_pDepthSelector;
+	glgui::CLabel*				m_pDepthLabel;
 
-	CScrollSelector<float>*		m_pHiDepthSelector;
-	CLabel*						m_pHiDepthLabel;
+	glgui::CScrollSelector<float>*	m_pHiDepthSelector;
+	glgui::CLabel*				m_pHiDepthLabel;
 
-	CScrollSelector<float>*		m_pMidDepthSelector;
-	CLabel*						m_pMidDepthLabel;
+	glgui::CScrollSelector<float>*	m_pMidDepthSelector;
+	glgui::CLabel*				m_pMidDepthLabel;
 
-	CScrollSelector<float>*		m_pLoDepthSelector;
-	CLabel*						m_pLoDepthLabel;
+	glgui::CScrollSelector<float>*	m_pLoDepthSelector;
+	glgui::CLabel*				m_pLoDepthLabel;
 
-	CButton*					m_pSave;
+	glgui::CButton*				m_pSave;
 
 	class CMaterialPicker*		m_pMaterialPicker;
 
@@ -383,7 +390,7 @@ public:
 							CHelpPanel();
 
 	virtual void			Layout();
-	virtual void			Paint(int x, int y, int w, int h);
+	virtual void			Paint(float x, float y, float w, float h);
 
 	virtual bool			MousePressed(int iButton, int mx, int my);
 
@@ -391,7 +398,7 @@ public:
 	static void				Close();
 
 protected:
-	CLabel*					m_pInfo;
+	glgui::CLabel*			m_pInfo;
 
 	static CHelpPanel*		s_pHelpPanel;
 };
@@ -402,7 +409,7 @@ public:
 							CAboutPanel();
 
 	virtual void			Layout();
-	virtual void			Paint(int x, int y, int w, int h);
+	virtual void			Paint(float x, float y, float w, float h);
 
 	virtual bool			MousePressed(int iButton, int mx, int my);
 
@@ -410,7 +417,7 @@ public:
 	static void				Close();
 
 protected:
-	CLabel*					m_pInfo;
+	glgui::CLabel*			m_pInfo;
 
 	static CAboutPanel*		s_pAboutPanel;
 };
@@ -421,7 +428,7 @@ public:
 							CRegisterPanel();
 
 	virtual void			Layout();
-	virtual void			Paint(int x, int y, int w, int h);
+	virtual void			Paint(float x, float y, float w, float h);
 
 	virtual bool			MousePressed(int iButton, int mx, int my);
 	virtual bool			KeyPressed(int iKey);
@@ -437,17 +444,17 @@ public:
 	EVENT_CALLBACK(CRegisterPanel, SetKey);
 
 protected:
-	CButton*				m_pWebsiteButton;
+	glgui::CButton*			m_pWebsiteButton;
 
-	CLabel*					m_pInfo;
-	CButton*				m_pPirates;
+	glgui::CLabel*			m_pInfo;
+	glgui::CButton*			m_pPirates;
 
-	CTextField*				m_pRegistrationKey;
-	CButton*				m_pRegister;
-	CLabel*					m_pRegisterResult;
+	glgui::CTextField*		m_pRegistrationKey;
+	glgui::CButton*			m_pRegister;
+	glgui::CLabel*			m_pRegisterResult;
 
-	CButton*				m_pRegisterOffline;
-	CLabel*					m_pProductCode;
+	glgui::CButton*			m_pRegisterOffline;
+	glgui::CLabel*			m_pProductCode;
 
 	static CRegisterPanel*	s_pRegisterPanel;
 };
@@ -458,7 +465,7 @@ public:
 							CPiratesPanel();
 
 	virtual void			Layout();
-	virtual void			Paint(int x, int y, int w, int h);
+	virtual void			Paint(float x, float y, float w, float h);
 
 	virtual bool			MousePressed(int iButton, int mx, int my);
 
@@ -466,7 +473,7 @@ public:
 	static void				Close();
 
 protected:
-	CLabel*					m_pInfo;
+	glgui::CLabel*			m_pInfo;
 
 	static CPiratesPanel*	s_pPiratesPanel;
 };

@@ -190,7 +190,7 @@ namespace glgui
 		}
 
 	public:
-		typedef void (*EditFnCallback)(T*);
+		typedef void (*EditFnCallback)(T*, const tstring& sArgs);
 
 		virtual void LayoutNode()
 		{

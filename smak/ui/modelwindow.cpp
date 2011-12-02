@@ -9,12 +9,16 @@
 #include <IL/il.h>
 #include <IL/ilu.h>
 
-#include <platform.h>
+#include <tinker_platform.h>
 
 #include <modelconverter/modelconverter.h>
 #include <glgui/glgui.h>
+#include <glgui/rootpanel.h>
+#include <glgui/label.h>
 #include "scenetree.h"
 #include "../shaders/shaders.h"
+
+using namespace glgui;
 
 //#define RAYTRACE_DEBUG
 #ifdef RAYTRACE_DEBUG
@@ -107,26 +111,26 @@ void CModelWindow::OpenWindow()
 
 	ilInit();
 
-	size_t iTexture = LoadTextureIntoGL(_T("lighthalo.png"));
+	size_t iTexture = LoadTextureIntoGL("lighthalo.png");
 	if (iTexture)
 		m_pLightHalo = new CMaterial(iTexture);
 
-	iTexture = LoadTextureIntoGL(_T("lightbeam.png"));
+	iTexture = LoadTextureIntoGL("lightbeam.png");
 	if (iTexture)
 		m_pLightBeam = new CMaterial(iTexture);
 
-	m_iWireframeTexture = LoadTextureIntoGL(_T("wireframe.png"));
-	m_iSmoothTexture = LoadTextureIntoGL(_T("smooth.png"));
-	m_iUVTexture = LoadTextureIntoGL(_T("uv.png"));
-	m_iLightTexture = LoadTextureIntoGL(_T("light.png"));
-	m_iTextureTexture = LoadTextureIntoGL(_T("texture.png"));
-	m_iNormalTexture = LoadTextureIntoGL(_T("normal.png"));
-	m_iAOTexture = LoadTextureIntoGL(_T("ao.png"));
-	m_iCAOTexture = LoadTextureIntoGL(_T("aocolor.png"));
-	m_iArrowTexture = LoadTextureIntoGL(_T("arrow.png"));
-	m_iEditTexture = LoadTextureIntoGL(_T("pencil.png"));
-	m_iVisibilityTexture = LoadTextureIntoGL(_T("eye.png"));
-	m_iBarretTexture = LoadTextureIntoGL(_T("barret.png"));
+	m_iWireframeTexture = LoadTextureIntoGL("wireframe.png");
+	m_iSmoothTexture = LoadTextureIntoGL("smooth.png");
+	m_iUVTexture = LoadTextureIntoGL("uv.png");
+	m_iLightTexture = LoadTextureIntoGL("light.png");
+	m_iTextureTexture = LoadTextureIntoGL("texture.png");
+	m_iNormalTexture = LoadTextureIntoGL("normal.png");
+	m_iAOTexture = LoadTextureIntoGL("ao.png");
+	m_iCAOTexture = LoadTextureIntoGL("aocolor.png");
+	m_iArrowTexture = LoadTextureIntoGL("arrow.png");
+	m_iEditTexture = LoadTextureIntoGL("pencil.png");
+	m_iVisibilityTexture = LoadTextureIntoGL("eye.png");
+	m_iBarretTexture = LoadTextureIntoGL("barret.png");
 
 	InitUI();
 
@@ -274,7 +278,7 @@ void CModelWindow::ReadFileIntoScene(const tchar* pszFile)
 	tstrncpy(m_szFileLoaded, 1023, pszFile, tstrlen(pszFile));
 
 	BeginProgress();
-	SetAction(_T("Loading into video hardware"), 0);
+	SetAction("Loading into video hardware", 0);
 	LoadIntoGL();
 	EndProgress();
 
@@ -443,8 +447,8 @@ void CModelWindow::Render()
 	else
 		Render3D();
 
-	glgui::CRootPanel::Get()->Think(GetTime());
-	glgui::CRootPanel::Get()->Paint(0, 0, (int)m_iWindowWidth, (int)m_iWindowHeight);
+	CRootPanel::Get()->Think(GetTime());
+	CRootPanel::Get()->Paint(0, 0, (float)m_iWindowWidth, (float)m_iWindowHeight);
 }
 
 void CModelWindow::Render3D()
@@ -1441,15 +1445,15 @@ void CModelWindow::RenderUV()
 		{
 			glColor4ubv(Color(155, 155, 255, 100));
 
-			CLabel::PaintText(_T("DEMO"), 4, _T("sans-serif"), 48, 100, 150);
-			CLabel::PaintText(_T("DEMO"), 4, _T("sans-serif"), 48, -200, 150);
-			CLabel::PaintText(_T("DEMO"), 4, _T("sans-serif"), 48, 100, -150);
-			CLabel::PaintText(_T("DEMO"), 4, _T("sans-serif"), 48, -200, -150);
+			CLabel::PaintText("DEMO", 4, "sans-serif", 48, 100, 150);
+			CLabel::PaintText("DEMO", 4, "sans-serif", 48, -200, 150);
+			CLabel::PaintText("DEMO", 4, "sans-serif", 48, 100, -150);
+			CLabel::PaintText("DEMO", 4, "sans-serif", 48, -200, -150);
 		}
 
 		glColor4ubv(Color(255, 255, 255, 255));
-		tstring sDemoText = _T("This demo version will generate all map sizes, but will downsample to 128x128 when saving.");
-		CLabel::PaintText(sDemoText, sDemoText.length(), _T("sans-serif"), 16, -300.0f, 260.0f);
+		tstring sDemoText = "This demo version will generate all map sizes, but will downsample to 128x128 when saving.";
+		CLabel::PaintText(sDemoText, sDemoText.length(), "sans-serif", 16, -300.0f, 260.0f);
 
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
@@ -1525,8 +1529,8 @@ void CModelWindow::WindowResize(int w, int h)
 	if (!IsOpen())
 		return;
 
-	glgui::CRootPanel::Get()->SetSize(w, h);
-	glgui::CRootPanel::Get()->Layout();
+	CRootPanel::Get()->SetSize((float)w, (float)h);
+	CRootPanel::Get()->Layout();
 	BaseClass::WindowResize(w, h);
 }
 

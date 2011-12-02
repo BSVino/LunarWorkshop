@@ -6,7 +6,7 @@
 #include <GL/glfw.h>
 #include <IL/il.h>
 
-#include <platform.h>
+#include <tinker_platform.h>
 #include <strutils.h>
 
 #include <modelconverter/modelconverter.h>
@@ -89,32 +89,32 @@ int CreateApplication(int argc, char** argv)
 		{
 			tstring sToken = convertstring<char, tchar>(argv[i]);
 
-			if (sToken[0] == _T('-'))
+			if (sToken[0] == '-')
 			{
 				// It's an argument
-				if (sToken == _T("--command"))
+				if (sToken == "--command")
 				{
 					i++;
 					tstring sToken = convertstring<char, tchar>(argv[i]);
-					if (sToken == _T("ao"))
+					if (sToken == "ao")
 						eCommand = COMMAND_AO;
 				}
-				else if (sToken == _T("--method"))
+				else if (sToken == "--method")
 				{
 					i++;
 					tstring sToken = convertstring<char, tchar>(argv[i]);
-					if (sToken == _T("shadowmap"))
+					if (sToken == "shadowmap")
 						eMethod = AOMETHOD_SHADOWMAP;
-					else if (sToken == _T("raytrace"))
+					else if (sToken == "raytrace")
 						eMethod = AOMETHOD_RAYTRACE;
-					else if (sToken == _T("tridistance"))
+					else if (sToken == "tridistance")
 						eMethod = AOMETHOD_TRIDISTANCE;
-					else if (sToken == _T("color"))
+					else if (sToken == "color")
 						eMethod = AOMETHOD_RENDER;
 					else
 						printf("ERROR: Unrecognized method.\n");
 				}
-				else if (sToken == _T("--size"))
+				else if (sToken == "--size")
 				{
 					i++;
 					tstring sToken = convertstring<char, tchar>(argv[i]);
@@ -124,7 +124,7 @@ int CreateApplication(int argc, char** argv)
 					else if (iSize > 2048)
 						iSize = 2048;
 				}
-				else if (sToken == _T("--bleed"))
+				else if (sToken == "--bleed")
 				{
 					i++;
 					tstring sToken = convertstring<char, tchar>(argv[i]);
@@ -134,7 +134,7 @@ int CreateApplication(int argc, char** argv)
 					else if (iBleed > 10)
 						iBleed = 10;
 				}
-				else if (sToken == _T("--lights"))
+				else if (sToken == "--lights")
 				{
 					i++;
 					tstring sToken = convertstring<char, tchar>(argv[i]);
@@ -144,7 +144,7 @@ int CreateApplication(int argc, char** argv)
 					else if (iSize > 3000)
 						iLights = 3000;
 				}
-				else if (sToken == _T("--samples"))
+				else if (sToken == "--samples")
 				{
 					i++;
 					tstring sToken = convertstring<char, tchar>(argv[i]);
@@ -154,11 +154,11 @@ int CreateApplication(int argc, char** argv)
 					else if (iSamples > 25)
 						iSamples = 25;
 				}
-				else if (sToken == _T("--falloff"))
+				else if (sToken == "--falloff")
 				{
 					i++;
 					tstring sToken = convertstring<char, tchar>(argv[i]);
-					if (sToken == _T("none"))
+					if (sToken == "none")
 						flRayFalloff = -1.0f;
 					else
 					{
@@ -167,19 +167,19 @@ int CreateApplication(int argc, char** argv)
 							flRayFalloff = 0.0001f;
 					}
 				}
-				else if (sToken == _T("--randomize"))
+				else if (sToken == "--randomize")
 				{
 					bRandomize = true;
 				}
-				else if (sToken == _T("--crease"))
+				else if (sToken == "--crease")
 				{
 					bCrease = true;
 				}
-				else if (sToken == _T("--groundocclusion"))
+				else if (sToken == "--groundocclusion")
 				{
 					bGroundOcclusion = true;
 				}
-				else if (sToken == _T("--output"))
+				else if (sToken == "--output")
 				{
 					i++;
 					tstring sToken = convertstring<char, tchar>(argv[i]);
@@ -197,7 +197,7 @@ int CreateApplication(int argc, char** argv)
 		{
 		case COMMAND_AO:
 		{
-			puts(convertstring<tchar, char>(tstring(_T("Generating ambient occlusion map for ")) + sFile + _T("\n")).c_str());
+			puts(convertstring<tchar, char>(tstring("Generating ambient occlusion map for ") + sFile + "\n").c_str());
 			switch (eMethod)
 			{
 			case AOMETHOD_RENDER:
@@ -222,7 +222,7 @@ int CreateApplication(int argc, char** argv)
 				printf("Lights: %d\n", iLights);
 			else if (eMethod == AOMETHOD_RAYTRACE)
 				printf("Samples: %d\n", iSamples);
-			puts(convertstring<tchar, char>(tstring(_T("Output file: ")) + sOutput + _T("\n")).c_str());
+			puts(convertstring<tchar, char>(tstring("Output file: ") + sOutput + "\n").c_str());
 
 			CConversionScene s;
 			CModelConverter c(&s);
@@ -297,7 +297,7 @@ int CreateApplication(int argc, char** argv)
 			if (sOutput.length())
 				ao.SaveToFile(sOutput.c_str());
 			else
-				ao.SaveToFile(_T("ao-output.png"));
+				ao.SaveToFile("ao-output.png");
 
 			printf("Done.\n");
 			return 0;

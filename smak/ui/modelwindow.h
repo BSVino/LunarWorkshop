@@ -40,7 +40,7 @@ public:
 
 public:
 	virtual eastl::string	WindowTitle() { return "SMAK - Super Model Army Knife"; }
-	virtual tstring	AppDirectory() { return _T("SMAK"); }
+	virtual tstring	AppDirectory() { return "SMAK"; }
 
 	void					OpenWindow();
 
@@ -77,8 +77,8 @@ public:
 	virtual void			MouseMotion(int x, int y);
 	virtual void			MouseInput(int iButton, int iState);
 	virtual void			MouseWheel(int iState);
-	virtual void			CharPress(int c);
-	virtual void			KeyPress(int c);
+	virtual bool			DoCharPress(int c);
+	virtual bool			DoKeyPress(int c);
 
 	EVENT_CALLBACK(CModelWindow, Open);
 	EVENT_CALLBACK(CModelWindow, OpenInto);

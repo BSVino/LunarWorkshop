@@ -1,7 +1,9 @@
 #include "picker.h"
 
-#include "modelwindow.h"
 #include <modelconverter/convmesh.h>
+#include <glgui/tree.h>
+
+#include "modelwindow.h"
 
 using namespace glgui;
 
@@ -43,13 +45,13 @@ void CPicker::Think()
 	CMovablePanel::Think();
 }
 
-void CPicker::SelectedCallback()
+void CPicker::SelectedCallback(const tstring& sArgs)
 {
 	CTreeNode* pSelectedNode = m_pTree->GetSelectedNode();
 	if (pSelectedNode)
 	{
 		NodeSelected(pSelectedNode);
-		m_pfnCallback(m_pCallback);
+		m_pfnCallback(m_pCallback, "");
 	}
 }
 
@@ -64,7 +66,7 @@ void CPicker::Close()
 }
 
 CMeshInstancePicker::CMeshInstancePicker(IEventListener* pCallback, IEventListener::Callback pfnCallback)
-	: CPicker(_T("Pick a mesh"), pCallback, pfnCallback)
+	: CPicker("Pick a mesh", pCallback, pfnCallback)
 {
 	m_pPickedMeshInstance = NULL;
 }

@@ -1,7 +1,7 @@
 #include "crunch.h"
 
 #include <raytracer/raytracer.h>
-#include <platform.h>
+#include <tinker_platform.h>
 
 typedef struct
 {
@@ -28,7 +28,7 @@ void CAOGenerator::RaytraceSceneFromPosition(raytrace::CRaytracer* pTracer, Vect
 
 	// Turn it sideways so that pitch 90 is up
 	Matrix4x4 m2;
-	m2.SetRotation(EAngle(0, 0, -90));
+	m2.SetAngles(EAngle(0, 0, -90));
 
 	m *= m2;
 
@@ -41,7 +41,7 @@ void CAOGenerator::RaytraceSceneFromPosition(raytrace::CRaytracer* pTracer, Vect
 	{
 		float flRandom = 0;
 		if (m_bRandomize)
-			flRandom = RemapVal((float)(rand()%10000), 0, 10000.0f, -0.5, 0.5);
+			flRandom = RemapVal((float)(rand()%10000), 0, 10000.0f, -0.5f, 0.5f);
 
 		float flPitch = RemapVal(cos(RemapVal((float)x+flRandom, 0, (float)m_iSamples/2, 0, M_PI/2)), 0, 1, 90, 0);
 
@@ -51,7 +51,7 @@ void CAOGenerator::RaytraceSceneFromPosition(raytrace::CRaytracer* pTracer, Vect
 		{
 			flRandom = 0;
 			if (m_bRandomize)
-				flRandom = RemapVal((float)(rand()%10000), 0, 10000.0f, -0.5, 0.5);
+				flRandom = RemapVal((float)(rand()%10000), 0, 10000.0f, -0.5f, 0.5f);
 
 			float flYaw = RemapVal((float)y+flRandom, 0, (float)m_iSamples, -180, 180);
 
@@ -202,7 +202,7 @@ void CAOGenerator::RaytraceJoinThreads()
 	m_pRaytraceParallelizer->FinishJobs();
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Rendering"), m_pRaytraceParallelizer->GetJobsTotal());
+		m_pWorkListener->SetAction("Rendering", m_pRaytraceParallelizer->GetJobsTotal());
 
 	while (true)
 	{

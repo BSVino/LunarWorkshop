@@ -2,9 +2,12 @@
 
 #include <tinker/keys.h>
 #include <glgui/glgui.h>
+#include <glgui/rootpanel.h>
 
 #include "crunch/crunch.h"
 #include "modelwindow_ui.h"
+
+using namespace glgui;
 
 void CModelWindow::MouseMotion(int x, int y)
 {
@@ -221,25 +224,36 @@ void CModelWindow::MouseWheel(int iState)
 	iOldState = iState;
 }
 
-void CModelWindow::CharPress(int c)
+bool CModelWindow::DoCharPress(int c)
 {
 	if (c == 'a')
+	{
 		CAOPanel::Open(false, &m_Scene, &m_aoMaterials);
+		return true;
+	}
 
 	if (c == 'n')
+	{
 		CNormalPanel::Open(&m_Scene, &m_aoMaterials);
+		return true;
+	}
 
 	if (c == 'r' && IsCtrlDown())
+	{
 		ReloadFromFile();
+		return true;
+	}
 
 	if (glgui::CRootPanel::Get()->CharPressed(c))
-		return;
+		return true;
+
+	return false;
 }
 
-void CModelWindow::KeyPress(int c)
+bool CModelWindow::DoKeyPress(int c)
 {
 	if (glgui::CRootPanel::Get()->KeyPressed(c, IsCtrlDown()))
-		return;
+		return true;
 
 	if (c == 27)
 		exit(0);
@@ -248,5 +262,10 @@ void CModelWindow::KeyPress(int c)
 		exit(0);
 
 	if (c == TINKER_KEY_F5)
+	{
 		ReloadFromFile();
+		return true;
+	}
+
+	return false;
 }

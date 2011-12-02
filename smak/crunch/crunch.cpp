@@ -117,7 +117,7 @@ void CTexelGenerator::Generate()
 	if (m_pWorkListener)
 	{
 		m_pWorkListener->BeginProgress();
-		m_pWorkListener->SetAction(_T("Building tree"), 0);
+		m_pWorkListener->SetAction("Building tree", 0);
 	}
 
 #ifdef _DEBUG
@@ -156,7 +156,7 @@ void CTexelGenerator::Generate()
 	}
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Dispatching jobs"), (size_t)(flTotalArea*m_iWidth*m_iHeight));
+		m_pWorkListener->SetAction("Dispatching jobs", (size_t)(flTotalArea*m_iWidth*m_iHeight));
 
 	size_t iRendered = 0;
 
@@ -214,7 +214,7 @@ void CTexelGenerator::Generate()
 	m_pWorkParallelizer->FinishJobs();
 
 	if (m_pWorkListener)
-		m_pWorkListener->SetAction(_T("Rendering"), m_pWorkParallelizer->GetJobsTotal());
+		m_pWorkListener->SetAction("Rendering", m_pWorkParallelizer->GetJobsTotal());
 
 	while (true)
 	{
@@ -507,7 +507,7 @@ void CTexelMethod::SetSize(size_t iWidth, size_t iHeight)
 
 void CTexelMethod::SaveToFile(const tstring& sFilename)
 {
-	tstring sRealFilename = sFilename.substr(0, sFilename.length()-4) + _T("-") + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
+	tstring sRealFilename = sFilename.substr(0, sFilename.length()-4) + "-" + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
 
 	ILuint iDevILId;
 	ilGenImages(1, &iDevILId);
@@ -688,7 +688,7 @@ void CTexelDiffuseMethod::PostGenerate()
 	}
 
 	if (m_pGenerator->GetWorkListener())
-		m_pGenerator->GetWorkListener()->SetAction(_T("Averaging reads"), m_iWidth*m_iHeight);
+		m_pGenerator->GetWorkListener()->SetAction("Averaging reads", m_iWidth*m_iHeight);
 
 	// Average out all of the reads.
 	for (size_t i = 0; i < m_iWidth*m_iHeight; i++)
@@ -716,7 +716,7 @@ void CTexelDiffuseMethod::PostGenerate()
 void CTexelDiffuseMethod::Bleed()
 {
 	if (m_pGenerator->GetWorkListener())
-		m_pGenerator->GetWorkListener()->SetAction(_T("Bleeding edges"), 0);
+		m_pGenerator->GetWorkListener()->SetAction("Bleeding edges", 0);
 
 	for (size_t w = 0; w < m_iWidth; w++)
 	{
@@ -886,7 +886,7 @@ void CTexelAOMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* pMesh
 
 	// Turn it sideways so that pitch 90 is up
 	Matrix4x4 m2;
-	m2.SetRotation(EAngle(0, 0, -90));
+	m2.SetAngles(EAngle(0, 0, -90));
 
 	m *= m2;
 
@@ -899,7 +899,7 @@ void CTexelAOMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* pMesh
 	{
 		float flRandom = 0;
 		if (m_bRandomize)
-			flRandom = RemapVal((float)(rand()%10000), 0, 10000.0f, -0.5, 0.5);
+			flRandom = RemapVal((float)(rand()%10000), 0, 10000.0f, -0.5f, 0.5f);
 
 		float flPitch = RemapVal(cos(RemapVal((float)x+flRandom, 0, (float)m_iSamples/2, 0, M_PI/2)), 0, 1, 90, 0);
 
@@ -909,7 +909,7 @@ void CTexelAOMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* pMesh
 		{
 			flRandom = 0;
 			if (m_bRandomize)
-				flRandom = RemapVal((float)(rand()%10000), 0, 10000.0f, -0.5, 0.5);
+				flRandom = RemapVal((float)(rand()%10000), 0, 10000.0f, -0.5f, 0.5f);
 
 			float flYaw = RemapVal((float)y+flRandom, 0, (float)m_iSamples, -180, 180);
 
@@ -1007,7 +1007,7 @@ void CTexelAOMethod::PostGenerate()
 	size_t i;
 
 	if (m_pGenerator->GetWorkListener())
-		m_pGenerator->GetWorkListener()->SetAction(_T("Averaging reads"), m_iWidth*m_iHeight);
+		m_pGenerator->GetWorkListener()->SetAction("Averaging reads", m_iWidth*m_iHeight);
 
 	// Average out all of the reads.
 	for (i = 0; i < m_iWidth*m_iHeight; i++)
@@ -1038,7 +1038,7 @@ void CTexelAOMethod::Bleed()
 	bool* abPixelMask = (bool*)malloc(m_iWidth*m_iHeight*sizeof(bool));
 
 	if (m_pGenerator->GetWorkListener())
-		m_pGenerator->GetWorkListener()->SetAction(_T("Bleeding edges"), m_iBleed);
+		m_pGenerator->GetWorkListener()->SetAction("Bleeding edges", m_iBleed);
 
 	for (size_t i = 0; i < m_iBleed; i++)
 	{
@@ -1222,7 +1222,7 @@ void CTexelNormalMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* p
 	mObjectToTangent.SetColumn(0, t);
 	mObjectToTangent.SetColumn(1, b);
 	mObjectToTangent.SetColumn(2, n);
-	mObjectToTangent.InvertTR();
+	mObjectToTangent.InvertRT();
 
 	Vector vecTangentNormal = mObjectToTangent*vecHitNormal;
 
@@ -1245,7 +1245,7 @@ void CTexelNormalMethod::Bleed()
 	bool* abPixelMask = (bool*)malloc(m_iWidth*m_iHeight*sizeof(bool));
 
 	if (m_pGenerator->GetWorkListener())
-		m_pGenerator->GetWorkListener()->SetAction(_T("Bleeding edges"), 0);
+		m_pGenerator->GetWorkListener()->SetAction("Bleeding edges", 0);
 
 	// This is for pixels that have been set this frame.
 	memset(&abPixelMask[0], 0, m_iWidth*m_iHeight*sizeof(bool));
@@ -1376,7 +1376,7 @@ bool CTexelNormalMethod::GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMe
 
 void CTexelNormalMethod::SaveToFile(const tstring& sFilename)
 {
-	tstring sRealFilename = sFilename.substr(0, sFilename.length()-4) + _T("-") + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
+	tstring sRealFilename = sFilename.substr(0, sFilename.length()-4) + "-" + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
 
 	eastl::vector<bool> abMaterialSaved((bool)false);
 	abMaterialSaved.resize(m_pGenerator->GetScene()->GetNumMaterials());

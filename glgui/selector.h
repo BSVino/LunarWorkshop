@@ -84,7 +84,7 @@ namespace glgui
 			{
 				m_iSelection = iSelection;
 				if (m_pSelectedListener)
-					m_pfnSelectedCallback(m_pSelectedListener);
+					m_pfnSelectedCallback(m_pSelectedListener, "");
 			}
 		}
 
@@ -132,7 +132,7 @@ namespace glgui
 				m_iSelection = SelectionByHandle();
 
 				if (m_pSelectedListener)
-					m_pfnSelectedCallback(m_pSelectedListener);
+					m_pfnSelectedCallback(m_pSelectedListener, "");
 			}
 
 			return true;
@@ -176,7 +176,7 @@ namespace glgui
 			m_iSelection = SelectionByHandle();
 
 			if (m_pSelectedListener)
-				m_pfnSelectedCallback(m_pSelectedListener);
+				m_pfnSelectedCallback(m_pSelectedListener, "");
 		}
 
 		virtual void AddSelection(const CScrollSelection<T>& oSelection)
@@ -206,7 +206,7 @@ namespace glgui
 			m_flHandlePositionGoal = m_flHandlePosition = ((float)GetWidth()/((float)m_aSelections.size()-1)*(float)m_iSelection)/GetWidth();
 
 			if (m_pSelectedListener)
-				m_pfnSelectedCallback(m_pSelectedListener);
+				m_pfnSelectedCallback(m_pSelectedListener, "");
 		}
 
 		virtual T GetSelectionValue()

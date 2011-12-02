@@ -3,6 +3,12 @@
 
 #include "modelwindow_ui.h"
 
+namespace glgui
+{
+	class CLabel;
+	class CButton;
+}
+
 class CSceneTreePanel : public CMovablePanel
 {
 public:
@@ -11,7 +17,7 @@ public:
 
 public:
 	void							Layout();
-	void							Paint(int x, int y, int w, int h);
+	void							Paint(float x, float y, float w, float h);
 
 	void							UpdateTree();
 	void							AddAllToTree();
@@ -32,7 +38,7 @@ public:
 	static CSceneTreePanel*			s_pSceneTreePanel;
 };
 
-void OpenMaterialEditor(CConversionMaterial* pMaterial);
+void OpenMaterialEditor(CConversionMaterial* pMaterial, const tstring& sArgs);
 
 class CMaterialEditor : public CMovablePanel
 {
@@ -40,7 +46,7 @@ public:
 									CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel* pSceneTree);
 
 public:
-	void							SetupSelector(CScrollSelector<float>* pSelector, float flMaxValue);
+	void							SetupSelector(glgui::CScrollSelector<float>* pSelector, float flMaxValue);
 
 	void							Layout();
 
@@ -68,36 +74,36 @@ protected:
 	CConversionScene*				m_pScene;
 	size_t							m_iMaterial;
 
-	CLabel*							m_pDiffuseLabel;
-	CButton*						m_pDiffuseFile;
-	CButton*						m_pDiffuseRemove;
+	glgui::CLabel*					m_pDiffuseLabel;
+	glgui::CButton*					m_pDiffuseFile;
+	glgui::CButton*					m_pDiffuseRemove;
 
-	CLabel*							m_pNormalLabel;
-	CButton*						m_pNormalFile;
-	CButton*						m_pNormalRemove;
+	glgui::CLabel*					m_pNormalLabel;
+	glgui::CButton*					m_pNormalFile;
+	glgui::CButton*					m_pNormalRemove;
 
-	CLabel*							m_pAmbientLabel;
-	CScrollSelector<float>*			m_pAmbientRedSelector;
-	CScrollSelector<float>*			m_pAmbientGreenSelector;
-	CScrollSelector<float>*			m_pAmbientBlueSelector;
+	glgui::CLabel*					m_pAmbientLabel;
+	glgui::CScrollSelector<float>*	m_pAmbientRedSelector;
+	glgui::CScrollSelector<float>*	m_pAmbientGreenSelector;
+	glgui::CScrollSelector<float>*	m_pAmbientBlueSelector;
 
-	CLabel*							m_pDiffuseSelectorLabel;
-	CScrollSelector<float>*			m_pDiffuseRedSelector;
-	CScrollSelector<float>*			m_pDiffuseGreenSelector;
-	CScrollSelector<float>*			m_pDiffuseBlueSelector;
+	glgui::CLabel*					m_pDiffuseSelectorLabel;
+	glgui::CScrollSelector<float>*	m_pDiffuseRedSelector;
+	glgui::CScrollSelector<float>*	m_pDiffuseGreenSelector;
+	glgui::CScrollSelector<float>*	m_pDiffuseBlueSelector;
 
-	CLabel*							m_pSpecularLabel;
-	CScrollSelector<float>*			m_pSpecularRedSelector;
-	CScrollSelector<float>*			m_pSpecularGreenSelector;
-	CScrollSelector<float>*			m_pSpecularBlueSelector;
+	glgui::CLabel*					m_pSpecularLabel;
+	glgui::CScrollSelector<float>*	m_pSpecularRedSelector;
+	glgui::CScrollSelector<float>*	m_pSpecularGreenSelector;
+	glgui::CScrollSelector<float>*	m_pSpecularBlueSelector;
 
-	CLabel*							m_pEmissiveLabel;
-	CScrollSelector<float>*			m_pEmissiveRedSelector;
-	CScrollSelector<float>*			m_pEmissiveGreenSelector;
-	CScrollSelector<float>*			m_pEmissiveBlueSelector;
+	glgui::CLabel*					m_pEmissiveLabel;
+	glgui::CScrollSelector<float>*	m_pEmissiveRedSelector;
+	glgui::CScrollSelector<float>*	m_pEmissiveGreenSelector;
+	glgui::CScrollSelector<float>*	m_pEmissiveBlueSelector;
 
-	CLabel*							m_pShininessLabel;
-	CScrollSelector<float>*			m_pShininessSelector;
+	glgui::CLabel*					m_pShininessLabel;
+	glgui::CScrollSelector<float>*	m_pShininessSelector;
 };
 
 #endif

@@ -3,6 +3,12 @@
 
 #include "modelwindow_ui.h"
 
+namespace glgui
+{
+	class CTree;
+	class CTreeNode;
+}
+
 class CPicker : public CMovablePanel
 {
 public:
@@ -20,16 +26,16 @@ public:
 
 	EVENT_CALLBACK(CPicker,		Selected);
 
-	virtual void				NodeSelected(CTreeNode* pNode) {};
+	virtual void				NodeSelected(glgui::CTreeNode* pNode) {};
 
 protected:
 	virtual void				Open();
 	virtual void				Close();
 
-	IEventListener::Callback	m_pfnCallback;
-	IEventListener*				m_pCallback;
+	glgui::IEventListener::Callback	m_pfnCallback;
+	glgui::IEventListener*		m_pCallback;
 
-	CTree*						m_pTree;
+	glgui::CTree*				m_pTree;
 
 	bool						m_bPopulated;
 };
@@ -46,7 +52,7 @@ public:
 	virtual void				PopulateTree();
 	virtual void				PopulateTreeNode(glgui::CTreeNode* pTreeNode, CConversionSceneNode* pSceneNode);
 
-	virtual void				NodeSelected(CTreeNode* pNode);
+	virtual void				NodeSelected(glgui::CTreeNode* pNode);
 
 	virtual CConversionMeshInstance*	GetPickedMeshInstance() { return m_pPickedMeshInstance; }
 
