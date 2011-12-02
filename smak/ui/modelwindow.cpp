@@ -62,7 +62,7 @@ CModelWindow::CModelWindow(int argc, char** argv)
 	m_iMouseStartY = 0;
 
 	m_flCameraYaw = 45;
-	m_flCameraPitch = 45;
+	m_flCameraPitch = -45;
 
 	m_flCameraUVZoom = 1;
 	m_flCameraUVX = 0;
@@ -476,7 +476,7 @@ void CModelWindow::Render3D()
 
 	Vector vecSceneCenter = m_Scene.m_oExtends.Center();
 
-	Vector vecCameraVector = AngleVector(EAngle(m_flCameraPitch, m_flCameraYaw, 0)) * m_flCameraDistance + vecSceneCenter;
+	Vector vecCameraVector = AngleVector(EAngle(m_flCameraPitch, m_flCameraYaw, 0)) * -m_flCameraDistance + vecSceneCenter;
 
 	gluLookAt(vecCameraVector.x, vecCameraVector.y, vecCameraVector.z,
 		vecSceneCenter.x, vecSceneCenter.y, vecSceneCenter.z,
@@ -485,7 +485,7 @@ void CModelWindow::Render3D()
 	// Reposition the light source.
 	Vector vecLightDirection = AngleVector(EAngle(m_flLightPitch, m_flLightYaw, 0));
 
-	m_vecLightPosition = vecLightDirection * m_flCameraDistance/2;
+	m_vecLightPosition = vecLightDirection * -m_flCameraDistance/2;
 
 	GLfloat flLightPosition[4];
 	flLightPosition[0] = m_vecLightPosition.x;
@@ -673,20 +673,20 @@ void CModelWindow::RenderLightSource()
 
 			float flDot = vecCameraDirection.Dot(m_vecLightPosition.Normalized());
 
-			if (flDot < -0.2)
+			if (flDot > 0.2)
 			{
-				float flScale = RemapVal(flDot, -0.2f, -1.0f, 0.0f, 1.0f);
+				float flScale = RemapVal(flDot, 0.2f, 1.0f, 0.0f, 1.0f);
 				glColor4f(1.0, 1.0, 1.0, flScale);
 
 				flScale *= 10;
 
 				glBegin(GL_QUADS);
-					glTexCoord2f(1, 0);
-					glVertex3f(0, -flScale, -flScale);
-					glTexCoord2f(1, 1);
-					glVertex3f(0, -flScale, flScale);
 					glTexCoord2f(0, 1);
 					glVertex3f(0, flScale, flScale);
+					glTexCoord2f(1, 1);
+					glVertex3f(0, -flScale, flScale);
+					glTexCoord2f(1, 0);
+					glVertex3f(0, -flScale, -flScale);
 					glTexCoord2f(0, 0);
 					glVertex3f(0, flScale, -flScale);
 				glEnd();
@@ -696,7 +696,9 @@ void CModelWindow::RenderLightSource()
 			glBindTexture(GL_TEXTURE_2D, (GLuint)m_pLightBeam->m_iBase);
 
 			Vector vecLightRight, vecLightUp;
-			AngleVectors(EAngle(m_flLightPitch, m_flLightYaw, 0), NULL, &vecLightRight, &vecLightUp);
+			Matrix4x4 mLight(EAngle(m_flLightPitch, -m_flLightYaw, 0), Vector());
+			vecLightRight = mLight.GetRightVector();
+			vecLightUp = mLight.GetUpVector();
 
 			flDot = vecCameraDirection.Dot(vecLightRight);
 
@@ -704,9 +706,9 @@ void CModelWindow::RenderLightSource()
 
 			glBegin(GL_QUADS);
 				glTexCoord2f(1, 1);
-				glVertex3f(-25, -5, 0);
+				glVertex3f(25, -5, 0);
 				glTexCoord2f(0, 1);
-				glVertex3f(-25, 5, 0);
+				glVertex3f(25, 5, 0);
 				glTexCoord2f(0, 0);
 				glVertex3f(0, 5, 0);
 				glTexCoord2f(1, 0);
@@ -719,9 +721,9 @@ void CModelWindow::RenderLightSource()
 
 			glBegin(GL_QUADS);
 				glTexCoord2f(1, 1);
-				glVertex3f(-25, 0, -5);
+				glVertex3f(25, 0, -5);
 				glTexCoord2f(0, 1);
-				glVertex3f(-25, 0, 5);
+				glVertex3f(25, 0, 5);
 				glTexCoord2f(0, 0);
 				glVertex3f(0, 0, 5);
 				glTexCoord2f(1, 0);

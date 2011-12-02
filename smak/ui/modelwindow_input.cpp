@@ -54,8 +54,8 @@ void CModelWindow::MouseMotion(int x, int y)
 	{
 		if (m_bCameraRotating)
 		{
-			m_flCameraPitch += (y - m_iMouseStartY)/2;
-			m_flCameraYaw += (x - m_iMouseStartX)/2;
+			m_flCameraPitch -= ((float)y - (float)m_iMouseStartY)/2.0f;
+			m_flCameraYaw += ((float)x - (float)m_iMouseStartX)/2.0f;
 
 			while (m_flCameraPitch > 89)
 				m_flCameraPitch = 89;
@@ -68,7 +68,7 @@ void CModelWindow::MouseMotion(int x, int y)
 
 		if (m_bCameraDollying)
 		{
-			m_flCameraDistance += (y - m_iMouseStartY)*(m_flCameraDistance/100);
+			m_flCameraDistance += ((float)y - (float)m_iMouseStartY)*(m_flCameraDistance/100);
 
 			if (m_flCameraDistance < 1)
 				m_flCameraDistance = 1;
@@ -79,7 +79,7 @@ void CModelWindow::MouseMotion(int x, int y)
 		if (m_bLightRotating)
 		{
 			m_flLightYaw += (m_iMouseStartX - x);
-			m_flLightPitch += (m_iMouseStartY - y);
+			m_flLightPitch -= (m_iMouseStartY - y);
 
 			while (m_flLightYaw >= 180)
 				m_flLightYaw -= 360;
