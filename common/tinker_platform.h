@@ -18,6 +18,7 @@ tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile);
 eastl::vector<tstring> ListDirectory(tstring sDirectory, bool bDirectories = true);
 bool IsFile(tstring sPath);
 bool IsDirectory(tstring sPath);
+tstring FindAbsolutePath(const tstring& sPath);
 void DebugPrint(tstring sText);
 void Exec(eastl::string sLine);
 

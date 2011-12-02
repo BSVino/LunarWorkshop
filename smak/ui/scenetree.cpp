@@ -7,6 +7,7 @@
 #include <tinker_platform.h>
 #include <glgui/rootpanel.h>
 #include <glgui/tree.h>
+#include <glgui/filedialog.h>
 
 using namespace glgui;
 
@@ -470,7 +471,12 @@ void CMaterialEditor::Layout()
 
 void CMaterialEditor::ChooseDiffuseCallback(const tstring& sArgs)
 {
-	tstring sOpen;// = OpenFileDialog("All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0");
+	CFileDialog::ShowOpenDialog("", ".bmp;.jpg;.png;.tga;.psd;.gif;.tif", this, OpenDiffuse);
+}
+
+void CMaterialEditor::OpenDiffuseCallback(const tstring& sArgs)
+{
+	tstring sOpen = sArgs;
 
 	if (!sOpen.length())
 		return;
@@ -493,7 +499,12 @@ void CMaterialEditor::ChooseDiffuseCallback(const tstring& sArgs)
 
 void CMaterialEditor::ChooseNormalCallback(const tstring& sArgs)
 {
-	tstring sOpen;// = OpenFileDialog("All *.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0*.bmp;*.jpg;*.png;*.tga;*.psd;*.gif;*.tif\0");
+	CFileDialog::ShowOpenDialog("", ".bmp;.jpg;.png;.tga;.psd;.gif;.tif", this, OpenNormal);
+}
+
+void CMaterialEditor::OpenNormalCallback(const tstring& sArgs)
+{
+	tstring sOpen = sArgs;
 
 	if (!sOpen.length())
 		return;

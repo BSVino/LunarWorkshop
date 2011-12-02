@@ -13,6 +13,7 @@
 #include <glgui/checkbox.h>
 #include <glgui/tree.h>
 #include <glgui/textfield.h>
+#include <glgui/filedialog.h>
 
 #include "modelwindow.h"
 #include "scenetree.h"
@@ -28,10 +29,10 @@ void CModelWindow::InitUI()
 	CMenu* pTools = CRootPanel::Get()->AddMenu("Tools");
 	CMenu* pHelp = CRootPanel::Get()->AddMenu("Help");
 
-	pFile->AddSubmenu("Open...", this, Open);
-	pFile->AddSubmenu("Open Into...", this, OpenInto);
+	pFile->AddSubmenu("Open...", this, OpenDialog);
+	pFile->AddSubmenu("Open Into...", this, OpenIntoDialog);
 	pFile->AddSubmenu("Reload", this, Reload);
-	pFile->AddSubmenu("Save As...", this, Save);
+	pFile->AddSubmenu("Save As...", this, SaveDialog);
 	pFile->AddSubmenu("Close", this, Close);
 	pFile->AddSubmenu("Exit", this, Exit);
 
@@ -95,20 +96,30 @@ void CModelWindow::Layout()
 	CRootPanel::Get()->Layout();
 }
 
-void CModelWindow::OpenCallback(const tstring& sArgs)
+void CModelWindow::OpenDialogCallback(const tstring& sArgs)
 {
 	if (m_bLoadingFile)
 		return;
 
-//	ReadFile(OpenFileDialog("All *.obj;*.sia;*.dae\0*.obj;*.sia;*.dae\0").c_str());
+	CFileDialog::ShowOpenDialog("", ".obj;.sia;.dae", this, OpenFile);
 }
 
-void CModelWindow::OpenIntoCallback(const tstring& sArgs)
+void CModelWindow::OpenFileCallback(const tstring& sArgs)
+{
+	ReadFile(sArgs.c_str());
+}
+
+void CModelWindow::OpenIntoDialogCallback(const tstring& sArgs)
 {
 	if (m_bLoadingFile)
 		return;
 
-//	ReadFileIntoScene(OpenFileDialog("All *.obj;*.sia;*.dae\0*.obj;*.sia;*.dae\0").c_str());
+	CFileDialog::ShowOpenDialog("", ".obj;.sia;.dae", this, OpenIntoFile);
+}
+
+void CModelWindow::OpenIntoFileCallback(const tstring& sArgs)
+{
+	ReadFileIntoScene(sArgs.c_str());
 }
 
 void CModelWindow::ReloadCallback(const tstring& sArgs)
@@ -119,9 +130,14 @@ void CModelWindow::ReloadCallback(const tstring& sArgs)
 	ReloadFromFile();
 }
 
-void CModelWindow::SaveCallback(const tstring& sArgs)
+void CModelWindow::SaveDialogCallback(const tstring& sArgs)
 {
-//	SaveFile(SaveFileDialog("Wavefront .obj\0*.obj\0Silo ASCII .sia\0*.sia\0Collada .dae\0*.dae\0").c_str());
+	CFileDialog::ShowSaveDialog("", ".obj;.sia;.dae", this, SaveFile);
+}
+
+void CModelWindow::SaveFileCallback(const tstring& sArgs)
+{
+	SaveFile(sArgs.c_str());
 }
 
 void CModelWindow::CloseCallback(const tstring& sArgs)
@@ -808,7 +824,7 @@ CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, eastl::vector<CMateria
 	m_pSave = new CButton(0, 0, 100, 100, "Save Map");
 	AddControl(m_pSave);
 
-	m_pSave->SetClickedListener(this, SaveMap);
+	m_pSave->SetClickedListener(this, SaveMapDialog);
 	m_pSave->SetVisible(false);
 
 	Layout();
@@ -1022,12 +1038,17 @@ void CAOPanel::GenerateCallback(const tstring& sArgs)
 	m_pGenerate->SetText("Generate");
 }
 
-void CAOPanel::SaveMapCallback(const tstring& sArgs)
+void CAOPanel::SaveMapDialogCallback(const tstring& sArgs)
 {
 	if (!m_oGenerator.DoneGenerating())
 		return;
 
-//	m_oGenerator.SaveToFile(SaveFileDialog("Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0").c_str());
+	CFileDialog::ShowSaveDialog("", ".png;.bmp;.jpg;.tga;.psd", this, SaveMapFile);
+}
+
+void CAOPanel::SaveMapFileCallback(const tstring& sArgs)
+{
+	m_oGenerator.SaveToFile(sArgs.c_str());
 }
 
 void CAOPanel::BeginProgress()
@@ -1379,7 +1400,7 @@ CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, eastl::vect
 	m_pSave = new CButton(0, 0, 100, 100, "Save Map");
 	AddControl(m_pSave);
 
-	m_pSave->SetClickedListener(this, SaveMap);
+	m_pSave->SetClickedListener(this, SaveMapDialog);
 	m_pSave->SetVisible(false);
 
 	Layout();
@@ -1702,12 +1723,17 @@ void CComboGeneratorPanel::GenerateCallback(const tstring& sArgs)
 	m_pGenerate->SetText("Generate");
 }
 
-void CComboGeneratorPanel::SaveMapCallback(const tstring& sArgs)
+void CComboGeneratorPanel::SaveMapDialogCallback(const tstring& sArgs)
 {
 	if (!m_oGenerator.DoneGenerating())
 		return;
 
-	tstring sFilename;// = SaveFileDialog("Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0").c_str();
+	CFileDialog::ShowSaveDialog("", ".png;.bmp;.jpg;.tga;.psd", this, SaveMapFile);
+}
+
+void CComboGeneratorPanel::SaveMapFileCallback(const tstring& sArgs)
+{
+	tstring sFilename = sArgs;
 
 	if (!sFilename.length())
 		return;
@@ -2128,7 +2154,7 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, eastl::vector<CMaterial>* p
 	m_pSave = new CButton(0, 0, 100, 100, "Save Map");
 	AddControl(m_pSave);
 
-	m_pSave->SetClickedListener(this, SaveMap);
+	m_pSave->SetClickedListener(this, SaveMapDialog);
 	m_pSave->SetVisible(false);
 
 	Layout();
@@ -2284,12 +2310,17 @@ bool CNormalPanel::KeyPressed(int iKey)
 		return CMovablePanel::KeyPressed(iKey);
 }
 
-void CNormalPanel::SaveMapCallback(const tstring& sArgs)
+void CNormalPanel::SaveMapDialogCallback(const tstring& sArgs)
 {
 	if (!m_oGenerator.DoneGenerating())
 		return;
 
-	tstring sFilename;// = SaveFileDialog("Portable Network Graphics (.png)\0*.png\0Bitmap (.bmp)\0*.bmp\0JPEG (.jpg)\0*.jpg\0Truevision Targa (.tga)\0*.tga\0Adobe PhotoShop (.psd)\0*.psd\0");
+	CFileDialog::ShowSaveDialog("", ".png;.bmp;.jpg;.tga;.psd", this, SaveMapFile);
+}
+
+void CNormalPanel::SaveMapFileCallback(const tstring& sArgs)
+{
+	tstring sFilename = sArgs;
 
 	if (!sFilename.length())
 		return;

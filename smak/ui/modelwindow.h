@@ -80,10 +80,13 @@ public:
 	virtual bool			DoCharPress(int c);
 	virtual bool			DoKeyPress(int c);
 
-	EVENT_CALLBACK(CModelWindow, Open);
-	EVENT_CALLBACK(CModelWindow, OpenInto);
+	EVENT_CALLBACK(CModelWindow, OpenDialog);
+	EVENT_CALLBACK(CModelWindow, OpenFile);
+	EVENT_CALLBACK(CModelWindow, OpenIntoDialog);
+	EVENT_CALLBACK(CModelWindow, OpenIntoFile);
 	EVENT_CALLBACK(CModelWindow, Reload);
-	EVENT_CALLBACK(CModelWindow, Save);
+	EVENT_CALLBACK(CModelWindow, SaveDialog);
+	EVENT_CALLBACK(CModelWindow, SaveFile);
 	EVENT_CALLBACK(CModelWindow, Close);
 	EVENT_CALLBACK(CModelWindow, Exit);
 	EVENT_CALLBACK(CModelWindow, Render3D);

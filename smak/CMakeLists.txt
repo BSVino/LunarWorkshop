@@ -40,7 +40,7 @@ if (WIN32)
 	)
 endif (WIN32)
 
-add_executable(smak ${SMAK_SOURCES})
+add_executable(smak WIN32 ${SMAK_SOURCES})
 target_link_libraries (smak tinker modelconverter raytracer)
 
 if (WIN32)

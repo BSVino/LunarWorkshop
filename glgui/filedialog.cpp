@@ -15,9 +15,10 @@ CFileDialog* CFileDialog::s_pDialog = NULL;
 CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, bool bSave)
 	: CPanel(0, 0, 100, 100)
 {
-	m_sDirectory = sDirectory;
-	m_sExtension = sExtension;
+	m_sDirectory = FindAbsolutePath(sDirectory.length()?sDirectory:".");
 	m_bSave = bSave;
+
+	strtok(sExtension, m_asExtensions, ";");
 
 	m_pDirectoryLabel = new CLabel(5, 5, 1, 1, "Folder:");
 	AddControl(m_pDirectoryLabel);
@@ -58,6 +59,8 @@ CFileDialog::~CFileDialog()
 
 void CFileDialog::Layout()
 {
+	m_pDirectory->SetText(m_sDirectory);
+
 	SetSize(400, 300);
 	SetPos(CRootPanel::Get()->GetWidth()/2-GetWidth()/2, CRootPanel::Get()->GetHeight()/2-GetHeight()/2);
 
@@ -76,23 +79,35 @@ void CFileDialog::Layout()
 
 	m_pFileList->ClearTree();
 
-	eastl::vector<tstring> asFiles = ListDirectory(m_sDirectory, false);
+	eastl::vector<tstring> asFiles = ListDirectory(m_sDirectory, true);
 
+	m_pFileList->AddNode("..");
 	for (size_t i = 0; i < asFiles.size(); i++)
 	{
 		tstring sFile = asFiles[i];
 
-		if (sFile.length() < m_sExtension.length())
+		if (IsDirectory(m_sDirectory + DIR_SEP + sFile))
+		{
+			m_pFileList->AddNode(sFile + DIR_SEP);
 			continue;
+		}
 
-		if (sFile.substr(sFile.length()-m_sExtension.length()) != m_sExtension)
-			continue;
+		for (size_t j = 0; j < m_asExtensions.size(); j++)
+		{
+			if (sFile.length() < m_asExtensions[j].length())
+				continue;
 
-		m_pFileList->AddNode(sFile);
+			if (sFile.substr(sFile.length()-m_asExtensions[j].length()) != m_asExtensions[j])
+				continue;
+
+			m_pFileList->AddNode(sFile);
+			break;
+		}
 	}
 
 	m_pSelect->SetSize(60, m_pNewFile->GetHeight());
 	m_pSelect->SetPos(GetWidth() - 130, GetHeight() - m_pNewFile->GetHeight() - 5);
+	m_pSelect->SetEnabled(false);
 
 	m_pCancel->SetSize(60, m_pNewFile->GetHeight());
 	m_pCancel->SetPos(GetWidth() - 65, GetHeight() - m_pNewFile->GetHeight() - 5);
@@ -140,8 +155,25 @@ void CFileDialog::NewFileChangedCallback(const tstring& sArgs)
 
 void CFileDialog::SelectCallback(const tstring& sArgs)
 {
+	tstring sFile = GetFile();
+	if (sFile.find(DIR_SEP"..") == sFile.length()-3)
+	{
+		m_sDirectory = FindAbsolutePath(sFile);
+		Layout();
+		return;
+	}
+
+	if (IsDirectory(sFile))
+	{
+		m_sDirectory = FindAbsolutePath(sFile);
+		Layout();
+		return;
+	}
+
+	SetVisible(false);
+
 	if (m_pSelectListener && m_pfnSelectCallback)
-		m_pfnSelectCallback(m_pSelectListener, GetFile());
+		m_pfnSelectCallback(m_pSelectListener, sFile);
 
 	delete this;
 }
@@ -181,18 +213,22 @@ tstring CFileDialog::GetFile()
 	if (s_pDialog->m_bSave && s_pDialog->m_pNewFile->GetText().length())
 	{
 		tstring sName = s_pDialog->m_pNewFile->GetText();
-		if (sName.length() <= s_pDialog->m_sExtension.length())
-			return s_pDialog->m_sDirectory + DIR_SEP + s_pDialog->m_pNewFile->GetText() + s_pDialog->m_sExtension;
 
-		tstring sNameExtension = sName.substr(sName.length() - s_pDialog->m_sExtension.length());
-		if (sNameExtension == s_pDialog->m_sExtension)
-			return s_pDialog->m_sDirectory + DIR_SEP + s_pDialog->m_pNewFile->GetText();
+		for (size_t j = 0; j < s_pDialog->m_asExtensions.size(); j++)
+		{
+			if (sName.length() <= s_pDialog->m_asExtensions[j].length())
+				return FindAbsolutePath(s_pDialog->m_sDirectory + DIR_SEP + s_pDialog->m_pNewFile->GetText() + s_pDialog->m_asExtensions[j]);
 
-		return s_pDialog->m_sDirectory + DIR_SEP + s_pDialog->m_pNewFile->GetText() + s_pDialog->m_sExtension;
+			tstring sNameExtension = sName.substr(sName.length() - s_pDialog->m_asExtensions[j].length());
+			if (sNameExtension == s_pDialog->m_asExtensions[j])
+				return FindAbsolutePath(s_pDialog->m_sDirectory + DIR_SEP + s_pDialog->m_pNewFile->GetText());
+		}
+
+		return FindAbsolutePath(s_pDialog->m_sDirectory + DIR_SEP + s_pDialog->m_pNewFile->GetText() + s_pDialog->m_asExtensions[0]);
 	}
 
 	if (!s_pDialog->m_pFileList->GetSelectedNode())
 		return "";
 
-	return s_pDialog->m_sDirectory + DIR_SEP + s_pDialog->m_pFileList->GetSelectedNode()->m_pLabel->GetText();
+	return FindAbsolutePath(s_pDialog->m_sDirectory + DIR_SEP + s_pDialog->m_pFileList->GetSelectedNode()->m_pLabel->GetText());
 }

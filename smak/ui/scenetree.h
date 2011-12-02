@@ -52,6 +52,8 @@ public:
 
 	EVENT_CALLBACK(CMaterialEditor, ChooseDiffuse);
 	EVENT_CALLBACK(CMaterialEditor, ChooseNormal);
+	EVENT_CALLBACK(CMaterialEditor, OpenDiffuse);
+	EVENT_CALLBACK(CMaterialEditor, OpenNormal);
 	EVENT_CALLBACK(CMaterialEditor, RemoveDiffuse);
 	EVENT_CALLBACK(CMaterialEditor, RemoveNormal);
 	EVENT_CALLBACK(CMaterialEditor, SetAmbientRed);

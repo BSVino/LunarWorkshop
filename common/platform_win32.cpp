@@ -252,6 +252,9 @@ bool IsFile(tstring sPath)
 
 bool IsDirectory(tstring sPath)
 {
+	while (sPath.substr(sPath.length()-1) == DIR_SEP)
+		sPath = sPath.substr(0, sPath.length()-1);
+
 	WIN32_FIND_DATA fd;
 	HANDLE hFind = FindFirstFile(convertstring<tchar, wchar_t>(sPath).c_str(), &fd);
 
@@ -262,6 +265,16 @@ bool IsDirectory(tstring sPath)
 		return true;
 
 	return false;
+}
+
+tstring FindAbsolutePath(const tstring& sPath)
+{
+	wchar_t szPath[MAX_PATH];
+	eastl::wstring swPath = convertstring<tchar, wchar_t>(sPath);
+
+	GetFullPathName(swPath.c_str(), MAX_PATH, szPath, nullptr);
+
+	return convertstring<wchar_t, tchar>(szPath);
 }
 
 void DebugPrint(tstring sText)

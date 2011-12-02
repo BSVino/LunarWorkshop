@@ -185,7 +185,8 @@ public:
 	virtual bool				DoneGenerating() { return m_oGenerator.DoneGenerating(); }
 
 	EVENT_CALLBACK(CComboGeneratorPanel,	Generate);
-	EVENT_CALLBACK(CComboGeneratorPanel,	SaveMap);
+	EVENT_CALLBACK(CComboGeneratorPanel,	SaveMapDialog);
+	EVENT_CALLBACK(CComboGeneratorPanel,	SaveMapFile);
 	EVENT_CALLBACK(CComboGeneratorPanel,	AddLoRes);
 	EVENT_CALLBACK(CComboGeneratorPanel,	AddHiRes);
 	EVENT_CALLBACK(CComboGeneratorPanel,	RemoveLoRes);
@@ -276,7 +277,8 @@ public:
 	virtual bool			DoneGenerating() { return m_oGenerator.DoneGenerating(); }
 
 	EVENT_CALLBACK(CAOPanel, Generate);
-	EVENT_CALLBACK(CAOPanel, SaveMap);
+	EVENT_CALLBACK(CAOPanel, SaveMapDialog);
+	EVENT_CALLBACK(CAOPanel, SaveMapFile);
 	EVENT_CALLBACK(CAOPanel, AOMethod);
 
 	virtual void			FindBestRayFalloff();
@@ -347,7 +349,8 @@ public:
 	virtual bool				DoneGenerating() { return m_oGenerator.DoneGenerating(); }
 
 	EVENT_CALLBACK(CNormalPanel,	Generate);
-	EVENT_CALLBACK(CNormalPanel,	SaveMap);
+	EVENT_CALLBACK(CNormalPanel,	SaveMapDialog);
+	EVENT_CALLBACK(CNormalPanel,	SaveMapFile);
 	EVENT_CALLBACK(CNormalPanel,	SetupNormal2);
 	EVENT_CALLBACK(CNormalPanel,	UpdateNormal2);
 
