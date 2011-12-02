@@ -210,11 +210,11 @@ void CModelWindow::MouseWheel(int iState)
 	{
 		if (iState > iOldState)
 		{
-			m_flCameraDistance += 1.0f;
+			m_flCameraDistance += 10.0f;
 		}
 		else
 		{
-			m_flCameraDistance -= 1.0f;
+			m_flCameraDistance -= 10.0f;
 
 			if (m_flCameraDistance < 1.0f)
 				m_flCameraDistance = 1.0f;
