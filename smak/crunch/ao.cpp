@@ -419,17 +419,7 @@ void CAOGenerator::Generate()
 		if (m_bStopGenerating)
 			break;
 
-		if (m_eAOMethod == AOMETHOD_TRIDISTANCE)
-		{
-			if (m_aiShadowReads[i])
-			{
-				// Scale us so that the lowest read value (most light) is 1 and the highest read value (least light) is 0.
-				float flRealShadowValue = RemapVal(m_avecShadowValues[i].x, m_flLowestValue, m_flHighestValue, 1, 0);
-
-				m_avecShadowValues[i] = Vector(flRealShadowValue, flRealShadowValue, flRealShadowValue);
-			}
-		}
-		else if (m_eAOMethod == AOMETHOD_SHADOWMAP)
+		if (m_eAOMethod == AOMETHOD_SHADOWMAP)
 			m_avecShadowValues[i] = Vector(m_avecShadowValues[i].x, m_avecShadowValues[i].x, m_avecShadowValues[i].x);
 
 		if (m_aiShadowReads[i])
@@ -1165,154 +1155,6 @@ void CAOGenerator::GenerateTriangleByTexel(CConversionMeshInstance* pMeshInstanc
 			{
 				RaytraceSceneMultithreaded(pTracer, vecUVPosition, vecNormal, pMeshInstance, pFace, iTexel);
 			}
-			else
-			{
-				float flShadowValue = 0;
-
-				//DebugRenderSceneLookAtPosition(vecUVPosition, vecNormal, pFace);
-
-				// Tri distance method
-				for (size_t m2 = 0; m2 < m_pScene->GetNumMeshes(); m2++)
-				{
-					CConversionMesh* pMesh2 = m_pScene->GetMesh(m2);
-					for (size_t f2 = 0; f2 < pMesh2->GetNumFaces(); f2++)
-					{
-						CConversionFace* pFace2 = pMesh2->GetFace(f2);
-
-						if (pFace == pFace2)
-							continue;
-
-						//DebugRenderSceneLookAtPosition(pFace2->GetCenter(), pFace2->GetNormal(), pFace2);
-
-						// If this face is behind us, ignore.
-						if ((pFace2->GetCenter() - vecUVPosition).Normalized().Dot(vecNormal) <= 0)
-							continue;
-
-						// Skip adjoining faces, they are done in a different algorithm below.
-						bool bFoundAdjacent = false;
-						for (size_t e = 0; e < pFace->GetNumEdges(); e++)
-						{
-							CConversionEdge* pEdge = pMesh->GetEdge(pFace->GetEdge(e));
-
-							for (size_t ef = 0; ef < pEdge->m_aiFaces.size(); ef++)
-							{
-								if (pEdge->m_aiFaces[ef] != ~0 && pMesh->GetFace(pEdge->m_aiFaces[ef]) == pFace2)
-								{
-									bFoundAdjacent = true;
-									break;
-								}
-							}
-						}
-
-						if (bFoundAdjacent)
-							continue;
-
-						eastl::vector<Vector> av;
-
-						float flDistance = DistanceToPolygon(vecUVPosition, pFace2->GetVertices(av), pFace2->GetNormal());
-						float flDistanceToCenter = (vecUVPosition - pFace2->GetCenter()).Length();
-
-						// If the difference between the closest distance to the poly and the difference to the center is large
-						// then the poly is very close but we're near the edge of it, so that polygon shouldn't affect the
-						// lighting as much. If it's across from us then this should result in a higher multiplier.
-						float flDistanceMultiplier = exp(-fabs(flDistance - flDistanceToCenter));
-
-						flDistanceMultiplier = (flDistanceMultiplier+1)/2;	// Reduce this effect by half.
-
-						float flArea = sqrt(pFace2->GetArea());
-
-						flShadowValue += flArea * exp(-flDistance) * flDistanceMultiplier * fabs(pFace2->GetNormal().Dot(vecNormal));
-					}
-				}
-
-				// Loop through all the edges to give us dirty concave corners.
-				float flDistanceToOpposite = 0;
-				for (size_t e = 0; e < pFace->GetNumEdges(); e++)
-				{
-					CConversionEdge* pEdge = pMesh->GetEdge(pFace->GetEdge(e));
-					CConversionEdge* pAdjacentEdge = NULL;
-
-					bool bAdjacentEdge = false;
-					for (size_t ef = 0; ef < pEdge->m_aiFaces.size(); ef++)
-					{
-						if (pMesh->GetFace(pEdge->m_aiFaces[ef]) == pFace)
-						{
-							bAdjacentEdge = true;
-							break;
-						}
-					}
-
-					if (bAdjacentEdge)
-					{
-						pAdjacentEdge = pEdge;
-
-						if (pFace->GetNumEdges() % 2 == 0)
-						{
-							// Even number of edges, opposite is an edge.
-							size_t iOpposite = (e + pFace->GetNumEdges()/2) % pFace->GetNumEdges();
-							CConversionEdge* pOppositeEdge = pMesh->GetEdge(pFace->GetEdge(iOpposite));
-
-							// Use the center of the opposite edge for simplicity's sake.
-							Vector vecCenter = (pMesh->GetVertex(pOppositeEdge->v1) + pMesh->GetVertex(pOppositeEdge->v2))/2;
-							flDistanceToOpposite = DistanceToLine(vecCenter, pMesh->GetVertex(pEdge->v1), pMesh->GetVertex(pEdge->v2));
-						}
-						else
-						{
-							// Odd number of edges, opposite is an point.
-							size_t iOpposite = (e + pFace->GetNumVertices()/2) % pFace->GetNumVertices();
-
-							Vector vecOppositePoint = pMesh->GetVertex(pFace->GetVertex(iOpposite)->v);
-							flDistanceToOpposite = DistanceToLine(vecOppositePoint, pMesh->GetVertex(pEdge->v1), pMesh->GetVertex(pEdge->v2));
-						}
-					}
-
-					if (pAdjacentEdge)
-					{
-						CConversionFace* pOtherFace = NULL;
-
-						for (size_t ef = 0; ef < pAdjacentEdge->m_aiFaces.size(); ef++)
-						{
-							CConversionFace* pPossibleFace = NULL;
-
-							if (pMesh->GetFace(pAdjacentEdge->m_aiFaces[ef]) == pFace)
-								pPossibleFace = pMesh->GetFace(pAdjacentEdge->m_aiFaces[ef]);
-							else
-								continue;
-
-							// If this face is behind us, ignore.
-							if ((pPossibleFace->GetCenter() - vecUVPosition).Normalized().Dot(vecNormal) <= 0)
-								continue;
-
-							pOtherFace = pPossibleFace;
-						}
-
-						if (!pOtherFace)
-							continue;
-
-						float flDot = pOtherFace->GetNormal().Dot(vecNormal);
-
-						if (flDot == 0)
-							continue;
-
-						Vector v1 = pMesh->GetVertex(pAdjacentEdge->v1);
-						Vector v2 = pMesh->GetVertex(pAdjacentEdge->v2);
-
-						float flDistanceToEdge = DistanceToLine(vecUVPosition, v1, v2);
-						float flAngleMultiplier = RemapVal(flDot, 1.0f, -1.0f, 0.0f, 1.0f);
-						float flDistanceMultiplier = RemapValClamped(flDistanceToEdge, 0, flDistanceToOpposite, 1, 0);
-
-						flShadowValue += exp(-flDistanceToEdge) * flDistanceMultiplier * flAngleMultiplier * 2;
-					}
-				}
-
-				m_avecShadowValues[iTexel] += Vector(flShadowValue, flShadowValue, flShadowValue);
-
-				if (flShadowValue < m_flLowestValue || m_flLowestValue == -1)
-					m_flLowestValue = flShadowValue;
-
-				if (flShadowValue > m_flHighestValue)
-					m_flHighestValue = flShadowValue;
-			}
 
 			m_aiShadowReads[iTexel]++;
 			m_bPixelMask[iTexel] = true;
@@ -1646,18 +1488,7 @@ size_t CAOGenerator::GenerateTexture(bool bInMedias)
 					continue;
 				}
 
-				if (m_eAOMethod == AOMETHOD_TRIDISTANCE)
-				{
-					if (m_aiShadowReads[i])
-					{
-						// Scale us so that the lowest read value (most light) is 1 and the highest read value (least light) is 0.
-						float flRealShadowValue = RemapVal(m_avecShadowValues[i].x, m_flLowestValue, m_flHighestValue, 1, 0) / m_aiShadowReads[i];
-
-						avecShadowValues[i] = Vector(flRealShadowValue, flRealShadowValue, flRealShadowValue);
-					}
-				}
-				else
-					avecShadowValues[i] = m_avecShadowValues[i] / (float)m_aiShadowReads[i];
+				avecShadowValues[i] = m_avecShadowValues[i] / (float)m_aiShadowReads[i];
 
 				// When exporting to png sometimes a pure white value will suffer integer overflow.
 				avecShadowValues[i] *= 0.99f;

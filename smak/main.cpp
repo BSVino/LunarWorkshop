@@ -107,8 +107,6 @@ int CreateApplication(int argc, char** argv)
 						eMethod = AOMETHOD_SHADOWMAP;
 					else if (sToken == "raytrace")
 						eMethod = AOMETHOD_RAYTRACE;
-					else if (sToken == "tridistance")
-						eMethod = AOMETHOD_TRIDISTANCE;
 					else if (sToken == "color")
 						eMethod = AOMETHOD_RENDER;
 					else
@@ -202,10 +200,6 @@ int CreateApplication(int argc, char** argv)
 			{
 			case AOMETHOD_RENDER:
 				printf("Method: Color AO\n");
-				break;
-
-			case AOMETHOD_TRIDISTANCE:
-				printf("Method: Triangle distance\n");
 				break;
 
 			case AOMETHOD_RAYTRACE:
