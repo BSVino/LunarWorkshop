@@ -116,6 +116,8 @@ void CCharacterController::updateAction(btCollisionWorld* pCollisionWorld, btSca
 	playerStep(pCollisionWorld, deltaTime);
 
 	FindGround(pCollisionWorld);
+
+	pPhysicsEntity->m_oMotionState.setWorldTransform(m_pGhostObject->getWorldTransform());
 }
 
 void CCharacterController::setWalkDirection(const btVector3& walkDirection)

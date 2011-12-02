@@ -215,18 +215,7 @@ void CBulletPhysics::Simulate()
 {
 	TPROF("CBulletPhysics::Simulate");
 
-	int iSteps = m_pDynamicsWorld->stepSimulation(GameServer()->GetFrameTime(), 10);
-
-	if (iSteps)
-	{
-		// Non-rigid bodies don't use motion states and so we must manually update.
-		for (size_t i = 0; i < m_aEntityList.size(); i++)
-		{
-			CPhysicsEntity* pObj = &m_aEntityList[i];
-			if (pObj->m_pGhostObject)
-				pObj->m_oMotionState.setWorldTransform(pObj->m_pGhostObject->getWorldTransform());
-		}
-	}
+	m_pDynamicsWorld->stepSimulation(GameServer()->GetFrameTime(), 10);
 }
 
 void CBulletPhysics::DebugDraw()
