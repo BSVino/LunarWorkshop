@@ -886,7 +886,7 @@ void CTexelAOMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* pMesh
 
 	// Turn it sideways so that pitch 90 is up
 	Matrix4x4 m2;
-	m2.SetAngles(EAngle(0, 0, -90));
+	m2.SetAngles(EAngle(-90, 0, 0));
 
 	m *= m2;
 
@@ -1219,9 +1219,9 @@ void CTexelNormalMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* p
 	Vector b = pFace->GetBaseVector(vecUVPosition, 1, pMeshInstance);
 	Vector n = pFace->GetBaseVector(vecUVPosition, 2, pMeshInstance);
 
-	mObjectToTangent.SetColumn(0, t);
-	mObjectToTangent.SetColumn(1, b);
-	mObjectToTangent.SetColumn(2, n);
+	mObjectToTangent.SetForwardVector(t);
+	mObjectToTangent.SetUpVector(b);
+	mObjectToTangent.SetRightVector(n);
 	mObjectToTangent.InvertRT();
 
 	Vector vecTangentNormal = mObjectToTangent*vecHitNormal;

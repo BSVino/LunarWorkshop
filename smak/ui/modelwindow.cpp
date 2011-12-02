@@ -1686,9 +1686,9 @@ void CModelWindow::SaveNormal(size_t iMaterial, const tstring& sFilename)
 			Vector vecTangent = vecBitangent.Cross(vecNormal).Normalized();
 
 			Matrix4x4 mTBN;
-			mTBN.SetColumn(0, vecTangent);
-			mTBN.SetColumn(1, vecBitangent);
-			mTBN.SetColumn(2, vecNormal);
+			mTBN.SetForwardVector(vecTangent);
+			mTBN.SetUpVector(vecBitangent);
+			mTBN.SetRightVector(vecNormal);
 
 			avecMergedNormalValues[iTexel] = (mTBN * vecNormal2)*0.99f/2 + Vector(0.5f, 0.5f, 0.5f);
 		}

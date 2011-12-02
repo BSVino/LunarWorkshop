@@ -630,7 +630,6 @@ void CAOGenerator::GenerateShadowMaps()
 
 	Matrix4x4 mLightProjection;
 	
-	// Use column major because OpenGL does.
 	Matrix4x4 mBias(
 	0.5f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.5f, 0.0f, 0.0f,
@@ -711,9 +710,7 @@ void CAOGenerator::GenerateShadowMaps()
 #endif
 			}
 
-			// OpenGL matrices are column major, so multiply in the wrong order to get the right result.
-			Matrix4x4 m1 = mLightProjection*mBias;
-			Matrix4x4 mTextureMatrix = mLightView*m1;
+			Matrix4x4 mTextureMatrix = mBias*mLightProjection*mLightView;
 
 			// We're storing the resulting projection in GL_TEXTURE7 for later reference by the shader.
 			glBindFramebufferEXT(GL_FRAMEBUFFER, iUVFB);

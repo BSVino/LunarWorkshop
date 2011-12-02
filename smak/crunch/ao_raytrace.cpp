@@ -28,7 +28,7 @@ void CAOGenerator::RaytraceSceneFromPosition(raytrace::CRaytracer* pTracer, Vect
 
 	// Turn it sideways so that pitch 90 is up
 	Matrix4x4 m2;
-	m2.SetAngles(EAngle(0, 0, -90));
+	m2.SetAngles(EAngle(-90, 0, 0));
 
 	m *= m2;
 
