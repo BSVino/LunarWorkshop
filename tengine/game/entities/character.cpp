@@ -195,6 +195,23 @@ bool CCharacter::IsAttacking() const
 	return (GameServer()->GetGameTime() - m_flLastAttack < AttackTime());
 }
 
+void CCharacter::MoveToPlayerStart()
+{
+	CBaseEntity* pPlayerStart = CBaseEntity::GetEntityByName("*CPlayerStart");
+
+	SetMoveParent(NULL);
+
+	if (!pPlayerStart)
+	{
+		SetGlobalOrigin(Vector(0, 0, 0));
+		SetGlobalAngles(EAngle(0, 0, 0));
+		return;
+	}
+
+	SetGlobalOrigin(pPlayerStart->GetGlobalOrigin());
+	m_angView = pPlayerStart->GetGlobalAngles();
+}
+
 CVar debug_showplayervectors("debug_showplayervectors", "off");
 
 void CCharacter::PostRender(bool bTransparent) const

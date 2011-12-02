@@ -34,6 +34,8 @@ public:
 	virtual void					Attack();
 	virtual bool					IsAttacking() const;
 
+	virtual void					MoveToPlayerStart();
+
 	virtual void					PostRender(bool bTransparent) const;
 	virtual void					ShowPlayerVectors() const;
 

@@ -1,0 +1,12 @@
+#include "playerstart.h"
+
+REGISTER_ENTITY(CPlayerStart);
+
+NETVAR_TABLE_BEGIN(CPlayerStart);
+NETVAR_TABLE_END();
+
+SAVEDATA_TABLE_BEGIN(CPlayerStart);
+SAVEDATA_TABLE_END();
+
+INPUTS_TABLE_BEGIN(CPlayerStart);
+INPUTS_TABLE_END();

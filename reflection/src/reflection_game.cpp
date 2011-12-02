@@ -72,6 +72,8 @@ void CReflectionGame::SetupGame(tstring sType)
 
 		GameServer()->LoadLevel(CVar::GetCVarValue("game_level"));
 
+		pCharacter->MoveToPlayerStart();
+
 		Application()->SetMouseCursorEnabled(false);
 	}
 	else if (sType == "menu")

@@ -22,6 +22,7 @@ bool g_bAutoImporting = false;
 #include "entities/kinematic.h"
 #include "entities/logicgate.h"
 #include "entities/mathgate.h"
+#include "entities/playerstart.h"
 // Use this to force import of required entities.
 class CAutoImport
 {
@@ -34,6 +35,7 @@ public:
 			CKinematic k;
 			CLogicGate l;
 			CMathGate m;
+			CPlayerStart p;
 		}
 		g_bAutoImporting = false;
 	}
