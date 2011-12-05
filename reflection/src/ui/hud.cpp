@@ -12,6 +12,7 @@
 #include "../reflection_game.h"
 #include "../reflection_player.h"
 #include "../token.h"
+#include "../receptacle.h"
 #include "levelselector.h"
 
 CReflectionHUD::CReflectionHUD()

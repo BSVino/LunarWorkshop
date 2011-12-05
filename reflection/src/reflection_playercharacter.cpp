@@ -5,6 +5,7 @@
 
 #include "mirror.h"
 #include "token.h"
+#include "receptacle.h"
 
 REGISTER_ENTITY(CPlayerCharacter);
 
