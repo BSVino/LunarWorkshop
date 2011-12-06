@@ -94,6 +94,16 @@ void CPlayerCharacter::FindItems()
 			continue;
 
 		CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pEntity);
+		if (pReceptacle && pReceptacle->GetToken() && m_hToken != nullptr)
+		{
+			pToken = m_hToken;
+			DropToken();
+			CToken* pOther = pReceptacle->GetToken();
+			pReceptacle->SetToken(pToken);
+			PickUpToken(pOther);
+			return;
+		}
+
 		if (pReceptacle && !pReceptacle->GetToken() && m_hToken != nullptr)
 		{
 			pToken = m_hToken;
@@ -114,6 +124,8 @@ void CPlayerCharacter::FindItems()
 
 		if (pToken && !pToken->GetReceptacle())
 		{
+			if (m_hToken != nullptr)
+				DropToken();
 			PickUpToken(pToken);
 			return;
 		}

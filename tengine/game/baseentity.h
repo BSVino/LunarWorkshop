@@ -368,10 +368,10 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnSpawn);
 
 	void									SetName(const eastl::string& sName) { m_sName = sName; };
-	eastl::string							GetName() { return m_sName; };
+	eastl::string							GetName() const { return m_sName; };
 
 	void									SetMass(float flMass) { m_flMass = flMass; };
-	float									GetMass() { return m_flMass; };
+	float									GetMass() const { return m_flMass; };
 
 	virtual const AABB&						GetBoundingBox() const { return m_aabbBoundingBox; }
 	virtual TVector							GetLocalCenter() const;

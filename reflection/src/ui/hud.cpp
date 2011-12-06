@@ -98,22 +98,44 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 		CToken* pToken = dynamic_cast<CToken*>(pEntity);
 		if (pToken)
 		{
-			tstring sTip = "E - Pick up";
-			float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
-			float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-			glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
-			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
+			if (pPlayerCharacter->GetToken())
+			{
+				tstring sTip = "E - Swap";
+				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
+				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
+			}
+			else
+			{
+				tstring sTip = "E - Pick up";
+				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
+				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
+			}
 			break;
 		}
 
 		CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pEntity);
-		if (pReceptacle && pPlayerCharacter->GetToken())
+		if (pReceptacle && pPlayerCharacter->GetToken() && pReceptacle->IsTokenValid(pPlayerCharacter->GetToken()))
 		{
-			tstring sTip = "E - Place";
-			float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
-			float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-			glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
-			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
+			if (pReceptacle->GetToken())
+			{
+				tstring sTip = "E - Swap";
+				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
+				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
+			}
+			else
+			{
+				tstring sTip = "E - Place";
+				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
+				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
+			}
 			break;
 		}
 	}

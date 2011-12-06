@@ -25,9 +25,12 @@ public:
 	void				SetReflected(bool bReflected) { m_bReflected = bReflected; }
 	bool				IsReflected() const;
 
+	tstring				GetType() const { return m_sType; }
+
 protected:
 	CEntityHandle<CReceptacle>	m_hReceptacle;
 	bool				m_bReflected;
+	tstring				m_sType;
 };
 
 #endif

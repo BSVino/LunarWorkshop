@@ -20,6 +20,7 @@ SAVEDATA_TABLE_BEGIN(CReceptacle);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CToken>, m_hToken);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sDesiredToken, "DesiredToken");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bDesiredReflection, "DesiredReflection");
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sDesiredType, "DesiredTokenType");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CReceptacle);
@@ -40,11 +41,25 @@ void CReceptacle::Spawn()
 	AddToPhysics(CT_KINEMATIC);
 }
 
+bool CReceptacle::IsTokenValid(const CToken* pToken) const
+{
+	if (!pToken)
+		return true;
+
+	if (m_sDesiredToken.length() && pToken->GetName() != m_sDesiredToken)
+		return false;
+
+	if ((m_sDesiredType.length() || pToken->GetType().length()) && pToken->GetType() != m_sDesiredType)
+		return false;
+
+	return true;
+}
+
 void CReceptacle::SetToken(CToken* pToken)
 {
 	if (m_hToken.GetPointer())
 	{
-		if (!m_sDesiredToken.length() || m_hToken->GetName() == m_sDesiredToken)
+		if (IsTokenValid(pToken))
 		{
 			if (m_hToken->IsReflected())
 				CallOutput("OnReflectedTokenRemoved");
@@ -54,11 +69,8 @@ void CReceptacle::SetToken(CToken* pToken)
 		}
 	}
 
-	if (!pToken)
-	{
-		if (m_hToken != nullptr)
-			m_hToken->m_hReceptacle = nullptr;
-	}
+	if (m_hToken != nullptr)
+		m_hToken->m_hReceptacle = nullptr;
 
 	m_hToken = pToken;
 
@@ -66,10 +78,10 @@ void CReceptacle::SetToken(CToken* pToken)
 		return;
 
 	pToken->SetMoveParent(this);
-	pToken->SetLocalTransform(TMatrix(EAngle(45, 180, 0), Vector(0, 0.742105f, 0)));
+	pToken->SetLocalTransform(TMatrix(EAngle(40, 0, 0), Vector(0, 0.742105f, 0)));
 	pToken->m_hReceptacle = this;
 
-	if (!m_sDesiredToken.length() || pToken->GetName() == m_sDesiredToken)
+	if (IsTokenValid(pToken))
 	{
 		if (pToken->IsReflected())
 			CallOutput("OnReflectedToken");

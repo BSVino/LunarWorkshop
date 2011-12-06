@@ -12,13 +12,10 @@ public:
 	void					Precache();
 	void					Spawn();
 
+	virtual bool			IsTokenValid(const CToken* pToken) const;
+
 	void					SetToken(CToken* pToken);
 	CToken*					GetToken() const { return m_hToken; }
-
-	// What token does the receptacle need to fire its output?
-	void					SetDesiredToken(const tstring& sToken) { m_sDesiredToken = sToken; }
-	// What reflection does the receptacle need to fire its output?
-	void					SetDesiredReflection(bool bReflected) { m_bDesiredReflection = bReflected; }
 
 	DECLARE_ENTITY_OUTPUT(OnNormalToken);
 	DECLARE_ENTITY_OUTPUT(OnNormalTokenRemoved);
@@ -29,6 +26,7 @@ public:
 
 protected:
 	CEntityHandle<CToken>	m_hToken;
-	tstring					m_sDesiredToken;
-	bool					m_bDesiredReflection;
+	tstring					m_sDesiredToken;		// What token does the receptacle need to fire its output?
+	bool					m_bDesiredReflection;	// What reflection does the receptacle need to fire its output?
+	tstring					m_sDesiredType;			// What type of token does the receptacle need to fire its output?
 };

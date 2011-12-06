@@ -17,6 +17,7 @@ void UnserializeString_TokenReceptacle(const tstring& sData, CSaveData* pSaveDat
 SAVEDATA_TABLE_BEGIN(CToken);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_COPYTYPE, CEntityHandle<CReceptacle>, m_hReceptacle, "Receptacle", UnserializeString_TokenReceptacle);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bReflected, "Reflected");
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sType, "TokenType");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CToken);

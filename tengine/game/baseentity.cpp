@@ -884,7 +884,12 @@ CVar debug_entity_outputs("debug_entity_outputs", "off");
 void CEntityOutput::Call()
 {
 	if (m_aTargets.size() == 0)
+	{
+		if (debug_entity_outputs.GetBool())
+			TMsg(tstring(m_pEnt->GetClassName()) + "(" + m_pEnt->GetName() + "):" + m_sOutputName + "\n");
+
 		return;
+	}
 
 	for (size_t j = 0; j < m_aTargets.size(); j++)
 	{
