@@ -28,11 +28,20 @@ CToy::~CToy()
 
 const AABB& CToy::GetAABB()
 {
+	if (!m_pBase)
+	{
+		static AABB aabb;
+		return aabb;
+	}
+
 	return *((AABB*)(m_pBase+TOY_HEADER_SIZE));
 }
 
 size_t CToy::GetNumMaterials()
 {
+	if (!m_pBase)
+		return 0;
+
 	return (int)*((char*)(m_pBase+TOY_HEADER_SIZE+BASE_AABB_SIZE));
 }
 
