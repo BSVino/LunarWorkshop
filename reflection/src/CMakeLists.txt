@@ -25,6 +25,7 @@ set (REFLECTION_ENTITY_SOURCES
 	world.cpp
 	mirror.cpp
 	receptacle.cpp
+	reflectionproxy.cpp
 	token.cpp
 
 	reflection_player.cpp

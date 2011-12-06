@@ -9,6 +9,7 @@
 #include "reflection_renderer.h"
 #include "reflection_playercharacter.h"
 #include "mirror.h"
+#include "reflectionproxy.h"
 
 REGISTER_ENTITY(CReflectionCharacter);
 
@@ -178,6 +179,10 @@ void CReflectionCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
 			}
 
 			Reflected(pMirror->GetReflectionType());
+
+			CReflectionProxy::OnPlayerReflection(IsReflected(REFLECTION_LATERAL) ^ IsReflected(REFLECTION_VERTICAL));
+			if (pMirror->GetReflectionType() == REFLECTION_LATERAL)
+				CReflectionProxy::OnPlayerGravity(IsReflected(REFLECTION_VERTICAL));
 		}
 	}
 }
