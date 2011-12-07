@@ -19,8 +19,12 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnOrTrue);
 	DECLARE_ENTITY_OUTPUT(OnOrFalse);
 
+	DECLARE_ENTITY_OUTPUT(OnXOrTrue);
+	DECLARE_ENTITY_OUTPUT(OnXOrFalse);
+
 	void				SetAndGate(bool bAnd);
 	void				SetOrGate(bool bOr);
+	void				SetXOrGate(bool bXOr);
 
 public:
 	bool				m_bLeft;
@@ -28,4 +32,5 @@ public:
 
 	bool				m_bAnd;
 	bool				m_bOr;
+	bool				m_bXOr;
 };
