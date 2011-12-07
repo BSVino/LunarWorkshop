@@ -394,6 +394,7 @@ public:
 	CBaseEntity*							GetMoveParent() const { return m_hMoveParent; };
 	bool									HasMoveParent() const { return m_hMoveParent != NULL; };
 	void									InvalidateGlobalTransforms();
+	TMatrix									GetParentGlobalTransform() const;
 
 	const TMatrix&							GetGlobalTransform();
 	TMatrix									GetGlobalTransform() const;

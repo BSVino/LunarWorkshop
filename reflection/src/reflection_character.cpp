@@ -62,10 +62,15 @@ void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 	if (!ReflectionGame()->GetLocalPlayerCharacter())
 		return;
 
+	Vector vecGlobal = GetParentGlobalTransform() * mNew.GetTranslation();
+
 	for (size_t i = 0; i < CMirror::GetNumMirrors(); i++)
 	{
 		CMirror* pMirror = CMirror::GetMirror(i);
 		if (!pMirror)
+			continue;
+
+		if ((pMirror->GetGlobalOrigin() - vecGlobal).LengthSqr() > m_aabbBoundingBox.Size().LengthSqr()*2)
 			continue;
 
 		TestMirror(pMirror, mNew);
@@ -79,17 +84,16 @@ void CReflectionCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
 	if (pMirror && vecNewOrigin != m_vecLocalOrigin)
 	{
 		Vector vecOldGlobalOrigin = GetGlobalOrigin();
-		Vector vecNewGlobalOrigin;
-		if (HasMoveParent())
-			vecNewGlobalOrigin = GetMoveParent()->GetGlobalTransform() * vecNewOrigin;
-		else
-			vecNewGlobalOrigin = vecNewOrigin;
+		Vector vecNewGlobalOrigin = GetParentGlobalTransform() * vecNewOrigin;
 
 		Matrix4x4 mMirror = pMirror->GetGlobalTransform();
-		bool bOldSide = pMirror->GetSide(vecOldGlobalOrigin + GetUpVector() * EyeHeight());
-		bool bNewSide = pMirror->GetSide(vecNewGlobalOrigin + GetUpVector() * EyeHeight());
 
-		bool bPointInsideCheck = pMirror->IsPointInside(vecOldGlobalOrigin + GetUpVector() * EyeHeight(), false);
+		Vector vecOldView = vecOldGlobalOrigin + GetUpVector() * EyeHeight();
+		Vector vecNewView = vecNewGlobalOrigin + GetUpVector() * EyeHeight();
+		bool bOldSide = pMirror->GetSide(vecOldView);
+		bool bNewSide = pMirror->GetSide(vecNewView);
+
+		bool bPointInsideCheck = pMirror->IsPointInside(vecOldView, false);
 
 		if(bOldSide != bNewSide && bPointInsideCheck)
 		{

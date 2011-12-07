@@ -298,6 +298,14 @@ void CBaseEntity::InvalidateGlobalTransforms()
 		m_ahMoveChildren[i]->InvalidateGlobalTransforms();
 }
 
+TMatrix CBaseEntity::GetParentGlobalTransform() const
+{
+	if (!HasMoveParent())
+		return TMatrix();
+
+	return GetMoveParent()->GetGlobalTransform();
+}
+
 const TMatrix& CBaseEntity::GetGlobalTransform()
 {
 	if (!m_bGlobalTransformsDirty)
@@ -417,44 +425,14 @@ void CBaseEntity::SetGlobalAngles(const EAngle& angAngles)
 TVector CBaseEntity::GetGlobalVelocity()
 {
 	if (IsInPhysics())
-	{
 		return GamePhysics()->GetEntityVelocity(this);
-	}
 
-	if (HasMoveParent())
-	{
-		TMatrix mParentGlobal = GetMoveParent()->GetGlobalTransform();
-
-		if (m_vecLocalVelocity.Get().LengthSqr() > TFloat(0))
-		{
-			Vector vecTransformed = mParentGlobal.TransformVector(m_vecLocalVelocity);
-			TAssert(vecTransformed.LengthSqr() == m_vecLocalVelocity.Get().LengthSqr());
-			return vecTransformed;
-		}
-		else
-			return TVector(0, 0, 0);
-	}
-	else
-		return GetLocalVelocity();
+	return GetParentGlobalTransform().TransformVector(GetLocalVelocity());
 }
 
 TVector CBaseEntity::GetGlobalVelocity() const
 {
-	if (HasMoveParent())
-	{
-		TMatrix mParentGlobal = GetMoveParent()->GetGlobalTransform();
-
-		if (m_vecLocalVelocity.Get().LengthSqr() > TFloat(0))
-		{
-			Vector vecTransformed = mParentGlobal.TransformVector(m_vecLocalVelocity);
-			TAssert(vecTransformed.LengthSqr() == m_vecLocalVelocity.Get().LengthSqr());
-			return vecTransformed;
-		}
-		else
-			return TVector(0, 0, 0);
-	}
-	else
-		return GetLocalVelocity();
+	return GetParentGlobalTransform().TransformVector(GetLocalVelocity());
 }
 
 void CBaseEntity::SetGlobalVelocity(const TVector& vecVelocity)
@@ -535,11 +513,7 @@ void CBaseEntity::SetLocalOrigin(const TVector& vecOrigin)
 		Matrix4x4 mLocal = m_mLocalTransform;
 		mLocal.SetTranslation(vecOrigin);
 
-		Matrix4x4 mGlobal;
-		if (GetMoveParent())
-			mGlobal = GetMoveParent()->GetGlobalTransform() * mLocal;
-		else
-			mGlobal = mLocal;
+		Matrix4x4 mGlobal = GetParentGlobalTransform() * mLocal;
 
 		GamePhysics()->SetEntityTransform(this, mGlobal);
 	}
@@ -559,10 +533,7 @@ void CBaseEntity::SetLocalOrigin(const TVector& vecOrigin)
 
 TVector CBaseEntity::GetLastGlobalOrigin() const
 {
-	if (GetMoveParent())
-		return GetMoveParent()->GetGlobalTransform() * GetLastLocalOrigin();
-	else
-		return GetLastLocalOrigin();
+	return GetParentGlobalTransform() * GetLastLocalOrigin();
 }
 
 void CBaseEntity::SetLocalVelocity(const TVector& vecVelocity)
@@ -571,12 +542,7 @@ void CBaseEntity::SetLocalVelocity(const TVector& vecVelocity)
 		m_vecLocalVelocity = vecVelocity;
 
 	if (IsInPhysics())
-	{
-		if (HasMoveParent())
-			GamePhysics()->SetEntityVelocity(this, GetMoveParent()->GetGlobalTransform() * vecVelocity);
-		else
-			GamePhysics()->SetEntityVelocity(this, vecVelocity);
-	}
+		GamePhysics()->SetEntityVelocity(this, GetParentGlobalTransform().TransformVector(vecVelocity));
 
 	if ((vecVelocity - m_vecLocalVelocity).LengthSqr() == TFloat(0))
 		return;

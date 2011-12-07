@@ -72,11 +72,27 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 		return (vecPoint - GetGlobalOrigin()).Length2D() < GetBoundingBox().Size().Length2D()/2;
 
 	case MIRROR_HORIZONTAL:
-		if (vecPoint.y < GetGlobalOrigin().y - 0.15f)
-			return false;
+		if (bPhysics)
+		{
+			Vector vecUp = Matrix4x4(GetGlobalAngles(), Vector()).GetUpVector();
 
-		if (vecPoint.y > GetGlobalOrigin().y + 0.15f)
-			return false;
+			if (vecUp.y > 0)
+			{
+				if (vecPoint.y < GetGlobalOrigin().y - vecUp.y * 2.0f)
+					return false;
+
+				if (vecPoint.y > GetGlobalOrigin().y + vecUp.y * 0.15f)
+					return false;
+			}
+			else
+			{
+				if (vecPoint.y > GetGlobalOrigin().y - vecUp.y * 2.0f)
+					return false;
+
+				if (vecPoint.y < GetGlobalOrigin().y + vecUp.y * 0.15f)
+					return false;
+			}
+		}
 
 		// Use a tighter radius for physics to make sure we never fall outside the level
 		if (bPhysics)
