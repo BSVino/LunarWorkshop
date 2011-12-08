@@ -26,7 +26,7 @@ public:
 
 	virtual void			Simulate() {};
 
-	virtual void			DebugDraw() {};
+	virtual void			DebugDraw(int iLevel) {};
 
 	virtual collision_type_t	GetEntityCollisionType(class CBaseEntity* pEnt) { return CT_NONE; };
 

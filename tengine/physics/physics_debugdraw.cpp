@@ -5,6 +5,7 @@
 #include <renderer/renderingcontext.h>
 #include <game/gameserver.h>
 #include <tinker/application.h>
+#include <renderer/renderer.h>
 
 btIDebugDraw* debugDrawerPtr;
 
@@ -38,18 +39,26 @@ void CPhysicsDebugDrawer::drawLine(const btVector3& from,const btVector3& to,con
 	drawLine(from,to,color,color);
 }
 
-void CPhysicsDebugDrawer::drawSphere (const btVector3& p, btScalar radius, const btVector3& color)
+void CPhysicsDebugDrawer::drawSphere(btScalar radius, const btTransform& transform, const btVector3& color)
 {
 	if (!m_bDrawing)
 		return;
 
-	CRenderingContext c(GameServer()->GetRenderer());
-	c.UseProgram("model");
-	c.SetUniform("bDiffuse", false);
-	c.Translate(Vector((const float*)p));
-	c.Scale(radius, radius, radius);
-	c.SetColor(Color(Vector((const float*)color)));
-	c.RenderSphere();
+	if (!GameServer()->GetRenderer()->IsSphereInFrustum(Vector((const float*)transform.getOrigin()), radius))
+		return;
+
+	BaseClass::drawSphere(radius, transform, color);
+}
+
+void CPhysicsDebugDrawer::drawCapsule(btScalar radius, btScalar halfHeight, int upAxis, const btTransform& transform, const btVector3& color)
+{
+	if (!m_bDrawing)
+		return;
+
+	if (!GameServer()->GetRenderer()->IsSphereInFrustum(Vector((const float*)transform.getOrigin()), halfHeight))
+		return;
+
+	BaseClass::drawCapsule(radius, halfHeight, upAxis, transform, color);
 }
 
 void CPhysicsDebugDrawer::drawBox (const btVector3& boxMin, const btVector3& boxMax, const btVector3& color, btScalar alpha)

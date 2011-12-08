@@ -218,13 +218,20 @@ void CBulletPhysics::Simulate()
 	m_pDynamicsWorld->stepSimulation(GameServer()->GetFrameTime(), 10);
 }
 
-void CBulletPhysics::DebugDraw()
+void CBulletPhysics::DebugDraw(int iLevel)
 {
 	if (!m_pDebugDrawer)
 	{
 		m_pDebugDrawer = new CPhysicsDebugDrawer();
 		m_pDynamicsWorld->setDebugDrawer(m_pDebugDrawer);
 	}
+
+	if (iLevel == 0)
+		m_pDebugDrawer->setDebugMode(CPhysicsDebugDrawer::DBG_NoDebug);
+	else if (iLevel == 1)
+		m_pDebugDrawer->setDebugMode(CPhysicsDebugDrawer::DBG_DrawWireframe);
+	else if (iLevel >= 2)
+		m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe|btIDebugDraw::DBG_DrawContactPoints);
 
 	m_pDebugDrawer->SetDrawing(true);
 	m_pDynamicsWorld->debugDrawWorld();

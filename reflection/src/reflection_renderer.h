@@ -22,13 +22,15 @@ public:
 	virtual void	FinishRendering();
 	virtual void	StartRenderingReflection(CMirror* pMirror);
 	virtual void	RenderFullscreenBuffers();
-	bool			IsRenderingReflection() { return m_bRenderingReflection; }
+	bool			IsRenderingReflection() const { return m_bRenderingReflection; }
 
 	void			SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial);
 
 	float			BloomBrightnessCutoff() const { return 1.25f; }
 
 	size_t			GetReflectionTexture(size_t i);
+
+	virtual bool	ShouldRenderPhysicsDebug() const;
 
 protected:
 	eastl::vector<CFrameBuffer>	m_aoReflectionBuffers;

@@ -536,8 +536,8 @@ void CRenderer::FinishRendering()
 		}
 	}
 
-	if (show_physics.GetBool())
-		GamePhysics()->DebugDraw();
+	if (show_physics.GetBool() && ShouldRenderPhysicsDebug())
+		GamePhysics()->DebugDraw(show_physics.GetInt());
 
 	glPopMatrix();
 	glPopAttrib();

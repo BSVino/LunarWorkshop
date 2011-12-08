@@ -344,6 +344,11 @@ size_t CReflectionRenderer::GetReflectionTexture(size_t i)
 	return m_aoReflectionBuffers[i].m_iMap;
 }
 
+bool CReflectionRenderer::ShouldRenderPhysicsDebug() const
+{
+	return !IsRenderingReflection();
+}
+
 CReflectionRenderer* ReflectionRenderer()
 {
 	return static_cast<CReflectionRenderer*>(GameServer()->GetRenderer());

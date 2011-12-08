@@ -133,6 +133,8 @@ public:
 
 	const class CBaseEntity*	GetRenderingEntity() { return m_pRendering; }
 
+	virtual bool	ShouldRenderPhysicsDebug() const { return true; };
+
 public:
 	static size_t	LoadVertexDataIntoGL(size_t iVerts, float* aflVertices);
 	static size_t	LoadTextureIntoGL(tstring sFilename, int iClamp = 0);
