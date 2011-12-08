@@ -4,6 +4,8 @@
 #include <physics/physics.h>
 
 #include "reflection_renderer.h"
+#include "reflection_game.h"
+#include "reflection_character.h"
 
 REGISTER_ENTITY(CMirror);
 
@@ -94,11 +96,16 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 			}
 		}
 
-		// Use a tighter radius for physics to make sure we never fall outside the level
+		CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
+		AABB aabb = GetBoundingBox();
+		aabb.m_vecMins += pPlayerCharacter->GetBoundingBox().m_vecMins;
+		aabb.m_vecMaxs += pPlayerCharacter->GetBoundingBox().m_vecMaxs;
+
+		// Use a tighter area for physics to make sure we never fall outside the level
 		if (bPhysics)
-			return (vecPoint - GetGlobalOrigin()).Length2D() < GetBoundingBox().Size().Length2D()/4;
+			return aabb.Inside2D(vecPoint - GetGlobalOrigin());
 		else
-			return (vecPoint - GetGlobalOrigin()).Length2D() < GetBoundingBox().Size().Length2D()/2;
+			return (aabb*1.2f).Inside2D(vecPoint - GetGlobalOrigin());
 	}
 
 	return false;

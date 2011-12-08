@@ -53,12 +53,18 @@ public:
 				AABB() {};
 				AABB(Vector vecMins, Vector vecMaxs);
 
+public:
 	Vector		Center() const;
 	Vector		Size() const;
 
 	bool		Inside(const AABB& oBox) const;
+	bool		Inside(const Vector& vecPoint) const;
+	bool		Inside2D(const Vector& vecPoint) const;
 	bool		Intersects(const AABB& oBox) const;
 
+	AABB		operator*(float s) const;
+
+public:
 	Vector		m_vecMins;
 	Vector		m_vecMaxs;
 };
@@ -102,6 +108,34 @@ inline bool AABB::Inside(const AABB& oBox) const
 	return true;
 }
 
+inline bool AABB::Inside(const Vector& vecPoint) const
+{
+	const float flEpsilon = 1e-4f;
+
+	for (size_t i = 0; i < 3; i++)
+	{
+		float flVI = vecPoint[i];
+
+		if (flVI < m_vecMins[i] - flEpsilon || flVI > m_vecMaxs[i] + flEpsilon)
+			return false;
+	}
+
+	return true;
+}
+
+inline bool AABB::Inside2D(const Vector& vecPoint) const
+{
+	const float flEpsilon = 1e-4f;
+
+	if (vecPoint.x < m_vecMins.x - flEpsilon || vecPoint.x > m_vecMaxs.x + flEpsilon)
+		return false;
+
+	if (vecPoint.z < m_vecMins.z - flEpsilon || vecPoint.z > m_vecMaxs.z + flEpsilon)
+		return false;
+
+	return true;
+}
+
 inline bool AABB::Intersects(const AABB& oBox) const
 {
 	if (m_vecMins.x > oBox.m_vecMaxs.x)
@@ -123,6 +157,16 @@ inline bool AABB::Intersects(const AABB& oBox) const
 		return false;
 
 	return true;
+}
+
+inline AABB AABB::operator*(float s) const
+{
+	AABB r(*this);
+
+	r.m_vecMaxs *= s;
+	r.m_vecMins *= s;
+
+	return r;
 }
 
 // Geometry-related functions
@@ -304,6 +348,34 @@ inline bool RayIntersectsPlane(Ray vecRay, Vector v0, Vector v1, Vector v2, Vect
 	Vector n = u.Cross(v);
 
 	Vector w0 = vecRay.m_vecPos - v0;
+
+	float a = -n.Dot(w0);
+	float b = n.Dot(vecRay.m_vecDir);
+
+	float ep = 1e-4f;
+
+	if (fabs(b) < ep)
+	{
+		if (a == 0)			// Ray is parallel
+			return false;	// Ray is inside plane
+		else
+			return false;	// Ray is somewhere else
+	}
+
+	float r = a/b;
+	if (r < 0)
+		return false;		// Ray goes away from the plane
+
+	Vector vecPoint = vecRay.m_vecPos + vecRay.m_vecDir*r;
+	if (pvecHit)
+		*pvecHit = vecPoint;
+
+	return true;
+}
+
+inline bool RayIntersectsPlane(Ray vecRay, Vector p, Vector n, Vector* pvecHit = NULL)
+{
+	Vector w0 = vecRay.m_vecPos - p;
 
 	float a = -n.Dot(w0);
 	float b = n.Dot(vecRay.m_vecDir);
@@ -524,29 +596,14 @@ inline bool LineSegmentIntersectsSphere(const Vector& v1, const Vector& v2, cons
 	return true;
 }
 
-inline bool PointInsideAABB( AABB oBox, Vector v )
-{
-	const float flEpsilon = 1e-4f;
-
-	for (size_t i = 0; i < 3; i++)
-	{
-		float flVI = v[i];
-
-		if (flVI < oBox.m_vecMins[i] - flEpsilon || flVI > oBox.m_vecMaxs[i] + flEpsilon)
-			return false;
-	}
-
-	return true;
-}
-
 inline bool	TriangleIntersectsAABB( AABB oBox, Vector v0, Vector v1, Vector v2)
 {
 	// Trivial case rejection: If any of the points are inside the box, return true immediately.
-	if (PointInsideAABB(oBox, v0))
+	if (oBox.Inside(v0))
 		return true;
-	if (PointInsideAABB(oBox, v1))
+	if (oBox.Inside(v1))
 		return true;
-	if (PointInsideAABB(oBox, v2))
+	if (oBox.Inside(v2))
 		return true;
 
 	size_t i;

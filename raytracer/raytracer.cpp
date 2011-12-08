@@ -579,7 +579,7 @@ bool CKDNode::Raytrace(const Ray& rayTrace, CTraceResult* pTR)
 			// Sometimes a try will touch a closer leaf node,
 			// but actually intersect the ray in the back, so
 			// only accept hits inside this box.
-			if (!PointInsideAABB(pThis->m_oBounds, vecHit))
+			if (!pThis->m_oBounds.Inside(vecHit))
 			{
 #ifdef DEBUG_WITH_GL
 				DrawTri(oTri.v[0], oTri.v[1], oTri.v[2], 0.0f, 1.0f, 0.0f);
@@ -687,7 +687,7 @@ bool CKDNode::Raytrace(const Vector& vecStart, const Vector& vecEnd, CTraceResul
 			// Sometimes a try will touch a closer leaf node,
 			// but actually intersect the ray in the back, so
 			// only accept hits inside this box.
-			if (!PointInsideAABB(pThis->m_oBounds, vecHit))
+			if (!pThis->m_oBounds.Inside(vecHit))
 			{
 #ifdef DEBUG_WITH_GL
 				DrawTri(oTri.v[0], oTri.v[1], oTri.v[2], 0.0f, 1.0f, 0.0f);
@@ -733,8 +733,8 @@ float CKDNode::Closest(const Vector& vecPoint)
 	if (m_pLeft)
 	{
 		// Maybe it's on the line and hits both?
-		bool bHitsLeft = PointInsideAABB(m_pLeft->m_oBounds, vecPoint);
-		bool bHitsRight = PointInsideAABB(m_pRight->m_oBounds, vecPoint);
+		bool bHitsLeft = m_pLeft->m_oBounds.Inside(vecPoint);
+		bool bHitsRight = m_pRight->m_oBounds.Inside(vecPoint);
 
 		if (!bHitsLeft && !bHitsRight)
 		{
