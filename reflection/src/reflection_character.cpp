@@ -34,7 +34,6 @@ void CReflectionCharacter::Spawn()
 {
 	BaseClass::Spawn();
 
-	SetGlobalGravity(Vector(0, -9.8f, 0));
 	m_flMaxStepSize = 0.1f;
 
 	m_iReflected = 0;
@@ -100,7 +99,12 @@ void CReflectionCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
 			Matrix4x4 mReflection = pMirror->GetReflection();
 
 			// Write out reflected origin.
-			mNew.SetTranslation(mReflection * (vecNewGlobalOrigin - mMirror.GetTranslation()) + mMirror.GetTranslation());
+			Vector vecNewReflectedGlobalOrigin = mReflection * (vecNewGlobalOrigin - mMirror.GetTranslation()) + mMirror.GetTranslation();
+
+			if (HasMoveParent())
+				mNew.SetTranslation(GetMoveParent()->GetGlobalToLocalTransform() * vecNewReflectedGlobalOrigin);
+			else
+				mNew.SetTranslation(vecNewReflectedGlobalOrigin);
 
 #ifdef _DEBUG
 			// Should be on the same side as the old side, since it was reflected.
@@ -117,7 +121,10 @@ void CReflectionCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
 			// Reflect the character's orientation
 			Vector vecForward = GetGlobalTransform().GetForwardVector();
 			Vector vecReflectedForward = mReflection.TransformVector(vecForward);
-			mNew.SetOrientation(vecReflectedForward);
+			if (HasMoveParent())
+				mNew.SetOrientation(GetMoveParent()->GetGlobalToLocalTransform().TransformVector(vecReflectedForward));
+			else
+				mNew.SetOrientation(vecReflectedForward);
 
 			// Reflect the character's viewing vector
 			Vector vecView = AngleVector(GetViewAngles());

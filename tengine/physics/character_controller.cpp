@@ -91,7 +91,7 @@ CCharacterController::CCharacterController(CCharacter* pEntity, btPairCachingGho
 	m_vecGravity = btVector3(0, -9.8f, 0);
 	m_vecUpVector = btVector3(0, 1, 0);
 	m_flMaxFallSpeed = 55.0; // Terminal velocity of a sky diver in m/s.
-	m_flJumpSpeed = 4.0;
+	m_flJumpSpeed = 6.0;
 	m_bWasOnGround = false;
 	m_bWasJumping = false;
 	SetMaxSlope(btRadians(45.0));

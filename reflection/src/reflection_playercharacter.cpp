@@ -32,6 +32,8 @@ void CPlayerCharacter::Spawn()
 	m_aabbBoundingBox = AABB(Vector(-0.35f, 0, -0.35f), Vector(0.35f, 2, 0.35f));
 
 	AddToPhysics(CT_CHARACTER);
+
+	SetGlobalGravity(Vector(0, -9.8f, 0)*2);
 }
 
 void CPlayerCharacter::PlaceMirror(mirror_t eMirror)
