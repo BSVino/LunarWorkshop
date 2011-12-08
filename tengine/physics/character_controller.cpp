@@ -359,7 +359,7 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 
 				btScalar dist = pt.getDistance();
 
-				if (dist < 0.0)
+				if (dist < -0.0001f)
 				{
 					if (dist < maxPen)
 					{
@@ -367,10 +367,23 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 						m_vecTouchingNormal = pt.m_normalWorldOnB * directionSign;
 					}
 
-					if (pt.m_normalWorldOnB.dot(btVector3(0, 1, 0)) > 0.707)
-						m_vecCurrentPosition += btVector3(0, 1, 0) * directionSign * dist * 1.001f;
+					btScalar flDot = pt.m_normalWorldOnB.dot(GetUpVector());
+					if (flDot > 0.9999f)
+						m_vecCurrentPosition += GetUpVector() * (directionSign * dist * 1.001f);
+					else if (flDot > 0.707)
+					{
+						TAssert(obA == m_pGhostObject);
+
+						// Find the point at which it should intersect if we move it straight up.
+						Vector vecNewTouch;
+						RayIntersectsPlane(Ray(Vector(pt.m_positionWorldOnA), Vector(GetUpVector())), Vector(pt.m_positionWorldOnB), Vector(pt.m_normalWorldOnB), &vecNewTouch);
+						btVector3 vecNewTouch2(vecNewTouch.x, vecNewTouch.y, vecNewTouch.z);
+
+						m_vecCurrentPosition += btVector3(0, ((vecNewTouch2.y() - pt.m_positionWorldOnA.y()) * 1.001f), 0);
+					}
 					else
-						m_vecCurrentPosition += pt.m_normalWorldOnB * directionSign * dist * 1.001f;
+						m_vecCurrentPosition += pt.m_normalWorldOnB * (directionSign * dist * 1.001f);
+
 					bPenetration = true;
 				} else {
 					//printf("touching %f\n", dist);
