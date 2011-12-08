@@ -14,46 +14,38 @@ CReflectionCamera::CReflectionCamera()
 {
 }
 
+void CReflectionCamera::Think()
+{
+	if (ReflectionGame()->GetNumLocalPlayers())
+		m_hCharacter = ReflectionGame()->GetLocalPlayerCharacter();
+	else
+		m_hCharacter = nullptr;
+
+	BaseClass::Think();
+}
+
 Vector CReflectionCamera::GetCameraPosition()
 {
-	if (m_bFreeMode)
-		return BaseClass::GetCameraPosition();
-
 	if (CVar::GetCVarValue("game_mode") == "menu")
-		return BaseClass::GetCameraPosition();
+		return CCamera::GetCameraPosition();
 
-	CReflectionCharacter* pCharacter = ReflectionGame()->GetLocalPlayerCharacter();
-	if (!pCharacter)
-		return BaseClass::GetCameraPosition();
-
-	return pCharacter->GetGlobalOrigin() + pCharacter->EyeHeight() * pCharacter->GetUpVector();
+	return BaseClass::GetCameraPosition();
 }
 
 Vector CReflectionCamera::GetCameraTarget()
 {
-	if (m_bFreeMode)
-		return BaseClass::GetCameraPosition();
-
 	if (CVar::GetCVarValue("game_mode") == "menu")
-		return BaseClass::GetCameraPosition();
+		return CCamera::GetCameraPosition();
 
-	CReflectionCharacter* pCharacter = ReflectionGame()->GetLocalPlayerCharacter();
-	if (!pCharacter)
-		return BaseClass::GetCameraPosition();
-
-	return pCharacter->GetGlobalOrigin() + pCharacter->EyeHeight() * pCharacter->GetUpVector() + AngleVector(pCharacter->GetViewAngles());
+	return BaseClass::GetCameraTarget();
 }
 
 TVector CReflectionCamera::GetCameraUp()
 {
 	if (CVar::GetCVarValue("game_mode") == "menu")
-		return BaseClass::GetCameraPosition();
+		return CCamera::GetCameraUp();
 
-	CReflectionCharacter* pCharacter = ReflectionGame()->GetLocalPlayerCharacter();
-	if (!pCharacter)
-		return BaseClass::GetCameraUp();
-
-	return pCharacter->GetUpVector();
+	return BaseClass::GetCameraUp();
 }
 
 float CReflectionCamera::GetCameraFOV()

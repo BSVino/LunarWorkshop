@@ -97,7 +97,11 @@ void CReflectionGame::Think()
 
 CReflectionCharacter* CReflectionGame::GetLocalPlayerCharacter()
 {
-	return static_cast<CReflectionCharacter*>(GetLocalPlayer()->GetCharacter());
+	CPlayer* pPlayer = GetLocalPlayer();
+	if (!pPlayer)
+		return nullptr;
+
+	return static_cast<CReflectionCharacter*>(pPlayer->GetCharacter());
 }
 
 CReflectionRenderer* CReflectionGame::GetReflectionRenderer()

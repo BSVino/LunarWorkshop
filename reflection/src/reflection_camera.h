@@ -1,17 +1,18 @@
 #ifndef REFLECTION_CAMERA_H
 #define REFLECTION_CAMERA_H
 
-#include <game/camera.h>
-#include <common.h>
+#include <game/charactercamera.h>
 
-class CReflectionCamera : public CCamera
+class CReflectionCamera : public CCharacterCamera
 {
-	DECLARE_CLASS(CReflectionCamera, CCamera);
+	DECLARE_CLASS(CReflectionCamera, CCharacterCamera);
 
 public:
 								CReflectionCamera();
 
 public:
+	virtual void				Think();
+
 	virtual Vector				GetCameraPosition();
 	virtual Vector				GetCameraTarget();
 	virtual Vector				GetCameraUp();

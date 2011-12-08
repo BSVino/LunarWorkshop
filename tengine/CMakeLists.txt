@@ -29,6 +29,7 @@ endif (WIN32)
 set (TENGINE_GAME_SOURCES
 	game/baseentity.cpp
 	game/camera.cpp
+	game/charactercamera.cpp
 	game/game.cpp
 	game/gameserver.cpp
 	game/level.cpp
