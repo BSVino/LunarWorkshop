@@ -44,6 +44,9 @@ size_t CModelLibrary::AddModel(const tstring& sModel)
 		for (size_t i = 0; i < pModel->m_aiTextures.size(); i++)
 			CTextureLibrary::AddTexture(CTextureLibrary::FindTextureByID(pModel->m_aiTextures[i]));
 
+		for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
+			CModelLibrary::AddModel(pModel->m_pToy->GetSceneAreaFileName(i));
+
 		return iModel;
 	}
 
@@ -71,7 +74,12 @@ size_t CModelLibrary::AddModel(const tstring& sModel)
 
 	pModel->m_iReferences++;
 
-	return Get()->m_apModels.size()-1;
+	size_t iReturn = Get()->m_apModels.size()-1;
+
+	for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
+		CModelLibrary::AddModel(pModel->m_pToy->GetSceneAreaFileName(i));
+
+	return iReturn;
 }
 
 CModel* CModelLibrary::GetModel(size_t i)

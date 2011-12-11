@@ -22,6 +22,8 @@ CReflectionRenderer::CReflectionRenderer()
 void CReflectionRenderer::Initialize()
 {
 	BaseClass::Initialize();
+
+	m_bRenderingReflection = false;
 }
 
 void CReflectionRenderer::LoadShaders()

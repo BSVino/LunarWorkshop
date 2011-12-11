@@ -108,6 +108,10 @@ public:
 	void			RenderBatches();
 	bool			IsBatching() { return m_bBatching; };
 
+	void			ClassifySceneAreaPosition(class CModel* pModel);
+	void			FindSceneAreaPosition(class CModel* pModel);
+	size_t			GetSceneAreaPosition(class CModel* pModel);
+
 	Vector			GetCameraVector();
 	void			GetCameraVectors(Vector* pvecForward, Vector* pvecRight, Vector* pvecUp);
 
@@ -196,6 +200,8 @@ protected:
 	eastl::map<size_t, eastl::vector<CRenderBatch> > m_aBatches;
 
 	const CBaseEntity*	m_pRendering;
+
+	eastl::map<tstring, size_t> m_aiCurrentSceneAreas;
 
 	CFrameBuffer	m_oSceneBuffer;
 

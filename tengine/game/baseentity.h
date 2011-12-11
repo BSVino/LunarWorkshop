@@ -486,7 +486,7 @@ public:
 
 	virtual bool							ShouldRender() const { return (size_t)m_iModel != ~0; };
 	virtual bool							ShouldRenderModel() const { return true; };
-	virtual void							PreRender(bool bTransparent) const {};
+	virtual void							PreRender(bool bTransparent) const;
 	virtual void							ModifyContext(class CRenderingContext* pContext, bool bTransparent) const {};
 	void									Render(bool bTransparent) const;
 	virtual void							OnRender(class CRenderingContext* pContext, bool bTransparent) const {};

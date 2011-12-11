@@ -23,6 +23,7 @@ bool g_bAutoImporting = false;
 #include "entities/logicgate.h"
 #include "entities/mathgate.h"
 #include "entities/playerstart.h"
+#include "entities/world.h"
 // Use this to force import of required entities.
 class CAutoImport
 {
@@ -36,6 +37,7 @@ public:
 			CLogicGate l;
 			CMathGate m;
 			CPlayerStart p;
+			CWorld w;
 		}
 		g_bAutoImporting = false;
 	}
@@ -702,6 +704,12 @@ void CBaseEntity::ToggleActive(const eastl::vector<tstring>& sArgs)
 }
 
 CVar show_centers("debug_show_centers", "off");
+
+void CBaseEntity::PreRender(bool bTransparent) const
+{
+	if (ShouldRenderModel() && CModelLibrary::GetModel(m_iModel))
+		GameServer()->GetRenderer()->ClassifySceneAreaPosition(CModelLibrary::GetModel(m_iModel));
+}
 
 void CBaseEntity::Render(bool bTransparent) const
 {

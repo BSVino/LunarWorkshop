@@ -1,10 +1,5 @@
 #include <tinker_platform.h>
 
-// tchar.h defines it
-#ifdef _T
-#undef _T
-#endif
-
 #include <windows.h>
 #include <iphlpapi.h>
 #include <tchar.h>

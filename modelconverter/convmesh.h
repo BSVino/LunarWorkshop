@@ -368,6 +368,7 @@ public:
 	size_t								AddScene(const tstring& sName);
 	size_t								GetNumScenes() { return m_apScenes.size(); };
 	CConversionSceneNode*				GetScene(size_t i) { if (i >= m_apScenes.size()) return NULL; return m_apScenes[i]; };
+	CConversionSceneNode*				FindSceneNode(const tstring& sName);
 
 	// For model formats that don't have the concept of scenes, this is a node that contains the one and only mesh instance for this mesh.
 	// It always returns a node and always the same one.

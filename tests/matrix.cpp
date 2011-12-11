@@ -4,6 +4,7 @@
 #include <quaternion.h>
 #include <common.h>
 #include <maths.h>
+#include <tstring.h>
 
 #define FULL_TEST
 

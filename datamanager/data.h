@@ -19,8 +19,16 @@ public:
 
 	CData*					GetParent() const { return m_pParent; }
 
-	size_t					FindChildIndex(tstring sKey);
-	CData*					FindChild(tstring sKey);
+	size_t					FindChildIndex(const tstring& sKey) const;
+	CData*					FindChild(const tstring& sKey) const;
+	tstring					FindChildValueTString(const tstring& sKey) const;
+	eastl::string			FindChildValueString(const tstring& sKey) const;
+	bool					FindChildValueBool(const tstring& sKey) const;
+	int						FindChildValueInt(const tstring& sKey) const;
+	size_t					FindChildValueUInt(const tstring& sKey) const;
+	float					FindChildValueFloat(const tstring& sKey) const;
+	Vector2D				FindChildValueVector2D(const tstring& sKey) const;
+	EAngle					FindChildValueEAngle(const tstring& sKey) const;
 
 	tstring					GetKey() const { return m_sKey; }
 	tstring					GetValueTString() const { return m_sValue; }

@@ -251,6 +251,36 @@ void CRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntity)
 
 		m_pRenderer->m_pRendering = nullptr;
 	}
+
+	if (pModel->m_pToy->GetNumSceneAreas())
+	{
+		size_t iSceneArea = m_pRenderer->GetSceneAreaPosition(pModel);
+
+		if (iSceneArea >= pModel->m_pToy->GetNumSceneAreas())
+		{
+			for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
+			{
+				AABB aabbBounds = pModel->m_pToy->GetSceneAreaAABB(i);
+				if (!m_pRenderer->IsSphereInFrustum(aabbBounds.Center(), aabbBounds.Size().Length()/2))
+					continue;
+
+				RenderModel(CModelLibrary::FindModel(pModel->m_pToy->GetSceneAreaFileName(i)), pEntity);
+			}
+		}
+		else
+		{
+			for (size_t i = 0; i < pModel->m_pToy->GetSceneAreaNumVisible(iSceneArea); i++)
+			{
+				size_t iSceneAreaToRender = pModel->m_pToy->GetSceneAreasVisible(iSceneArea, i);
+
+				AABB aabbBounds = pModel->m_pToy->GetSceneAreaAABB(iSceneAreaToRender);
+				if (!m_pRenderer->IsSphereInFrustum(aabbBounds.Center(), aabbBounds.Size().Length()/2))
+					continue;
+
+				RenderModel(CModelLibrary::FindModel(pModel->m_pToy->GetSceneAreaFileName(iSceneAreaToRender)), pEntity);
+			}
+		}
+	}
 }
 
 void CRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)

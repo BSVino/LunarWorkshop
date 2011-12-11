@@ -2,6 +2,7 @@
 
 #include <vector.h>
 #include <common.h>
+#include <tstring.h>
 
 void test_eangles()
 {

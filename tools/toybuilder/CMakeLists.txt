@@ -9,6 +9,7 @@ include_directories (
 
 set (TOYBUILDER_SOURCES
 	main.cpp
+	inputscript.cpp
 	toy_physics.cpp
 )
 

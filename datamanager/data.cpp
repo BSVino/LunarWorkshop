@@ -36,7 +36,7 @@ CData* CData::AddChild(tstring sKey, tstring sValue)
 	return pData;
 }
 
-size_t CData::FindChildIndex(tstring sKey)
+size_t CData::FindChildIndex(const tstring& sKey) const
 {
 	for (size_t i = 0; i < m_apChildren.size(); i++)
 		if (m_apChildren[i]->GetKey() == sKey)
@@ -45,7 +45,7 @@ size_t CData::FindChildIndex(tstring sKey)
 	return ~0;
 }
 
-CData* CData::FindChild(tstring sKey)
+CData* CData::FindChild(const tstring& sKey) const
 {
 	size_t iIndex = FindChildIndex(sKey);
 
@@ -53,6 +53,78 @@ CData* CData::FindChild(tstring sKey)
 		return NULL;
 
 	return m_apChildren[iIndex];
+}
+
+tstring CData::FindChildValueTString(const tstring& sKey) const
+{
+	CData* pChild = FindChild(sKey);
+	if (!pChild)
+		return "";
+
+	return pChild->GetValueTString();
+}
+
+eastl::string CData::FindChildValueString(const tstring& sKey) const
+{
+	CData* pChild = FindChild(sKey);
+	if (!pChild)
+		return "";
+
+	return pChild->GetValueString();
+}
+
+bool CData::FindChildValueBool(const tstring& sKey) const
+{
+	CData* pChild = FindChild(sKey);
+	if (!pChild)
+		return false;
+
+	return pChild->GetValueBool();
+}
+
+int CData::FindChildValueInt(const tstring& sKey) const
+{
+	CData* pChild = FindChild(sKey);
+	if (!pChild)
+		return 0;
+
+	return pChild->GetValueInt();
+}
+
+size_t CData::FindChildValueUInt(const tstring& sKey) const
+{
+	CData* pChild = FindChild(sKey);
+	if (!pChild)
+		return 0;
+
+	return pChild->GetValueUInt();
+}
+
+float CData::FindChildValueFloat(const tstring& sKey) const
+{
+	CData* pChild = FindChild(sKey);
+	if (!pChild)
+		return 0;
+
+	return pChild->GetValueFloat();
+}
+
+Vector2D CData::FindChildValueVector2D(const tstring& sKey) const
+{
+	CData* pChild = FindChild(sKey);
+	if (!pChild)
+		return Vector2D();
+
+	return pChild->GetValueVector2D();
+}
+
+EAngle CData::FindChildValueEAngle(const tstring& sKey) const
+{
+	CData* pChild = FindChild(sKey);
+	if (!pChild)
+		return EAngle();
+
+	return pChild->GetValueEAngle();
 }
 
 bool CData::GetValueBool() const

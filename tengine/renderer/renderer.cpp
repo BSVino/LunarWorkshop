@@ -16,6 +16,7 @@
 #include <models/texturelibrary.h>
 #include <game/camera.h>
 #include <physics/physics.h>
+#include <toys/toy.h>
 
 #include "renderingcontext.h"
 
@@ -899,10 +900,73 @@ void CRenderer::RenderBatches()
 			c.LoadTransform(pBatch->mTransformation);
 
 			m_pRendering = pBatch->pEntity;
-			c.RenderModel(pBatch->pEntity->GetModel(), pBatch->iMaterial);
+			c.RenderModel(pBatch->pModel, pBatch->iMaterial);
 			m_pRendering = nullptr;
 		}
 	}
+}
+
+void CRenderer::ClassifySceneAreaPosition(CModel* pModel)
+{
+	if (!pModel->m_pToy->GetNumSceneAreas())
+		return;
+
+	auto it = m_aiCurrentSceneAreas.find(pModel->m_sFilename);
+	if (it == m_aiCurrentSceneAreas.end())
+	{
+		// No entry? 
+		FindSceneAreaPosition(pModel);
+		return;
+	}
+
+	if (it->second >= pModel->m_pToy->GetNumSceneAreas())
+	{
+		FindSceneAreaPosition(pModel);
+		return;
+	}
+
+	if (pModel->m_pToy->GetSceneAreaAABB(it->second).Inside(m_vecCameraPosition))
+		return;
+
+	FindSceneAreaPosition(pModel);
+}
+
+size_t CRenderer::GetSceneAreaPosition(CModel* pModel)
+{
+	auto it = m_aiCurrentSceneAreas.find(pModel->m_sFilename);
+
+	if (it == m_aiCurrentSceneAreas.end())
+		return ~0;
+
+	return it->second;
+}
+
+void CRenderer::FindSceneAreaPosition(CModel* pModel)
+{
+	for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
+	{
+		if (pModel->m_pToy->GetSceneAreaAABB(i).Inside(m_vecCameraPosition))
+		{
+			m_aiCurrentSceneAreas[pModel->m_sFilename] = i;
+			return;
+		}
+	}
+
+	// If there's no entry for this model yet, find the closest.
+	if (m_aiCurrentSceneAreas.find(pModel->m_sFilename) == m_aiCurrentSceneAreas.end())
+	{
+		size_t iClosest = 0;
+		for (size_t i = 1; i < pModel->m_pToy->GetNumSceneAreas(); i++)
+		{
+			if (pModel->m_pToy->GetSceneAreaAABB(i).Center().DistanceSqr(m_vecCameraPosition) < pModel->m_pToy->GetSceneAreaAABB(iClosest).Center().DistanceSqr(m_vecCameraPosition))
+				iClosest = i;
+		}
+
+		m_aiCurrentSceneAreas[pModel->m_sFilename] = iClosest;
+		return;
+	}
+
+	// Otherwise if we don't find one don't fuck with it. We'll consider ourselves to still be in the previous one.
 }
 
 Vector CRenderer::GetCameraVector()

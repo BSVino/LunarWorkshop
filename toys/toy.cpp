@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include <common.h>
+#include <tstring.h>
 
 #include "toy_offsets.h"
 
@@ -12,6 +13,7 @@ CToy::CToy()
 	m_pBase = nullptr;
 	m_pMesh = nullptr;
 	m_pPhys = nullptr;
+	m_pArea = nullptr;
 }
 
 CToy::~CToy()
@@ -24,6 +26,9 @@ CToy::~CToy()
 
 	if (m_pPhys)
 		free(m_pPhys);
+
+	if (m_pArea)
+		free(m_pArea);
 }
 
 const AABB& CToy::GetAABB()
@@ -42,12 +47,12 @@ size_t CToy::GetNumMaterials()
 	if (!m_pBase)
 		return 0;
 
-	return (int)*((char*)(m_pBase+TOY_HEADER_SIZE+BASE_AABB_SIZE));
+	return (int)*((uint8_t*)(m_pBase+TOY_HEADER_SIZE+BASE_AABB_SIZE));
 }
 
 size_t CToy::GetMaterialTextureLength(size_t i)
 {
-	return (int)*((short*)GetMaterial(i));
+	return (int)*((uint16_t*)GetMaterial(i));
 }
 
 char* CToy::GetMaterialTexture(size_t i)
@@ -74,6 +79,15 @@ float* CToy::GetMaterialVert(size_t iMaterial, size_t iVert)
 	return (float*)(pVerts + iVert*MESH_MATERIAL_VERTEX_SIZE);
 }
 
+size_t CToy::GetNumSceneAreas()
+{
+	if (!m_pBase)
+		return 0;
+
+	size_t iSceneTable = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+GetNumMaterials()*BASE_MATERIAL_TABLE_STRIDE;
+	return (int)*((uint32_t*)(m_pBase+iSceneTable));
+}
+
 size_t CToy::GetVertexSize()
 {
 	return MESH_MATERIAL_VERTEX_SIZE;
@@ -94,7 +108,7 @@ size_t CToy::GetPhysicsNumVerts()
 	if (!m_pPhys)
 		return 0;
 
-	return (int)*((int*)(m_pPhys+TOY_HEADER_SIZE));
+	return (int)*((uint32_t*)(m_pPhys+TOY_HEADER_SIZE));
 }
 
 size_t CToy::GetPhysicsNumTris()
@@ -102,7 +116,7 @@ size_t CToy::GetPhysicsNumTris()
 	if (!m_pPhys)
 		return 0;
 
-	return (int)*((int*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE));
+	return (size_t)*((uint32_t*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE));
 }
 
 float* CToy::GetPhysicsVerts()
@@ -138,6 +152,42 @@ int* CToy::GetPhysicsTri(size_t iTri)
 	return GetPhysicsTris() + iTri*3;
 }
 
+const AABB& CToy::GetSceneAreaAABB(size_t iSceneArea)
+{
+	if (!m_pArea)
+	{
+		static AABB aabb;
+		return aabb;
+	}
+
+	return *((AABB*)(GetSceneArea(iSceneArea)));
+}
+
+size_t CToy::GetSceneAreaNumVisible(size_t iSceneArea)
+{
+	if (!m_pArea)
+		return 0;
+
+	return (size_t)*((uint32_t*)(GetSceneArea(iSceneArea) + AREA_AABB_SIZE));
+}
+
+size_t CToy::GetSceneAreasVisible(size_t iSceneArea, size_t iArea)
+{
+	if (!m_pArea)
+		return 0;
+
+	return (size_t)*((uint32_t*)(GetSceneArea(iSceneArea) + AREA_AABB_SIZE + AREA_VISIBLE_AREAS_SIZE + iArea*AREA_VISIBLE_AREAS_STRIDE));
+}
+
+char* CToy::GetSceneAreaFileName(size_t iSceneArea)
+{
+	if (!m_pArea)
+		return nullptr;
+
+	size_t iOffset = AREA_AABB_SIZE + AREA_VISIBLE_AREAS_SIZE + GetSceneAreaNumVisible(iSceneArea)*AREA_VISIBLE_AREAS_STRIDE + AREA_VISIBLE_AREA_NAME_SIZE;
+	return GetSceneArea(iSceneArea) + iOffset;
+}
+
 char* CToy::GetMaterial(size_t i)
 {
 	TAssert(m_pMesh);
@@ -145,8 +195,20 @@ char* CToy::GetMaterial(size_t i)
 		return nullptr;
 
 	size_t iMaterialTableEntry = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+i*BASE_MATERIAL_TABLE_STRIDE;
-	size_t iMaterialOffset = (size_t)*((size_t*)(m_pBase+iMaterialTableEntry));
+	size_t iMaterialOffset = (size_t)*((uint32_t*)(m_pBase+iMaterialTableEntry));
 	return m_pMesh+iMaterialOffset;
+}
+
+char* CToy::GetSceneArea(size_t i)
+{
+	TAssert(m_pArea);
+	if (!m_pArea)
+		return nullptr;
+
+	size_t iSceneTable = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+GetNumMaterials()*BASE_MATERIAL_TABLE_STRIDE+BASE_SCENE_TABLE_SIZE;
+	size_t iSceneTableEntry = iSceneTable+i*AREA_VISIBLE_AREAS_STRIDE;
+	size_t iSceneOffset = (size_t)*((uint32_t*)(m_pBase+iSceneTableEntry));
+	return m_pArea+iSceneOffset;
 }
 
 char* CToy::AllocateBase(size_t iSize)
@@ -188,4 +250,13 @@ char* CToy::AllocatePhys(size_t iSize)
 
 	m_pPhys = (char*)malloc(iSize);
 	return m_pPhys;
+}
+
+char* CToy::AllocateArea(size_t iSize)
+{
+	if (m_pArea)
+		free(m_pArea);
+
+	m_pArea = (char*)malloc(iSize);
+	return m_pArea;
 }

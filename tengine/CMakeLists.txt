@@ -45,6 +45,7 @@ set (TENGINE_GAME_ENTITY_SOURCES
 	game/entities/mathgate.cpp
 	game/entities/player.cpp
 	game/entities/playerstart.cpp
+	game/entities/world.cpp
 )
 
 set (TENGINE_MODELS_SOURCES

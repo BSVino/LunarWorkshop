@@ -411,6 +411,36 @@ size_t CConversionScene::AddScene(const tstring& sName)
 	return m_apScenes.size()-1;
 }
 
+static CConversionSceneNode* FindSceneNode(CConversionSceneNode* pNode, const tstring& sName)
+{
+	for (size_t i = 0; i < pNode->GetNumChildren(); i++)
+	{
+		if (pNode->GetChild(i)->GetName() == sName)
+			return pNode->GetChild(i);
+
+		CConversionSceneNode* pReturn = ::FindSceneNode(pNode->GetChild(i), sName);
+		if (pReturn)
+			return pReturn;
+	}
+
+	return nullptr;
+}
+
+CConversionSceneNode* CConversionScene::FindSceneNode(const tstring& sName)
+{
+	for (size_t i = 0; i < m_apScenes.size(); i++)
+	{
+		if (m_apScenes[i]->GetName() == sName)
+			return m_apScenes[i];
+
+		CConversionSceneNode* pNode = ::FindSceneNode(m_apScenes[i], sName);
+		if (pNode)
+			return pNode;
+	}
+
+	return nullptr;
+}
+
 CConversionSceneNode* CConversionScene::GetDefaultSceneMeshInstance(CConversionSceneNode* pScene, CConversionMesh* pMesh, bool bCreate)
 {
 	for (size_t i = 0; i < pScene->GetNumChildren(); i++)
@@ -425,7 +455,7 @@ CConversionSceneNode* CConversionScene::GetDefaultSceneMeshInstance(CConversionS
 		return NULL;
 
 	// Put it in its own child node so that it can be moved around on its own.
-	size_t iChild = pScene->AddChild("Mesh node");
+	size_t iChild = pScene->AddChild("Mesh node - " + pMesh->GetName());
 	pScene->GetChild(iChild)->AddMeshInstance(FindMesh(pMesh));
 
 	return pScene->GetChild(iChild);

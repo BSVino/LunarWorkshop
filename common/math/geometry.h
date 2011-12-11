@@ -1,6 +1,8 @@
 #ifndef LW_GEOMETRY_H
 #define LW_GEOMETRY_H
 
+#include "../common.h"
+#include "../tstring.h"
 #include "vector.h"
 #include <EASTL/vector.h>
 
@@ -62,7 +64,9 @@ public:
 	bool		Inside2D(const Vector& vecPoint) const;
 	bool		Intersects(const AABB& oBox) const;
 
+	AABB		operator+(const AABB& oBox) const;
 	AABB		operator*(float s) const;
+	bool		operator==(const AABB& o) const;
 
 public:
 	Vector		m_vecMins;
@@ -159,6 +163,16 @@ inline bool AABB::Intersects(const AABB& oBox) const
 	return true;
 }
 
+inline AABB AABB::operator+(const AABB& oBox) const
+{
+	AABB r(*this);
+
+	r.m_vecMaxs += oBox.m_vecMaxs;
+	r.m_vecMins += oBox.m_vecMins;
+
+	return r;
+}
+
 inline AABB AABB::operator*(float s) const
 {
 	AABB r(*this);
@@ -169,9 +183,14 @@ inline AABB AABB::operator*(float s) const
 	return r;
 }
 
+inline bool AABB::operator==(const AABB& o) const
+{
+	return (m_vecMins == o.m_vecMins) && (m_vecMaxs == o.m_vecMaxs);
+}
+
 // Geometry-related functions
 
-inline bool SameSide(Vector p1, Vector p2, Vector a, Vector b)
+inline bool SameSide(const Vector& p1, const Vector& p2, const Vector& a, const Vector& b)
 {
 	Vector ba = b-a;
     Vector cp1 = ba.Cross(p1-a);
@@ -179,12 +198,12 @@ inline bool SameSide(Vector p1, Vector p2, Vector a, Vector b)
     return (cp1.Dot(cp2) > 0);
 }
 
-inline bool PointInTriangle(Vector p, Vector a, Vector b, Vector c)
+inline bool PointInTriangle(const Vector& p, const Vector& a, const Vector& b, const Vector& c)
 {
 	return (SameSide(p, a, b, c) && SameSide(p, b, a, c) && SameSide(p, c, a, b));
 }
 
-inline float DistanceToLine(Vector p, Vector v1, Vector v2)
+inline float DistanceToLine(const Vector& p, const Vector& v1, const Vector& v2)
 {
 	Vector v = v2 - v1;
 	Vector w = p - v1;
@@ -198,7 +217,7 @@ inline float DistanceToLine(Vector p, Vector v1, Vector v2)
 	return (vb - p).Length();
 }
 
-inline float DistanceToLineSegment(Vector p, Vector v1, Vector v2, Vector* i = NULL)
+inline float DistanceToLineSegment(const Vector& p, const Vector& v1, const Vector& v2, Vector* i = NULL)
 {
 	Vector v = v2 - v1;
 	Vector w = p - v1;
@@ -233,7 +252,7 @@ inline float DistanceToLineSegment(Vector p, Vector v1, Vector v2, Vector* i = N
 	return (vb - p).Length();
 }
 
-inline float DistanceToPlane(Vector p, Vector v, Vector n)
+inline float DistanceToPlane(const Vector& p, const Vector& v, const Vector& n)
 {
 	float sb, sn, sd;
 
@@ -245,7 +264,7 @@ inline float DistanceToPlane(Vector p, Vector v, Vector n)
 	return (p - b).Length();
 }
 
-inline float DistanceToPolygon(Vector p, eastl::vector<Vector>& v, Vector n)
+inline float DistanceToPolygon(const Vector& p, eastl::vector<Vector>& v, Vector n)
 {
 	float flPlaneDistance = DistanceToPlane(p, v[0], n);
 
@@ -285,12 +304,12 @@ inline float DistanceToPolygon(Vector p, eastl::vector<Vector>& v, Vector n)
 	return flClosestPoint;
 }
 
-inline float TriangleArea(Vector a, Vector b, Vector c)
+inline float TriangleArea(const Vector& a, const Vector& b, const Vector& c)
 {
 	return (a-b).Cross(a-c).Length()/2;
 }
 
-inline bool RayIntersectsTriangle(Ray vecRay, Vector v0, Vector v1, Vector v2, Vector* pvecHit = NULL)
+inline bool RayIntersectsTriangle(const Ray& vecRay, const Vector& v0, const Vector& v1, const Vector& v2, Vector* pvecHit = NULL)
 {
 	Vector u = v1 - v0;
 	Vector v = v2 - v0;
@@ -341,7 +360,7 @@ inline bool RayIntersectsTriangle(Ray vecRay, Vector v0, Vector v1, Vector v2, V
 	return true;
 }
 
-inline bool RayIntersectsPlane(Ray vecRay, Vector v0, Vector v1, Vector v2, Vector* pvecHit = NULL)
+inline bool RayIntersectsPlane(const Ray& vecRay, const Vector& v0, const Vector& v1, const Vector& v2, Vector* pvecHit = NULL)
 {
 	Vector u = v1 - v0;
 	Vector v = v2 - v0;
@@ -373,7 +392,7 @@ inline bool RayIntersectsPlane(Ray vecRay, Vector v0, Vector v1, Vector v2, Vect
 	return true;
 }
 
-inline bool RayIntersectsPlane(Ray vecRay, Vector p, Vector n, Vector* pvecHit = NULL)
+inline bool RayIntersectsPlane(const Ray& vecRay, const Vector& p, const Vector& n, Vector* pvecHit = NULL)
 {
 	Vector w0 = vecRay.m_vecPos - p;
 
@@ -505,7 +524,7 @@ inline bool SegmentIntersectsAABB(const Vector& v1, const Vector& v2, const AABB
 	return true;
 }
 
-inline bool LineSegmentIntersectsTriangle(Vector s0, Vector s1, Vector v0, Vector v1, Vector v2, Vector* pvecHit = NULL)
+inline bool LineSegmentIntersectsTriangle(const Vector& s0, const Vector& s1, const Vector& v0, const Vector& v1, const Vector& v2, Vector* pvecHit = NULL)
 {
 	Vector u = v1 - v0;
 	Vector v = v2 - v0;
@@ -596,7 +615,7 @@ inline bool LineSegmentIntersectsSphere(const Vector& v1, const Vector& v2, cons
 	return true;
 }
 
-inline bool	TriangleIntersectsAABB( AABB oBox, Vector v0, Vector v1, Vector v2)
+inline bool	TriangleIntersectsAABB(const AABB& oBox, const Vector& v0, const Vector& v1, const Vector& v2)
 {
 	// Trivial case rejection: If any of the points are inside the box, return true immediately.
 	if (oBox.Inside(v0))
@@ -705,6 +724,31 @@ inline bool	TriangleIntersectsAABB( AABB oBox, Vector v0, Vector v1, Vector v2)
 	}
 
 	return false;
+}
+
+inline bool	ConvexHullIntersectsAABB(const AABB& oBox, const eastl::vector<Vector>& avecPoints, const eastl::vector<size_t>& aiTriangles)
+{
+	TAssert(aiTriangles.size()%3 == 0);
+
+	Vector vecCenter = oBox.Center();
+	Vector n;
+
+	for (size_t i = 0; i < aiTriangles.size(); i += 3)
+	{
+		const Vector& v1 = avecPoints[aiTriangles[i]];
+		const Vector& v2 = avecPoints[aiTriangles[i+1]];
+		const Vector& v3 = avecPoints[aiTriangles[i+2]];
+
+		n = (v2-v1).Cross(v3-v1).Normalized();
+
+		if (n.Dot(vecCenter-v1) < 0)
+			continue;
+
+		if (!TriangleIntersectsAABB(oBox, v1, v2, v3))
+			return false;
+	}
+
+	return true;
 }
 
 inline size_t FindEar(const eastl::vector<Vector>& avecPoints)

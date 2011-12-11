@@ -273,4 +273,20 @@ inline C* strdup(const C* s)
   	return p ? (C*)memcpy(p, s, len) : NULL;
 }
 
+inline tstring tolower(tstring s)
+{
+	for (size_t i = 0; i < s.length(); i++)
+		s[i] = tolower(s[i]);
+
+	return s;
+}
+
+inline tstring toupper(tstring s)
+{
+	for (size_t i = 0; i < s.length(); i++)
+		s[i] = toupper(s[i]);
+
+	return s;
+}
+
 #endif

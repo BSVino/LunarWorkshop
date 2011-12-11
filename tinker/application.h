@@ -134,7 +134,8 @@ inline CApplication* Application()
 // Tinker messages and errors
 #undef TMsg
 #define TMsg CApplication::PrintConsole
-#define TError(x) CApplication::PrintConsole(tstring("Error: ") + x)
+#undef TError
+#define TError(x) CApplication::PrintConsole(tstring("ERROR: ") + x)
 
 typedef void (*CreateApplicationCallback)(int argc, char** argv);
 void CreateApplicationWithErrorHandling(CreateApplicationCallback pfnCallback, int argc, char** argv);

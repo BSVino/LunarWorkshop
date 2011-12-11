@@ -4,7 +4,7 @@
 #include <toys/toy_util.h>
 #include <toys/toy.h>
 
-void test_toys()
+void test_toy()
 {
 	CToyUtil t;
 
@@ -37,11 +37,13 @@ void test_toys()
 	t.AddPhysVertex(Vector(0, 0, 0));
 	t.AddPhysTriangle(0, 1, 2);
 	t.AddPhysTriangle(0, 2, 3);
-	TAssert(t.Write("test.toy"));
+	bool bWrite = t.Write("test.toy");
+	TAssert(bWrite);
 
 	CToy* pToy = new CToy();
 
-	t.Read("test.toy", pToy);
+	bool bRead = CToyUtil::Read("test.toy", pToy);
+	TAssert(bRead);
 	TAssert(strcmp(pToy->GetMaterialTexture(0), "test.png") == 0);
 	TAssert(strcmp(pToy->GetMaterialTexture(1), "test2.png") == 0);
 	TAssert(strcmp(pToy->GetMaterialTexture(2), "test3.png") == 0);
@@ -105,4 +107,82 @@ void test_toys()
 	TAssert(Vector(pToy->GetPhysicsVert(3)) == Vector(0, 0, 0));
 
 	delete pToy;
+}
+
+void test_scene()
+{
+	CToyUtil t1;
+	t1.AddMaterial("test.png");
+	t1.AddVertex(0, Vector(1, 2, 3), Vector2D(0, 0));
+	t1.AddVertex(0, Vector(1, 3, 3), Vector2D(0, 1));
+	t1.AddVertex(0, Vector(1, 2, 4), Vector2D(1, 1));
+	t1.AddVertex(0, Vector(2, 2, 3), Vector2D(1, 0));
+	t1.AddVertex(0, Vector(2, 3, 3), Vector2D(1, 1));
+	t1.AddVertex(0, Vector(2, 2, 4), Vector2D(1, 0));
+	bool bWrite = t1.Write("testscene1.toy");
+	TAssert(bWrite);
+
+	CToyUtil t2;
+	t2.AddMaterial("test.png");
+	t2.AddVertex(0, Vector(10, 2, 3), Vector2D(0, 0));
+	t2.AddVertex(0, Vector(10, 3, 3), Vector2D(0, 1));
+	t2.AddVertex(0, Vector(10, 2, 4), Vector2D(1, 1));
+	t2.AddVertex(0, Vector(20, 2, 3), Vector2D(1, 0));
+	t2.AddVertex(0, Vector(20, 3, 3), Vector2D(1, 1));
+	t2.AddVertex(0, Vector(20, 2, 4), Vector2D(1, 0));
+	bWrite = t2.Write("testscene2.toy");
+	TAssert(bWrite);
+
+	CToyUtil t3;
+	t3.AddMaterial("test.png");
+	t3.AddVertex(0, Vector(1, 20, 3), Vector2D(0, 0));
+	t3.AddVertex(0, Vector(1, 30, 3), Vector2D(0, 1));
+	t3.AddVertex(0, Vector(1, 20, 4), Vector2D(1, 1));
+	t3.AddVertex(0, Vector(2, 20, 3), Vector2D(1, 0));
+	t3.AddVertex(0, Vector(2, 30, 3), Vector2D(1, 1));
+	t3.AddVertex(0, Vector(2, 20, 4), Vector2D(1, 0));
+	bWrite = t3.Write("testscene3.toy");
+	TAssert(bWrite);
+
+	CToyUtil ts;
+	size_t iSceneArea1 = ts.AddSceneArea("testscene1.toy");
+	size_t iSceneArea2 = ts.AddSceneArea("testscene2.toy");
+	size_t iSceneArea3 = ts.AddSceneArea("testscene3.toy");
+	ts.AddSceneAreaNeighbor(iSceneArea1, iSceneArea2);
+	ts.AddSceneAreaNeighbor(iSceneArea2, iSceneArea1);
+	ts.AddSceneAreaNeighbor(iSceneArea2, iSceneArea3);
+	ts.AddSceneAreaNeighbor(iSceneArea3, iSceneArea2);
+	bWrite = ts.Write("testscenes.toy");
+	TAssert(bWrite);
+
+	CToy* pToy = new CToy();
+
+	bool bRead = CToyUtil::Read("testscenes.toy", pToy);
+	TAssert(bRead);
+	TAssert(pToy->GetNumSceneAreas() == 3);
+
+	TAssert(tstring(pToy->GetSceneAreaFileName(0)) == tstring("testscene1.toy"));
+	TAssert(tstring(pToy->GetSceneAreaFileName(1)) == tstring("testscene2.toy"));
+	TAssert(tstring(pToy->GetSceneAreaFileName(2)) == tstring("testscene3.toy"));
+	TAssert(pToy->GetSceneAreaAABB(0) == t1.GetBounds());
+	TAssert(pToy->GetSceneAreaAABB(1) == t2.GetBounds());
+	TAssert(pToy->GetSceneAreaAABB(2) == t3.GetBounds());
+	TAssert(pToy->GetSceneAreaNumVisible(0) == 2);
+	TAssert(pToy->GetSceneAreaNumVisible(1) == 3);
+	TAssert(pToy->GetSceneAreaNumVisible(2) == 2);
+	TAssert(pToy->GetSceneAreasVisible(0, 0) == 0);	// Is visible to itself
+	TAssert(pToy->GetSceneAreasVisible(0, 1) == 1);	// Is visible to its neighbor
+	TAssert(pToy->GetSceneAreasVisible(1, 0) == 1);	// Is visible to itself
+	TAssert(pToy->GetSceneAreasVisible(1, 1) == 0);	// Is visible to its neighbor
+	TAssert(pToy->GetSceneAreasVisible(1, 2) == 2);	// Is visible to its neighbor
+	TAssert(pToy->GetSceneAreasVisible(2, 0) == 2);	// Is visible to itself
+	TAssert(pToy->GetSceneAreasVisible(2, 1) == 1);	// Is visible to its neighbor
+
+	delete pToy;
+}
+
+void test_toys()
+{
+	test_toy();
+	test_scene();
 }

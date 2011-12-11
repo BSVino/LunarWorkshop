@@ -5,7 +5,8 @@
 	typedef baseClassName BaseClass; \
 	typedef className ThisClass; \
 
-#define TMsg printf
+#define TMsg TMsgStdOut
+#define TError TErrorStdOut
 
 #ifdef __GNUC__
 
