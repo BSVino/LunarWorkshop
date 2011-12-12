@@ -159,7 +159,10 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 	{
 		glGenRenderbuffersEXT(1, &oBuffer.m_iRB);
 		glBindRenderbufferEXT( GL_RENDERBUFFER, (GLuint)oBuffer.m_iRB );
-		glRenderbufferStorageEXT( GL_RENDERBUFFER, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight );
+		if (GLEW_EXT_framebuffer_multisample)
+			glRenderbufferStorageMultisampleEXT( GL_RENDERBUFFER, 4, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight );
+		else
+			glRenderbufferStorageEXT( GL_RENDERBUFFER, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight );
 		glBindRenderbufferEXT( GL_RENDERBUFFER, 0 );
 	}
 
@@ -167,7 +170,10 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 	{
 		glGenRenderbuffersEXT(1, &oBuffer.m_iDepth);
 		glBindRenderbufferEXT( GL_RENDERBUFFER, (GLuint)oBuffer.m_iDepth );
-		glRenderbufferStorageEXT( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)iWidth, (GLsizei)iHeight );
+		if (GLEW_EXT_framebuffer_multisample)
+			glRenderbufferStorageMultisampleEXT( GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, (GLsizei)iWidth, (GLsizei)iHeight );
+		else
+			glRenderbufferStorageEXT( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)iWidth, (GLsizei)iHeight );
 		glBindRenderbufferEXT( GL_RENDERBUFFER, 0 );
 	}
 
