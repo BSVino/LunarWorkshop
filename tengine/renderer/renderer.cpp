@@ -22,7 +22,7 @@
 
 CFrameBuffer::CFrameBuffer()
 {
-	m_iMap = m_iDepth = m_iFB = 0;
+	m_iRB = m_iMap = m_iDepth = m_iFB = 0;
 }
 
 CVar r_batch("r_batch", "1");
@@ -79,14 +79,15 @@ void CRenderer::Initialize()
 
 	if (ShouldUseFramebuffers())
 	{
-		m_oSceneBuffer = CreateFrameBuffer(m_iWidth, m_iHeight, true, true);
+		m_oSceneBuffer = CreateFrameBuffer(m_iWidth, m_iHeight, (fb_options_e)(FB_RENDERBUFFER|FB_DEPTH));
+		m_oSceneTextureBuffer = CreateFrameBuffer(m_iWidth, m_iHeight, (fb_options_e)(FB_TEXTURE|FB_DEPTH|FB_LINEAR));
 
 		size_t iWidth = m_oSceneBuffer.m_iWidth;
 		size_t iHeight = m_oSceneBuffer.m_iHeight;
 		for (size_t i = 0; i < BLOOM_FILTERS; i++)
 		{
-			m_oBloom1Buffers[i] = CreateFrameBuffer(iWidth, iHeight, false, true);
-			m_oBloom2Buffers[i] = CreateFrameBuffer(iWidth, iHeight, false, false);
+			m_oBloom1Buffers[i] = CreateFrameBuffer(iWidth, iHeight, (fb_options_e)(FB_TEXTURE|FB_LINEAR));
+			m_oBloom2Buffers[i] = CreateFrameBuffer(iWidth, iHeight, (fb_options_e)(FB_TEXTURE));
 			iWidth /= 2;
 			iHeight /= 2;
 
@@ -97,7 +98,7 @@ void CRenderer::Initialize()
 		if (GameServer()->GetWorkListener())
 			GameServer()->GetWorkListener()->SetAction("Making noise", 0);
 
-		m_oNoiseBuffer = CreateFrameBuffer(m_iWidth, m_iHeight, false, false);
+		m_oNoiseBuffer = CreateFrameBuffer(m_iWidth, m_iHeight, (fb_options_e)(FB_TEXTURE));
 
 		CreateNoise();
 	}
@@ -111,11 +112,15 @@ void CRenderer::Initialize()
 		TMsg("* Using framebuffers\n");
 }
 
-CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, bool bDepth, bool bLinear)
+CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_options_e eOptions)
 {
 	TAssert(ShouldUseFramebuffers());
+	TAssert((eOptions&FB_TEXTURE) ^ (eOptions&FB_RENDERBUFFER));
 
-	if (!GLEW_ARB_texture_non_power_of_two)
+	if (!(eOptions&(FB_TEXTURE|FB_RENDERBUFFER)))
+		eOptions = (fb_options_e)(eOptions|FB_TEXTURE);
+
+	if (!GLEW_ARB_texture_non_power_of_two && (eOptions&FB_TEXTURE))
 	{
 		// If non power of two textures are not supported, framebuffers the size of the screen will probably fuck up.
 		// I don't know this for sure but I'm not taking any chances. If the extension isn't supported, roll those
@@ -139,16 +144,26 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, bool bD
 
 	CFrameBuffer oBuffer;
 
-	glGenTextures(1, &oBuffer.m_iMap);
-	glBindTexture(GL_TEXTURE_2D, (GLuint)oBuffer.m_iMap);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bLinear?GL_LINEAR:GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, bLinear?GL_LINEAR:GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	if (eOptions&FB_TEXTURE)
+	{
+		glGenTextures(1, &oBuffer.m_iMap);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)oBuffer.m_iMap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (eOptions&FB_LINEAR)?GL_LINEAR:GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (eOptions&FB_LINEAR)?GL_LINEAR:GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	else if (eOptions&FB_RENDERBUFFER)
+	{
+		glGenRenderbuffersEXT(1, &oBuffer.m_iRB);
+		glBindRenderbufferEXT( GL_RENDERBUFFER, (GLuint)oBuffer.m_iRB );
+		glRenderbufferStorageEXT( GL_RENDERBUFFER, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight );
+		glBindRenderbufferEXT( GL_RENDERBUFFER, 0 );
+	}
 
-	if (bDepth)
+	if (eOptions&FB_DEPTH)
 	{
 		glGenRenderbuffersEXT(1, &oBuffer.m_iDepth);
 		glBindRenderbufferEXT( GL_RENDERBUFFER, (GLuint)oBuffer.m_iDepth );
@@ -158,8 +173,11 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, bool bD
 
 	glGenFramebuffersEXT(1, &oBuffer.m_iFB);
 	glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)oBuffer.m_iFB);
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, (GLuint)oBuffer.m_iMap, 0);
-	if (bDepth)
+	if (eOptions&FB_TEXTURE)
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, (GLuint)oBuffer.m_iMap, 0);
+	else if (eOptions&FB_RENDERBUFFER)
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, (GLuint)oBuffer.m_iRB);
+	if (eOptions&FB_DEPTH)
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, (GLuint)oBuffer.m_iDepth);
     GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 	if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
@@ -266,8 +284,6 @@ void CRenderer::SetupFrame()
 	}
 	else
 	{
-		glReadBuffer(GL_BACK);
-		glDrawBuffer(GL_BACK);
 		glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 	}
 
@@ -569,9 +585,6 @@ void CRenderer::FinishFrame()
 
 	RenderOffscreenBuffers();
 
-	glReadBuffer(GL_BACK);
-	glDrawBuffer(GL_BACK);
-
 	RenderFullscreenBuffers();
 
 	glMatrixMode(GL_PROJECTION);
@@ -591,6 +604,8 @@ void CRenderer::RenderOffscreenBuffers()
 	{
 		TPROF("Bloom");
 
+		RenderFrameBufferToBuffer(&m_oSceneBuffer, &m_oSceneTextureBuffer);
+
 		// Use a bright-pass filter to catch only the bright areas of the image
 		GLuint iBrightPass = (GLuint)CShaderLibrary::GetProgram("brightpass");
 		UseProgram(iBrightPass);
@@ -606,7 +621,7 @@ void CRenderer::RenderOffscreenBuffers()
 		for (size_t i = 0; i < BLOOM_FILTERS; i++)
 		{
 			glUniform1f(flBrightness, BloomBrightnessCutoff() - 0.1f*i);
-			RenderMapToBuffer(m_oSceneBuffer.m_iMap, &m_oBloom1Buffers[i]);
+			RenderFrameBufferToBuffer(&m_oSceneTextureBuffer, &m_oBloom1Buffers[i]);
 		}
 
 		ClearProgram();
@@ -628,7 +643,7 @@ void CRenderer::RenderFullscreenBuffers()
 		if (ShouldUseShaders())
 			SetupSceneShader();
 
-		RenderMapFullscreen(m_oSceneBuffer.m_iMap);
+		RenderFrameBufferFullscreen(&m_oSceneBuffer);
 
 		if (ShouldUseShaders())
 			ClearProgram();
@@ -640,7 +655,7 @@ void CRenderer::RenderFullscreenBuffers()
 	{
 		glBlendFunc(GL_ONE, GL_ONE);
 		for (size_t i = 0; i < BLOOM_FILTERS; i++)
-			RenderMapFullscreen(m_oBloom1Buffers[i].m_iMap);
+			RenderFrameBufferFullscreen(&m_oBloom1Buffers[i]);
 	}
 
 	glDisable(GL_BLEND);
@@ -724,10 +739,46 @@ void CRenderer::RenderBloomPass(CFrameBuffer* apSources, CFrameBuffer* apTargets
     for (size_t i = 0; i < BLOOM_FILTERS; i++)
     {
 		glUniform1f(flOffset, 1.2f / apSources[i].m_iWidth);
-		RenderMapToBuffer(apSources[i].m_iMap, &apTargets[i]);
+		RenderFrameBufferToBuffer(&apSources[i], &apTargets[i]);
     }
 
 	ClearProgram();
+}
+
+void CRenderer::RenderFrameBufferFullscreen(CFrameBuffer* pBuffer)
+{
+	if (pBuffer->m_iMap)
+		RenderMapFullscreen(pBuffer->m_iMap);
+	else if (pBuffer->m_iRB)
+		RenderRBFullscreen(pBuffer);
+}
+
+void CRenderer::RenderFrameBufferToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestination)
+{
+	if (pSource->m_iMap)
+		RenderMapToBuffer(pSource->m_iMap, pDestination);
+	else if (pSource->m_iRB)
+		RenderRBToBuffer(pSource, pDestination);
+}
+
+void CRenderer::RenderRBFullscreen(CFrameBuffer* pSource)
+{
+	TAssert(ShouldUseFramebuffers());
+
+	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, (GLuint)pSource->m_iFB);
+	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
+
+	glBlitFramebufferEXT(0, 0, pSource->m_iWidth, pSource->m_iHeight, 0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_LINEAR);
+}
+
+void CRenderer::RenderRBToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestination)
+{
+	TAssert(ShouldUseFramebuffers());
+
+	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, (GLuint)pSource->m_iFB);
+	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, (GLuint)pDestination->m_iFB);
+
+	glBlitFramebufferEXT(0, 0, pSource->m_iWidth, pSource->m_iHeight, 0, 0, pDestination->m_iWidth, pDestination->m_iHeight, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_LINEAR);
 }
 
 void CRenderer::RenderMapFullscreen(size_t iMap)

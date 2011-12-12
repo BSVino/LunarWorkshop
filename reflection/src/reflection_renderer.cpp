@@ -16,7 +16,7 @@ CReflectionRenderer::CReflectionRenderer()
 	: CRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
 {
 	for (size_t i = 0; i < 5; i++)
-		m_aoReflectionBuffers.push_back(CreateFrameBuffer(m_iWidth, m_iHeight, true, true));
+		m_aoReflectionBuffers.push_back(CreateFrameBuffer(m_iWidth, m_iHeight, (fb_options_e)(FB_TEXTURE|FB_DEPTH|FB_LINEAR)));
 }
 
 void CReflectionRenderer::Initialize()
@@ -289,7 +289,7 @@ void CReflectionRenderer::RenderFullscreenBuffers()
 		if (ShouldUseShaders())
 			SetupSceneShader();
 
-		RenderMapFullscreen(m_oSceneBuffer.m_iMap);
+		RenderFrameBufferFullscreen(&m_oSceneBuffer);
 
 		if (ShouldUseShaders())
 			ClearProgram();
@@ -301,7 +301,7 @@ void CReflectionRenderer::RenderFullscreenBuffers()
 	{
 		glBlendFunc(GL_ONE, GL_ONE);
 		for (size_t i = 0; i < BLOOM_FILTERS; i++)
-			RenderMapFullscreen(m_oBloom1Buffers[i].m_iMap);
+			RenderFrameBufferFullscreen(&m_oBloom1Buffers[i]);
 	}
 
 	glDisable(GL_BLEND);

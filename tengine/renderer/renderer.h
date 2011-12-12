@@ -14,6 +14,14 @@
 
 #include "render_common.h"
 
+typedef enum
+{
+	FB_DEPTH = (1<<0),
+	FB_TEXTURE = (1<<1),
+	FB_RENDERBUFFER = (1<<2),
+	FB_LINEAR = (1<<3),
+} fb_options_e;
+
 class CFrameBuffer
 {
 public:
@@ -23,6 +31,7 @@ public:
 	unsigned int	m_iWidth;
 	unsigned int	m_iHeight;
 
+	unsigned int	m_iRB;
 	unsigned int	m_iMap;
 	unsigned int	m_iDepth;
 	unsigned int	m_iFB;
@@ -57,7 +66,7 @@ public:
 	virtual void	Initialize();
 	virtual void	LoadShaders() {};
 
-	CFrameBuffer	CreateFrameBuffer(size_t iWidth, size_t iHeight, bool bDepth, bool bLinear);
+	CFrameBuffer	CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_options_e eOptions);
 
 	void			CreateNoise();
 	virtual bool	WantNoise() { return false; };
@@ -82,6 +91,10 @@ public:
 	virtual float	BloomBrightnessCutoff() const { return 0.6f; }
 	void			RenderBloomPass(CFrameBuffer* apSources, CFrameBuffer* apTargets, bool bHorizontal);
 
+	void			RenderFrameBufferFullscreen(CFrameBuffer* pBuffer);
+	void			RenderFrameBufferToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestination);
+	void			RenderRBFullscreen(CFrameBuffer* pSource);
+	void			RenderRBToBuffer(CFrameBuffer* pSource, CFrameBuffer* pBuffer);
 	void			RenderMapFullscreen(size_t iMap);
 	void			RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer);
 
@@ -204,6 +217,7 @@ protected:
 	eastl::map<tstring, size_t> m_aiCurrentSceneAreas;
 
 	CFrameBuffer	m_oSceneBuffer;
+	CFrameBuffer	m_oSceneTextureBuffer;
 
 	CFrameBuffer	m_oBloom1Buffers[BLOOM_FILTERS];
 	CFrameBuffer	m_oBloom2Buffers[BLOOM_FILTERS];
