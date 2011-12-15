@@ -14,6 +14,8 @@ public:
 	virtual eastl::string		WindowTitle() { return "Chain"; }
 	virtual tstring				AppDirectory() { return "Chain"; }
 
+	void						OpenWindow();
+
 	void						SetupEngine();
 	void						SetupChain();
 

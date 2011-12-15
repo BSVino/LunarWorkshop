@@ -27,6 +27,13 @@ CChainWindow::CChainWindow(int argc, char** argv)
 {
 }
 
+void CChainWindow::OpenWindow()
+{
+	BaseClass::OpenWindow();
+
+	CApplication::Get()->SetMouseCursorEnabled(true);
+}
+
 void CChainWindow::RenderLoading()
 {
 	glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
