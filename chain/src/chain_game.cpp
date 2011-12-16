@@ -65,6 +65,7 @@ void CChainGame::SetupGame(tstring sType)
 	pPlayer->SetCharacter(pCharacter);
 
 	CStory* pStory = GameServer()->Create<CStory>("CStory");
+	pStory->Load("story/index.txt");
 }
 
 void CChainGame::Precache()

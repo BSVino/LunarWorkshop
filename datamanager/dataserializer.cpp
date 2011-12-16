@@ -6,7 +6,7 @@
 
 void CDataSerializer::Read(std::basic_istream<tchar>& sStream, CData* pData)
 {
-	if (!sStream)
+	if (sStream.bad())
 		return;
 
 	if (!pData)
@@ -44,7 +44,7 @@ void CDataSerializer::Read(std::basic_istream<tchar>& sStream, CData* pData)
 		}
 
 		eastl::vector<tstring> asTokens;
-		tstrtok(sLine, asTokens, ":");
+		explode(sLine, asTokens, ":");
 
 		if (asTokens.size() == 1)
 			pLastData = pCurrentData->AddChild(trim(sLine));
