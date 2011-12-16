@@ -210,18 +210,18 @@ void CLabel::GetAlignmentOffset(float flLineWidth, float flLineHeight, const tst
 	{
 	case TA_MIDDLECENTER:
 		x = w/2 - lw/2;
-		y = h/2 - lh/2;
+		y = h/2 - m_flTotalHeight/2;
 		break;
 
 	case TA_LEFTCENTER:
 		x = 0;
-		y = h/2 - lh/2;
+		y = h/2 - m_flTotalHeight/2;
 		break;
 
 	case TA_RIGHTCENTER:
 		TAssert(false);
 		x = w - lw;
-		y = h/2 - lh/2;
+		y = h/2 - m_flTotalHeight/2;
 		break;
 
 	case TA_TOPCENTER:
