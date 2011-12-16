@@ -105,10 +105,17 @@ void CStory::Load(const tstring& sFile)
 				m_asPages[pPage->GetKey()].m_sLines = m_asPages[pPage->GetKey()].m_sLines + str_replace(pLine->GetValueTString(), "\\n", "\n") + "\n";
 			else if (pLine->GetKey() == "NextPage")
 				m_asPages[pPage->GetKey()].m_sNextPage = pLine->GetValueTString();
+			else if (pLine->GetKey() == "PrevPage")
+				m_asPages[pPage->GetKey()].m_sPrevPage = pLine->GetValueTString();
 		}
 	}
 
 	SetPage(pStartPage->GetValueTString());
+}
+
+void CStory::Precache()
+{
+	PrecacheTexture("textures/arrow.png");
 }
 
 void CStory::Spawn()
@@ -230,15 +237,8 @@ void CStory::OnRender(CRenderingContext* pContext, bool bTransparent) const
 
 void CStory::MousePressed()
 {
-	if (!m_asPages[m_sCurrentPage].m_sNextPage.length())
-	{
-		// The text isn't part of the HUD so we need to manually call its MousePressed.
-		m_pText->MousePressed(0, 0, 0);
-		return;
-	}
-
-	m_flAlphaGoal = 0;
-	m_sNextPage = m_asPages[m_sCurrentPage].m_sNextPage;
+	// The text isn't part of the HUD so we need to manually call its MousePressed.
+	m_pText->MousePressed(0, 0, 0);
 }
 
 void CStory::SetPage(const tstring& sPage)
@@ -250,6 +250,18 @@ void CStory::SetPage(const tstring& sPage)
 		TError("Page " + m_sCurrentPage + " doesn't exist!\n");
 
 	m_pText->SetText(m_asPages[m_sCurrentPage].m_sLines);
+}
+
+void CStory::GoToNextPage()
+{
+	m_sNextPage = m_asPages[m_sCurrentPage].m_sNextPage;
+	m_flAlphaGoal = 0;
+}
+
+void CStory::GoToPrevPage()
+{
+	m_sNextPage = m_asPages[m_sCurrentPage].m_sPrevPage;
+	m_flAlphaGoal = 0;
 }
 
 void CStory::LinkClickedCallback(const tstring& sLink)

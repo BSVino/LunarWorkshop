@@ -10,5 +10,7 @@ public:
 					CHUDViewport();
 
 public:
+	virtual void	Layout();
+
 	virtual void	Paint(float x, float y, float w, float h);
 };

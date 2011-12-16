@@ -199,6 +199,9 @@ void CBaseControl::PaintTexture(size_t iTexture, float x, float y, float w, floa
 {
 	glPushAttrib(GL_ENABLE_BIT);
 
+	if ((w < 0) ^ (h < 0))
+		glDisable(GL_CULL_FACE);
+
 	glEnable(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, (GLuint)iTexture);

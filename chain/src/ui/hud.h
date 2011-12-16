@@ -5,8 +5,12 @@
 
 class CChainHUD : public CHUDViewport
 {
+	DECLARE_CLASS(CChainHUD, CHUDViewport);
+
 public:
 	virtual void	Paint(float x, float y, float w, float h);
+
+	virtual bool	MousePressed(int code, int mx, int my);
 };
 
 #endif

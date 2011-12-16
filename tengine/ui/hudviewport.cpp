@@ -12,6 +12,13 @@ CHUDViewport::CHUDViewport()
 {
 }
 
+void CHUDViewport::Layout()
+{
+	SetSize(glgui::CRootPanel::Get()->GetWidth(), glgui::CRootPanel::Get()->GetHeight());
+
+	BaseClass::Layout();
+}
+
 CVar cl_debug("cl_debug", "off");
 
 void CHUDViewport::Paint(float x, float y, float w, float h)

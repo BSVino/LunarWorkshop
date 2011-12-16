@@ -9,6 +9,7 @@ class CPage
 public:
 	tstring					m_sLines;
 	tstring					m_sNextPage;
+	tstring					m_sPrevPage;
 };
 
 class CStory : public CBaseEntity, public glgui::IEventListener
@@ -22,6 +23,7 @@ public:
 public:
 	virtual void			Load(const tstring& sFile);
 
+	virtual void			Precache();
 	virtual void			Spawn();
 	virtual void			Think();
 
@@ -34,6 +36,11 @@ public:
 	float					LabelScale() const { return 100; }
 
 	void					SetPage(const tstring& sPage);
+	CPage*					GetCurrentPage() { return &m_asPages[m_sCurrentPage]; }
+	void					GoToNextPage();
+	void					GoToPrevPage();
+
+	float					GetAlpha() { return m_flAlpha; }
 
 	EVENT_CALLBACK(CStory, LinkClicked);
 
