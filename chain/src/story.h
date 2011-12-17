@@ -43,6 +43,7 @@ public:
 	float					GetAlpha() { return m_flAlpha; }
 
 	EVENT_CALLBACK(CStory, LinkClicked);
+	EVENT_CALLBACK(CStory, SectionHovered);
 
 protected:
 	glgui::CLabel*			m_pText;
@@ -53,6 +54,15 @@ protected:
 	eastl::map<tstring, CPage>	m_asPages;
 	tstring					m_sCurrentPage;
 	tstring					m_sNextPage;
+
+	class GoalValue
+	{
+	public:
+		float		m_flGoal;
+		float		m_flValue;
+	};
+
+	eastl::map<tstring, GoalValue>	m_aflHighlightedSections;
 };
 
 #endif

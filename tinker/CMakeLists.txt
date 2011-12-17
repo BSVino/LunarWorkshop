@@ -40,14 +40,14 @@ set (TINKER_SOURCES
 source_group(GLGUI FILES ${TINKER_GLGUI_SOURCES})
 
 if (WIN32)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/glew/include)
+	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/glew-1.7.0/include)
 	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/glfw/include)
 	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/include)
 	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/ftgl-2.1.3~rc5/src)
 	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/freetype-2.3.11/include)
 
 	set (TINKER_SOURCES ${TINKER_SOURCES}
-		${CMAKE_SOURCE_DIR}/ext-deps/glew/src/glew.c
+		${CMAKE_SOURCE_DIR}/ext-deps/glew-1.7.0/src/glew.c
 	)
 endif (WIN32)
 

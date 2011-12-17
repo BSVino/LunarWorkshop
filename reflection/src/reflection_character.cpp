@@ -83,6 +83,7 @@ void CReflectionCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
 	if (pMirror && vecNewOrigin != m_vecLocalOrigin)
 	{
 		Vector vecOldGlobalOrigin = GetGlobalOrigin();
+		Vector vecOldLocalOrigin = GetLocalOrigin();
 		Vector vecNewGlobalOrigin = GetParentGlobalTransform() * vecNewOrigin;
 
 		Matrix4x4 mMirror = pMirror->GetGlobalTransform();
@@ -108,8 +109,8 @@ void CReflectionCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
 
 #ifdef _DEBUG
 			// Should be on the same side as the old side, since it was reflected.
-			bool bOldReflectedSide = pMirror->GetSide(vecOldGlobalOrigin + GetUpVector() * EyeHeight());
-			bool bNewReflectedSide = pMirror->GetSide(mNew.GetTranslation());
+			bool bOldReflectedSide = pMirror->GetSide(vecOldLocalOrigin + GetUpVector() * EyeHeight());
+			bool bNewReflectedSide = pMirror->GetSide(mNew.GetTranslation() + GetUpVector() * EyeHeight());
 			TAssert(bOldReflectedSide == bNewReflectedSide);
 #endif
 

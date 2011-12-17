@@ -8,7 +8,7 @@ include_directories (
 )
 
 if (WIN32)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/glew/include)
+	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/glew-1.7.0/include)
 	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/include)
 endif (WIN32)
 

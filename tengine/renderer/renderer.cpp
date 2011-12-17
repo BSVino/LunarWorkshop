@@ -142,27 +142,45 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 		iHeight++;
 	}
 
+	bool bMultisample = !!GLEW_EXT_framebuffer_multisample;
+	bool bMultisampleTexture = false;//!!GLEW_ARB_texture_multisample;	// This isn't working and I don't need it for now.
+	bool bUseMultisample = bMultisample;
+	if ((eOptions&FB_TEXTURE) && !bMultisampleTexture)
+		bUseMultisample = false;
+
+	GLsizei iSamples = 4;
+
+	GLuint iTextureTarget = GL_TEXTURE_2D;
+	if (bUseMultisample)
+		iTextureTarget = GL_TEXTURE_2D_MULTISAMPLE;
+
 	CFrameBuffer oBuffer;
+	oBuffer.m_bMultiSample = bUseMultisample;
 
 	if (eOptions&FB_TEXTURE)
 	{
 		glGenTextures(1, &oBuffer.m_iMap);
-		glBindTexture(GL_TEXTURE_2D, (GLuint)oBuffer.m_iMap);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (eOptions&FB_LINEAR)?GL_LINEAR:GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (eOptions&FB_LINEAR)?GL_LINEAR:GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindTexture(iTextureTarget, (GLuint)oBuffer.m_iMap);
+		if (bUseMultisample)
+			glTexImage2DMultisample(iTextureTarget, iSamples, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight, GL_FALSE);
+		else
+		{
+			glTexParameteri(iTextureTarget, GL_TEXTURE_MIN_FILTER, (eOptions&FB_LINEAR)?GL_LINEAR:GL_NEAREST);
+			glTexParameteri(iTextureTarget, GL_TEXTURE_MAG_FILTER, (eOptions&FB_LINEAR)?GL_LINEAR:GL_NEAREST);
+			glTexParameteri(iTextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameteri(iTextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glTexImage2D(iTextureTarget, 0, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		}
+		glBindTexture(iTextureTarget, 0);
 	}
 	else if (eOptions&FB_RENDERBUFFER)
 	{
 		glGenRenderbuffersEXT(1, &oBuffer.m_iRB);
 		glBindRenderbufferEXT( GL_RENDERBUFFER, (GLuint)oBuffer.m_iRB );
-		if (GLEW_EXT_framebuffer_multisample)
-			glRenderbufferStorageMultisampleEXT( GL_RENDERBUFFER, 4, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight );
+		if (bUseMultisample)
+			glRenderbufferStorageMultisampleEXT( GL_RENDERBUFFER, iSamples, GL_RGBA8, (GLsizei)iWidth, (GLsizei)iHeight );
 		else
-			glRenderbufferStorageEXT( GL_RENDERBUFFER, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight );
+			glRenderbufferStorageEXT( GL_RENDERBUFFER, GL_RGBA8, (GLsizei)iWidth, (GLsizei)iHeight );
 		glBindRenderbufferEXT( GL_RENDERBUFFER, 0 );
 	}
 
@@ -170,8 +188,8 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 	{
 		glGenRenderbuffersEXT(1, &oBuffer.m_iDepth);
 		glBindRenderbufferEXT( GL_RENDERBUFFER, (GLuint)oBuffer.m_iDepth );
-		if (GLEW_EXT_framebuffer_multisample)
-			glRenderbufferStorageMultisampleEXT( GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, (GLsizei)iWidth, (GLsizei)iHeight );
+		if (bUseMultisample)
+			glRenderbufferStorageMultisampleEXT( GL_RENDERBUFFER, iSamples, GL_DEPTH_COMPONENT, (GLsizei)iWidth, (GLsizei)iHeight );
 		else
 			glRenderbufferStorageEXT( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)iWidth, (GLsizei)iHeight );
 		glBindRenderbufferEXT( GL_RENDERBUFFER, 0 );
@@ -180,14 +198,13 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 	glGenFramebuffersEXT(1, &oBuffer.m_iFB);
 	glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)oBuffer.m_iFB);
 	if (eOptions&FB_TEXTURE)
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, (GLuint)oBuffer.m_iMap, 0);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, iTextureTarget, (GLuint)oBuffer.m_iMap, 0);
 	else if (eOptions&FB_RENDERBUFFER)
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, (GLuint)oBuffer.m_iRB);
 	if (eOptions&FB_DEPTH)
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, (GLuint)oBuffer.m_iDepth);
     GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-	if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
-		printf("Framebuffer not complete!\n");
+	TAssert(status == GL_FRAMEBUFFER_COMPLETE_EXT);
 
 	glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
 
@@ -754,7 +771,7 @@ void CRenderer::RenderBloomPass(CFrameBuffer* apSources, CFrameBuffer* apTargets
 void CRenderer::RenderFrameBufferFullscreen(CFrameBuffer* pBuffer)
 {
 	if (pBuffer->m_iMap)
-		RenderMapFullscreen(pBuffer->m_iMap);
+		RenderMapFullscreen(pBuffer->m_iMap, pBuffer->m_bMultiSample);
 	else if (pBuffer->m_iRB)
 		RenderRBFullscreen(pBuffer);
 }
@@ -762,7 +779,7 @@ void CRenderer::RenderFrameBufferFullscreen(CFrameBuffer* pBuffer)
 void CRenderer::RenderFrameBufferToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestination)
 {
 	if (pSource->m_iMap)
-		RenderMapToBuffer(pSource->m_iMap, pDestination);
+		RenderMapToBuffer(pSource->m_iMap, pDestination, pSource->m_bMultiSample);
 	else if (pSource->m_iRB)
 		RenderRBToBuffer(pSource, pDestination);
 }
@@ -787,13 +804,12 @@ void CRenderer::RenderRBToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestinati
 	glBlitFramebufferEXT(0, 0, pSource->m_iWidth, pSource->m_iHeight, 0, 0, pDestination->m_iWidth, pDestination->m_iHeight, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_LINEAR);
 }
 
-void CRenderer::RenderMapFullscreen(size_t iMap)
+void CRenderer::RenderMapFullscreen(size_t iMap, bool bMapIsMultisample)
 {
 	if (GLEW_ARB_multitexture || GLEW_VERSION_1_3)
 		glActiveTexture(GL_TEXTURE0);
 
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, (GLuint)iMap);
 
 	if (ShouldUseFramebuffers())
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
@@ -824,13 +840,18 @@ void CRenderer::RenderMapFullscreen(size_t iMap)
 	glEnable(GL_TEXTURE_2D);
 
 	glVertexPointer(2, GL_FLOAT, 0, m_vecFullscreenVertices);
-	glBindTexture(GL_TEXTURE_2D, (GLuint)iMap);
+
+	if (bMapIsMultisample)
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, (GLuint)iMap);
+	else
+		glBindTexture(GL_TEXTURE_2D, (GLuint)iMap);
+
 	glDrawArrays(GL_QUADS, 0, 4);
 
 	glPopClientAttrib();
 }
 
-void CRenderer::RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer)
+void CRenderer::RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer, bool bMapIsMultisample)
 {
 	TAssert(ShouldUseFramebuffers());
 
@@ -871,7 +892,12 @@ void CRenderer::RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer)
 	glEnable(GL_TEXTURE_2D);
 
 	glVertexPointer(2, GL_FLOAT, 0, pBuffer->m_vecVertices);
-	glBindTexture(GL_TEXTURE_2D, (GLuint)iMap);
+
+	if (bMapIsMultisample)
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, (GLuint)iMap);
+	else
+		glBindTexture(GL_TEXTURE_2D, (GLuint)iMap);
+
 	glDrawArrays(GL_QUADS, 0, 4);
 
 	glPopClientAttrib();

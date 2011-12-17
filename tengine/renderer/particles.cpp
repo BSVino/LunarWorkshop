@@ -97,6 +97,10 @@ void CParticleSystemLibrary::Render()
 	TPROF("CParticleSystemLibrary::Render");
 
 	CParticleSystemLibrary* pPSL = Get();
+
+	if (!pPSL->m_apInstances.size())
+		return;
+
 	eastl::map<size_t, CSystemInstance*>::iterator it;
 
 	if (true)

@@ -38,6 +38,8 @@ public:
 
 	Vector2D	m_vecTexCoords[4];
 	Vector2D	m_vecVertices[4];
+
+	bool			m_bMultiSample;
 };
 
 class CRenderBatch
@@ -95,8 +97,8 @@ public:
 	void			RenderFrameBufferToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestination);
 	void			RenderRBFullscreen(CFrameBuffer* pSource);
 	void			RenderRBToBuffer(CFrameBuffer* pSource, CFrameBuffer* pBuffer);
-	void			RenderMapFullscreen(size_t iMap);
-	void			RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer);
+	void			RenderMapFullscreen(size_t iMap, bool bMapIsMultisample = false);
+	void			RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer, bool bMapIsMultisample = false);
 
 	void			SetCameraPosition(Vector vecCameraPosition) { m_vecCameraPosition = vecCameraPosition; };
 	void			SetCameraTarget(Vector vecCameraTarget) { m_vecCameraTarget = vecCameraTarget; };

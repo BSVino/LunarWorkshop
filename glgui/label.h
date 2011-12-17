@@ -13,7 +13,7 @@ namespace glgui
 	{
 		friend class CRootPanel;
 
-	protected:
+	public:
 		class CLineSection
 		{
 		public:
@@ -92,6 +92,11 @@ namespace glgui
 		virtual void	ComputeLines(float w = -1, float h = -1);
 		virtual void	PushSection(const CLineSection& oSection, const tstring& sText);
 
+		virtual size_t				GetNumLines() const { return m_aLines.size(); }
+		virtual const CLine&		GetLine(size_t iLine) const { return m_aLines[iLine]; }
+		virtual size_t				GetNumSections(size_t iLine) const { return m_aLines[iLine].m_aSections.size(); }
+		virtual const CLineSection&	GetSection(size_t iLine, size_t iSection) const { return m_aLines[iLine].m_aSections[iSection]; }
+
 		virtual Color	GetFGColor();
 		virtual void	SetFGColor(Color FGColor);
 		virtual void	SetAlpha(int a);
@@ -106,6 +111,10 @@ namespace glgui
 		virtual void	SetLinkClickedListener(IEventListener* pListener, IEventListener::Callback pfnCallback);
 		virtual IEventListener::Callback	GetLinkClickedListenerCallback() { return m_pfnLinkClickCallback; };
 		virtual IEventListener*				GetLinkClickedListener() { return m_pLinkClickListener; };
+
+		virtual void	SetSectionHoverListener(IEventListener* pListener, IEventListener::Callback pfnCallback);
+		virtual IEventListener::Callback	GetSectionHoverListenerCallback() { return m_pfnSectionHoverCallback; };
+		virtual IEventListener*				GetSectionHoverListener() { return m_pSectionHoverListener; };
 
 		static class ::FTFont*	GetFont(const tstring& sName, size_t iSize);
 		static void		AddFont(const tstring& sName, const tstring& sFile);
@@ -142,6 +151,9 @@ namespace glgui
 
 		IEventListener::Callback m_pfnLinkClickCallback;
 		IEventListener*	m_pLinkClickListener;
+
+		IEventListener::Callback m_pfnSectionHoverCallback;
+		IEventListener*	m_pSectionHoverListener;
 	};
 };
 

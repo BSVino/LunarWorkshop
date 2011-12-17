@@ -27,6 +27,7 @@ CLabel::CLabel()
 	m_bScissor = false;
 
 	m_pLinkClickListener = NULL;
+	m_pSectionHoverListener = NULL;
 
 	SetFont("sans-serif", 13);
 
@@ -48,6 +49,7 @@ CLabel::CLabel(const tstring& sText, const tstring& sFont, size_t iSize)
 	m_bScissor = false;
 
 	m_pLinkClickListener = NULL;
+	m_pSectionHoverListener = NULL;
 
 	SetFont(sFont, iSize);
 
@@ -69,6 +71,7 @@ CLabel::CLabel(float x, float y, float w, float h, const tstring& sText, const t
 	m_bScissor = false;
 
 	m_pLinkClickListener = NULL;
+	m_pSectionHoverListener = NULL;
 
 	SetFont(sFont, iSize);
 
@@ -117,38 +120,47 @@ void CLabel::Paint(float x, float y, float w, float h)
 		const CLine& oLine = m_aLines[i];
 		for (size_t j = 0; j < oLine.m_aSections.size(); j++)
 		{
-			if (glgui_showsections.GetBool())
+			if (m_pSectionHoverListener || glgui_showsections.GetBool())
 			{
 				const CLineSection& oSection = oLine.m_aSections[j];
 
 				if (MouseIsInside(oLine, oSection))
 				{
-					float ox, oy;
-					GetAlignmentOffset(oLine.m_flLineWidth, oLine.m_flLineHeight, oSection.m_sFont, oSection.m_iFontSize, w, h, ox, oy);
+					if (m_pSectionHoverListener)
+						m_pfnSectionHoverCallback(m_pSectionHoverListener, sprintf("%d %d", i, j));
 
-					if (Is3D())
+					if (glgui_showsections.GetBool())
 					{
-						float flHeight = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->LineHeight();
-						float flDescender = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Descender();
+						float ox, oy;
+						GetAlignmentOffset(oLine.m_flLineWidth, oLine.m_flLineHeight, oSection.m_sFont, oSection.m_iFontSize, w, h, ox, oy);
 
-						float x = oSection.m_rArea.x + ax + ox;
-						float y = oSection.m_rArea.h - (oSection.m_rArea.y + ay + oy) - flHeight + flDescender;
-						float w = oSection.m_rArea.w;
-						float h = oSection.m_rArea.h;
+						if (Is3D())
+						{
+							float flHeight = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->LineHeight();
+							float flDescender = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Descender();
 
-						glPushAttrib(GL_DEPTH_BUFFER_BIT|GL_CURRENT_BIT);
-						glColor4ubv(Color(50, 50, 50, 255));
-						glDepthMask(GL_FALSE);
-						glBegin(GL_QUADS);
-							glVertex2f(x, y);
-							glVertex2f(x+w, y);
-							glVertex2f(x+w, y+h);
-							glVertex2f(x, y+h);
-						glEnd();
-						glPopAttrib();
+							float x = oSection.m_rArea.x + ax + ox;
+							float y = oSection.m_rArea.h - (oSection.m_rArea.y + ay + oy) - flHeight + flDescender;
+							float w = oSection.m_rArea.w;
+							float h = oSection.m_rArea.h;
+
+							glPushAttrib(GL_DEPTH_BUFFER_BIT|GL_CURRENT_BIT);
+							glColor4ubv(Color(50, 50, 50, 255));
+							glDepthMask(GL_FALSE);
+							glBegin(GL_QUADS);
+								glVertex2f(x, y);
+								glVertex2f(x+w, y);
+								glVertex2f(x+w, y+h);
+								glVertex2f(x, y+h);
+							glEnd();
+							glPopAttrib();
+						}
+						else
+						{
+							if (glgui_showsections.GetBool())
+								CBaseControl::PaintRect(oSection.m_rArea.x + ax + ox, oSection.m_rArea.y + ay + oy, oSection.m_rArea.w, oSection.m_rArea.h);
+						}
 					}
-					else
-						CBaseControl::PaintRect(oSection.m_rArea.x + ax + ox, oSection.m_rArea.y + ay + oy, oSection.m_rArea.w, oSection.m_rArea.h);
 				}
 			}
 
@@ -171,6 +183,12 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 		m_iCharsDrawn += 1;
 		return;
 	}
+
+	Color FGColor = m_FGColor;
+	if (!m_bEnabled)
+		FGColor.SetColor(m_FGColor.r()/2, m_FGColor.g()/2, m_FGColor.b()/2, m_iAlpha);
+
+	glColor4ubv(FGColor);
 
 	float ox, oy;
 	GetAlignmentOffset(l.m_flLineWidth, l.m_flLineHeight, s.m_sFont, s.m_iFontSize, w, h, ox, oy);
@@ -709,6 +727,12 @@ void CLabel::SetLinkClickedListener(IEventListener* pListener, IEventListener::C
 {
 	m_pfnLinkClickCallback = pfnCallback;
 	m_pLinkClickListener = pListener;
+}
+
+void CLabel::SetSectionHoverListener(IEventListener* pListener, IEventListener::Callback pfnCallback)
+{
+	m_pfnSectionHoverCallback = pfnCallback;
+	m_pSectionHoverListener = pListener;
 }
 
 ::FTFont* CLabel::GetFont(const tstring& sName, size_t iSize)

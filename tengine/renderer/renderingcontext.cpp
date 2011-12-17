@@ -53,7 +53,7 @@ CRenderingContext::~CRenderingContext()
 		for (size_t i = 0; i < 8; i++)
 		{
 			glClientActiveTexture(GL_TEXTURE0+i);
-			glBindTexture(GL_TEXTURE_2D, i);
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 	}
 

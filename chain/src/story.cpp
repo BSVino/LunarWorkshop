@@ -13,6 +13,7 @@
 #include <datamanager/dataserializer.h>
 
 #include "chain_game.h"
+#include "chain_renderer.h"
 
 using namespace glgui;
 
@@ -28,6 +29,7 @@ SAVEDATA_TABLE_BEGIN(CStory);
 	SAVEDATA_OMIT(m_asPages);
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sCurrentPage);
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sNextPage);
+	SAVEDATA_OMIT(m_aflHighlightedSections);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CStory);
@@ -39,6 +41,7 @@ CStory::CStory()
 	m_pText->Set3D(true);
 	m_pText->SetFont("sans-serif", 20);
 	m_pText->SetLinkClickedListener(this, LinkClicked);
+	m_pText->SetSectionHoverListener(this, SectionHovered);
 	m_flAlpha = 0;
 	m_flAlphaGoal = 1;
 }
@@ -142,6 +145,7 @@ void CStory::Think()
 	{
 		SetPage(m_sNextPage);
 		m_sNextPage.clear();
+		m_aflHighlightedSections.clear();
 
 		m_pText->SetText(m_asPages[m_sCurrentPage].m_sLines);
 		m_flAlphaGoal = 1;
@@ -165,6 +169,13 @@ void CStory::Think()
 	RayIntersectsPlane(Ray(vecCamera, (vecWorld - vecCamera).Normalized()), v1, v2, v3, &vecHit);
 
 	m_pText->Set3DMousePosition(vecHit*LabelScale());
+
+	// Reset all highlighted sections
+	for (auto it = m_aflHighlightedSections.begin(); it != m_aflHighlightedSections.end(); it++)
+	{
+		it->second.m_flValue = Approach(it->second.m_flGoal, it->second.m_flValue, GameServer()->GetFrameTime()*5);
+		it->second.m_flGoal = 0;
+	}
 }
 
 Vector FindPointAtZ(const Frustum& oFrustum, int iF1, int iF2, float Z)
@@ -233,6 +244,33 @@ void CStory::OnRender(CRenderingContext* pContext, bool bTransparent) const
 	pContext->UseProgram("");
 	m_pText->SetAlpha(m_flAlpha);
 	m_pText->Paint();
+
+	for (auto it = m_aflHighlightedSections.begin(); it != m_aflHighlightedSections.end(); it++)
+	{
+		eastl::vector<tstring> asTokens;
+		strtok(it->first, asTokens);
+
+		TAssert(asTokens.size() == 2);
+		if (asTokens.size() < 2)
+			continue;
+
+		int iLine = stoi(asTokens[0]);
+		int iSection = stoi(asTokens[1]);
+
+		const CLabel::CLine& oLine = m_pText->GetLine(iLine);
+		const CLabel::CLineSection& oSection = m_pText->GetSection(iLine, iSection);
+
+		CRenderingContext c(GameServer()->GetRenderer());
+		c.UseFrameBuffer(&ChainRenderer()->GetMouseoverBuffer());
+		c.UseProgram("");
+		c.SetBlend(BLEND_ALPHA);
+
+		m_pText->SetFGColor(Color(1.0f, 1.0f, 0.0f, m_flAlpha*it->second.m_flValue));
+
+		m_pText->DrawSection(oLine, oSection, m_pText->GetLeft(), m_pText->GetTop(), m_pText->GetWidth(), m_pText->GetHeight());
+	}
+
+	m_pText->SetFGColor(Color(1.0f, 1.0f, 1.0f, m_flAlpha));
 }
 
 void CStory::MousePressed()
@@ -271,4 +309,24 @@ void CStory::LinkClickedCallback(const tstring& sLink)
 		m_sNextPage = trim(sLink.substr(5));
 		m_flAlphaGoal = 0;
 	}
+}
+
+void CStory::SectionHoveredCallback(const tstring& sSection)
+{
+	eastl::vector<tstring> asTokens;
+	strtok(sSection, asTokens);
+
+	TAssert(asTokens.size() == 2);
+	if (asTokens.size() < 2)
+		return;
+
+	int iLine = stoi(asTokens[0]);
+	int iSection = stoi(asTokens[1]);
+
+	const CLabel::CLineSection& oSection = m_pText->GetSection(iLine, iSection);
+
+	if (!oSection.m_sLink.length())
+		return;
+
+	m_aflHighlightedSections[sSection].m_flGoal = 1;
 }
