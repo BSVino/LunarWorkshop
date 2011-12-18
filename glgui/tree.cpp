@@ -446,7 +446,7 @@ CTreeNode* CTreeNode::GetNode(size_t i)
 void CTreeNode::Selected()
 {
 	if (m_pTree->m_pSelectedListener)
-		m_pTree->m_pfnSelectedCallback(m_pTree->m_pSelectedListener, "");
+		m_pTree->m_pfnSelectedCallback(m_pTree->m_pSelectedListener, sprintf("%d", m_pTree->GetSelectedNodeId()));
 }
 
 bool CTreeNode::IsVisible()

@@ -145,7 +145,6 @@ void CStory::Think()
 	{
 		SetPage(m_sNextPage);
 		m_sNextPage.clear();
-		m_aflHighlightedSections.clear();
 
 		m_pText->SetText(m_asPages[m_sCurrentPage].m_sLines);
 		m_flAlphaGoal = 1;
@@ -279,15 +278,30 @@ void CStory::MousePressed()
 	m_pText->MousePressed(0, 0, 0);
 }
 
+const tstring& CStory::GetPageID(size_t i) const
+{
+	auto it = m_asPages.begin();
+	for (size_t j = 0; it != m_asPages.end() && j != i; it++, j++);
+
+	return it->first;
+}
+
 void CStory::SetPage(const tstring& sPage)
 {
 	m_sCurrentPage = sPage;
 
 	TAssert(m_asPages.find(m_sCurrentPage) != m_asPages.end());
 	if (m_asPages.find(m_sCurrentPage) == m_asPages.end())
+	{
 		TError("Page " + m_sCurrentPage + " doesn't exist!\n");
+		return;
+	}
 
 	m_pText->SetText(m_asPages[m_sCurrentPage].m_sLines);
+
+	m_aflHighlightedSections.clear();
+	m_flAlpha = 0;
+	m_flAlphaGoal = 1;
 }
 
 void CStory::GoToNextPage()

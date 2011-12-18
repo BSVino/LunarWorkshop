@@ -6,12 +6,22 @@
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
 #include <tengine/models/texturelibrary.h>
+#include <tinker/keys.h>
 
 #include "../chain_game.h"
 #include "../story.h"
+#include "menu.h"
+
+CChainHUD::CChainHUD()
+	: m_pMenu(new CChainMenu())
+{
+	AddControl(m_pMenu.get());
+}
 
 void CChainHUD::Paint(float x, float y, float w, float h)
 {
+	BaseClass::Paint(x, y, w, h);
+
 	if (!ChainGame())
 		return;
 
@@ -38,6 +48,17 @@ void CChainHUD::Paint(float x, float y, float w, float h)
 		c.SetBlend(BLEND_ALPHA);
 		CBaseControl::PaintTexture(CTextureLibrary::FindTextureID("textures/arrow.png"), 100, h-100, -50, 25, Color(255, 255, 255, (unsigned char)(pStory->GetAlpha()*255)));
 	}
+}
+
+bool CChainHUD::KeyPressed(int code, bool bCtrlDown)
+{
+	if (code == TINKER_KEY_ESCAPE)
+	{
+		m_pMenu->SetVisible(!m_pMenu->IsVisible());
+		return false;
+	}
+
+	return BaseClass::KeyPressed(code, bCtrlDown);
 }
 
 bool CChainHUD::MousePressed(int code, int mx, int my)

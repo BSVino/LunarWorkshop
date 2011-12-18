@@ -6,6 +6,21 @@
 
 using namespace glgui;
 
+CButton::CButton(const tstring& sText, bool bToggle, const tstring& sFont, size_t iSize)
+	: CLabel(10, 10, 100, 30, sText, sFont, iSize)
+{
+	m_bToggle = bToggle;
+	m_bToggleOn = false;
+	m_bDown = false;
+	m_flHighlightGoal = m_flHighlight = 0;
+	m_pClickListener = NULL;
+	m_pfnClickCallback = NULL;
+	m_pUnclickListener = NULL;
+	m_pfnUnclickCallback = NULL;
+	m_clrButton = g_clrBox;
+	m_clrDown = g_clrBoxHi;
+}
+
 CButton::CButton(float x, float y, float w, float h, const tstring& sText, bool bToggle, const tstring& sFont, size_t iSize)
 	: CLabel(x, y, w, h, sText, sFont, iSize)
 {

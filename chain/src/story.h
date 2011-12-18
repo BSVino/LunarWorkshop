@@ -35,6 +35,8 @@ public:
 
 	float					LabelScale() const { return 100; }
 
+	size_t					GetNumPages() const { return m_asPages.size(); }
+	const tstring&			GetPageID(size_t i) const;
 	void					SetPage(const tstring& sPage);
 	CPage*					GetCurrentPage() { return &m_asPages[m_sCurrentPage]; }
 	void					GoToNextPage();

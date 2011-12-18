@@ -25,6 +25,7 @@ set (CHAIN_SOURCES
 	chain_playercharacter.cpp
 
 	ui/hud.cpp
+	ui/menu.cpp
 )
 
 add_executable (chain WIN32 ${CHAIN_SOURCES})
