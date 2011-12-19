@@ -21,8 +21,10 @@ public:
 public:
 	virtual void			AddEntity(class CBaseEntity* pEnt, collision_type_t eCollisionType) {};
 	virtual void			RemoveEntity(class CBaseEntity* pEnt) {};
+	virtual void			RemoveAllEntities() {};
 
 	virtual void			LoadCollisionMesh(const tstring& sModel, size_t iTris, int* aiTris, size_t iVerts, float* aflVerts) {};
+	virtual void			UnloadCollisionMesh(const tstring& sModel) {};
 
 	virtual void			Simulate() {};
 

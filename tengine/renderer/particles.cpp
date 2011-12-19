@@ -20,6 +20,7 @@ extern void InitSystems();
 CParticleSystemLibrary::CParticleSystemLibrary()
 {
 	s_pParticleSystemLibrary = this;
+	m_iParticleSystemsLoaded = 0;
 
 	m_iSystemInstanceIndex = 0;
 
@@ -320,6 +321,8 @@ void CParticleSystem::Load()
 	if (GetModelName().length() > 0)
 		SetModel(CModelLibrary::AddModel(GetModelName()));
 
+	CParticleSystemLibrary::Get()->m_iParticleSystemsLoaded++;
+
 	for (size_t i = 0; i < GetNumChildren(); i++)
 		CParticleSystemLibrary::Get()->GetParticleSystem(GetChild(i))->Load();
 }
@@ -338,6 +341,8 @@ void CParticleSystem::Unload()
 
 	if (GetModelName().length() > 0)
 		CModelLibrary::ReleaseModel(GetModelName());
+
+	CParticleSystemLibrary::Get()->m_iParticleSystemsLoaded--;
 
 	for (size_t i = 0; i < GetNumChildren(); i++)
 		CParticleSystemLibrary::Get()->GetParticleSystem(GetChild(i))->Unload();

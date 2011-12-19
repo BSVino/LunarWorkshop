@@ -217,12 +217,15 @@ protected:
 
 class CParticleSystemLibrary
 {
+	friend class CParticleSystem;
+
 public:
 									CParticleSystemLibrary();
 									~CParticleSystemLibrary();
 
 public:
 	static size_t					GetNumParticleSystems() { return Get()->m_apParticleSystems.size(); };
+	static size_t					GetNumParticleSystemsLoaded() { return Get()->m_iParticleSystemsLoaded; };
 
 	size_t							AddParticleSystem(const tstring& sName);
 	size_t							FindParticleSystem(const tstring& sName);
@@ -254,6 +257,7 @@ private:
 
 protected:
 	eastl::vector<CParticleSystem*>	m_apParticleSystems;
+	size_t							m_iParticleSystemsLoaded;
 	eastl::map<size_t, CSystemInstance*>	m_apInstances;
 	size_t							m_iSystemInstanceIndex;
 

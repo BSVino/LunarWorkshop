@@ -6,6 +6,7 @@
 #include <game/entities/character.h>
 #include <models/models.h>
 #include <tinker/profiler.h>
+#include <tinker/application.h>
 
 #include "physics_debugdraw.h"
 
@@ -175,6 +176,14 @@ void CBulletPhysics::RemoveEntity(CBaseEntity* pEntity)
 	if (!pPhysicsEntity)
 		return;
 
+	RemoveEntity(pPhysicsEntity);
+}
+
+void CBulletPhysics::RemoveEntity(CPhysicsEntity* pPhysicsEntity)
+{
+	if (!pPhysicsEntity)
+		return;
+
 	if (pPhysicsEntity->m_pRigidBody)
 		m_pDynamicsWorld->removeRigidBody(pPhysicsEntity->m_pRigidBody);
 	delete pPhysicsEntity->m_pRigidBody;
@@ -191,11 +200,26 @@ void CBulletPhysics::RemoveEntity(CBaseEntity* pEntity)
 	pPhysicsEntity->m_pCharacterController = NULL;
 }
 
+void CBulletPhysics::RemoveAllEntities()
+{
+	for (size_t i = 0; i < m_aEntityList.size(); i++)
+	{
+		auto pPhysicsEntity = &m_aEntityList[i];
+
+		RemoveEntity(pPhysicsEntity);
+	}
+}
+
 void CBulletPhysics::LoadCollisionMesh(const tstring& sModel, size_t iTris, int* aiTris, size_t iVerts, float* aflVerts)
 {
 	size_t iModel = CModelLibrary::FindModel(sModel);
 
 	TAssert(iModel != ~0);
+
+	TAssert(!m_apCollisionMeshes[iModel].m_pIndexVertexArray);
+	TAssert(!m_apCollisionMeshes[iModel].m_pCollisionShape);
+	if (m_apCollisionMeshes[iModel].m_pIndexVertexArray)
+		return;
 
 	m_apCollisionMeshes[iModel].m_pIndexVertexArray = new btTriangleIndexVertexArray();
 
@@ -209,6 +233,37 @@ void CBulletPhysics::LoadCollisionMesh(const tstring& sModel, size_t iTris, int*
 	m_apCollisionMeshes[iModel].m_pIndexVertexArray->addIndexedMesh(m, PHY_INTEGER);
 
 	m_apCollisionMeshes[iModel].m_pCollisionShape = new btBvhTriangleMeshShape(m_apCollisionMeshes[iModel].m_pIndexVertexArray, true);
+}
+
+void CBulletPhysics::UnloadCollisionMesh(const tstring& sModel)
+{
+	size_t iModel = CModelLibrary::FindModel(sModel);
+
+	TAssert(iModel != ~0);
+	if (iModel == ~0)
+		return;
+
+	auto it = m_apCollisionMeshes.find(iModel);
+	TAssert(it != m_apCollisionMeshes.end());
+	if (it == m_apCollisionMeshes.end())
+		return;
+
+#ifdef _DEBUG
+	// Make sure there are no objects using this collision shape.
+	for (int i = 0; i < m_pDynamicsWorld->getCollisionObjectArray().size(); i++)
+	{
+		auto pObject = m_pDynamicsWorld->getCollisionObjectArray()[i];
+		CEntityHandle<CBaseEntity> hEntity((size_t)pObject->getUserPointer());
+		if (pObject->getCollisionShape() == it->second.m_pCollisionShape)
+			TMsg("Entity found with collision shape which is being unloaded: " + tstring(hEntity->GetClassName()) + ":" + convertstring<char, tchar>(hEntity->GetName()) + "\n");
+		TAssert(pObject->getCollisionShape() != it->second.m_pCollisionShape);
+	}
+#endif
+
+	delete it->second.m_pCollisionShape;
+	delete it->second.m_pIndexVertexArray;
+
+	m_apCollisionMeshes.erase(it->first);
 }
 
 void CBulletPhysics::Simulate()
@@ -424,5 +479,6 @@ void CMotionState::setWorldTransform(const btTransform& mCenterOfMass)
 
 CPhysicsModel* GamePhysics()
 {
-	return GameServer()->GetPhysics()->GetModel();
+	static CPhysicsModel* pModel = new CBulletPhysics();
+	return pModel;
 }

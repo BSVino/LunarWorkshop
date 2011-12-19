@@ -67,11 +67,8 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 		m_pWorkListener->BeginProgress();
 
 	TMsg("Creating physics model... ");
-	m_pPhysicsManager = new CPhysicsManager();
-
-	// If the server has been reset, reload all models back into the physics model.
-	CModelLibrary::LoadAllIntoPhysics();
-	TMsg("Done\n");
+	GamePhysics();	// Just make sure it exists.
+	TMsg("Done.\n");
 
 	TMsg("Registering entities... ");
 
@@ -114,7 +111,7 @@ CGameServer::~CGameServer()
 
 	DestroyAllEntities(eastl::vector<eastl::string>());
 
-	delete m_pPhysicsManager;
+	GamePhysics()->RemoveAllEntities();
 
 	for (size_t i = 0; i < m_apLevels.size(); i++)
 		delete m_apLevels[i];
@@ -196,7 +193,7 @@ void CGameServer::PrecacheList()
 	CSoundLibrary::ClearUnreferenced();
 
 	TMsg("Done.\n");
-	TMsg(sprintf(tstring("%d models, %d textures, %d sounds and %d particle systems precached.\n"), CModelLibrary::GetNumModels(), CTextureLibrary::GetNumTextures(), CSoundLibrary::GetNumSounds(), CParticleSystemLibrary::GetNumParticleSystems()));
+	TMsg(sprintf(tstring("%d models, %d textures, %d sounds and %d particle systems precached.\n"), CModelLibrary::GetNumModelsLoaded(), CTextureLibrary::GetNumTextures(), CSoundLibrary::GetNumSoundsLoaded(), CParticleSystemLibrary::GetNumParticleSystemsLoaded()));
 
 	m_bAllowPrecaches = false;
 }

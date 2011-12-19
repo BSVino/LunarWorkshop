@@ -41,7 +41,7 @@ public:
 							~CModelLibrary();
 
 public:
-	static size_t			GetNumModels() { return Get()->m_apModels.size(); }
+	static size_t			GetNumModelsLoaded() { return Get()->m_iModelsLoaded; }
 
 	static size_t			AddModel(const tstring& sModel);
 	static size_t			FindModel(const tstring& sModel);
@@ -57,6 +57,7 @@ public:
 
 protected:
 	eastl::vector<CModel*>	m_apModels;
+	size_t					m_iModelsLoaded;
 
 private:
 	static CModelLibrary*	s_pModelLibrary;

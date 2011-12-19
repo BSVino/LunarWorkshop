@@ -125,7 +125,6 @@ public:
 
 	static CGameServer*							GetGameServer() { return s_pGameServer; };
 	class CGame*								GetGame();
-	class CPhysicsManager*						GetPhysics() { return m_pPhysicsManager; }
 
 protected:
 	bool										m_bAllowPrecaches;
@@ -146,9 +145,6 @@ protected:
 	float										m_flHostTime;		// This is the current time for the computer
 	size_t										m_iFrame;
 
-	class CPhysicsManager*						m_pPhysicsManager;
-	eastl::vector<CEntityHandle<CBaseEntity> >	m_apSimulateList;
-	eastl::vector<CEntityHandle<CBaseEntity> >	m_apCollisionList;
 	eastl::vector<CBaseEntity*>					m_apRenderList;
 
 	class CCamera*								m_pCamera;

@@ -13,6 +13,7 @@ static CSoundLibrary g_SoundLibrary = CSoundLibrary();
 CSoundLibrary::CSoundLibrary()
 {
 	s_pSoundLibrary = this;
+	m_iSoundsLoaded = 0;
 
 	SDL_Init(SDL_INIT_AUDIO);
 
@@ -57,11 +58,12 @@ size_t CSoundLibrary::AddSound(const tstring& pszFilename)
 		Get()->m_apSounds.push_back();
 	}
 
+	Get()->m_iSoundsLoaded++;
+
 	Get()->m_apSounds[iLocation] = new CSound(pszFilename);
 
-	iSound = Get()->m_apSounds.size()-1;
 	Get()->m_apSounds[iSound]->m_iReferences++;
-	return iSound;
+	return iLocation;
 }
 
 CSound* CSoundLibrary::GetSound(size_t i)
@@ -288,6 +290,7 @@ void CSoundLibrary::ClearUnreferenced()
 
 		if (!Get()->m_apSounds[i]->m_iReferences)
 		{
+			Get()->m_iSoundsLoaded--;
 			delete Get()->m_apSounds[i];
 			Get()->m_apSounds[i] = nullptr;
 		}

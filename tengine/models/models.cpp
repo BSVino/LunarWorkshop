@@ -7,12 +7,14 @@
 #include <renderer/renderer.h>
 #include <models/texturelibrary.h>
 #include <physics/physics.h>
+#include <tinker/application.h>
 
 CModelLibrary* CModelLibrary::s_pModelLibrary = NULL;
 static CModelLibrary g_ModelLibrary = CModelLibrary();
 
 CModelLibrary::CModelLibrary()
 {
+	m_iModelsLoaded = 0;
 	s_pModelLibrary = this;
 }
 
@@ -74,12 +76,12 @@ size_t CModelLibrary::AddModel(const tstring& sModel)
 
 	pModel->m_iReferences++;
 
-	size_t iReturn = Get()->m_apModels.size()-1;
+	Get()->m_iModelsLoaded++;
 
 	for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
 		CModelLibrary::AddModel(pModel->m_pToy->GetSceneAreaFileName(i));
 
-	return iReturn;
+	return iLocation;
 }
 
 CModel* CModelLibrary::GetModel(size_t i)
@@ -130,22 +132,24 @@ void CModelLibrary::ClearUnreferenced()
 {
 	for (size_t i = 0; i < Get()->m_apModels.size(); i++)
 	{
-		if (!Get()->m_apModels[i])
+		CModel* pModel = Get()->m_apModels[i];
+		if (!pModel)
 			continue;
 
-		if (!Get()->m_apModels[i]->m_iReferences)
+		if (!pModel->m_iReferences)
 		{
-			delete Get()->m_apModels[i];
+			delete pModel;
 			Get()->m_apModels[i] = nullptr;
+			Get()->m_iModelsLoaded--;
 		}
 	}
 }
 
 void CModelLibrary::LoadAllIntoPhysics()
 {
-	for (size_t i = 0; i < GetNumModels(); i++)
+	for (size_t i = 0; i < Get()->m_apModels.size(); i++)
 	{
-		CModel* pModel = GetModel(i);
+		CModel* pModel = Get()->m_apModels[i];
 		if (!pModel)
 			continue;
 
@@ -164,6 +168,9 @@ CModel::CModel(const tstring& sFilename)
 CModel::~CModel()
 {
 	TAssert(m_iReferences == 0);
+
+	if (m_pToy->GetPhysicsNumTris())
+		GamePhysics()->UnloadCollisionMesh(m_sFilename);
 
 	if (m_pToy)
 		delete m_pToy;

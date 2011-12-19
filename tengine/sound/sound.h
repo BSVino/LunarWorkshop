@@ -27,7 +27,7 @@ public:
 							~CSoundLibrary();
 
 public:
-	static size_t			GetNumSounds() { return Get()->m_apSounds.size(); };
+	static size_t			GetNumSoundsLoaded() { return Get()->m_iSoundsLoaded; };
 
 	static size_t			AddSound(const tstring& pszFilename);
 	static size_t			FindSound(const tstring& pszFilename);
@@ -64,6 +64,7 @@ protected:
 	};
 
 	eastl::vector<CSound*>	m_apSounds;
+	size_t					m_iSoundsLoaded;
 	eastl::map<CBaseEntity*, eastl::map<tstring, CSoundInstance> >	m_aiActiveSounds;
 
 private:
