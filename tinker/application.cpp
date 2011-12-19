@@ -98,7 +98,8 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 	glfwSetMouseWheelCallback(&CApplication::MouseWheelCallback);
 	glfwSwapInterval( 1 );
 	glfwSetTime( 0.0 );
-	glfwEnable( GLFW_MOUSE_CURSOR );
+
+	SetMouseCursorEnabled(true);
 
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
@@ -656,6 +657,13 @@ void CApplication::SetMouseCursorEnabled(bool bEnabled)
 		glfwEnable( GLFW_MOUSE_CURSOR );
 	else
 		glfwDisable( GLFW_MOUSE_CURSOR );
+
+	m_bMouseEnabled = bEnabled;
+}
+
+bool CApplication::IsMouseCursorEnabled()
+{
+	return m_bMouseEnabled;
 }
 
 bool CApplication::HasCommandLineSwitch(const char* pszSwitch)

@@ -39,6 +39,7 @@ void CLevelSelector::Layout()
 
 	m_pLevels->SetHeight(glgui::CRootPanel::Get()->GetHeight()-50);
 
+	m_pLevels->ClearTree();
 	for (size_t i = 0; i < GameServer()->GetNumLevels(); i++)
 		m_pLevels->AddNode(GameServer()->GetLevel(i)->GetName() + " (" + GameServer()->GetLevel(i)->GetFile() + ")");
 
@@ -48,6 +49,16 @@ void CLevelSelector::Layout()
 void CLevelSelector::Paint(float x, float y, float w, float h)
 {
 	BaseClass::Paint(x, y, w, h);
+}
+
+void CLevelSelector::SetVisible(bool bVisible)
+{
+	BaseClass::SetVisible(bVisible);
+
+	if (bVisible)
+		CApplication::Get()->SetMouseCursorEnabled(true);
+	else
+		CApplication::Get()->SetMouseCursorEnabled(false);
 }
 
 void CLevelSelector::SelectedCallback(const tstring& sArgs)

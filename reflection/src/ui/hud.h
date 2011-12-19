@@ -15,6 +15,8 @@ public:
 public:
 	virtual void	Paint(float x, float y, float w, float h);
 
+	virtual bool	KeyPressed(int code, bool bCtrlDown = false);
+
 protected:
 	CLevelSelector*		m_pSelector;
 };

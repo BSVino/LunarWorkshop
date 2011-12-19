@@ -16,6 +16,8 @@ public:
 
 	virtual void	Paint(float x, float y, float w, float h);
 
+	virtual void	SetVisible(bool bVisible);
+
 	EVENT_CALLBACK(CLevelSelector, Selected);
 
 protected:

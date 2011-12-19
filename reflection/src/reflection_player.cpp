@@ -34,6 +34,9 @@ void CReflectionPlayer::MouseMotion(int x, int y)
 	if (!GetPlayerCharacter())
 		return;
 
+	if (Application()->IsMouseCursorEnabled())
+		return;
+
 	if (GetPlayerCharacter()->IsReflected(REFLECTION_VERTICAL) && GetPlayerCharacter()->IsReflected(REFLECTION_LATERAL))
 		BaseClass::MouseMotion(-x, -y);
 	else if (GetPlayerCharacter()->IsReflected(REFLECTION_VERTICAL))

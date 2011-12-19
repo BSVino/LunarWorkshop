@@ -76,6 +76,7 @@ public:
 	void						GetMousePosition(int& x, int& y);
 
 	void						SetMouseCursorEnabled(bool bEnabled);
+	bool						IsMouseCursorEnabled();
 
 	int							GetWindowWidth() { return (int)m_iWindowWidth; };
 	int							GetWindowHeight() { return (int)m_iWindowHeight; };
@@ -119,6 +120,7 @@ protected:
 	eastl::string				m_sCode;
 	eastl::string				m_sKey;
 
+	bool						m_bMouseEnabled;
 	bool						m_bMouseDownInGUI;
 
 	class CConsole*				m_pConsole;

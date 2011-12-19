@@ -6,6 +6,7 @@
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
 #include <tinker/cvar.h>
+#include <tinker/keys.h>
 
 #include "../reflection_character.h"
 #include "../reflection_playercharacter.h"
@@ -139,4 +140,15 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 			break;
 		}
 	}
+}
+
+bool CReflectionHUD::KeyPressed(int code, bool bCtrlDown)
+{
+	if (code == TINKER_KEY_ESCAPE)
+	{
+		m_pSelector->SetVisible(!m_pSelector->IsVisible());
+		return false;
+	}
+
+	return BaseClass::KeyPressed(code, bCtrlDown);
 }
