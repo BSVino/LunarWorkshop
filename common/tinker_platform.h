@@ -21,6 +21,8 @@ bool IsDirectory(tstring sPath);
 tstring FindAbsolutePath(const tstring& sPath);
 void DebugPrint(tstring sText);
 void Exec(eastl::string sLine);
+int TranslateKeyToQwerty(int iKey);
+int TranslateKeyFromQwerty(int iKey);
 
 #ifdef _WIN32
 #define DIR_SEP "\\"

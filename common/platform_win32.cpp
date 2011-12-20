@@ -281,3 +281,72 @@ void Exec(eastl::string sLine)
 {
 	system(sLine.c_str());
 }
+
+int GetVKForChar(int iChar)
+{
+	switch(iChar)
+	{
+	case ';':
+		return VK_OEM_1;
+
+	case '/':
+		return VK_OEM_2;
+
+	case '`':
+		return VK_OEM_3;
+
+	case '[':
+		return VK_OEM_4;
+
+	case '\\':
+		return VK_OEM_5;
+
+	case ']':
+		return VK_OEM_6;
+
+	case '\'':
+		return VK_OEM_7;
+
+	case '=':
+		return VK_OEM_PLUS;
+
+	case ',':
+		return VK_OEM_COMMA;
+
+	case '-':
+		return VK_OEM_MINUS;
+
+	case '.':
+		return VK_OEM_PERIOD;
+	}
+
+	return iChar;
+}
+
+int TranslateKeyToQwerty(int iKey)
+{
+	// If we are using a non-qwerty layout, map the keys to querty internally.
+
+	HKL iCurrent = GetKeyboardLayout( 0 );
+	static HKL iEnglish = LoadKeyboardLayout(L"00000409", 0);
+
+	if (iCurrent == iEnglish)
+		return iKey;
+
+	UINT i = MapVirtualKeyEx(GetVKForChar(iKey), MAPVK_VK_TO_VSC, iCurrent);
+	return (int)MapVirtualKeyEx(i, MAPVK_VSC_TO_VK, iEnglish);
+}
+
+int TranslateKeyFromQwerty(int iKey)
+{
+	// If we are using a non-qwerty layout, map the keys to querty internally.
+
+	HKL iCurrent = GetKeyboardLayout( 0 );
+	static HKL iEnglish = LoadKeyboardLayout(L"00000409", 0);
+
+	if (iCurrent == iEnglish)
+		return iKey;
+
+	UINT i = MapVirtualKeyEx(GetVKForChar(iKey), MAPVK_VK_TO_VSC, iEnglish);
+	return (int)MapVirtualKeyEx(i, MAPVK_VSC_TO_VK, iCurrent);
+}

@@ -500,7 +500,7 @@ tinker_keys_t MapKey(int c)
 	}
 
 	if (c < 256)
-		return (tinker_keys_t)c;
+		return (tinker_keys_t)TranslateKeyToQwerty(c);
 
 	return TINKER_KEY_UKNOWN;
 }
