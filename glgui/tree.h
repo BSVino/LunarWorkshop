@@ -115,6 +115,9 @@ namespace glgui
 		virtual bool						MousePressed(int code, int mx, int my);
 		virtual bool						MouseReleased(int iButton, int mx, int my);
 
+		virtual void						AddControl(IControl* pControl, bool bToTail = false);
+		virtual void						RemoveControl(IControl* pControl);
+
 		void								ClearTree();
 
 		size_t								AddNode(const tstring& sName);
@@ -152,6 +155,7 @@ namespace glgui
 
 	public:
 		eastl::vector<CTreeNode*>			m_apNodes;
+		eastl::vector<CTreeNode*>			m_apAllNodes;
 
 		float								m_flCurrentHeight;
 		float								m_flCurrentDepth;

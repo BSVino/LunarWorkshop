@@ -37,7 +37,9 @@ void CLevelSelector::Layout()
 	SetPos(glgui::CRootPanel::Get()->GetWidth()/2 - GetWidth()/2, 50);
 	SetBottom(glgui::CRootPanel::Get()->GetHeight()-50);
 
-	m_pLevels->SetHeight(glgui::CRootPanel::Get()->GetHeight()-50);
+	m_pLevels->SetHeight(GetHeight()-50);
+	m_pLevels->SetWidth(GetWidth()-50);
+	m_pLevels->SetLeft(GetWidth()/2-m_pLevels->GetWidth()/2);
 
 	m_pLevels->ClearTree();
 	for (size_t i = 0; i < GameServer()->GetNumLevels(); i++)

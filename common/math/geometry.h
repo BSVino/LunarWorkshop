@@ -26,7 +26,10 @@ public:
 		h = H;
 	}
 
-	T Size() { return w*h; }
+	T Size() const { return w*h; }
+
+	T Right() const { return x + w; }
+	T Bottom() const { return y + h; }
 
 	T x, y, w, h;
 };

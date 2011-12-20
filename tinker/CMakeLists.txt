@@ -22,6 +22,7 @@ set (TINKER_GLGUI_SOURCES
 	../glgui/panel.cpp
 	../glgui/picturebutton.cpp
 	../glgui/rootpanel.cpp
+	../glgui/scrollbar.cpp
 	../glgui/slidingpanel.cpp
 	../glgui/tree.cpp
 	../glgui/textfield.cpp

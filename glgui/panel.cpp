@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 
 #include "rootpanel.h"
+#include "scrollbar.h"
 
 using namespace glgui;
 
@@ -14,6 +15,10 @@ CPanel::CPanel()
 	m_pHasCursor = NULL;
 	m_bHighlight = false;
 	m_bDestructing = false;
+	m_bScissoring = false;
+
+	m_pVerticalScrollBar = nullptr;
+	m_pHorizontalScrollBar = nullptr;
 }
 
 CPanel::CPanel(float x, float y, float w, float h)
@@ -24,6 +29,10 @@ CPanel::CPanel(float x, float y, float w, float h)
 	m_pHasCursor = NULL;
 	m_bHighlight = false;
 	m_bDestructing = false;
+	m_bScissoring = false;
+
+	m_pVerticalScrollBar = nullptr;
+	m_pHorizontalScrollBar = nullptr;
 }
 
 CPanel::~CPanel()
@@ -161,6 +170,19 @@ void CPanel::CursorMoved(int mx, int my)
 
 		float x, y, w, h;
 		pControl->GetAbsDimensions(x, y, w, h);
+
+		if (m_pVerticalScrollBar && pControl != m_pVerticalScrollBar)
+		{
+			if (mx >= m_pVerticalScrollBar->GetLeft())
+				continue;
+		}
+
+		if (m_pHorizontalScrollBar && pControl != m_pHorizontalScrollBar)
+		{
+			if (my >= m_pHorizontalScrollBar->GetTop())
+				continue;
+		}
+
 		if (mx >= x &&
 			my >= y &&
 			mx < x + w &&
@@ -214,6 +236,8 @@ void CPanel::AddControl(IControl* pControl, bool bToTail)
 	if (!pControl)
 		return;
 
+	TAssert(pControl != this);
+
 #ifdef _DEBUG
 	for (size_t i = 0; i < m_apControls.size(); i++)
 		TAssert(m_apControls[i] != pControl);	// You're adding a control to the panel twice! Quit it!
@@ -262,10 +286,39 @@ void CPanel::MoveToTop(IControl* pControl)
 
 void CPanel::Layout( void )
 {
+	FRect rPanelBounds = GetAbsDimensions();
+	FRect rAllBounds = GetAbsDimensions();
+
 	size_t iCount = m_apControls.size();
 	for (size_t i = 0; i < iCount; i++)
 	{
 		m_apControls[i]->Layout();
+
+		FRect rControlBounds = m_apControls[i]->GetAbsDimensions();
+
+		if (rControlBounds.x < rAllBounds.x)
+			rAllBounds.x = rControlBounds.x;
+
+		if (rControlBounds.y < rAllBounds.y)
+			rAllBounds.y = rControlBounds.y;
+
+		if (rControlBounds.Right() > rAllBounds.Right())
+			rAllBounds.w = rControlBounds.Right() - rAllBounds.x;
+
+		if (rControlBounds.Bottom() > rAllBounds.Bottom())
+			rAllBounds.h = rControlBounds.Bottom() - rAllBounds.y;
+	}
+
+	m_rControlBounds = rAllBounds;
+
+	if (m_pVerticalScrollBar)
+	{
+		m_pVerticalScrollBar->SetVisible((rAllBounds.y < rPanelBounds.y) || (rAllBounds.Bottom() > rPanelBounds.Bottom()));
+	}
+
+	if (m_pHorizontalScrollBar)
+	{
+		m_pHorizontalScrollBar->SetVisible((rAllBounds.x < rPanelBounds.x) || (rAllBounds.Right() > rPanelBounds.Right()));
 	}
 }
 
@@ -299,12 +352,30 @@ void CPanel::Paint(float x, float y, float w, float h)
 	if (m_eBorder == BT_SOME)
 		PaintBorder(x, y, w, h);
 
+	bool bScissor = m_bScissoring;
+	float sx, sy;
+	if (bScissor)
+	{
+		GetAbsPos(sx, sy);
+		sy = CRootPanel::Get()->GetHeight()-sy-GetHeight();
+		glScissor((int)sx, (int)sy, (int)GetWidth(), (int)GetHeight());
+		glEnable(GL_SCISSOR_TEST);
+
+		//CRootPanel::PaintRect(0, 0, CRootPanel::Get()->GetWidth(), CRootPanel::Get()->GetHeight(), Color(0, 0, 100));
+	}
+
 	size_t iCount = m_apControls.size();
 	for (size_t i = 0; i < iCount; i++)
 	{
 		IControl* pControl = m_apControls[i];
 		if (!pControl->IsVisible())
 			continue;
+
+		if (bScissor)
+		{
+			glScissor((int)sx, (int)sy, (int)GetWidth(), (int)GetHeight());
+			glEnable(GL_SCISSOR_TEST);
+		}
 
 		// Translate this location to the child's local space.
 		float cx, cy, ax, ay;
@@ -313,7 +384,18 @@ void CPanel::Paint(float x, float y, float w, float h)
 		pControl->Paint(cx+x-ax, cy+y-ay);
 	}
 
+	if (bScissor)
+		glDisable(GL_SCISSOR_TEST);
+
 	BaseClass::Paint(x, y, w, h);
+}
+
+bool CPanel::ShouldControlOffset(IControl* pControl) const
+{
+	if (pControl == m_pVerticalScrollBar || pControl == m_pHorizontalScrollBar)
+		return false;
+
+	return true;
 }
 
 void CPanel::PaintBorder(float x, float y, float w, float h)
@@ -351,5 +433,63 @@ void CPanel::Think()
 	for (size_t i = iCount-1; i < iCount; i--)
 	{
 		m_apControls[i]->Think();
+	}
+
+	m_rControlOffset = FRect(0, 0, 0, 0);
+
+	if (m_pVerticalScrollBar && m_pVerticalScrollBar->IsVisible())
+	{
+		float flScrollable = m_rControlBounds.h - GetHeight();
+		m_rControlOffset.y = -m_pVerticalScrollBar->GetHandlePosition() * flScrollable;
+	}
+
+	if (m_pHorizontalScrollBar && m_pHorizontalScrollBar->IsVisible())
+	{
+		float flScrollable = m_rControlBounds.w - GetWidth();
+		m_rControlOffset.x = -m_pHorizontalScrollBar->GetHandlePosition() * flScrollable;
+	}
+}
+
+void CPanel::SetVerticalScrollBarEnabled(bool b)
+{
+	if (m_pVerticalScrollBar && b)
+		return;
+
+	if (!m_pVerticalScrollBar && !b)
+		return;
+
+	if (b)
+	{
+		m_pVerticalScrollBar = new CScrollBar(false);
+		AddControl(m_pVerticalScrollBar);
+		Layout();
+	}
+	else
+	{
+		RemoveControl(m_pVerticalScrollBar);
+		delete m_pVerticalScrollBar;
+		m_pVerticalScrollBar = nullptr;
+	}
+}
+
+void CPanel::SetHorizontalScrollBarEnabled(bool b)
+{
+	if (m_pHorizontalScrollBar && b)
+		return;
+
+	if (!m_pHorizontalScrollBar && !b)
+		return;
+
+	if (b)
+	{
+		m_pHorizontalScrollBar = new CScrollBar(true);
+		AddControl(m_pHorizontalScrollBar);
+		Layout();
+	}
+	else
+	{
+		RemoveControl(m_pHorizontalScrollBar);
+		delete m_pHorizontalScrollBar;
+		m_pHorizontalScrollBar = nullptr;
 	}
 }

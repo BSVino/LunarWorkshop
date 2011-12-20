@@ -49,6 +49,9 @@ namespace glgui
 		virtual void			SetHighlighted(bool bHighlight) { m_bHighlight = bHighlight; };
 		virtual bool			IsHighlighted() { return m_bHighlight; };
 
+		void					SetScissoring(bool b) { m_bScissoring = b; };
+		bool					IsScissoring() const { return m_bScissoring; };
+
 		typedef enum
 		{
 			BT_NONE	= 0,
@@ -58,6 +61,14 @@ namespace glgui
 		void					SetBorder(Border b) { m_eBorder = b; };
 
 		void					SetBackgroundColor(Color c) { m_clrBackground = c; };
+
+		FRect					GetControlBounds() const { return m_rControlBounds; };
+		FRect					GetControlOffset() const { return m_rControlOffset; };
+
+		void					SetVerticalScrollBarEnabled(bool b);
+		void					SetHorizontalScrollBarEnabled(bool b);
+
+		bool					ShouldControlOffset(IControl* pControl) const;
 
 	protected:
 		virtual void			PaintBorder(float x, float y, float w, float h);
@@ -72,7 +83,14 @@ namespace glgui
 		Color					m_clrBackground;
 
 		bool					m_bHighlight;
+		bool					m_bScissoring;
 		bool					m_bDestructing;
+
+		FRect					m_rControlBounds;	// Bounding box for all child controls but not children of children. Only valid after Layout()
+		FRect					m_rControlOffset;	// w/h offset for children as determined by scrollbar
+
+		class CScrollBar*		m_pVerticalScrollBar;
+		class CScrollBar*		m_pHorizontalScrollBar;
 	};
 };
 

@@ -51,8 +51,19 @@ void CBaseControl::GetAbsPos(float &x, float &y)
 {
 	float px = 0;
 	float py = 0;
-	if (GetParent())
-		GetParent()->GetAbsPos(px, py);
+
+	CPanel *pPanel = dynamic_cast<CPanel*>(GetParent());
+	if (pPanel)
+	{
+		pPanel->GetAbsPos(px, py);
+
+		if (pPanel->ShouldControlOffset(this))
+		{
+			px += pPanel->GetControlOffset().x;
+			py += pPanel->GetControlOffset().y;
+		}
+	}
+
 	x = m_flX + px;
 	y = m_flY + py;
 }

@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 
 #include "rootpanel.h"
+#include "scrollbar.h"
 
 using namespace glgui;
 
@@ -30,6 +31,9 @@ CTree::CTree(size_t iArrowTexture, size_t iEditTexture, size_t iVisibilityTextur
 	m_pDragging = NULL;
 
 	CRootPanel::Get()->AddDroppable(this);
+
+	SetVerticalScrollBarEnabled(true);
+	SetScissoring(true);
 }
 
 CTree::~CTree()
@@ -58,9 +62,9 @@ void CTree::Think()
 	CRootPanel::GetFullscreenMousePos(mx, my);
 
 	m_iHilighted = ~0;
-	for (size_t i = 0; i < m_apControls.size(); i++)
+	for (size_t i = 0; i < m_apAllNodes.size(); i++)
 	{
-		IControl* pNode = m_apControls[i];
+		IControl* pNode = m_apAllNodes[i];
 
 		if (!pNode->IsVisible())
 			continue;
@@ -99,7 +103,8 @@ void CTree::Paint(float x, float y)
 
 void CTree::Paint(float x, float y, float w, float h)
 {
-	CRootPanel::PaintRect(x, y, w, h, m_clrBackground);
+	if (m_clrBackground.a() > 0)
+		CRootPanel::PaintRect(x, y, w, h, m_clrBackground);
 
 	Color clrHilight = g_clrBoxHi;
 	clrHilight.SetAlpha(100);
@@ -107,15 +112,15 @@ void CTree::Paint(float x, float y, float w, float h)
 
 	if (m_iHilighted != ~0)
 	{
-		IControl* pNode = m_apControls[m_iHilighted];
+		IControl* pNode = m_apAllNodes[m_iHilighted];
 		float cx, cy, cw, ch;
 		pNode->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::PaintRect(cx, cy, cw, ch, clrHilight);
 	}
 
-	if (m_iSelected != ~0 && m_apControls[m_iSelected]->IsVisible())
+	if (m_iSelected != ~0 && m_apAllNodes[m_iSelected]->IsVisible())
 	{
-		IControl* pNode = m_apControls[m_iSelected];
+		IControl* pNode = m_apAllNodes[m_iSelected];
 		float cx, cy, cw, ch;
 		pNode->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::PaintRect(cx, cy, cw, ch, clrSelected);
@@ -134,9 +139,9 @@ bool CTree::MousePressed(int code, int mx, int my)
 		return true;
 
 	m_iSelected = ~0;
-	for (size_t i = 0; i < m_apControls.size(); i++)
+	for (size_t i = 0; i < m_apAllNodes.size(); i++)
 	{
-		IControl* pNode = m_apControls[i];
+		IControl* pNode = m_apAllNodes[i];
 
 		if (!pNode->IsVisible())
 			continue;
@@ -166,19 +171,52 @@ bool CTree::MouseReleased(int code, int mx, int my)
 	return false;
 }
 
+void CTree::AddControl(IControl* pControl, bool bToTail)
+{
+	BaseClass::AddControl(pControl, bToTail);
+
+	if (pControl != m_pVerticalScrollBar && pControl != m_pHorizontalScrollBar)
+	{
+		CTreeNode* pTreeNode = dynamic_cast<CTreeNode*>(pControl);
+		if (pTreeNode)
+			m_apAllNodes.push_back(pTreeNode);
+	}
+}
+
+void CTree::RemoveControl(IControl* pControl)
+{
+	BaseClass::RemoveControl(pControl);
+
+	if (pControl != m_pVerticalScrollBar && pControl != m_pHorizontalScrollBar)
+	{
+		for (size_t i = m_apAllNodes.size()-1; i < m_apAllNodes.size(); i--)
+		{
+			IControl* pNode = m_apAllNodes[i];
+
+			if (pControl == pNode)
+			{
+				m_apAllNodes.erase(m_apAllNodes.begin()+i);
+				break;
+			}
+		}
+	}
+}
+
 void CTree::ClearTree()
 {
 	m_iHilighted = ~0;
 	m_iSelected = ~0;
 
-	while (m_apControls.size())
+	for (size_t i = m_apAllNodes.size()-1; i < m_apAllNodes.size(); i--)
 	{
-		IControl* pNode = m_apControls[0];
+		IControl* pNode = m_apAllNodes[i];
+
 		RemoveControl(pNode);
 		delete pNode;
 	}
 
 	m_apNodes.clear();
+	m_apAllNodes.clear();
 }
 
 size_t CTree::AddNode(const tstring& sName)
@@ -204,9 +242,9 @@ void CTree::RemoveNode(CTreeNode* pNode)
 
 	// Tuck these away so we can find them again after the controls list has changed.
 	if (m_iHilighted != ~0)
-		pHilighted = m_apControls[m_iHilighted];
+		pHilighted = m_apAllNodes[m_iHilighted];
 	if (m_iSelected != ~0)
-		pSelected = m_apControls[m_iSelected];
+		pSelected = m_apAllNodes[m_iSelected];
 
 	m_iHilighted = ~0;
 	m_iSelected = ~0;
@@ -225,11 +263,11 @@ void CTree::RemoveNode(CTreeNode* pNode)
 	RemoveControl(pNode);
 
 	// Figure out if our hilighted or selected controls were deleted.
-	for (size_t c = 0; c < m_apControls.size(); c++)
+	for (size_t c = 0; c < m_apAllNodes.size(); c++)
 	{
-		if (m_apControls[c] == pHilighted)
+		if (m_apAllNodes[c] == pHilighted)
 			m_iHilighted = c;
-		if (m_apControls[c] == pSelected)
+		if (m_apAllNodes[c] == pSelected)
 			m_iSelected = c;
 	}
 }

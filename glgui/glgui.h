@@ -62,6 +62,7 @@ namespace glgui
 		virtual void		GetPos(float &x, float &y)=0;
 		virtual void		GetAbsPos(float &x, float &y)=0;	// Screen space
 		virtual void		GetAbsDimensions(float &x, float &y, float &w, float &h)=0;	// Screen space
+		virtual FRect		GetAbsDimensions()=0;
 		virtual void		GetBR(float &x, float &y)=0;
 		virtual float		GetWidth()=0;
 		virtual float		GetHeight()=0;
