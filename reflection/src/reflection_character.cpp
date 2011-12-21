@@ -34,8 +34,6 @@ void CReflectionCharacter::Spawn()
 {
 	BaseClass::Spawn();
 
-	m_flMaxStepSize = 0.1f;
-
 	m_iReflected = 0;
 }
 

@@ -92,6 +92,7 @@ CCharacterController::CCharacterController(CCharacter* pEntity, btPairCachingGho
 	m_vecUpVector = btVector3(0, 1, 0);
 	m_flMaxFallSpeed = 55.0; // Terminal velocity of a sky diver in m/s.
 	m_flJumpSpeed = 6.0;
+	m_flCurrentStepOffset = m_flStepHeight;
 	m_bWasOnGround = false;
 	m_bWasJumping = false;
 	SetMaxSlope(btRadians(45.0));
@@ -214,6 +215,8 @@ void CCharacterController::jump()
 	if (!canJump())
 		return;
 
+	SetJumpSpeed(m_hEntity->JumpStrength());
+
 	if (m_vecUpVector.y() > 0)
 		m_flVerticalVelocity = m_flJumpSpeed;
 	else
@@ -335,11 +338,25 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 			{
 				directionSign = btScalar(-1.0);
 				hOther = CEntityHandle<CBaseEntity>((size_t)obB->getUserPointer());
+
+				if (obB->getCollisionFlags()&btCollisionObject::CF_CHARACTER_OBJECT)
+				{
+					// If I'm heavier than he, don't let him push me around
+					if (hOther->GetMass() < m_hEntity->GetMass())
+						continue;
+				}
 			}
 			else
 			{
 				directionSign = btScalar(1.0);
 				hOther = CEntityHandle<CBaseEntity>((size_t)obA->getUserPointer());
+
+				if (obA->getCollisionFlags()&btCollisionObject::CF_CHARACTER_OBJECT)
+				{
+					// If I'm heavier than he, don't let him push me around
+					if (hOther->GetMass() < m_hEntity->GetMass())
+						continue;
+				}
 			}
 
 			for (int p = 0; p < pManifold->getNumContacts(); p++)

@@ -61,6 +61,8 @@ public:
 
 	TFloat							GetMaxStepHeight() const { return m_flMaxStepSize; }
 
+	virtual bool					UsePhysicsModelForController() const { return false; }
+
 protected:
 	CNetworkedHandle<CPlayer>		m_hControllingPlayer;
 

@@ -34,6 +34,8 @@ INPUTS_TABLE_END();
 CCharacter::CCharacter()
 {
 	m_bTransformMoveByView = true;
+
+	SetMass(60);
 }
 
 void CCharacter::Spawn()
@@ -50,6 +52,10 @@ void CCharacter::Spawn()
 	m_flMaxStepSize = 10;
 
 	m_bTakeDamage = true;
+
+	m_flMaxStepSize = 0.1f;
+
+	AddToPhysics(CT_CHARACTER);
 }
 
 void CCharacter::Think()

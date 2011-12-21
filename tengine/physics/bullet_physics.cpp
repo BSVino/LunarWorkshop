@@ -74,6 +74,8 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 			flRadius = flRadiusZ;
 		float flHeight = r.m_vecMaxs.y - r.m_vecMins.y;
 
+		CCharacter* pCharacter = dynamic_cast<CCharacter*>(pEntity);
+
 		tstring sIdentifier;
 		if (pEntity->GetModel())
 			sIdentifier = pEntity->GetModel()->m_sFilename;
@@ -83,15 +85,23 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 		auto it = m_apCharacterShapes.find(sIdentifier);
 		if (it == m_apCharacterShapes.end())
 		{
-			TAssert(flHeight > flRadius);	// Couldn't very well make a capsule this way could we?
+			if (pCharacter->UsePhysicsModelForController())
+			{
+				TAssert(pEntity->GetModelID() != ~0);
 
-			m_apCharacterShapes[sIdentifier] = new btCapsuleShape(flRadius, flHeight - flRadius);
+				Vector vecHalf = pEntity->GetModel()->m_aabbBoundingBox.m_vecMaxs - pEntity->GetModel()->m_aabbBoundingBox.Center();
+				m_apCharacterShapes[sIdentifier] = new btBoxShape(btVector3(vecHalf.x, vecHalf.y, vecHalf.z));
+			}
+			else
+			{
+				TAssert(flHeight > flRadius);	// Couldn't very well make a capsule this way could we?
+
+				m_apCharacterShapes[sIdentifier] = new btCapsuleShape(flRadius, flHeight - flRadius);
+			}
 		}
 
-		btCapsuleShape* pCapsuleShape = dynamic_cast<btCapsuleShape*>(m_apCharacterShapes[sIdentifier]);
-
 #ifdef _DEBUG
-		TAssert(pCapsuleShape);
+		btCapsuleShape* pCapsuleShape = dynamic_cast<btCapsuleShape*>(m_apCharacterShapes[sIdentifier]);
 		if (pCapsuleShape)
 		{
 			// Varying character sizes not yet supported!
@@ -100,24 +110,25 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 		}
 #endif
 
+		btConvexShape* pConvexShape = m_apCharacterShapes[sIdentifier];
+
 		btTransform mTransform;
 		mTransform.setIdentity();
 		mTransform.setFromOpenGLMatrix(&pEntity->GetGlobalTransform().m[0][0]);
 
 		pPhysicsEntity->m_pGhostObject = new btPairCachingGhostObject();
 		pPhysicsEntity->m_pGhostObject->setWorldTransform(mTransform);
-		pPhysicsEntity->m_pGhostObject->setCollisionShape(pCapsuleShape);
+		pPhysicsEntity->m_pGhostObject->setCollisionShape(pConvexShape);
 		pPhysicsEntity->m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 		pPhysicsEntity->m_pGhostObject->setUserPointer((void*)iHandle);
 
 		float flStepHeight = 0.2f;
-		CCharacter* pCharacter = dynamic_cast<CCharacter*>(pEntity);
 		if (pCharacter)
 			flStepHeight = pCharacter->GetMaxStepHeight();
 
-		pPhysicsEntity->m_pCharacterController = new CCharacterController(pCharacter, pPhysicsEntity->m_pGhostObject, pCapsuleShape, flStepHeight);
+		pPhysicsEntity->m_pCharacterController = new CCharacterController(pCharacter, pPhysicsEntity->m_pGhostObject, pConvexShape, flStepHeight);
 
-		m_pDynamicsWorld->addCollisionObject(pPhysicsEntity->m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter|btBroadphaseProxy::DefaultFilter);
+		m_pDynamicsWorld->addCollisionObject(pPhysicsEntity->m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter|btBroadphaseProxy::DefaultFilter|btBroadphaseProxy::CharacterFilter);
 		m_pDynamicsWorld->addAction(pPhysicsEntity->m_pCharacterController);
 	}
 	else

@@ -11,6 +11,7 @@
 #include "reflection_game.h"
 #include "mirror.h"
 #include "reflection_playercharacter.h"
+#include "kaleidobeast.h"
 
 CReflectionRenderer::CReflectionRenderer()
 	: CRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
@@ -334,6 +335,31 @@ void CReflectionRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size
 		c->SetUniform("flScreenHeight", (float)Application()->GetWindowHeight());
 
 		c->SetUniform("bDiscardReflection", m_bRenderingReflection);
+
+		return;
+	}
+
+	bModel = false;
+	if (pModel->m_sFilename == "models/characters/kaleidobeast.toy")
+		bModel = true;
+
+	if (bModel && iMaterial == 1)
+	{
+		const CKaleidobeast* pBeast = static_cast<const CKaleidobeast*>(m_pRendering);
+
+		c->UseProgram("model");
+		c->SetUniform("bDiffuse", true);
+		c->SetUniform("iDiffuse", 0);
+
+		if (pBeast->CanSeePlayer())
+			c->SetUniform("vecColor", Color(255, 0, 0));
+		else
+			c->SetUniform("vecColor", c->GetColor());
+
+		c->SetUniform("flAlpha", c->GetAlpha());
+		c->SetUniform("bColorSwapInAlpha", c->IsColorSwapActive());
+		if (c->IsColorSwapActive())
+			c->SetUniform("vecColorSwap", c->GetColorSwap());
 
 		return;
 	}

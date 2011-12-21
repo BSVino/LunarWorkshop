@@ -26,14 +26,12 @@ void CPlayerCharacter::Precache()
 
 void CPlayerCharacter::Spawn()
 {
-	BaseClass::Spawn();
-
 	SetMass(60);
 	m_aabbBoundingBox = AABB(Vector(-0.35f, 0, -0.35f), Vector(0.35f, 2, 0.35f));
 
-	AddToPhysics(CT_CHARACTER);
-
 	SetGlobalGravity(Vector(0, -9.8f, 0)*2);
+
+	BaseClass::Spawn();
 }
 
 void CPlayerCharacter::PlaceMirror(mirror_t eMirror)

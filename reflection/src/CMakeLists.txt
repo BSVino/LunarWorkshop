@@ -22,6 +22,7 @@ set (REFLECTION_SYSTEM_SOURCES
 )
 
 set (REFLECTION_ENTITY_SOURCES
+	kaleidobeast.cpp
 	mirror.cpp
 	receptacle.cpp
 	reflectionproxy.cpp

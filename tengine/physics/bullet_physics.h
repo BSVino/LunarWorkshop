@@ -101,7 +101,7 @@ protected:
 	};
 
 	eastl::map<size_t, CCollisionMesh>		m_apCollisionMeshes;
-	eastl::map<tstring, btCollisionShape*>	m_apCharacterShapes;
+	eastl::map<tstring, btConvexShape*>		m_apCharacterShapes;
 
 	class CPhysicsDebugDrawer*				m_pDebugDrawer;
 };

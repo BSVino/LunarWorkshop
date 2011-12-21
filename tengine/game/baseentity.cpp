@@ -559,10 +559,18 @@ void CBaseEntity::SetLocalAngles(const EAngle& angAngles)
 
 	if (IsInPhysics())
 	{
-		TAssert(!GetMoveParent());
-		Matrix4x4 mLocalTransform = m_mLocalTransform;
-		mLocalTransform.SetAngles(angAngles);
-		GamePhysics()->SetEntityTransform(this, mLocalTransform);
+		if (GetMoveParent())
+		{
+			collision_type_t eCollisionType = GamePhysics()->GetEntityCollisionType(this);
+			TAssert(eCollisionType == CT_KINEMATIC || eCollisionType == CT_CHARACTER);
+		}
+
+		Matrix4x4 mLocal = m_mLocalTransform;
+		mLocal.SetAngles(angAngles);
+
+		Matrix4x4 mGlobal = GetParentGlobalTransform() * mLocal;
+
+		GamePhysics()->SetEntityTransform(this, mGlobal);
 	}
 
 	EAngle angDifference = angAngles - m_angLocalAngles;
