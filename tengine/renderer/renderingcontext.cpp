@@ -344,7 +344,10 @@ void CRenderingContext::RenderSphere()
 		gluDeleteQuadric(pQuadric);
 	}
 
+	glPushAttrib(GL_CURRENT_BIT);
+	glColor4ubv(m_clrRender);
 	glCallList(iSphereCallList);
+	glPopAttrib();
 }
 
 void CRenderingContext::RenderBillboard(const tstring& sTexture, float flRadius)

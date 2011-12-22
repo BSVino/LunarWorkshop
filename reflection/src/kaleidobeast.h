@@ -16,11 +16,16 @@ public:
 	void			Spawn();
 	void			Think();
 
+	void			PostRender(bool bTransparent) const;
+
 	bool			CanSeePlayer() const { return m_bSeesPlayer; }
+	void			LosePlayer();
 
 	float			EyeHeight() const { return 1.0f; }
 	float			CharacterSpeed() { return 5.0f; }
 	float			CharacterAcceleration() { return 40.0f; }
+
+	float			DetectionDistance() const { return 4.0f; }
 
 	virtual bool	UsePhysicsModelForController() const { return true; }
 

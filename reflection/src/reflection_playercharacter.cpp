@@ -6,6 +6,7 @@
 #include "mirror.h"
 #include "token.h"
 #include "receptacle.h"
+#include "kaleidobeast.h"
 
 REGISTER_ENTITY(CPlayerCharacter);
 
@@ -170,4 +171,13 @@ void CPlayerCharacter::Reflected(reflection_t eReflectionType)
 
 	if (m_hToken != nullptr)
 		m_hToken->Reflected(eReflectionType);
+
+	for (size_t i = 0; i < CBaseEntity::GetNumEntities(); i++)
+	{
+		CKaleidobeast* pKaleidobeast = dynamic_cast<CKaleidobeast*>(CBaseEntity::GetEntity(i));
+		if (!pKaleidobeast)
+			continue;
+
+		pKaleidobeast->LosePlayer();
+	}
 }
