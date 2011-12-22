@@ -70,10 +70,10 @@ void CKaleidobeast::Think()
 
 	if (!m_bSeesPlayer)
 	{
-		if (pPlayer && Distance(pPlayer->GetGlobalOrigin()) < 4)
+		if (pPlayer && (pPlayer->GetGlobalOrigin() - GetGlobalOrigin()).LengthSqr() < DetectionDistance() * DetectionDistance())
 			m_bSeesPlayer = true;
 
-		if (DistanceToLine(pPlayer->GetGlobalOrigin(), m_vecInitialPosition, m_vecInitialPosition + AngleVector(m_angInitialPosition)*100) < 2)
+		if (DistanceToLine(pPlayer->GetGlobalOrigin(), m_vecInitialPosition, m_vecInitialPosition + AngleVector(m_angInitialPosition)*100) < 1)
 			m_bSeesPlayer = true;
 	}
 
@@ -130,4 +130,23 @@ void CKaleidobeast::Think()
 	}
 
 	BaseClass::Think();
+}
+
+void CKaleidobeast::PostRender(bool bTransparent) const
+{
+	if (!bTransparent)
+		return;
+
+	CRenderingContext c(GameServer()->GetRenderer());
+
+	c.Translate(GetGlobalOrigin());
+	c.Scale(DetectionDistance(), DetectionDistance(), DetectionDistance());
+	c.SetBlend(BLEND_ALPHA);
+	c.SetColor(m_bSeesPlayer?Color(255, 0, 0, 50):Color(255, 255, 255, 50));
+	c.RenderSphere();
+}
+
+void CKaleidobeast::LosePlayer()
+{
+	m_bSeesPlayer = false;
 }
