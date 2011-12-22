@@ -18,6 +18,7 @@
 #include "game.h"
 
 bool g_bAutoImporting = false;
+#include "entities/beam.h"
 #include "entities/counter.h"
 #include "entities/kinematic.h"
 #include "entities/logicgate.h"
@@ -32,6 +33,7 @@ public:
 	{
 		g_bAutoImporting = true;
 		{
+			CBeam b;
 			CCounter c;
 			CKinematic k;
 			CLogicGate l;

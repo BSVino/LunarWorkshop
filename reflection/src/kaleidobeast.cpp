@@ -2,7 +2,9 @@
 
 #include <physics/physics.h>
 #include <renderer/renderer.h>
+#include <renderer/renderingcontext.h>
 #include <tinker/gamewindow.h>
+#include <game/entities/beam.h>
 
 #include "reflection_game.h"
 #include "reflection_character.h"
@@ -17,10 +19,17 @@ SAVEDATA_TABLE_BEGIN(CKaleidobeast);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bInitialPosition);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecInitialPosition);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, EAngle, m_angInitialPosition);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CBeam>, m_hBeam);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CKaleidobeast);
 INPUTS_TABLE_END();
+
+CKaleidobeast::~CKaleidobeast()
+{
+	if (m_hBeam != nullptr)
+		GameServer()->Delete(m_hBeam);
+}
 
 void CKaleidobeast::Precache()
 {
@@ -41,6 +50,8 @@ void CKaleidobeast::Spawn()
 
 	m_bSeesPlayer = false;
 	m_bInitialPosition = false;
+
+	m_hBeam = GameServer()->Create<CBeam>("CBeam");
 }
 
 void CKaleidobeast::Think()
@@ -50,16 +61,29 @@ void CKaleidobeast::Think()
 		m_vecInitialPosition = GetGlobalOrigin();
 		m_angInitialPosition = GetGlobalAngles();
 		m_bInitialPosition = true;
-	}
 
-	m_bSeesPlayer = false;
+		m_hBeam->SetStart(m_vecInitialPosition + GetUpVector()*EyeHeight());
+		m_hBeam->SetEnd(m_vecInitialPosition + GetUpVector()*EyeHeight() + AngleVector(m_angInitialPosition)*100);
+	}
 
 	CReflectionCharacter* pPlayer = ReflectionGame()->GetLocalPlayerCharacter();
-	if (pPlayer)
+
+	if (!m_bSeesPlayer)
 	{
-		if (Distance(pPlayer->GetGlobalOrigin()) < 4)
+		if (pPlayer && Distance(pPlayer->GetGlobalOrigin()) < 4)
+			m_bSeesPlayer = true;
+
+		if (DistanceToLine(pPlayer->GetGlobalOrigin(), m_vecInitialPosition, m_vecInitialPosition + AngleVector(m_angInitialPosition)*100) < 2)
 			m_bSeesPlayer = true;
 	}
+
+	if (m_bSeesPlayer)
+	{
+		if (fabs(pPlayer->GetGlobalOrigin().y - GetGlobalOrigin().y) > 2)
+			m_bSeesPlayer = false;
+	}
+
+	m_hBeam->SetColor(m_bSeesPlayer?Color(255, 0, 0):Color(255, 255, 255));
 
 	bool bPlayerSees = GameServer()->GetRenderer()->IsSphereInFrustum(GetGlobalCenter(), GetBoundingRadius());
 

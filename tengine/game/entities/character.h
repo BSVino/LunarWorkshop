@@ -44,6 +44,7 @@ public:
 
 	virtual TFloat					EyeHeight() const { return 180.0f; }
 	virtual TFloat					CharacterSpeed() { return 80.0f; }
+	virtual TFloat					CharacterAcceleration() { return 4.0f; }
 	virtual TFloat					JumpStrength() { return 150.0f; }
 
 	virtual float					AttackTime() const { return 0.3f; }

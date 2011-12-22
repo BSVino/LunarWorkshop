@@ -38,6 +38,7 @@ set (TENGINE_GAME_SOURCES
 )
 
 set (TENGINE_GAME_ENTITY_SOURCES
+	game/entities/beam.cpp
 	game/entities/counter.cpp
 	game/entities/character.cpp
 	game/entities/kinematic.cpp

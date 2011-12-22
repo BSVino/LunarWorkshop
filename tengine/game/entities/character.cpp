@@ -103,9 +103,9 @@ void CCharacter::MoveThink()
 
 	TVector vecGoalVelocity = GetGoalVelocity();
 
-	m_vecMoveVelocity.x = Approach(vecGoalVelocity.x, m_vecMoveVelocity.x, GameServer()->GetFrameTime()*4);
+	m_vecMoveVelocity.x = Approach(vecGoalVelocity.x, m_vecMoveVelocity.x, GameServer()->GetFrameTime()*CharacterAcceleration());
 	m_vecMoveVelocity.y = 0;
-	m_vecMoveVelocity.z = Approach(vecGoalVelocity.z, m_vecMoveVelocity.z, GameServer()->GetFrameTime()*4);
+	m_vecMoveVelocity.z = Approach(vecGoalVelocity.z, m_vecMoveVelocity.z, GameServer()->GetFrameTime()*CharacterAcceleration());
 
 	if (m_vecMoveVelocity.LengthSqr() > 0)
 	{
