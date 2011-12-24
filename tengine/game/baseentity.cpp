@@ -1398,7 +1398,11 @@ void CBaseEntity::PrecacheModel(const tstring& sModel)
 			return;
 	}
 
-	CModelLibrary::AddModel(sModel);
+	if (CModelLibrary::AddModel(sModel) == ~0)
+	{
+		TError("Model \"" + sModel + "\" could not be loaded.");
+		return;
+	}
 
 	pReg->m_asPrecaches.push_back(sModel);
 }

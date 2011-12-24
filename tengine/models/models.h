@@ -17,7 +17,7 @@ public:
 							~CModel();
 
 public:
-	void					Load();
+	bool					Load();
 	size_t					LoadBufferIntoGL(size_t iMaterial);
 
 public:

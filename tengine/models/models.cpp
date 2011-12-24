@@ -72,14 +72,22 @@ size_t CModelLibrary::AddModel(const tstring& sModel)
 
 	Get()->m_apModels[iLocation] = pModel;
 
-	pModel->Load();
+	if (!pModel->Load())
+	{
+		Get()->m_apModels[iLocation] = nullptr;
+		delete pModel;
+		return ~0;
+	}
 
 	pModel->m_iReferences++;
 
 	Get()->m_iModelsLoaded++;
 
 	for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
-		CModelLibrary::AddModel(pModel->m_pToy->GetSceneAreaFileName(i));
+	{
+		if (CModelLibrary::AddModel(pModel->m_pToy->GetSceneAreaFileName(i)) == ~0)
+			TError("Area \"" + pModel->m_pToy->GetSceneAreaFileName(i) + "\" for model \"" + sModel + "\" could not be loaded.");
+	}
 
 	return iLocation;
 }
@@ -176,11 +184,13 @@ CModel::~CModel()
 		delete m_pToy;
 }
 
-void CModel::Load()
+bool CModel::Load()
 {
 	m_pToy = new CToy();
 	CToyUtil t;
-	t.Read(m_sFilename, m_pToy);
+	if (!t.Read(m_sFilename, m_pToy))
+		// Don't need to delete the toy, destructor will get it.
+		return false;
 
 	size_t iMaterials = m_pToy->GetNumMaterials();
 
@@ -208,6 +218,8 @@ void CModel::Load()
 	m_pToy->DeallocateMesh();
 
 	m_aabbBoundingBox = m_pToy->GetAABB();
+
+	return true;
 }
 
 size_t CModel::LoadBufferIntoGL(size_t iMaterial)
