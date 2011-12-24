@@ -63,6 +63,7 @@ public:
 
 public:
 	virtual void			AddEntity(class CBaseEntity* pEnt, collision_type_t eCollisionType);
+	virtual void			AddModel(class CBaseEntity* pEnt, collision_type_t eCollisionType, size_t iModel);
 	virtual void			RemoveEntity(class CBaseEntity* pEnt);
 	virtual void			RemoveEntity(CPhysicsEntity* pEntity);
 	virtual void			RemoveAllEntities();

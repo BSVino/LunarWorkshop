@@ -5,6 +5,7 @@
 #include <game/gameserver.h>
 #include <game/entities/character.h>
 #include <models/models.h>
+#include <toys/toy.h>
 #include <tinker/profiler.h>
 #include <tinker/application.h>
 
@@ -172,52 +173,83 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 	}
 	else
 	{
-		btCollisionShape* pCollisionShape;
-		float flMass;
-
 		if (eCollisionType == CT_STATIC_MESH)
 		{
-			pPhysicsEntity->m_bCenterMassOffset = false;
-
-			flMass = 0;
-			pCollisionShape = m_apCollisionMeshes[pEntity->GetModelID()].m_pCollisionShape;
+			AddModel(pEntity, eCollisionType, pEntity->GetModelID());
 		}
 		else if (eCollisionType == CT_KINEMATIC)
 		{
-			pPhysicsEntity->m_bCenterMassOffset = false;
-
-			flMass = 0;
-			pCollisionShape = m_apCollisionMeshes[pEntity->GetModelID()].m_pCollisionShape;
+			AddModel(pEntity, eCollisionType, pEntity->GetModelID());
 		}
 		else
 		{
 			TAssert(!"Unimplemented collision type");
 		}
-
-		TAssert(pCollisionShape);
-
-		btTransform mTransform;
-		mTransform.setIdentity();
-		mTransform.setFromOpenGLMatrix(&pEntity->GetGlobalTransform().m[0][0]);
-
-		bool bDynamic = (flMass != 0.f);
-
-		btVector3 vecLocalInertia(0, 0, 0);
-		if (bDynamic)
-			pCollisionShape->calculateLocalInertia(flMass, vecLocalInertia);
-
-		btRigidBody::btRigidBodyConstructionInfo rbInfo(flMass, &pPhysicsEntity->m_oMotionState, pCollisionShape, vecLocalInertia);
-		pPhysicsEntity->m_pRigidBody = new btRigidBody(rbInfo);
-		pPhysicsEntity->m_pRigidBody->setUserPointer((void*)iHandle);
-
-		if (eCollisionType == CT_KINEMATIC)
-		{
-			pPhysicsEntity->m_pRigidBody->setCollisionFlags(pPhysicsEntity->m_pRigidBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
-			pPhysicsEntity->m_pRigidBody->setActivationState(DISABLE_DEACTIVATION);
-		}
-
-		m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_pRigidBody);
 	}
+}
+
+void CBulletPhysics::AddModel(class CBaseEntity* pEntity, collision_type_t eCollisionType, size_t iModel)
+{
+	CModel* pModel = CModelLibrary::GetModel(iModel);
+	if (!pModel)
+		return;
+
+	for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
+	{
+		size_t iArea = CModelLibrary::FindModel(pModel->m_pToy->GetSceneAreaFileName(i));
+		AddModel(pEntity, eCollisionType, iArea);
+	}
+
+	if (!pModel->m_pToy->GetPhysicsNumTris())
+		return;
+
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEntity);
+
+	btCollisionShape* pCollisionShape;
+	float flMass;
+
+	if (eCollisionType == CT_STATIC_MESH)
+	{
+		pPhysicsEntity->m_bCenterMassOffset = false;
+
+		flMass = 0;
+		pCollisionShape = m_apCollisionMeshes[iModel].m_pCollisionShape;
+	}
+	else if (eCollisionType == CT_KINEMATIC)
+	{
+		pPhysicsEntity->m_bCenterMassOffset = false;
+
+		flMass = 0;
+		pCollisionShape = m_apCollisionMeshes[iModel].m_pCollisionShape;
+	}
+	else
+	{
+		TAssert(!"Unimplemented collision type");
+	}
+
+	TAssert(pCollisionShape);
+
+	btTransform mTransform;
+	mTransform.setIdentity();
+	mTransform.setFromOpenGLMatrix(&pEntity->GetGlobalTransform().m[0][0]);
+
+	bool bDynamic = (flMass != 0.f);
+
+	btVector3 vecLocalInertia(0, 0, 0);
+	if (bDynamic)
+		pCollisionShape->calculateLocalInertia(flMass, vecLocalInertia);
+
+	btRigidBody::btRigidBodyConstructionInfo rbInfo(flMass, &pPhysicsEntity->m_oMotionState, pCollisionShape, vecLocalInertia);
+	pPhysicsEntity->m_pRigidBody = new btRigidBody(rbInfo);
+	pPhysicsEntity->m_pRigidBody->setUserPointer((void*)pEntity->GetHandle());
+
+	if (eCollisionType == CT_KINEMATIC)
+	{
+		pPhysicsEntity->m_pRigidBody->setCollisionFlags(pPhysicsEntity->m_pRigidBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+		pPhysicsEntity->m_pRigidBody->setActivationState(DISABLE_DEACTIVATION);
+	}
+
+	m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_pRigidBody);
 }
 
 void CBulletPhysics::RemoveEntity(CBaseEntity* pEntity)
