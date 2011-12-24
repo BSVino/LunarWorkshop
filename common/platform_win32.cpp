@@ -323,30 +323,69 @@ int GetVKForChar(int iChar)
 	return iChar;
 }
 
+int GetCharForVK(int iChar)
+{
+	switch(iChar)
+	{
+	case VK_OEM_1:
+		return ';';
+
+	case VK_OEM_2:
+		return '/';
+
+	case VK_OEM_3:
+		return '`';
+
+	case VK_OEM_4:
+		return '[';
+
+	case VK_OEM_5:
+		return '\\';
+
+	case VK_OEM_6:
+		return ']';
+
+	case VK_OEM_7:
+		return '\'';
+
+	case VK_OEM_PLUS:
+		return '=';
+
+	case VK_OEM_COMMA:
+		return ',';
+
+	case VK_OEM_MINUS:
+		return '-';
+
+	case VK_OEM_PERIOD:
+		return '.';
+	}
+
+	return iChar;
+}
+
+static HKL g_iEnglish = LoadKeyboardLayout(L"00000409", 0);
+
+// If we are using a non-qwerty layout, find the qwerty key that matches this letter's position on the keyboard.
 int TranslateKeyToQwerty(int iKey)
 {
-	// If we are using a non-qwerty layout, map the keys to querty internally.
+	HKL iCurrent = GetKeyboardLayout(0);
 
-	HKL iCurrent = GetKeyboardLayout( 0 );
-	static HKL iEnglish = LoadKeyboardLayout(L"00000409", 0);
-
-	if (iCurrent == iEnglish)
+	if (iCurrent == g_iEnglish)
 		return iKey;
 
 	UINT i = MapVirtualKeyEx(GetVKForChar(iKey), MAPVK_VK_TO_VSC, iCurrent);
-	return (int)MapVirtualKeyEx(i, MAPVK_VSC_TO_VK, iEnglish);
+	return (int)GetCharForVK(MapVirtualKeyEx(i, MAPVK_VSC_TO_VK, g_iEnglish));
 }
 
+// If we are using a non-qwerty layout, find the localized key that matches this letter's position in qwerty.
 int TranslateKeyFromQwerty(int iKey)
 {
-	// If we are using a non-qwerty layout, map the keys to querty internally.
+	HKL iCurrent = GetKeyboardLayout(0);
 
-	HKL iCurrent = GetKeyboardLayout( 0 );
-	static HKL iEnglish = LoadKeyboardLayout(L"00000409", 0);
-
-	if (iCurrent == iEnglish)
+	if (iCurrent == g_iEnglish)
 		return iKey;
 
-	UINT i = MapVirtualKeyEx(GetVKForChar(iKey), MAPVK_VK_TO_VSC, iEnglish);
-	return (int)MapVirtualKeyEx(i, MAPVK_VSC_TO_VK, iCurrent);
+	UINT i = MapVirtualKeyEx(GetVKForChar(iKey), MAPVK_VK_TO_VSC, g_iEnglish);
+	return (int)GetCharForVK(MapVirtualKeyEx(i, MAPVK_VSC_TO_VK, iCurrent));
 }

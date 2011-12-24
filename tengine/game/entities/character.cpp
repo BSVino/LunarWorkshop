@@ -49,11 +49,9 @@ void CCharacter::Spawn()
 
 	m_flLastAttack = -1;
 
-	m_flMaxStepSize = 10;
-
 	m_bTakeDamage = true;
 
-	m_flMaxStepSize = 0.1f;
+	m_flMaxStepSize = 0.2f;
 
 	AddToPhysics(CT_CHARACTER);
 }

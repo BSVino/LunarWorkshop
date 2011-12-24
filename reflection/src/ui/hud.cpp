@@ -1,5 +1,7 @@
 #include "hud.h"
 
+#include <tinker_platform.h>
+
 #include <tengine/game/gameserver.h>
 #include <tengine/renderer/renderer.h>
 #include <tengine/renderer/renderingcontext.h>
@@ -69,6 +71,8 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 		c.RenderModel(pPlayerCharacter->GetToken()->GetModelID());
 	}
 
+	int iKey = TranslateKeyFromQwerty('E');
+
 	float flTokenRadius = 1.5f;
 	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
 	{
@@ -101,7 +105,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 		{
 			if (pPlayerCharacter->GetToken())
 			{
-				tstring sTip = "E - Swap";
+				tstring sTip = sprintf("%c - Swap", iKey);
 				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
 				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
@@ -109,7 +113,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 			}
 			else
 			{
-				tstring sTip = "E - Pick up";
+				tstring sTip = sprintf("%c - Pick up", iKey);
 				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
 				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
@@ -123,7 +127,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 		{
 			if (pReceptacle->GetToken())
 			{
-				tstring sTip = "E - Swap";
+				tstring sTip = sprintf("%c - Swap", iKey);
 				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
 				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
@@ -131,7 +135,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 			}
 			else
 			{
-				tstring sTip = "E - Place";
+				tstring sTip = sprintf("%c - Place", iKey);
 				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
 				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
