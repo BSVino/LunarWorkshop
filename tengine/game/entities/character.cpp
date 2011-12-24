@@ -29,6 +29,7 @@ SAVEDATA_TABLE_BEGIN(CCharacter);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CCharacter);
+	INPUT_DEFINE(SetViewAngles);
 INPUTS_TABLE_END();
 
 CCharacter::CCharacter()
@@ -285,6 +286,17 @@ void CCharacter::SetControllingPlayer(CPlayer* pCharacter)
 CPlayer* CCharacter::GetControllingPlayer() const
 {
 	return m_hControllingPlayer;
+}
+
+void CCharacter::SetViewAngles(const eastl::vector<tstring>& asArgs)
+{
+	if (asArgs.size() != 3)
+	{
+		TError("CCharacter::SetViewAngles with != 3 arguments. Was expecting \"p y r\"\n");
+		return;
+	}
+
+	SetViewAngles(EAngle(stof(asArgs[0]), stof(asArgs[1]), stof(asArgs[2])));
 }
 
 void CCharacter::SetGroundEntity(CBaseEntity* pEntity)

@@ -57,6 +57,8 @@ public:
 	virtual void					SetViewAngles(const EAngle& angView) { m_angView = angView; }
 	virtual EAngle					GetViewAngles() const { return m_angView; }
 
+	DECLARE_ENTITY_INPUT(SetViewAngles);
+
 	CBaseEntity*					GetGroundEntity() const { return m_hGround; }
 	void							SetGroundEntity(CBaseEntity* pEntity);
 
