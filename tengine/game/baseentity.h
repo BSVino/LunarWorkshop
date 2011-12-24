@@ -440,6 +440,9 @@ public:
 	inline EAngle							GetLocalAngles() const { return m_angLocalAngles; };
 	void									SetLocalAngles(const EAngle& angLocalAngles);
 
+	DECLARE_ENTITY_INPUT(SetLocalOrigin);
+	DECLARE_ENTITY_INPUT(SetLocalAngles);
+
 	virtual TVector							GetUpVector() const { return TVector(0, 1, 0); };
 
 	virtual bool							TransformsChildUp() const { return false; };

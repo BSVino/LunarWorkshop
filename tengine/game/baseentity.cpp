@@ -115,6 +115,8 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CBaseEntity);
+	INPUT_DEFINE(SetLocalOrigin);
+	INPUT_DEFINE(SetLocalAngles);
 	INPUT_DEFINE(Activate);
 	INPUT_DEFINE(Deactivate);
 	INPUT_DEFINE(ToggleActive);
@@ -590,6 +592,28 @@ void CBaseEntity::SetLocalAngles(const EAngle& angAngles)
 	m_qLocalRotation = Quaternion(mNew);
 
 	InvalidateGlobalTransforms();
+}
+
+void CBaseEntity::SetLocalOrigin(const eastl::vector<tstring>& asArgs)
+{
+	if (asArgs.size() != 3)
+	{
+		TError("CBaseEntity::SetLocalOrigin with != 3 arguments. Was expecting \"x y z\"\n");
+		return;
+	}
+
+	SetLocalOrigin(Vector(stof(asArgs[0]), stof(asArgs[1]), stof(asArgs[2])));
+}
+
+void CBaseEntity::SetLocalAngles(const eastl::vector<tstring>& asArgs)
+{
+	if (asArgs.size() != 3)
+	{
+		TError("CBaseEntity::SetLocalAngles with != 3 arguments. Was expecting \"p y r\"\n");
+		return;
+	}
+
+	SetLocalAngles(EAngle(stof(asArgs[0]), stof(asArgs[1]), stof(asArgs[2])));
 }
 
 CBaseEntity* CBaseEntity::GetEntity(size_t iHandle)
@@ -1555,7 +1579,7 @@ void CBaseEntity::FindEntitiesByName(const eastl::string& sName, eastl::vector<C
 
 		if (sName[0] == '*')
 		{
-			if (eastl::string(pEntity->GetClassName()) != sName.c_str()+1)
+			if (eastl::string(pEntity->GetClassName()+1) != sName.c_str()+1)
 				continue;
 		}
 		else
