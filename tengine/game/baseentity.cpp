@@ -25,6 +25,7 @@ bool g_bAutoImporting = false;
 #include "entities/mathgate.h"
 #include "entities/playerstart.h"
 #include "entities/world.h"
+#include "entities/trigger.h"
 // Use this to force import of required entities.
 class CAutoImport
 {
@@ -40,6 +41,7 @@ public:
 			CMathGate m;
 			CPlayerStart p;
 			CWorld w;
+			CTrigger t;
 		}
 		g_bAutoImporting = false;
 	}
@@ -106,7 +108,6 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bInPhysics);
 	SAVEDATA_DEFINE(CSaveData::DATA_OMIT, bool, m_bDeleted);	// Deleted entities are not saved.
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bClientSpawn);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYVECTOR, CEntityHandle<CBaseEntity>, m_ahTouching);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup, "CollisionGroup");
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", UnserializeString_ModelID);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);

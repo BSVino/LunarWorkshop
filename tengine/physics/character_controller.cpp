@@ -40,6 +40,9 @@ public:
 		if (convexResult.m_hitCollisionObject == m_me)
 			return btScalar(1.0);
 
+		if (convexResult.m_hitCollisionObject->getBroadphaseHandle()->m_collisionFilterGroup & btBroadphaseProxy::SensorTrigger)
+			return 1;
+
 		CEntityHandle<CBaseEntity> hCollidedEntity((size_t)convexResult.m_hitCollisionObject->getUserPointer());
 		TAssert(hCollidedEntity != NULL);
 		if (hCollidedEntity.GetPointer())
@@ -336,6 +339,9 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 			CEntityHandle<CBaseEntity> hOther;
 			if (obA == m_pGhostObject)
 			{
+				if (obB->getBroadphaseHandle()->m_collisionFilterGroup & btBroadphaseProxy::SensorTrigger)
+					continue;
+
 				directionSign = btScalar(-1.0);
 				hOther = CEntityHandle<CBaseEntity>((size_t)obB->getUserPointer());
 
@@ -348,6 +354,9 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 			}
 			else
 			{
+				if (obA->getBroadphaseHandle()->m_collisionFilterGroup & btBroadphaseProxy::SensorTrigger)
+					continue;
+
 				directionSign = btScalar(1.0);
 				hOther = CEntityHandle<CBaseEntity>((size_t)obA->getUserPointer());
 

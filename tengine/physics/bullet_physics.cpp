@@ -128,8 +128,47 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 
 		pPhysicsEntity->m_pCharacterController = new CCharacterController(pCharacter, pPhysicsEntity->m_pGhostObject, pConvexShape, flStepHeight);
 
-		m_pDynamicsWorld->addCollisionObject(pPhysicsEntity->m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter|btBroadphaseProxy::DefaultFilter|btBroadphaseProxy::CharacterFilter);
+		m_pDynamicsWorld->addCollisionObject(pPhysicsEntity->m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter|btBroadphaseProxy::DefaultFilter|btBroadphaseProxy::CharacterFilter|btBroadphaseProxy::SensorTrigger);
 		m_pDynamicsWorld->addAction(pPhysicsEntity->m_pCharacterController);
+	}
+	else if (eCollisionType == CT_TRIGGER)
+	{
+		btCollisionShape* pCollisionShape;
+
+		pPhysicsEntity->m_bCenterMassOffset = true;
+
+		if (pEntity->GetModelID() != ~0)
+		{
+			Vector vecHalf = pEntity->GetModel()->m_aabbBoundingBox.m_vecMaxs - pEntity->GetModel()->m_aabbBoundingBox.Center();
+			pCollisionShape = new btBoxShape(btVector3(vecHalf.x, vecHalf.y, vecHalf.z));
+		}
+		else
+		{
+			Vector vecHalf = pEntity->GetBoundingBox().m_vecMaxs - pEntity->GetBoundingBox().Center();
+			pCollisionShape = new btBoxShape(btVector3(vecHalf.x, vecHalf.y, vecHalf.z));
+		}
+
+		TAssert(pCollisionShape);
+
+		btTransform mTransform;
+		mTransform.setIdentity();
+		mTransform.setFromOpenGLMatrix(&pEntity->GetGlobalTransform().m[0][0]);
+
+		btVector3 vecLocalInertia(0, 0, 0);
+
+		pPhysicsEntity->m_pGhostObject = new btPairCachingGhostObject();
+		pPhysicsEntity->m_pGhostObject->setWorldTransform(mTransform);
+		pPhysicsEntity->m_pGhostObject->setCollisionShape(pCollisionShape);
+		pPhysicsEntity->m_pGhostObject->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
+		pPhysicsEntity->m_pGhostObject->setUserPointer((void*)iHandle);
+
+		pPhysicsEntity->m_pGhostObject->setCollisionFlags(pPhysicsEntity->m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+		pPhysicsEntity->m_pGhostObject->setActivationState(DISABLE_DEACTIVATION);
+
+		pPhysicsEntity->m_pTriggerController = new CTriggerController(pEntity, pPhysicsEntity->m_pGhostObject);
+
+		m_pDynamicsWorld->addCollisionObject(pPhysicsEntity->m_pGhostObject, btBroadphaseProxy::SensorTrigger, btBroadphaseProxy::DefaultFilter|btBroadphaseProxy::KinematicFilter|btBroadphaseProxy::CharacterFilter);
+		m_pDynamicsWorld->addAction(pPhysicsEntity->m_pTriggerController);
 	}
 	else
 	{
@@ -209,6 +248,11 @@ void CBulletPhysics::RemoveEntity(CPhysicsEntity* pPhysicsEntity)
 		m_pDynamicsWorld->removeAction(pPhysicsEntity->m_pCharacterController);
 	delete pPhysicsEntity->m_pCharacterController;
 	pPhysicsEntity->m_pCharacterController = NULL;
+
+	if (pPhysicsEntity->m_pTriggerController)
+		m_pDynamicsWorld->removeAction(pPhysicsEntity->m_pTriggerController);
+	delete pPhysicsEntity->m_pTriggerController;
+	pPhysicsEntity->m_pTriggerController = NULL;
 }
 
 void CBulletPhysics::RemoveAllEntities()

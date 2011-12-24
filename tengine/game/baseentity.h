@@ -501,7 +501,9 @@ public:
 
 	virtual void							Think() {};
 
-	virtual void							Touching(CBaseEntity* pOther) {};
+	virtual void							Touching(const CBaseEntity* pOther) {};
+	virtual void							BeginTouchingList() {};
+	virtual void							EndTouchingList() {};
 
 	void									CallInput(const eastl::string& sName, const tstring& sArgs);
 	void									CallOutput(const eastl::string& sName);
@@ -625,8 +627,6 @@ protected:
 	bool									m_bInPhysics;
 	bool									m_bDeleted;
 	bool									m_bClientSpawn;
-
-	eastl::vector<CEntityHandle<CBaseEntity> >	m_ahTouching;
 
 	CNetworkedVariable<int>					m_iCollisionGroup;
 

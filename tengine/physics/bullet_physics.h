@@ -8,6 +8,7 @@
 #include <game/entityhandle.h>
 
 #include "character_controller.h"
+#include "trigger_controller.h"
 
 class CMotionState : public btMotionState
 {
@@ -35,6 +36,7 @@ public:
 		m_pRigidBody = NULL;
 		m_pGhostObject = NULL;
 		m_pCharacterController = NULL;
+		m_pTriggerController = NULL;
 		m_bCenterMassOffset = true;
 		m_eCollisionType = CT_NONE;
 	};
@@ -47,6 +49,7 @@ public:
 	btRigidBody*						m_pRigidBody;
 	class btPairCachingGhostObject*		m_pGhostObject;
 	CCharacterController*				m_pCharacterController;
+	CTriggerController*					m_pTriggerController;
 	CMotionState						m_oMotionState;
 	bool								m_bCenterMassOffset;
 	collision_type_t					m_eCollisionType;

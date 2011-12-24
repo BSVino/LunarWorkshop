@@ -46,6 +46,7 @@ set (TENGINE_GAME_ENTITY_SOURCES
 	game/entities/mathgate.cpp
 	game/entities/player.cpp
 	game/entities/playerstart.cpp
+	game/entities/trigger.cpp
 	game/entities/world.cpp
 )
 
@@ -71,9 +72,10 @@ else (WITH_NETWORKING)
 endif (WITH_NETWORKING)
 
 set (TENGINE_PHYSICS_SOURCES
-	physics/character_controller.cpp
 	physics/bullet_physics.cpp
+	physics/character_controller.cpp
 	physics/physics_debugdraw.cpp
+	physics/trigger_controller.cpp
 )
 
 set (TENGINE_RENDERER_SOURCES

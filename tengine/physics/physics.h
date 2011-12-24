@@ -11,6 +11,7 @@ typedef enum collision_type_e
 	CT_STATIC_MESH,	// Not animated, never moves. World geometry.
 	CT_KINEMATIC,	// Not simulated by the engine, but collides with dynamic objects. Animated externally by game code.
 	CT_CHARACTER,	// Kinematically animated character controller.
+	CT_TRIGGER,		// Does not collide, but reports intersections.
 } collision_type_t;
 
 class CPhysicsModel
