@@ -201,7 +201,7 @@ bool CCharacter::IsAttacking() const
 
 void CCharacter::MoveToPlayerStart()
 {
-	CBaseEntity* pPlayerStart = CBaseEntity::GetEntityByName("*CPlayerStart");
+	CBaseEntity* pPlayerStart = CBaseEntity::GetEntityByName("*PlayerStart");
 
 	SetMoveParent(NULL);
 

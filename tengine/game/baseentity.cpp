@@ -1553,7 +1553,7 @@ CBaseEntity* CBaseEntity::GetEntityByName(const eastl::string& sName)
 
 		if (sName[0] == '*')
 		{
-			if (eastl::string(pEntity->GetClassName()) == sName.c_str()+1)
+			if (eastl::string(pEntity->GetClassName()+1) == sName.c_str()+1)
 				return pEntity;
 		}
 		else
