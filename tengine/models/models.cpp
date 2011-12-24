@@ -196,6 +196,10 @@ void CModel::Load()
 		m_aiVertexBuffers[i] = LoadBufferIntoGL(i);
 		m_aiTextures[i] = CTextureLibrary::AddTextureID(GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialTexture(i));
 		m_aiVertexBufferSizes[i] = m_pToy->GetMaterialNumVerts(i);
+
+		//TAssert(m_aiTextures[i]);
+		if (!m_aiTextures[i])
+			TError("Couldn't find texture \"" + GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialTexture(i) + "\"\n");
 	}
 
 	if (m_pToy->GetPhysicsNumTris())
