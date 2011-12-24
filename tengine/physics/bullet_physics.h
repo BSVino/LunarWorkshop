@@ -47,6 +47,7 @@ public:
 
 public:
 	btRigidBody*						m_pRigidBody;
+	eastl::vector<btRigidBody*>			m_apAreaBodies;
 	class btPairCachingGhostObject*		m_pGhostObject;
 	CCharacterController*				m_pCharacterController;
 	CTriggerController*					m_pTriggerController;
