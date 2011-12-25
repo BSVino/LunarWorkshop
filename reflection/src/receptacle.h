@@ -17,6 +17,8 @@ public:
 	void					SetToken(CToken* pToken);
 	CToken*					GetToken() const { return m_hToken; }
 
+	Vector					GetTokenPosition();
+
 	DECLARE_ENTITY_OUTPUT(OnNormalToken);
 	DECLARE_ENTITY_OUTPUT(OnNormalTokenRemoved);
 	DECLARE_ENTITY_OUTPUT(OnReflectedToken);
@@ -29,4 +31,5 @@ protected:
 	tstring					m_sDesiredToken;		// What token does the receptacle need to fire its output?
 	bool					m_bDesiredReflection;	// What reflection does the receptacle need to fire its output?
 	tstring					m_sDesiredType;			// What type of token does the receptacle need to fire its output?
+	Matrix4x4				m_mTokenOffset;
 };

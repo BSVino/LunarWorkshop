@@ -54,6 +54,7 @@ void UnserializeString_tstring(const tstring& sData, class CSaveData* pData, cla
 void UnserializeString_TVector(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_Vector(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_EAngle(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_Matrix4x4(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_AABB(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_ModelID(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_EntityHandle(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);

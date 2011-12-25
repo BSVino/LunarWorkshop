@@ -1766,6 +1766,47 @@ void UnserializeString_EAngle(const tstring& sData, CSaveData* pSaveData, CBaseE
 	TAssert(false);
 }
 
+void UnserializeString_Matrix4x4(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	TAssert(asTokens.size() == 6);
+	if (asTokens.size() != 6)
+	{
+		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") wrong number of arguments for a matrix (Format: \"x y z p y r\")\n");
+		return;
+	}
+
+	Vector vecData(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+	EAngle angData(stof(asTokens[3]), stof(asTokens[4]), stof(asTokens[5]));
+	Matrix4x4 mData(angData, vecData);
+
+	Matrix4x4* pData = (Matrix4x4*)((char*)pEntity + pSaveData->m_iOffset);
+	switch(pSaveData->m_eType)
+	{
+	case CSaveData::DATA_COPYTYPE:
+		*pData = mData;
+		break;
+
+	case CSaveData::DATA_NETVAR:
+	{
+		TAssert(false);
+		CNetworkedVariable<Matrix4x4>* pVariable = (CNetworkedVariable<Matrix4x4>*)pData;
+		(*pVariable) = mData;
+		break;
+	}
+
+	case CSaveData::DATA_COPYARRAY:
+	case CSaveData::DATA_COPYVECTOR:
+	case CSaveData::DATA_STRING:
+	case CSaveData::DATA_STRING16:
+	case CSaveData::DATA_OUTPUT:
+		TAssert(false);
+		break;
+	}
+}
+
 void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
 	TAssert(false);

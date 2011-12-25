@@ -73,7 +73,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 
 	int iKey = TranslateKeyFromQwerty('E');
 
-	float flTokenRadius = 1.5f;
+	float flTokenRadius = 2.5f;
 	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
 	{
 		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
@@ -95,14 +95,13 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 		if (pEntity == pPlayerCharacter->GetToken())
 			continue;
 
-		TFloat flRadius = pEntity->GetBoundingRadius() + flTokenRadius;
-		flRadius = flRadius*flRadius;
-		if ((pPlayerCharacter->GetGlobalCenter() - pEntity->GetGlobalCenter()).LengthSqr() > flRadius)
-			continue;
-
+		TFloat flRadius = flTokenRadius*flTokenRadius;
 		CToken* pToken = dynamic_cast<CToken*>(pEntity);
 		if (pToken)
 		{
+			if ((pPlayerCharacter->GetGlobalCenter() - pEntity->GetGlobalCenter()).LengthSqr() > flRadius)
+				continue;
+
 			if (pPlayerCharacter->GetToken())
 			{
 				tstring sTip = sprintf("%c - Swap", iKey);
@@ -125,6 +124,9 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 		CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pEntity);
 		if (pReceptacle && pPlayerCharacter->GetToken() && pReceptacle->IsTokenValid(pPlayerCharacter->GetToken()))
 		{
+			if ((pPlayerCharacter->GetGlobalCenter() - pReceptacle->GetTokenPosition()).LengthSqr() > flRadius)
+				continue;
+
 			if (pReceptacle->GetToken())
 			{
 				tstring sTip = sprintf("%c - Swap", iKey);

@@ -67,7 +67,7 @@ CMirror* CPlayerCharacter::GetMirror() const
 void CPlayerCharacter::FindItems()
 {
 	CToken* pToken = NULL;
-	float flTokenRadius = 1.5f;
+	float flTokenRadius = 2.5f;
 
 	size_t iMaxEntities = GameServer()->GetMaxEntities();
 	for (size_t j = 0; j < iMaxEntities; j++)
@@ -89,42 +89,47 @@ void CPlayerCharacter::FindItems()
 		if (pEntity == m_hToken)
 			continue;
 
-		TFloat flRadius = pEntity->GetBoundingRadius() + flTokenRadius;
-		flRadius = flRadius*flRadius;
-		if ((GetGlobalCenter() - pEntity->GetGlobalCenter()).LengthSqr() > flRadius)
-			continue;
+		TFloat flRadius = flTokenRadius*flTokenRadius;
 
 		CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pEntity);
-		if (pReceptacle && pReceptacle->GetToken() && m_hToken != nullptr)
+		if (pReceptacle)
 		{
-			pToken = m_hToken;
-			DropToken();
-			CToken* pOther = pReceptacle->GetToken();
-			pReceptacle->SetToken(pToken);
-			PickUpToken(pOther);
-			return;
-		}
+			if ((GetGlobalCenter() - pReceptacle->GetTokenPosition()).LengthSqr() > flRadius)
+				continue;
 
-		if (pReceptacle && !pReceptacle->GetToken() && m_hToken != nullptr)
-		{
-			pToken = m_hToken;
-			DropToken();
-			pReceptacle->SetToken(pToken);
-			return;
-		}
+			if (pReceptacle->GetToken() && m_hToken != nullptr)
+			{
+				pToken = m_hToken;
+				DropToken();
+				CToken* pOther = pReceptacle->GetToken();
+				pReceptacle->SetToken(pToken);
+				PickUpToken(pOther);
+				return;
+			}
 
-		if (pReceptacle && pReceptacle->GetToken() && m_hToken == nullptr)
-		{
-			pToken = pReceptacle->GetToken();
-			pReceptacle->SetToken(nullptr);
-			PickUpToken(pToken);
-			return;
+			if (!pReceptacle->GetToken() && m_hToken != nullptr)
+			{
+				pToken = m_hToken;
+				DropToken();
+				pReceptacle->SetToken(pToken);
+				return;
+			}
+
+			if (pReceptacle->GetToken() && m_hToken == nullptr)
+			{
+				pToken = pReceptacle->GetToken();
+				pReceptacle->SetToken(nullptr);
+				PickUpToken(pToken);
+				return;
+			}
 		}
 
 		pToken = dynamic_cast<CToken*>(pEntity);
-
 		if (pToken && !pToken->GetReceptacle())
 		{
+			if ((GetGlobalCenter() - pToken->GetGlobalCenter()).LengthSqr() > flRadius)
+				continue;
+
 			if (m_hToken != nullptr)
 				DropToken();
 			PickUpToken(pToken);

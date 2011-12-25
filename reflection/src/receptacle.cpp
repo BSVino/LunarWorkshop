@@ -21,6 +21,7 @@ SAVEDATA_TABLE_BEGIN(CReceptacle);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sDesiredToken, "DesiredToken");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bDesiredReflection, "DesiredReflection");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sDesiredType, "DesiredTokenType");
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mTokenOffset, "TokenOffset");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CReceptacle);
@@ -39,6 +40,8 @@ void CReceptacle::Spawn()
 
 	SetModel("models/pedestal.toy");
 	AddToPhysics(CT_KINEMATIC);
+
+	m_mTokenOffset = TMatrix(EAngle(40, 0, 0), Vector(0, 0.742105f, 0));
 }
 
 bool CReceptacle::IsTokenValid(const CToken* pToken) const
@@ -78,7 +81,7 @@ void CReceptacle::SetToken(CToken* pToken)
 		return;
 
 	pToken->SetMoveParent(this);
-	pToken->SetLocalTransform(TMatrix(EAngle(40, 0, 0), Vector(0, 0.742105f, 0)));
+	pToken->SetLocalTransform(m_mTokenOffset);
 	pToken->m_hReceptacle = this;
 
 	if (IsTokenValid(pToken))
@@ -89,4 +92,9 @@ void CReceptacle::SetToken(CToken* pToken)
 			CallOutput("OnNormalToken");
 		CallOutput("OnToken");
 	}
+}
+
+Vector CReceptacle::GetTokenPosition()
+{
+	return (GetGlobalTransform() * m_mTokenOffset).GetTranslation();
 }
