@@ -188,13 +188,13 @@ void CModelWindow::MouseInput(int iButton, int iState)
 	}
 }
 
-void CModelWindow::MouseWheel(int iState)
+void CModelWindow::MouseWheel(int x, int y)
 {
 	static int iOldState = 0;
 
 	if (m_bRenderUV)
 	{
-		if (iState > iOldState)
+		if (x > iOldState)
 		{
 			m_flCameraUVZoom += 0.01f;
 		}
@@ -208,7 +208,7 @@ void CModelWindow::MouseWheel(int iState)
 	}
 	else
 	{
-		if (iState > iOldState)
+		if (x > iOldState)
 		{
 			m_flCameraDistance += 10.0f;
 		}
@@ -221,7 +221,7 @@ void CModelWindow::MouseWheel(int iState)
 		}
 	}
 
-	iOldState = iState;
+	iOldState = x;
 }
 
 bool CModelWindow::DoCharPress(int c)

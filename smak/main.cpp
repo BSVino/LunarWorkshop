@@ -3,7 +3,7 @@
 #endif
 
 #include <GL/glew.h>
-#include <GL/glfw.h>
+#include <GL/glfw3.h>
 #include <IL/il.h>
 
 #include <tinker_platform.h>
@@ -236,9 +236,8 @@ int CreateApplication(int argc, char** argv)
 				glfwInit();
 
 				// The easy way to get a "windowless" context.
-				glfwOpenWindow(100, 100, 0, 0, 0, 0, 16, 0, GLFW_WINDOW);
-				glfwSetWindowTitle("SMAK a Batch");
-				glfwIconifyWindow();
+				GLFWwindow i = glfwOpenWindow(100, 100, GLFW_WINDOWED, "SMAK a Batch", nullptr);
+				glfwIconifyWindow(i);
 
 				glewInit();
 			}

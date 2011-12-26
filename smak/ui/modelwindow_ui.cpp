@@ -1,7 +1,7 @@
 #include "modelwindow_ui.h"
 
 #include <IL/il.h>
-#include <GL/glfw.h>
+#include <GL/glfw3.h>
 
 #include <maths.h>
 #include <strutils.h>

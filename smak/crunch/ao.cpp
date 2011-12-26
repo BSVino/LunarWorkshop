@@ -3,7 +3,7 @@
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <GL/glew.h>
-#include <GL/glfw.h>
+#include <GL/glfw3.h>
 #include <time.h>
 
 #include <geometry.h>
@@ -21,7 +21,11 @@
 
 // Some compilers don't need it, make sure it still exists though.
 #ifndef CALLBACK
+#ifdef _WIN32
+#define CALLBACK __stdcall
+#else
 #define CALLBACK
+#endif
 #endif
 
 #ifdef AO_DEBUG

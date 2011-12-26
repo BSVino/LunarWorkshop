@@ -6,7 +6,7 @@
 
 #include <time.h>
 #include <GL/glew.h>
-#include <GL/glfw.h>
+#include <GL/glfw3.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <iostream>
@@ -43,6 +43,60 @@ CApplication::CApplication(int argc, char** argv)
 	m_pConsole = NULL;
 }
 
+#ifdef _DEBUG
+#define GL_DEBUG_VALUE "1"
+#else
+#define GL_DEBUG_VALUE "0"
+#endif
+
+CVar gl_debug("gl_debug", GL_DEBUG_VALUE);
+
+void CALLBACK GLDebugCallback(GLenum iSource, GLenum iType, GLuint id, GLenum iSeverity, GLsizei iLength, const GLchar* pszMessage, GLvoid* pUserParam)
+{
+	TAssert(iSeverity != GL_DEBUG_SEVERITY_HIGH_AMD);
+	TAssert(iSeverity != GL_DEBUG_SEVERITY_MEDIUM_AMD);
+
+	if (gl_debug.GetBool())
+	{
+		TMsg("OpenGL Debug Message (");
+
+		if (iSource == GL_DEBUG_SOURCE_API_ARB)
+			TMsg("Source: API ");
+		else if (iSource == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
+			TMsg("Source: Window System ");
+		else if (iSource == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB)
+			TMsg("Source: Shader Compiler ");
+		else if (iSource == GL_DEBUG_SOURCE_THIRD_PARTY_ARB)
+			TMsg("Source: Third Party ");
+		else if (iSource == GL_DEBUG_SOURCE_APPLICATION_ARB)
+			TMsg("Source: Application ");
+		else if (iSource == GL_DEBUG_SOURCE_OTHER_ARB)
+			TMsg("Source: Other ");
+
+		if (iType == GL_DEBUG_TYPE_ERROR_ARB)
+			TMsg("Type: Error ");
+		else if (iType == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)
+			TMsg("Type: Deprecated Behavior ");
+		else if (iType == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)
+			TMsg("Type: Undefined Behavior ");
+		else if (iType == GL_DEBUG_TYPE_PORTABILITY_ARB)
+			TMsg("Type: Portability ");
+		else if (iType == GL_DEBUG_TYPE_PERFORMANCE_ARB)
+			TMsg("Type: Performance ");
+		else if (iType == GL_DEBUG_TYPE_OTHER_ARB)
+			TMsg("Type: Other ");
+
+		if (iSeverity == GL_DEBUG_SEVERITY_HIGH_ARB)
+			TMsg("Severity: High) ");
+		else if (iSeverity == GL_DEBUG_SEVERITY_MEDIUM_ARB)
+			TMsg("Severity: Medium) ");
+		else if (iSeverity == GL_DEBUG_SEVERITY_LOW_ARB)
+			TMsg("Severity: Low) ");
+
+		TMsg(convertstring<GLchar, tchar>(pszMessage) + "\n");
+	}
+}
+
 void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, bool bResizeable)
 {
 	glfwInit();
@@ -58,20 +112,27 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 	m_iWindowWidth = iWidth;
 	m_iWindowHeight = iHeight;
 
-	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, bResizeable?GL_FALSE:GL_TRUE);
+	glfwOpenWindowHint(GLFW_WINDOW_RESIZABLE, bResizeable?GL_TRUE:GL_FALSE);
 
 	if (m_bMultisampling)
 		glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
 
+	if (HasCommandLineSwitch("--debug-gl"))
+		glfwOpenWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+
+	glfwOpenWindowHint(GLFW_DEPTH_BITS, 16);
+	glfwOpenWindowHint(GLFW_RED_BITS, 8);
+	glfwOpenWindowHint(GLFW_GREEN_BITS, 8);
+	glfwOpenWindowHint(GLFW_BLUE_BITS, 8);
+	glfwOpenWindowHint(GLFW_ALPHA_BITS, 8);
+
 	TMsg(sprintf(tstring("Opening %dx%d %s %s window.\n"), iWidth, iHeight, bFullscreen?"fullscreen":"windowed", bResizeable?"resizeable":"fixed-size"));
 
-	if (!glfwOpenWindow(iWidth, iHeight, 0, 0, 0, 0, 16, 0, m_bFullscreen?GLFW_FULLSCREEN:GLFW_WINDOW))
+	if (!(m_pWindow = (size_t)glfwOpenWindow(iWidth, iHeight, m_bFullscreen?GLFW_FULLSCREEN:GLFW_WINDOWED, WindowTitle().c_str(), NULL)))
 	{
 		glfwTerminate();
 		return;
 	}
-
-	glfwSetWindowTitle( WindowTitle().c_str() );
 
 	int iScreenWidth;
 	int iScreenHeight;
@@ -86,7 +147,7 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 
 		int iWindowX = (int)(iScreenWidth/2-m_iWindowWidth/2);
 		int iWindowY = (int)(iScreenHeight/2-m_iWindowHeight/2);
-		glfwSetWindowPos(iWindowX, iWindowY);
+		glfwSetWindowPos((GLFWwindow)m_pWindow, iWindowX, iWindowY);
 	}
 
 	glfwSetWindowCloseCallback(&CApplication::WindowCloseCallback);
@@ -95,7 +156,7 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 	glfwSetCharCallback(&CApplication::CharEventCallback);
 	glfwSetMousePosCallback(&CApplication::MouseMotionCallback);
 	glfwSetMouseButtonCallback(&CApplication::MouseInputCallback);
-	glfwSetMouseWheelCallback(&CApplication::MouseWheelCallback);
+	glfwSetScrollCallback(&CApplication::MouseWheelCallback);
 	glfwSwapInterval( 1 );
 	glfwSetTime( 0.0 );
 
@@ -106,6 +167,14 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 		exit(0);
 
 	DumpGLInfo();
+
+	if (GLEW_ARB_debug_output)
+	{
+		glDebugMessageCallbackARB(GLDebugCallback, nullptr);
+
+		tstring sMessage("OpenGL Debug Output Activated");
+		glDebugMessageInsertARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DEBUG_TYPE_OTHER_ARB, 0, GL_DEBUG_SEVERITY_LOW_ARB, sMessage.length(), sMessage.c_str());
+	}
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -267,6 +336,7 @@ void CApplication::DumpGLInfo()
 void CApplication::SwapBuffers()
 {
 	glfwSwapBuffers();
+	glfwPollEvents();
 }
 
 float CApplication::GetTime()
@@ -276,7 +346,7 @@ float CApplication::GetTime()
 
 bool CApplication::IsOpen()
 {
-	return !!glfwGetWindowParam( GLFW_OPENED ) && m_bIsOpen;
+	return !!glfwIsWindow((GLFWwindow)m_pWindow) && m_bIsOpen;
 }
 
 void Quit(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
@@ -293,7 +363,7 @@ void CApplication::Close()
 
 bool CApplication::HasFocus()
 {
-	return glfwGetWindowParam(GLFW_ACTIVE) == GL_TRUE;
+	return glfwGetWindowParam((GLFWwindow)m_pWindow, GLFW_ACTIVE) == GL_TRUE;
 }
 
 void CApplication::Render()
@@ -560,7 +630,7 @@ tinker_keys_t MapJoystickKey(int c)
 	return TINKER_KEY_UKNOWN;
 }
 
-void CApplication::MouseInputCallback(int iButton, int iState)
+void CApplication::MouseInputCallback(void*, int iButton, int iState)
 {
 	Get()->MouseInput(MapMouseKey(iButton), iState);
 }
@@ -573,12 +643,18 @@ void CApplication::KeyEvent(int c, int e)
 		KeyRelease(MapKey(c));
 }
 
-void CApplication::CharEvent(int c, int e)
+void CApplication::CharEvent(int c)
 {
-	if (e == GLFW_PRESS)
-		CharPress(c);
-	else
-		CharRelease(c);
+	if (c == '`')
+	{
+		ToggleConsole();
+		return;
+	}
+
+	if (glgui::CRootPanel::Get()->CharPressed(c))
+		return;
+
+	DoCharPress(c);
 }
 
 bool CApplication::KeyPress(int c)
@@ -597,66 +673,47 @@ void CApplication::KeyRelease(int c)
 	DoKeyRelease(c);
 }
 
-bool CApplication::CharPress(int c)
-{
-	if (c == '`')
-	{
-		ToggleConsole();
-		return true;
-	}
-
-	if (glgui::CRootPanel::Get()->CharPressed(c))
-		return true;
-
-	return DoCharPress(c);
-}
-
-void CApplication::CharRelease(int c)
-{
-	DoCharRelease(c);
-}
-
 bool CApplication::IsCtrlDown()
 {
-	return glfwGetKey(GLFW_KEY_LCTRL) || glfwGetKey(GLFW_KEY_RCTRL);
+	return glfwGetKey((GLFWwindow)m_pWindow, GLFW_KEY_LCTRL) || glfwGetKey((GLFWwindow)m_pWindow, GLFW_KEY_RCTRL);
 }
 
 bool CApplication::IsAltDown()
 {
-	return glfwGetKey(GLFW_KEY_LALT) || glfwGetKey(GLFW_KEY_RALT);
+	return glfwGetKey((GLFWwindow)m_pWindow, GLFW_KEY_LALT) || glfwGetKey((GLFWwindow)m_pWindow, GLFW_KEY_RALT);
 }
 
 bool CApplication::IsShiftDown()
 {
-	return glfwGetKey(GLFW_KEY_LSHIFT) || glfwGetKey(GLFW_KEY_RSHIFT);
+	return glfwGetKey((GLFWwindow)m_pWindow, GLFW_KEY_LSHIFT) || glfwGetKey((GLFWwindow)m_pWindow, GLFW_KEY_RSHIFT);
 }
 
 bool CApplication::IsMouseLeftDown()
 {
-	return glfwGetMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+	return glfwGetMouseButton((GLFWwindow)m_pWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
 }
 
 bool CApplication::IsMouseRightDown()
 {
-	return glfwGetMouseButton(GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+	return glfwGetMouseButton((GLFWwindow)m_pWindow, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
 }
 
 bool CApplication::IsMouseMiddleDown()
 {
-	return glfwGetMouseButton(GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS;
+	return glfwGetMouseButton((GLFWwindow)m_pWindow, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS;
 }
 
 void CApplication::GetMousePosition(int& x, int& y)
 {
-	glfwGetMousePos(&x, &y);
+	glfwGetMousePos((GLFWwindow)m_pWindow, &x, &y);
 }
 
 void CApplication::SetMouseCursorEnabled(bool bEnabled)
 {
 	if (bEnabled)
-		glfwEnable( GLFW_MOUSE_CURSOR );
+		glfwSetCursorMode( (GLFWwindow)m_pWindow, GLFW_CURSOR_NORMAL );
 	else
-		glfwDisable( GLFW_MOUSE_CURSOR );
+		glfwSetCursorMode( (GLFWwindow)m_pWindow, GLFW_CURSOR_CAPTURED );
 
 	m_bMouseEnabled = bEnabled;
 }

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <maths.h>
 #include <GL/glew.h>
-#include <GL/glfw.h>
+#include <GL/glfw3.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 
@@ -27,7 +27,11 @@ using namespace glgui;
 
 // Some compilers don't need it, make sure it still exists though.
 #ifndef CALLBACK
+#ifdef _WIN32
+#define CALLBACK __stdcall
+#else
 #define CALLBACK
+#endif
 #endif
 
 extern "C" {

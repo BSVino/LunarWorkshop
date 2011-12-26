@@ -142,13 +142,18 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 		iHeight++;
 	}
 
+	glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+
+	GLint iScreenSamples;
+	glGetIntegerv(GL_SAMPLES, &iScreenSamples);
+
 	bool bMultisample = !!GLEW_EXT_framebuffer_multisample;
 	bool bMultisampleTexture = false;//!!GLEW_ARB_texture_multisample;	// This isn't working and I don't need it for now.
 	bool bUseMultisample = bMultisample;
 	if ((eOptions&FB_TEXTURE) && !bMultisampleTexture)
 		bUseMultisample = false;
 
-	GLsizei iSamples = 4;
+	GLsizei iSamples = iScreenSamples;
 
 	GLuint iTextureTarget = GL_TEXTURE_2D;
 	if (bUseMultisample)
@@ -206,7 +211,12 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
     GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 	TAssert(status == GL_FRAMEBUFFER_COMPLETE_EXT);
 
+	GLint iFBSamples;
+	glGetIntegerv(GL_SAMPLES, &iFBSamples);
+
 	glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+
+	TAssert(iFBSamples == iScreenSamples || iFBSamples == 0 || 0 == iScreenSamples);
 
 	oBuffer.m_iWidth = iWidth;
 	oBuffer.m_iHeight = iHeight;

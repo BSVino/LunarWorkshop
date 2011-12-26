@@ -36,36 +36,33 @@ public:
 	static void					RenderCallback() { Get()->Render(); };
 	virtual void				Render();
 
-	static int					WindowCloseCallback() { return Get()->WindowClose(); };
+	static int					WindowCloseCallback(void*) { return Get()->WindowClose(); };
 	virtual int					WindowClose();
 
-	static void					WindowResizeCallback(int x, int y) { Get()->WindowResize(x, y); };
+	static void					WindowResizeCallback(void*, int x, int y) { Get()->WindowResize(x, y); };
 	virtual void				WindowResize(int x, int y);
 
-	static void					MouseMotionCallback(int x, int y) { Get()->MouseMotion(x, y); };
+	static void					MouseMotionCallback(void*, int x, int y) { Get()->MouseMotion(x, y); };
 	virtual void				MouseMotion(int x, int y);
 
-	static void					MouseInputCallback(int iButton, int iState);
+	static void					MouseInputCallback(void*, int iButton, int iState);
 	virtual void				MouseInput(int iButton, int iState);
 
-	static void					MouseWheelCallback(int iState) { Get()->MouseWheel(iState); };
-	virtual void				MouseWheel(int iState) {};
+	static void					MouseWheelCallback(void*, int x, int y) { Get()->MouseWheel(x, y); };
+	virtual void				MouseWheel(int x, int y) {};
 
-	static void					KeyEventCallback(int c, int e) { Get()->KeyEvent(c, e); };
+	static void					KeyEventCallback(void*, int c, int e) { Get()->KeyEvent(c, e); };
 	void						KeyEvent(int c, int e);
 	virtual bool				KeyPress(int c);
 	virtual void				KeyRelease(int c);
 
-	static void					CharEventCallback(int c, int e) { Get()->CharEvent(c, e); };
-	void						CharEvent(int c, int e);
-	virtual bool				CharPress(int c);
-	virtual void				CharRelease(int c);
+	static void					CharEventCallback(void*, int c) { Get()->CharEvent(c); };
+	void						CharEvent(int c);
 
 	virtual bool				DoKeyPress(int c) { return false; };
 	virtual void				DoKeyRelease(int c) {};
 
 	virtual bool				DoCharPress(int c) { return false; };
-	virtual void				DoCharRelease(int c) {};
 
 	bool						IsCtrlDown();
 	bool						IsAltDown();
@@ -107,6 +104,7 @@ public:
 	static CApplication*		Get() { return s_pApplication; };
 
 protected:
+	size_t						m_pWindow;
 	size_t						m_iWindowWidth;
 	size_t						m_iWindowHeight;
 	bool						m_bFullscreen;
