@@ -791,7 +791,7 @@ void CRenderer::RenderRBFullscreen(CFrameBuffer* pSource)
 	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, (GLuint)pSource->m_iFB);
 	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
 
-	glBlitFramebufferEXT(0, 0, pSource->m_iWidth, pSource->m_iHeight, 0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_LINEAR);
+	glBlitFramebufferEXT(0, 0, pSource->m_iWidth, pSource->m_iHeight, 0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
 void CRenderer::RenderRBToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestination)
@@ -801,7 +801,7 @@ void CRenderer::RenderRBToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestinati
 	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, (GLuint)pSource->m_iFB);
 	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, (GLuint)pDestination->m_iFB);
 
-	glBlitFramebufferEXT(0, 0, pSource->m_iWidth, pSource->m_iHeight, 0, 0, pDestination->m_iWidth, pDestination->m_iHeight, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_LINEAR);
+	glBlitFramebufferEXT(0, 0, pSource->m_iWidth, pSource->m_iHeight, 0, 0, pDestination->m_iWidth, pDestination->m_iHeight, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
 void CRenderer::RenderMapFullscreen(size_t iMap, bool bMapIsMultisample)
@@ -1511,3 +1511,31 @@ void CRenderer::UnloadTextureData(unsigned int iTexture)
 	ilBindImage(0);
 	ilDeleteImages(1, &iTexture);
 }
+
+void R_ReadPixels(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+{
+	int iWidth = GameServer()->GetRenderer()->GetSceneBuffer()->m_iWidth;
+	int iHeight = GameServer()->GetRenderer()->GetSceneBuffer()->m_iHeight;
+	unsigned char* pixels = new unsigned char[iWidth*iHeight*4];
+
+	glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)GameServer()->GetRenderer()->GetSceneBuffer()->m_iFB);
+	glViewport(0, 0, (GLsizei)iWidth, (GLsizei)iHeight);
+	glReadPixels(0, 0, iWidth, iHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+	ILuint iDevILId;
+	ilGenImages(1, &iDevILId);
+	ilBindImage(iDevILId);
+
+	ilTexImage((ILint)iWidth, (ILint)iHeight, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, pixels);
+
+	// Formats like PNG and VTF don't work unless it's in integer format.
+	ilConvertImage(IL_RGBA, IL_UNSIGNED_INT);
+
+	ilSaveImage(convertstring<char, ILchar>("readpixels.png").c_str());
+
+	ilDeleteImages(1,&iDevILId);
+
+	delete pixels;
+}
+
+CCommand r_readpixels(tstring("r_readpixels"), ::R_ReadPixels);
