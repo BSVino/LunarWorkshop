@@ -79,8 +79,7 @@ void CRenderer::Initialize()
 
 	if (ShouldUseFramebuffers())
 	{
-		m_oSceneBuffer = CreateFrameBuffer(m_iWidth, m_iHeight, (fb_options_e)(FB_RENDERBUFFER|FB_DEPTH));
-		m_oSceneTextureBuffer = CreateFrameBuffer(m_iWidth, m_iHeight, (fb_options_e)(FB_TEXTURE|FB_DEPTH|FB_LINEAR));
+		m_oSceneBuffer = CreateFrameBuffer(m_iWidth, m_iHeight, (fb_options_e)(FB_TEXTURE|FB_DEPTH));
 
 		size_t iWidth = m_oSceneBuffer.m_iWidth;
 		size_t iHeight = m_oSceneBuffer.m_iHeight;
@@ -637,8 +636,6 @@ void CRenderer::RenderOffscreenBuffers()
 	{
 		TPROF("Bloom");
 
-		RenderFrameBufferToBuffer(&m_oSceneBuffer, &m_oSceneTextureBuffer);
-
 		// Use a bright-pass filter to catch only the bright areas of the image
 		GLuint iBrightPass = (GLuint)CShaderLibrary::GetProgram("brightpass");
 		UseProgram(iBrightPass);
@@ -654,7 +651,7 @@ void CRenderer::RenderOffscreenBuffers()
 		for (size_t i = 0; i < BLOOM_FILTERS; i++)
 		{
 			glUniform1f(flBrightness, BloomBrightnessCutoff() - 0.1f*i);
-			RenderFrameBufferToBuffer(&m_oSceneTextureBuffer, &m_oBloom1Buffers[i]);
+			RenderFrameBufferToBuffer(&m_oSceneBuffer, &m_oBloom1Buffers[i]);
 		}
 
 		ClearProgram();

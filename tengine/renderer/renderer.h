@@ -219,7 +219,6 @@ protected:
 	eastl::map<tstring, size_t> m_aiCurrentSceneAreas;
 
 	CFrameBuffer	m_oSceneBuffer;
-	CFrameBuffer	m_oSceneTextureBuffer;
 
 	CFrameBuffer	m_oBloom1Buffers[BLOOM_FILTERS];
 	CFrameBuffer	m_oBloom2Buffers[BLOOM_FILTERS];
