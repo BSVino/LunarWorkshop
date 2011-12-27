@@ -299,7 +299,7 @@ void CRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 		iWinding = (m_bInitialWinding?GL_CW:GL_CCW);
 	glFrontFace(iWinding);
 
-	glBindBuffer(GL_ARRAY_BUFFER, pModel->m_aiVertexBuffers[iMaterial]);
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, pModel->m_aiVertexBuffers[iMaterial]);
 
 //	if (m_pShader->m_iNormalAttribute != ~0)
 //		glEnableVertexAttribArray(m_pShader->m_iNormalAttribute);
@@ -327,7 +327,7 @@ void CRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	glDisableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
 	glDisableVertexAttribArray(m_pShader->m_iPositionAttribute);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 }
 
 void CRenderingContext::RenderSphere()

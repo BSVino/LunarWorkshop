@@ -331,7 +331,7 @@ void CRenderer::SetupFrame()
 
 void CRenderer::DrawBackground()
 {
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	glUseProgram(0);
 
 	glMatrixMode(GL_PROJECTION);
@@ -1291,9 +1291,21 @@ size_t CRenderer::LoadVertexDataIntoGL(size_t iVerts, float* aflVertices)
 {
 	GLuint iVBO;
 	glGenBuffersARB(1, &iVBO);
-	glBindBufferARB(GL_ARRAY_BUFFER, iVBO);
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB, iVBO);
 
-	glBufferDataARB(GL_ARRAY_BUFFER, iVerts, aflVertices, GL_STATIC_DRAW);
+	glBufferDataARB(GL_ARRAY_BUFFER_ARB, iVerts, 0, GL_STATIC_DRAW_ARB);
+
+	glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, iVerts, aflVertices);
+
+    int iSize = 0;
+    glGetBufferParameterivARB(GL_ARRAY_BUFFER_ARB, GL_BUFFER_SIZE_ARB, &iSize);
+    if(iVerts != iSize)
+    {
+        glDeleteBuffersARB(1, &iVBO);
+		TAssert(false);
+        TError("CRenderer::LoadVertexDataIntoGL(): Data size is mismatch with input array\n");
+		return 0;
+    }
 
 	return iVBO;
 }

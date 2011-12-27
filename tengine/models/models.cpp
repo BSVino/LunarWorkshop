@@ -182,6 +182,8 @@ CModel::~CModel()
 
 	if (m_pToy)
 		delete m_pToy;
+
+	// TODO: Delete vertex buffer objects
 }
 
 bool CModel::Load()

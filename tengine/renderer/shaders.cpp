@@ -219,6 +219,9 @@ bool CShader::Compile()
 	glGetShaderiv((GLuint)m_iFShader, GL_COMPILE_STATUS, &iFragmentCompiled);
 
 	m_iProgram = glCreateProgram();
+
+	glBindAttribLocation(m_iProgram, 0, "vecPosition");		// Force position at location 0. ATI cards won't work without this.
+
 	glAttachShader((GLuint)m_iProgram, (GLuint)m_iVShader);
 	glAttachShader((GLuint)m_iProgram, (GLuint)m_iFShader);
 	glLinkProgram((GLuint)m_iProgram);
