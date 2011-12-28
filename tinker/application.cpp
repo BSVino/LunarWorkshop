@@ -53,8 +53,11 @@ CVar gl_debug("gl_debug", GL_DEBUG_VALUE);
 
 void CALLBACK GLDebugCallback(GLenum iSource, GLenum iType, GLuint id, GLenum iSeverity, GLsizei iLength, const GLchar* pszMessage, GLvoid* pUserParam)
 {
-	TAssert(iSeverity != GL_DEBUG_SEVERITY_HIGH_AMD);
-	TAssert(iSeverity != GL_DEBUG_SEVERITY_MEDIUM_AMD);
+	if (iType != GL_DEBUG_TYPE_PERFORMANCE_ARB)
+	{
+		TAssert(iSeverity != GL_DEBUG_SEVERITY_HIGH_AMD);
+		TAssert(iSeverity != GL_DEBUG_SEVERITY_MEDIUM_AMD);
+	}
 
 	if (gl_debug.GetBool())
 	{
