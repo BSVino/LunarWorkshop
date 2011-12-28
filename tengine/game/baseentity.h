@@ -451,6 +451,8 @@ public:
 	bool									IsVisible() const { return m_bVisible; }
 	void									SetVisible(bool bVisible) { m_bVisible = bVisible; }
 
+	DECLARE_ENTITY_INPUT(SetVisible);
+
 	bool									IsInPhysics() const { return m_bInPhysics; };
 	void									AddToPhysics(enum collision_type_e eCollisionType);
 	void									RemoveFromPhysics();
@@ -485,6 +487,7 @@ public:
 	DECLARE_ENTITY_INPUT(Activate);
 	DECLARE_ENTITY_INPUT(Deactivate);
 	DECLARE_ENTITY_INPUT(ToggleActive);
+	DECLARE_ENTITY_INPUT(SetActive);
 	DECLARE_ENTITY_OUTPUT(OnActivated);
 	DECLARE_ENTITY_OUTPUT(OnDeactivated);
 

@@ -117,9 +117,11 @@ SAVEDATA_TABLE_END();
 INPUTS_TABLE_BEGIN(CBaseEntity);
 	INPUT_DEFINE(SetLocalOrigin);
 	INPUT_DEFINE(SetLocalAngles);
+	INPUT_DEFINE(SetVisible);
 	INPUT_DEFINE(Activate);
 	INPUT_DEFINE(Deactivate);
 	INPUT_DEFINE(ToggleActive);
+	INPUT_DEFINE(SetActive);
 	INPUT_DEFINE(RemoveOutput);
 	INPUT_DEFINE(Delete);
 INPUTS_TABLE_END();
@@ -629,6 +631,20 @@ size_t CBaseEntity::GetNumEntities()
 	return s_iEntities;
 }
 
+void CBaseEntity::SetVisible(const eastl::vector<tstring>& sArgs)
+{
+	TAssert(sArgs.size());
+	if (!sArgs.size())
+	{
+		TError("CBaseEntity(" + GetName() + "):SetVisible missing a value. Expecting \"On\" or \"Off\"\n");
+		return;
+	}
+
+	bool bValue = (sArgs[0].comparei("yes") == 0 || sArgs[0].comparei("true") == 0 || sArgs[0].comparei("on") == 0 || stoi(sArgs[0]) != 0);
+
+	SetVisible(bValue);
+}
+
 void CBaseEntity::AddToPhysics(collision_type_t eCollisionType)
 {
 	TAssert(!IsInPhysics());
@@ -736,6 +752,20 @@ void CBaseEntity::Deactivate(const eastl::vector<tstring>& sArgs)
 void CBaseEntity::ToggleActive(const eastl::vector<tstring>& sArgs)
 {
 	SetActive(!IsActive());
+}
+
+void CBaseEntity::SetActive(const eastl::vector<tstring>& sArgs)
+{
+	TAssert(sArgs.size());
+	if (!sArgs.size())
+	{
+		TError("CBaseEntity(" + GetName() + "):SetActive missing a value. Expecting \"On\" or \"Off\"\n");
+		return;
+	}
+
+	bool bValue = (sArgs[0].comparei("yes") == 0 || sArgs[0].comparei("true") == 0 || sArgs[0].comparei("on") == 0 || stoi(sArgs[0]) != 0);
+
+	SetActive(bValue);
 }
 
 CVar show_centers("debug_show_centers", "off");
@@ -1609,7 +1639,6 @@ void UnserializeString_bool(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 
 	case CSaveData::DATA_NETVAR:
 	{
-		TAssert(false);
 		CNetworkedVariable<bool>* pVariable = (CNetworkedVariable<bool>*)pData;
 		(*pVariable) = bValue;
 		break;
@@ -1809,7 +1838,41 @@ void UnserializeString_Matrix4x4(const tstring& sData, CSaveData* pSaveData, CBa
 
 void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	TAssert(false);
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	TAssert(asTokens.size() == 6);
+	if (asTokens.size() != 6)
+	{
+		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") wrong number of arguments for an AABB (Format: \"x y z x y z\")\n");
+		return;
+	}
+
+	AABB aabbData(Vector(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2])), Vector(stof(asTokens[3]), stof(asTokens[4]), stof(asTokens[5])));
+
+	AABB* pData = (AABB*)((char*)pEntity + pSaveData->m_iOffset);
+	switch(pSaveData->m_eType)
+	{
+	case CSaveData::DATA_COPYTYPE:
+		*pData = aabbData;
+		break;
+
+	case CSaveData::DATA_NETVAR:
+	{
+		TAssert(false);
+		CNetworkedVariable<AABB>* pVariable = (CNetworkedVariable<AABB>*)pData;
+		(*pVariable) = aabbData;
+		break;
+	}
+
+	case CSaveData::DATA_COPYARRAY:
+	case CSaveData::DATA_COPYVECTOR:
+	case CSaveData::DATA_STRING:
+	case CSaveData::DATA_STRING16:
+	case CSaveData::DATA_OUTPUT:
+		TAssert(false);
+		break;
+	}
 }
 
 void UnserializeString_ModelID(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)

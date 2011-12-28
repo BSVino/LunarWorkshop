@@ -153,7 +153,11 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 
 		btTransform mTransform;
 		mTransform.setIdentity();
-		mTransform.setFromOpenGLMatrix(&pEntity->GetGlobalTransform().m[0][0]);
+
+		if (pEntity->GetModelID() != ~0)
+			mTransform.setFromOpenGLMatrix(&pEntity->GetGlobalTransform().m[0][0]);
+		else
+			mTransform.setOrigin(btVector3(pEntity->GetBoundingBox().Center().x, pEntity->GetBoundingBox().Center().y, pEntity->GetBoundingBox().Center().z));
 
 		btVector3 vecLocalInertia(0, 0, 0);
 
