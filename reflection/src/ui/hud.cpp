@@ -102,6 +102,9 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 			if ((pPlayerCharacter->GetGlobalCenter() - pEntity->GetGlobalCenter()).LengthSqr() > flRadius)
 				continue;
 
+			if (pToken->GetReceptacle() && !pToken->GetReceptacle()->IsActive())
+				continue;
+
 			if (pPlayerCharacter->GetToken())
 			{
 				tstring sTip = sprintf("%c - Swap", iKey);
@@ -124,6 +127,9 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 		CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pEntity);
 		if (pReceptacle && pPlayerCharacter->GetToken() && pReceptacle->IsTokenValid(pPlayerCharacter->GetToken()))
 		{
+			if (!pReceptacle->IsActive())
+				continue;
+
 			if ((pPlayerCharacter->GetGlobalCenter() - pReceptacle->GetTokenPosition()).LengthSqr() > flRadius)
 				continue;
 

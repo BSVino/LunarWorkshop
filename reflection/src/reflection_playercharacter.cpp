@@ -94,6 +94,9 @@ void CPlayerCharacter::FindItems()
 		CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pEntity);
 		if (pReceptacle)
 		{
+			if (!pReceptacle->IsActive())
+				continue;
+
 			if ((GetGlobalCenter() - pReceptacle->GetTokenPosition()).LengthSqr() > flRadius)
 				continue;
 
@@ -127,6 +130,9 @@ void CPlayerCharacter::FindItems()
 		pToken = dynamic_cast<CToken*>(pEntity);
 		if (pToken && !pToken->GetReceptacle())
 		{
+			if (pToken->GetReceptacle() && !pToken->GetReceptacle()->IsActive())
+				continue;
+
 			if ((GetGlobalCenter() - pToken->GetGlobalCenter()).LengthSqr() > flRadius)
 				continue;
 
