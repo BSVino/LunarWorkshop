@@ -1298,6 +1298,11 @@ size_t CRenderer::LoadVertexDataIntoGL(size_t iVerts, float* aflVertices)
 	return iVBO;
 }
 
+void CRenderer::UnloadVertexDataFromGL(size_t iBuffer)
+{
+	glDeleteBuffersARB(1, &iBuffer);
+}
+
 size_t CRenderer::LoadTextureIntoGL(tstring sFilename, int iClamp)
 {
 	if (!sFilename.length())
