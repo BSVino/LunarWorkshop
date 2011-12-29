@@ -49,7 +49,7 @@ TVector CReflectionCharacter::GetGoalVelocity()
 
 float CReflectionCharacter::EyeHeight() const
 {
-	return 1.8f;
+	return 1.65f;
 }
 
 void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
