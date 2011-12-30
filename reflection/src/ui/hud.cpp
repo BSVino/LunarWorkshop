@@ -16,6 +16,7 @@
 #include "../reflection_player.h"
 #include "../token.h"
 #include "../receptacle.h"
+#include "../momento.h"
 #include "levelselector.h"
 
 CReflectionHUD::CReflectionHUD()
@@ -96,6 +97,36 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 			continue;
 
 		TFloat flRadius = flTokenRadius*flTokenRadius;
+
+		CMomento* pMomento = dynamic_cast<CMomento*>(pEntity);
+		if (pMomento)
+		{
+			if (!GameServer()->GetRenderer()->IsSphereInFrustum(pMomento->GetGlobalOrigin(), pMomento->GetBoundingRadius()))
+				continue;
+
+			if (pMomento->GetGlobalOrigin().DistanceSqr(pPlayerCharacter->GetGlobalCenter()) > flRadius)
+				continue;
+
+			Vector vecScreen = GameServer()->GetRenderer()->ScreenPosition(pMomento->GetGlobalOrigin()) + Vector(30, 0, 0);
+
+			if (vecScreen.x < 100)
+				continue;
+			if (vecScreen.y < 100)
+				continue;
+			if (vecScreen.x > GetWidth()-100)
+				continue;
+			if (vecScreen.y > GetHeight()-100)
+				continue;
+
+			tstring sTip = pMomento->GetMomentoName();
+			float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
+			float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
+			glgui::CBaseControl::PaintRect(vecScreen.x - 5, vecScreen.y - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, vecScreen.x, vecScreen.y);
+
+			continue;
+		}
+
 		CToken* pToken = dynamic_cast<CToken*>(pEntity);
 		if (pToken)
 		{
