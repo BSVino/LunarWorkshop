@@ -121,7 +121,12 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 		glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
 
 	if (HasCommandLineSwitch("--debug-gl"))
+	{
 		glfwOpenWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+
+		if (!GLEW_ARB_debug_output)
+			TMsg("Your drivers do not support GL_ARB_debug_output, so no GL debug output will be shown.\n");
+	}
 
 	glfwOpenWindowHint(GLFW_DEPTH_BITS, 16);
 	glfwOpenWindowHint(GLFW_RED_BITS, 8);
