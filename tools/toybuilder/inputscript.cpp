@@ -71,6 +71,8 @@ void LoadSceneAreas(CToyUtil& t, CData* pData)
 
 		CToyUtil ts;
 
+		ts.UseLocalTransformations(t.IsUsingLocalTransformations());
+
 		CConversionSceneNode* pMeshNode = asScenes[sFile]->FindSceneNode(sMesh);
 		CConversionSceneNode* pPhysicsNode = asScenes[sFile]->FindSceneNode(sPhysics);
 

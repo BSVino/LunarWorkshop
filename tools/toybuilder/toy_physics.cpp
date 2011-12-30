@@ -11,7 +11,7 @@ void LoadMeshInstanceIntoToyPhysics(CConversionScene* pScene, CConversionMeshIns
 	size_t iVertsSize = pToy->GetNumPhysVerts();
 
 	for (size_t v = 0; v < pMesh->GetNumVertices(); v++)
-		pToy->AddPhysVertex(pMesh->GetVertex(v));
+		pToy->AddPhysVertex(mParentTransformations * pMesh->GetVertex(v));
 
 	for (size_t j = 0; j < pMesh->GetNumFaces(); j++)
 	{
@@ -40,15 +40,8 @@ void LoadSceneNodeIntoToyPhysics(CConversionScene* pScene, CConversionSceneNode*
 
 	Matrix4x4 mTransformations = mParentTransformations;
 
-	bool bTransformationsIdentity = false;
-	if (pNode->m_mTransformations.IsIdentity())
-		bTransformationsIdentity = true;
-
-	if (!pToy->IsUsingLocalTransformations() && !bTransformationsIdentity)
-	{
-		TAssert(!"Not entirely sure if this code works. Hasn't been tested.");
+	if (!pToy->IsUsingLocalTransformations())
 		mTransformations = mParentTransformations * pNode->m_mTransformations;
-	}
 
 	for (size_t i = 0; i < pNode->GetNumChildren(); i++)
 		LoadSceneNodeIntoToyPhysics(pScene, pNode->GetChild(i), mTransformations, pToy);

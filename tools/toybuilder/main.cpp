@@ -50,9 +50,9 @@ void LoadMeshInstanceIntoToy(CConversionScene* pScene, CConversionMeshInstance* 
 				CConversionVertex* pVertex1 = pFace->GetVertex(k-1);
 				CConversionVertex* pVertex2 = pFace->GetVertex(k);
 
-				pToy->AddVertex(iMaterial, pMesh->GetVertex(pVertex0->v), pMesh->GetUV(pVertex0->vu));
-				pToy->AddVertex(iMaterial, pMesh->GetVertex(pVertex1->v), pMesh->GetUV(pVertex1->vu));
-				pToy->AddVertex(iMaterial, pMesh->GetVertex(pVertex2->v), pMesh->GetUV(pVertex2->vu));
+				pToy->AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex0->v), pMesh->GetUV(pVertex0->vu));
+				pToy->AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex1->v), pMesh->GetUV(pVertex1->vu));
+				pToy->AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex2->v), pMesh->GetUV(pVertex2->vu));
 			}
 		}
 	}
@@ -68,15 +68,8 @@ void LoadSceneNodeIntoToy(CConversionScene* pScene, CConversionSceneNode* pNode,
 
 	Matrix4x4 mTransformations = mParentTransformations;
 
-	bool bTransformationsIdentity = false;
-	if (pNode->m_mTransformations.IsIdentity())
-		bTransformationsIdentity = true;
-
-	if (!pToy->IsUsingLocalTransformations() && !bTransformationsIdentity)
-	{
-		TAssert(!"Not entirely sure if this code works. Hasn't been tested.");
+	if (!pToy->IsUsingLocalTransformations())
 		mTransformations = mParentTransformations * pNode->m_mTransformations;
-	}
 
 	for (size_t i = 0; i < pNode->GetNumChildren(); i++)
 		LoadSceneNodeIntoToy(pScene, pNode->GetChild(i), mTransformations, pToy);
