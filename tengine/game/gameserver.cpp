@@ -267,9 +267,10 @@ void CGameServer::LoadLevel(tstring sFile)
 			tstring sClass = "C" + pChildData->GetValueTString();
 
 			auto it = CBaseEntity::GetEntityRegistration().find(sClass);
+			TAssert(it != CBaseEntity::GetEntityRegistration().end());
 			if (it == CBaseEntity::GetEntityRegistration().end())
 			{
-				TAssert(!(tstring("Unregistered entity '") + sClass + "'\n").c_str());
+				TError("Unregistered entity '" + sClass + "'\n");
 				continue;
 			}
 
