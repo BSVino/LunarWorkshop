@@ -152,6 +152,8 @@ void LoadSceneAreas(CToyUtil& t, CData* pData)
 	}
 }
 
+extern time_t g_iBinaryModificationTime;
+
 bool LoadFromInputScript(CToyUtil& t, const tstring& sScript, tstring& sOutput)
 {
 	std::basic_ifstream<tchar> f(sScript.c_str());
@@ -183,7 +185,67 @@ bool LoadFromInputScript(CToyUtil& t, const tstring& sScript, tstring& sOutput)
 
 	sOutput = FindAbsolutePath(t.GetGameDirectory() + DIR_SEP + pOutput->GetValueTString());
 
+	CData* pSceneAreas = pData->FindChild("SceneAreas");
 	CData* pMesh = pData->FindChild("Mesh");
+	CData* pPhysics = pData->FindChild("Physics");
+
+	// Find all file modification times.
+	time_t iScriptModificationTime = GetFileModificationTime(sScript.c_str());
+	time_t iOutputModificationTime = GetFileModificationTime(sOutput.c_str());
+
+	eastl::map<tstring, time_t> aiSceneModificationTimes;
+
+	for (size_t i = 0; i < pSceneAreas->GetNumChildren(); i++)
+	{
+		CData* pArea = pSceneAreas->GetChild(i);
+
+		if (pArea->GetKey() != "Area")
+			continue;
+
+		tstring sFile = pArea->FindChildValueTString("File");
+		TAssert(sFile.length());
+		if (!sFile.length())
+			continue;
+
+		auto it = aiSceneModificationTimes.find(sFile);
+		if (it == aiSceneModificationTimes.end())
+			aiSceneModificationTimes[sFile] = GetFileModificationTime(sFile.c_str());
+	}
+
+	time_t iInputModificationTime = 0;
+	if (pMesh)
+		iInputModificationTime = GetFileModificationTime(pMesh->GetValueTString().c_str());
+	time_t iPhysicsModificationTime = 0;
+	if (pPhysics)
+		iPhysicsModificationTime = GetFileModificationTime(pPhysics->GetValueTString().c_str());
+
+	bool bRecompile = false;
+	if (iScriptModificationTime > iOutputModificationTime)
+		bRecompile = true;
+	else if (iInputModificationTime > iOutputModificationTime)
+		bRecompile = true;
+	else if (iPhysicsModificationTime > iOutputModificationTime)
+		bRecompile = true;
+	else if (g_iBinaryModificationTime > iOutputModificationTime)
+		bRecompile = true;
+	else
+	{
+		for (auto it = aiSceneModificationTimes.begin(); it != aiSceneModificationTimes.end(); it++)
+		{
+			if (it->second > iOutputModificationTime)
+			{
+				bRecompile = true;
+				break;
+			}
+		}
+	}
+
+	if (!bRecompile)
+	{
+		printf("No changes detected. Skipping '%s'.\n\n", sOutput.c_str());
+		exit(0);
+	}
+
 	if (pMesh)
 	{
 		printf("Reading model '%s' ...", pMesh->GetValueTString());
@@ -200,7 +262,6 @@ bool LoadFromInputScript(CToyUtil& t, const tstring& sScript, tstring& sOutput)
 		delete pScene;
 	}
 
-	CData* pPhysics = pData->FindChild("Physics");
 	if (pPhysics)
 	{
 		printf("Reading physics model '%s' ...", pPhysics->GetValueTString());
@@ -217,7 +278,6 @@ bool LoadFromInputScript(CToyUtil& t, const tstring& sScript, tstring& sOutput)
 		delete pScene;
 	}
 
-	CData* pSceneAreas = pData->FindChild("SceneAreas");
 	if (pSceneAreas)
 		LoadSceneAreas(t, pSceneAreas);
 

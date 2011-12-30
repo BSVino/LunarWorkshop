@@ -44,7 +44,7 @@ void LoadSceneNodeIntoToyPhysics(CConversionScene* pScene, CConversionSceneNode*
 	if (pNode->m_mTransformations.IsIdentity())
 		bTransformationsIdentity = true;
 
-	if (!bTransformationsIdentity)
+	if (!pToy->IsUsingLocalTransformations() && !bTransformationsIdentity)
 	{
 		TAssert(!"Not entirely sure if this code works. Hasn't been tested.");
 		mTransformations = mParentTransformations * pNode->m_mTransformations;

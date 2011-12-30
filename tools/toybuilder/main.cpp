@@ -91,16 +91,22 @@ void LoadSceneIntoToy(CConversionScene* pScene, CToyUtil* pToy)
 		LoadSceneNodeIntoToy(pScene, pScene->GetScene(i), Matrix4x4(), pToy);
 }
 
+time_t g_iBinaryModificationTime;
+
 int main(int argc, char** args)
 {
 	printf("Toy Builder for Lunar Workshop's Tinker Engine\n");
 
-	if (argc < 1)
+	if (argc <= 1)
 	{
 		printf("Usage: %s input.obj output.toy [--physics input.obj]\n", args[0]);
 		printf("Usage: %s input.txt\n", args[0]);
 		return 1;
 	}
+
+	g_iBinaryModificationTime = GetFileModificationTime(args[0]);
+	if (!g_iBinaryModificationTime)
+		g_iBinaryModificationTime = GetFileModificationTime((tstring(args[0]) + ".exe").c_str());
 
 	CToyUtil t;
 
@@ -145,6 +151,24 @@ int main(int argc, char** args)
 
 		sOutput = FindAbsolutePath(args[2]);
 		t.SetOutputDirectory(sOutput.substr(0, sOutput.rfind(DIR_SEP)));
+
+		time_t iInputModificationTime = GetFileModificationTime(sInput.c_str());
+		time_t iOutputModificationTime = GetFileModificationTime(sOutput.c_str());
+		time_t iPhysicsModificationTime = GetFileModificationTime(sPhysics.c_str());
+
+		bool bRecompile = false;
+		if (iInputModificationTime > iOutputModificationTime)
+			bRecompile = true;
+		else if (iPhysicsModificationTime > iOutputModificationTime)
+			bRecompile = true;
+		else if (g_iBinaryModificationTime > iOutputModificationTime)
+			bRecompile = true;
+
+		if (!bRecompile)
+		{
+			printf("No changes detected. Skipping '%s'.\n\n", sOutput.c_str());
+			return 0;
+		}
 
 		LoadFromFiles(t, sInput, sPhysics);
 	}

@@ -19,6 +19,7 @@ eastl::vector<tstring> ListDirectory(tstring sDirectory, bool bDirectories = tru
 bool IsFile(tstring sPath);
 bool IsDirectory(tstring sPath);
 tstring FindAbsolutePath(const tstring& sPath);
+time_t GetFileModificationTime(const char* pszFile);
 void DebugPrint(tstring sText);
 void Exec(eastl::string sLine);
 int TranslateKeyToQwerty(int iKey);

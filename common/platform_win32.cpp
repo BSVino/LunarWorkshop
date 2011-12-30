@@ -4,6 +4,8 @@
 #include <iphlpapi.h>
 #include <tchar.h>
 #include <dbghelp.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <tstring.h>
 
@@ -270,6 +272,15 @@ tstring FindAbsolutePath(const tstring& sPath)
 	GetFullPathName(swPath.c_str(), MAX_PATH, szPath, nullptr);
 
 	return convertstring<wchar_t, tchar>(szPath);
+}
+
+time_t GetFileModificationTime(const char* pszFile)
+{
+	struct stat s;
+	if (stat(pszFile, &s) != 0)
+		return 0;
+
+	return s.st_mtime;
 }
 
 void DebugPrint(tstring sText)
