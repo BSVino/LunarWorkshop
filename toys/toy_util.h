@@ -51,6 +51,9 @@ public:
 	AABB			GetBounds() { return m_aabbBounds; };
 
 	void			SetNeighborDistance(float flDistance) { m_flNeighborDistance = flDistance; };
+	void			UseGlobalTransformations(bool bGlobal = true) { m_bUseLocalTransforms = !bGlobal; };
+	void			UseLocalTransformations(bool bLocal = true) { m_bUseLocalTransforms = bLocal; };
+	bool			IsUsingLocalTransformations() const { return m_bUseLocalTransforms; };
 
 	void			AddVisibleNeighbors(size_t iArea, size_t iVisible);
 	void			CalculateVisibleAreas();
@@ -71,4 +74,5 @@ protected:
 	eastl::vector<CSceneArea>				m_asSceneAreas;
 
 	float					m_flNeighborDistance;	// How far can an area be considered a neighbor in the finding neighbors check?
+	bool					m_bUseLocalTransforms;
 };

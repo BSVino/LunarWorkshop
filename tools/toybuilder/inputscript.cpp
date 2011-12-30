@@ -25,6 +25,18 @@ void LoadSceneAreas(CToyUtil& t, CData* pData)
 			continue;
 		}
 
+		if (pArea->GetKey() == "UseGlobalTransforms")
+		{
+			t.UseGlobalTransformations();
+			continue;
+		}
+
+		if (pArea->GetKey() == "UseLocalTransforms")
+		{
+			t.UseLocalTransformations();
+			continue;
+		}
+
 		TAssert(pArea->GetKey() == "Area");
 		if (pArea->GetKey() != "Area")
 			continue;

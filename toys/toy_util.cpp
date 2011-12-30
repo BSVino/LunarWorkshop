@@ -15,6 +15,7 @@ CToyUtil::CToyUtil()
 	m_aabbBounds.m_vecMaxs = Vector(-999999, -999999, -999999);
 
 	m_flNeighborDistance = 1;
+	m_bUseLocalTransforms = true;	// Use local by default
 }
 
 void CToyUtil::AddMaterial(const tstring& sTexture)

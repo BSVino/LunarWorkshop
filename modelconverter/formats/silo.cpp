@@ -477,15 +477,23 @@ const tchar* CModelConverter::ReadSIAShape(const tchar* pszLine, const tchar* ps
 		}
 		else if (tstrncmp(pszToken, "-axis", 5) == 0)
 		{
-			// This is the manipulator position and angles. The code below is untested and probably has the elements in the wrong
-			// order. We don't support writing yet so no need to load it so I'm not bothering with it now.
-		/*	Matrix4x4& m = pMeshNode->m_mManipulator;
-			swscanf(sLine.c_str(), "-axis %f %f %f %f %f %f %f %f %f",
-				&m.m[0][3], &m.m[1][3], &m.m[2][3],
-				&m.m[0][0], &m.m[0][1], &m.m[0][2],	// ?
-				&m.m[1][0], &m.m[1][1], &m.m[1][2], // ?
-				&m.m[2][0], &m.m[2][1], &m.m[2][2]  // ?
-				);*/
+			// Object's transformations. Format is translation x y z, forward base vector x y z, then up vector and right vector.
+			// Y is up.
+			Matrix4x4 m;
+			sscanf(pszLine, "-axis %f %f %f %f %f %f %f %f %f %f %f %f",
+				&m.m[3][0], &m.m[3][1], &m.m[3][2],
+				&m.m[0][0], &m.m[0][1], &m.m[0][2],
+				&m.m[1][0], &m.m[1][1], &m.m[1][2],
+				&m.m[2][0], &m.m[2][1], &m.m[2][2]);
+
+			Matrix4x4 mGlobalToLocal = m.InvertedRT();
+
+			// Unfortunately Silo stores all vertex data in global coordinates so we need to move them to the local frame first.
+			size_t iVerts = pMesh->GetNumVertices();
+			for (size_t i = 0; i < iVerts; i++)
+				pMesh->m_aVertices[i] = mGlobalToLocal * pMesh->m_aVertices[i];
+
+			pMeshNode->m_mTransformations = m;
 		}
 		else if (tstrncmp(pszToken, "-endShape", 9) == 0)
 		{
