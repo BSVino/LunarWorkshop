@@ -28,6 +28,26 @@ CPlayer::CPlayer()
 	m_iClient = NETWORK_LOCAL;
 }
 
+void NoClip(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+{
+	if (!CVar::GetCVarBool("cheats"))
+		return;
+
+	if (!Game())
+		return;
+
+	if (!Game()->GetLocalPlayer())
+		return;
+
+	if (!Game()->GetLocalPlayer()->GetCharacter())
+		return;
+
+	CCharacter* pCharacter = Game()->GetLocalPlayer()->GetCharacter();
+	pCharacter->SetNoClip(!pCharacter->GetNoClip());
+}
+
+CCommand noclip("noclip", ::NoClip);
+
 CVar m_sensitivity("m_sensitivity", "5");
 
 void CPlayer::MouseMotion(int x, int y)

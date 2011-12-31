@@ -37,6 +37,7 @@ public:
 	virtual void			SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity) {};
 	virtual Vector			GetEntityVelocity(class CBaseEntity* pEnt) { return Vector(0, 0, 0); };
 	virtual void			SetControllerWalkVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity) {};
+	virtual void			SetControllerColliding(class CBaseEntity* pEnt, bool bColliding) {};
 	virtual void			SetEntityGravity(class CBaseEntity* pEnt, const Vector& vecGravity) {};
 	virtual void			SetEntityUpVector(class CBaseEntity* pEnt, const Vector& vecUp) {};
 

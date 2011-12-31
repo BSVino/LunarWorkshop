@@ -22,7 +22,7 @@ public:
 	void			LosePlayer();
 
 	float			EyeHeight() const { return 1.0f; }
-	float			CharacterSpeed() { return 4.0f; }
+	float			BaseCharacterSpeed() { return 4.0f; }
 	float			CharacterAcceleration() { return 40.0f; }
 
 	float			DetectionDistance() const { return 4.0f; }

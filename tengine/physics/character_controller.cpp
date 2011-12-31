@@ -37,6 +37,9 @@ public:
 
 	virtual btScalar addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
 	{
+		if (!m_pController->IsColliding())
+			return 1;
+
 		if (convexResult.m_hitCollisionObject == m_me)
 			return btScalar(1.0);
 
@@ -98,6 +101,7 @@ CCharacterController::CCharacterController(CCharacter* pEntity, btPairCachingGho
 	m_flCurrentStepOffset = m_flStepHeight;
 	m_bWasOnGround = false;
 	m_bWasJumping = false;
+	m_bColliding = true;
 	SetMaxSlope(btRadians(45.0));
 }
 
@@ -107,6 +111,9 @@ CCharacterController::~CCharacterController ()
 
 void CCharacterController::updateAction(btCollisionWorld* pCollisionWorld, btScalar deltaTime)
 {
+	if (!m_bColliding)
+		return;
+
 	// Grab the new player transform before doing movement steps in case the player has been moved,
 	// such as by a platform or teleported. No need to do a physics trace for it, the penetration
 	// functions should handle that.
@@ -312,6 +319,9 @@ btVector3 CCharacterController::PerpendicularComponent(const btVector3& directio
 
 bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWorld)
 {
+	if (!IsColliding())
+		return false;
+
 	bool bPenetration = false;
 
 	pCollisionWorld->getDispatcher()->dispatchAllCollisionPairs(m_pGhostObject->getOverlappingPairCache(), pCollisionWorld->getDispatchInfo(), pCollisionWorld->getDispatcher());

@@ -20,7 +20,7 @@ public:
 	virtual TVector				GetGoalVelocity();
 
 	virtual TFloat				EyeHeight() const;
-	virtual TFloat				CharacterSpeed() { return 5.0f; }
+	virtual TFloat				BaseCharacterSpeed() { return 5.0f; }
 	virtual TFloat				JumpStrength() { return 3.0f; }
 
 	virtual void				OnSetLocalTransform(Matrix4x4& mNew);

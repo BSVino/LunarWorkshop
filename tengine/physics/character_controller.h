@@ -65,6 +65,9 @@ public:
 	void			SetMaxSlope(btScalar slopeRadians);
 	btScalar		GetMaxSlope() const;
 
+	void			SetColliding(bool bColliding) { m_bColliding = bColliding; }
+	bool			IsColliding() { return m_bColliding; }
+
 	btPairCachingGhostObject* getGhostObject();
 
 	class CBaseEntity*	GetEntity() const;
@@ -121,6 +124,7 @@ protected:
 
 	bool			m_bWasOnGround;
 	bool			m_bWasJumping;
+	bool			m_bColliding;
 };
 
 #endif

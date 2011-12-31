@@ -497,6 +497,17 @@ void CBulletPhysics::SetControllerWalkVelocity(class CBaseEntity* pEnt, const Ve
 		pPhysicsEntity->m_pCharacterController->SetLateralVelocity(v);
 }
 
+void CBulletPhysics::SetControllerColliding(class CBaseEntity* pEnt, bool bColliding)
+{
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
+	if (!pPhysicsEntity)
+		return;
+
+	TAssert(pPhysicsEntity->m_pCharacterController);
+	if (pPhysicsEntity->m_pCharacterController)
+		pPhysicsEntity->m_pCharacterController->SetColliding(bColliding);
+}
+
 void CBulletPhysics::SetEntityGravity(class CBaseEntity* pEnt, const Vector& vecGravity)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
