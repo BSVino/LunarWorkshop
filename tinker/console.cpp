@@ -176,6 +176,7 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 
 	if (code == TINKER_KEY_ESCAPE)
 	{
+		m_pInput->SetText("");
 		CApplication::Get()->CloseConsole();
 		return true;
 	}
@@ -204,7 +205,9 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 
 			m_iAutoComplete = -1;
 
-			return true;
+			// If it's enter, fall through to below so it runs the command.
+			if (!(code == TINKER_KEY_ENTER || code == TINKER_KEY_KP_ENTER))
+				return true;
 		}
 	}
 
