@@ -35,6 +35,7 @@ CConsole::CConsole()
 	m_bBackground = true;
 
 	m_iAutoComplete = -1;
+	m_iHistory = -1;
 }
 
 CConsole::~CConsole()
@@ -210,6 +211,36 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 				return true;
 		}
 	}
+	else if (m_asHistory.size())
+	{
+		if (code == TINKER_KEY_DOWN)
+		{
+			if (m_iHistory >= 0 && m_iHistory < (int)m_asHistory.size()-1)
+			{
+				m_iHistory++;
+
+				m_pInput->SetText(m_asHistory[m_iHistory]);
+				m_pInput->SetCursorPosition(-1);
+			}
+			else if (m_iHistory == (int)m_asHistory.size()-1)
+			{
+				m_iHistory = -1;
+				m_pInput->SetText("");
+			}
+		}
+		else if (code == TINKER_KEY_UP)
+		{
+			if (m_iHistory == -1)
+				m_iHistory = m_asHistory.size()-1;
+			else if (m_iHistory > 1)
+				m_iHistory--;
+
+			m_pInput->SetText(m_asHistory[m_iHistory]);
+			m_pInput->SetCursorPosition(-1);
+		}
+		else
+			m_iHistory = -1;
+	}
 
 	if (code == TINKER_KEY_ENTER || code == TINKER_KEY_KP_ENTER)
 	{
@@ -219,6 +250,10 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 		PrintConsole(tstring("] ") + sText + "\n");
 
 		CCommand::Run(sText);
+
+		if (trim(sText).length())
+			m_asHistory.push_back(trim(sText));
+		m_iHistory = -1;
 
 		return true;
 	}

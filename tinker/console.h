@@ -36,6 +36,9 @@ protected:
 	bool					m_bBackground;
 
 	int						m_iAutoComplete;
+
+	eastl::vector<tstring>	m_asHistory;
+	int						m_iHistory;
 };
 
 #endif
