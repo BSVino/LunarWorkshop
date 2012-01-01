@@ -31,7 +31,10 @@ CPlayer::CPlayer()
 void NoClip(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
 {
 	if (!CVar::GetCVarBool("cheats"))
+	{
+		TMsg("Noclip is not allowed with cheats off.\n");
 		return;
+	}
 
 	if (!Game())
 		return;
@@ -44,6 +47,11 @@ void NoClip(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const ts
 
 	CCharacter* pCharacter = Game()->GetLocalPlayer()->GetCharacter();
 	pCharacter->SetNoClip(!pCharacter->GetNoClip());
+
+	if (pCharacter->GetNoClip())
+		TMsg("NoClip ON\n");
+	else
+		TMsg("NoClip OFF\n");
 }
 
 CCommand noclip("noclip", ::NoClip);
