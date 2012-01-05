@@ -1,14 +1,14 @@
 #ifndef REFLECTION_RENDERER_H
 #define REFLECTION_RENDERER_H
 
-#include <renderer/renderer.h>
+#include <renderer/game_renderer.h>
 #include <game/entityhandle.h>
 
 class CMirror;
 
-class CReflectionRenderer : public CRenderer
+class CReflectionRenderer : public CGameRenderer
 {
-	DECLARE_CLASS(CReflectionRenderer, CRenderer);
+	DECLARE_CLASS(CReflectionRenderer, CGameRenderer);
 
 public:
 					CReflectionRenderer();
@@ -28,7 +28,7 @@ public:
 
 	float			BloomBrightnessCutoff() const { return 1.25f; }
 
-	size_t			GetReflectionTexture(size_t i);
+	CFrameBuffer&	GetReflectionBuffer(size_t i);
 
 	virtual bool	ShouldRenderPhysicsDebug() const;
 

@@ -75,6 +75,11 @@ void OpenExplorer(const tstring& sDirectory)
 	ShellExecute(NULL, L"open", convertstring<tchar, wchar_t>(sDirectory).c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
 
+void Alert(const tstring& sMessage)
+{
+	MessageBox(NULL, convertstring<tchar, wchar_t>(sMessage).c_str(), L"Alert", MB_ICONWARNING|MB_OK);
+}
+
 static int g_iMinidumpsWritten = 0;
 
 void CreateMinidump(void* pInfo, tchar* pszDirectory)

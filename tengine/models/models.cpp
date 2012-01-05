@@ -5,7 +5,7 @@
 #include <toys/toy_util.h>
 #include <toys/toy.h>
 #include <renderer/renderer.h>
-#include <models/texturelibrary.h>
+#include <textures/texturelibrary.h>
 #include <physics/physics.h>
 #include <tinker/application.h>
 

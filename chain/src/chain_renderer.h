@@ -1,14 +1,14 @@
 #ifndef CHAIN_RENDERER_H
 #define CHAIN_RENDERER_H
 
-#include <renderer/renderer.h>
+#include <renderer/game_renderer.h>
 #include <game/entityhandle.h>
 
 class CMirror;
 
-class CChainRenderer : public CRenderer
+class CChainRenderer : public CGameRenderer
 {
-	DECLARE_CLASS(CChainRenderer, CRenderer);
+	DECLARE_CLASS(CChainRenderer, CGameRenderer);
 
 public:
 					CChainRenderer();

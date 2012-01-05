@@ -8,11 +8,12 @@
 #include <tinker/console.h>
 #include <network/commands.h>
 #include <tinker/lobby/lobby_server.h>
-#include <tinker/gamewindow.h>
 #include <game/game.h>
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
 #include <glgui/textfield.h>
+
+#include "gamewindow.h"
 
 SERVER_COMMAND(CONNECTION_UNDEFINED, ServerChatSay)
 {
@@ -175,11 +176,11 @@ void CChatBox::Paint(float x, float y, float w, float h)
 		return;
 
 	if (IsOpen())
-		glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, (int)(200*flAlpha)));
+		glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, (int)(200*flAlpha)), 5, true);
 	else
 		glgui::CRootPanel::PaintRect(x, y, w, h - 20, Color(0, 0, 0, (int)(200*flAlpha)));
 
-	m_pOutput->SetFGColor(Color(255, 255, 255, (int)(255*flAlpha)));
+	m_pOutput->SetTextColor(Color(255, 255, 255, (int)(255*flAlpha)));
 
 	if (m_bFloating)
 		m_pInput->SetVisible(IsOpen());

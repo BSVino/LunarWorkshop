@@ -18,6 +18,9 @@ CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, b
 	m_sDirectory = FindAbsolutePath(sDirectory.length()?sDirectory:".");
 	m_bSave = bSave;
 
+	SetBackgroundColor(g_clrBox/2);
+	SetBorder(BT_SOME);
+
 	strtok(sExtension, m_asExtensions, ";");
 
 	m_pDirectoryLabel = new CLabel(5, 5, 1, 1, "Folder:");
@@ -34,6 +37,7 @@ CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, b
 	AddControl(m_pFilesLabel);
 	m_pFileList = new CTree(~0, ~0, ~0);
 	m_pFileList->SetSelectedListener(this, FileSelected);
+	m_pFileList->SetBackgroundColor(g_clrBox);
 	AddControl(m_pFileList);
 
 	m_pNewFile = new CTextField();
@@ -116,16 +120,6 @@ void CFileDialog::Layout()
 	m_pNewFile->SetSize(GetWidth() - 140, m_pNewFile->GetHeight());
 
 	BaseClass::Layout();
-}
-
-void CFileDialog::Paint(float x, float y, float w, float h)
-{
-	CRootPanel::PaintRect(x, y, w, h, g_clrBox/2);
-
-	FRect r = m_pFileList->GetAbsDimensions();
-	CRootPanel::PaintRect(r.x, r.y, r.w, r.h, g_clrBox);
-
-	BaseClass::Paint(x, y, w, h);
 }
 
 void CFileDialog::NewDirectoryCallback(const tstring& sArgs)

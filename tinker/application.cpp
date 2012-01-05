@@ -55,8 +55,8 @@ void CALLBACK GLDebugCallback(GLenum iSource, GLenum iType, GLuint id, GLenum iS
 {
 	if (iType != GL_DEBUG_TYPE_PERFORMANCE_ARB)
 	{
-		TAssert(iSeverity != GL_DEBUG_SEVERITY_HIGH_AMD);
-		TAssert(iSeverity != GL_DEBUG_SEVERITY_MEDIUM_AMD);
+		TAssert(iSeverity != GL_DEBUG_SEVERITY_HIGH_ARB);
+		TAssert(iSeverity != GL_DEBUG_SEVERITY_MEDIUM_ARB);
 	}
 
 	if (gl_debug.GetBool())
@@ -114,6 +114,10 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 
 	m_iWindowWidth = iWidth;
 	m_iWindowHeight = iHeight;
+
+    glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
+    glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 0);
+    glfwOpenWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_FALSE);
 
 	glfwOpenWindowHint(GLFW_WINDOW_RESIZABLE, bResizeable?GL_TRUE:GL_FALSE);
 
@@ -186,8 +190,6 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
 	glLineWidth(1.0);
 
 	m_bIsOpen = true;
@@ -224,7 +226,10 @@ void CApplication::DumpGLInfo()
 	if (pszShadingLanguageVersion)
 		o << "Shading Language Version: " << pszShadingLanguageVersion << std::endl;
 
-	eastl::string sExtensions = (char*)glGetString(GL_EXTENSIONS);
+	char* pszExtensions = (char*)glGetString(GL_EXTENSIONS);
+	eastl::string sExtensions;
+	if (pszExtensions)
+		sExtensions = pszExtensions;
 	eastl::vector<eastl::string> asExtensions;
 	strtok(sExtensions, asExtensions);
 	o << "Extensions:" << std::endl;

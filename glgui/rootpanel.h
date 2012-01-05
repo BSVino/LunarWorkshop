@@ -3,6 +3,8 @@
 
 #include "panel.h"
 
+class CRenderingContext;
+
 namespace glgui
 {
 	class CRootPanel : public CPanel
@@ -47,13 +49,9 @@ namespace glgui
 
 		static CRootPanel*			Get();
 
-		// Should the window close after the selections have been made? (ie team choosing?)
-		// If not, it should advance to the next window.
-		static void					SetCloseAfter(bool bCloseAfter);
-		static bool					GetCloseAfter();
-
 		static void					GetFullscreenMousePos(int& mx, int& my);
-		static void					DrawRect(float x, float y, float x2, float y2);
+
+		static ::CRenderingContext*	GetContext() { return Get()->m_pRenderingContext; }
 
 	private:
 		static CRootPanel*			s_pRootPanel;
@@ -77,6 +75,8 @@ namespace glgui
 		int							m_iMY;
 
 		bool						m_bUseLighting;
+
+		::CRenderingContext*		m_pRenderingContext;
 	};
 };
 

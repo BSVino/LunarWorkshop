@@ -10,10 +10,12 @@
 #include <tinker/application.h>
 #include <tinker/profiler.h>
 #include <network/commands.h>
-#include <models/texturelibrary.h>
+#include <textures/texturelibrary.h>
 #include <tinker/cvar.h>
 #include <physics/physics.h>
 #include <game/entities/character.h>
+#include <renderer/game_renderer.h>
+#include <renderer/game_renderingcontext.h>
 
 #include "game.h"
 
@@ -786,7 +788,7 @@ void CBaseEntity::Render(bool bTransparent) const
 	PreRender(bTransparent);
 
 	do {
-		CRenderingContext r(GameServer()->GetRenderer());
+		CGameRenderingContext r(GameServer()->GetRenderer());
 		r.Transform(GetRenderTransform());
 
 		ModifyContext(&r, bTransparent);

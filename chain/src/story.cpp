@@ -6,7 +6,7 @@
 
 #include <glgui/label.h>
 #include <renderer/renderingcontext.h>
-#include <renderer/renderer.h>
+#include <renderer/game_renderer.h>
 #include <tinker/application.h>
 #include <game/camera.h>
 #include <datamanager/data.h>
@@ -264,12 +264,12 @@ void CStory::OnRender(CRenderingContext* pContext, bool bTransparent) const
 		c.UseProgram("");
 		c.SetBlend(BLEND_ALPHA);
 
-		m_pText->SetFGColor(Color(1.0f, 1.0f, 0.0f, m_flAlpha*it->second.m_flValue));
+		m_pText->SetTextColor(Color(1.0f, 1.0f, 0.0f, m_flAlpha*it->second.m_flValue));
 
 		m_pText->DrawSection(oLine, oSection, m_pText->GetLeft(), m_pText->GetTop(), m_pText->GetWidth(), m_pText->GetHeight());
 	}
 
-	m_pText->SetFGColor(Color(1.0f, 1.0f, 1.0f, m_flAlpha));
+	m_pText->SetTextColor(Color(1.0f, 1.0f, 1.0f, m_flAlpha));
 }
 
 void CStory::MousePressed()

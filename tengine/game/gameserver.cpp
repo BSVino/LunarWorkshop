@@ -11,7 +11,7 @@
 
 #include <tinker/application.h>
 #include <tinker/profiler.h>
-#include <renderer/renderer.h>
+#include <renderer/game_renderer.h>
 #include <renderer/particles.h>
 #include <sound/sound.h>
 #include <network/network.h>
@@ -19,11 +19,11 @@
 #include <datamanager/data.h>
 #include <datamanager/dataserializer.h>
 #include <models/models.h>
-#include <models/texturelibrary.h>
+#include <textures/texturelibrary.h>
 #include <tinker/portals/portal.h>
 #include <tinker/lobby/lobby_server.h>
 #include <tinker/cvar.h>
-#include <tinker/gamewindow.h>
+#include <ui/gamewindow.h>
 #include <physics/physics.h>
 
 #include "camera.h"
@@ -703,7 +703,7 @@ void CGameServer::Render()
 
 void CGameServer::RenderEverything()
 {
-	CRenderer* pRenderer = GameWindow()->GetRenderer();
+	CGameRenderer* pRenderer = GetRenderer();
 
 	m_apRenderList.reserve(CBaseEntity::GetNumEntities());
 	m_apRenderList.clear();
@@ -1042,9 +1042,9 @@ void CGameServer::ClientInfo(int iConnection, CNetworkParameters* p)
 	m_bGotClientInfo = true;
 }
 
-CRenderer* CGameServer::GetRenderer()
+CGameRenderer* CGameServer::GetRenderer()
 {
-	return GameWindow()->GetRenderer();
+	return static_cast<CGameRenderer*>(GameWindow()->GetRenderer());
 }
 
 CGame* CGameServer::GetGame()

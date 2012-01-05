@@ -7,6 +7,7 @@
 #include <renderer/renderer.h>
 #include <renderer/renderingcontext.h>
 #include <physics/physics.h>
+#include <renderer/game_renderer.h>
 
 #include "player.h"
 

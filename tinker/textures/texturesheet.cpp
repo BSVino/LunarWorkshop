@@ -7,7 +7,7 @@
 
 #include <datamanager/dataserializer.h>
 #include <renderer/renderer.h>
-#include <models/texturelibrary.h>
+#include <textures/texturelibrary.h>
 
 CTextureSheet::CTextureSheet(tstring sFile)
 {

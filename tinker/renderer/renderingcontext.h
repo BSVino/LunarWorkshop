@@ -2,7 +2,6 @@
 #define TINKER_RENDERINGCONTEXT_H
 
 #include <tstring.h>
-#include <tengine_config.h>
 #include <plane.h>
 #include <matrix.h>
 #include <color.h>
@@ -12,10 +11,16 @@
 class CRenderingContext
 {
 public:
-							CRenderingContext(class CRenderer* pRenderer);
-							~CRenderingContext();
+							CRenderingContext(class CRenderer* pRenderer = nullptr);
+	virtual					~CRenderingContext();
 
 public:
+	void					SetProjection(const Matrix4x4& m);
+	void					SetView(const Matrix4x4& m);
+
+	Matrix4x4				GetProjection() { return m_mProjection; }
+	Matrix4x4				GetView() { return m_mView; }
+
 	void					Transform(const Matrix4x4& m);
 	void					Translate(const Vector& vecTranslate);
 	void					Rotate(float flAngle, Vector vecAxis);
@@ -29,7 +34,6 @@ public:
 	void					SetDepthTest(bool bDepthTest);
 	void					SetBackCulling(bool bCull);
 	void					SetColorSwap(const ::Color& clrSwap);
-	void					SetLighting(bool bLighting);
 	void					SetReverseWinding(bool bReverse);
 
 	float					GetAlpha() { return m_flAlpha; };
@@ -38,22 +42,27 @@ public:
 	bool					IsColorSwapActive() { return m_bColorSwap; }
 	::Color					GetColorSwap() { return m_clrSwap; }
 
-	void					RenderModel(size_t iModel, const class CBaseEntity* pEntity = nullptr);
-	void					RenderModel(class CModel* pModel, size_t iMaterial);
-
 	void					RenderSphere();
 
-	void					RenderBillboard(const tstring& sTexture, float flRadius);
+	void					RenderBillboard(const tstring& sTexture, float flRadius, Vector vecUp, Vector vecRight);
 
 	void					UseFrameBuffer(const class CFrameBuffer* pBuffer);
 	void					UseProgram(const tstring& sProgram);
+	size_t					GetActiveProgram() { return m_iProgram; }
+	class CShader*			GetActiveShader() { return m_pShader; }
 	void					SetUniform(const char* pszName, int iValue);
 	void					SetUniform(const char* pszName, float flValue);
 	void					SetUniform(const char* pszName, const Vector& vecValue);
+	void					SetUniform(const char* pszName, const Vector4D& vecValue);
 	void					SetUniform(const char* pszName, const ::Color& vecValue);
+	void					SetUniform(const char* pszName, const Matrix4x4& mValue);
+	void					SetUniform(const char* pszName, size_t iSize, const float* aflValues);
 	void					BindTexture(const tstring& sName, int iChannel = 0);
 	void					BindTexture(size_t iTexture, int iChannel = 0);
+	void					BindBufferTexture(const CFrameBuffer& oBuffer, int iChannel = 0);
 	void					SetColor(const ::Color& c);	// Set the mesh's uniform color. Do this before BeginRender*
+
+	// Immediate mode emulation
 	void					BeginRenderTris();
 	void					BeginRenderQuads();
 	void					BeginRenderDebugLines();
@@ -65,16 +74,23 @@ public:
 	void					Normal(const Vector& v);
 	void					Color(const ::Color& c);	// Per-attribute color
 	void					Vertex(const Vector& v);
-	void					RenderCallList(size_t iCallList);
 	void					EndRender();
 
-protected:
-	void					PushAttribs();
+	void					BeginRenderVertexArray(size_t iBuffer=0);
+	void					SetPositionBuffer(float* pflBuffer, size_t iStride=0);
+	void					SetPositionBuffer(size_t iOffset, size_t iStride);
+	void					SetTexCoordBuffer(float* pflBuffer, size_t iStride=0);
+	void					SetTexCoordBuffer(size_t iOffset, size_t iStride);
+	void					SetCustomIntBuffer(const char* pszName, size_t iSize, size_t iOffset, size_t iStride);
+	void					EndRenderVertexArray(size_t iVertices);
 
 public:
-	CRenderer*				m_pRenderer;
+	class CRenderer*		m_pRenderer;
 
-	bool					m_bMatrixTransformations;
+	Matrix4x4				m_mProjection;
+	Matrix4x4				m_mView;
+	Matrix4x4				m_mTransformations;
+
 	bool					m_bBoundTexture;
 	bool					m_bFBO;
 	size_t					m_iProgram;

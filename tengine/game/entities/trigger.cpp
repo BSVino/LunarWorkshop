@@ -2,7 +2,7 @@
 
 #include <physics/physics.h>
 #include <game/gameserver.h>
-#include <renderer/renderer.h>
+#include <renderer/game_renderer.h>
 
 REGISTER_ENTITY(CTrigger);
 

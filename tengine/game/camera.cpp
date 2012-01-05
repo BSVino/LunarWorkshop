@@ -2,7 +2,7 @@
 
 #include <maths.h>
 #include <mtrand.h>
-#include <renderer/renderer.h>
+#include <renderer/game_renderer.h>
 #include <tinker/cvar.h>
 #include <tinker/application.h>
 #include <game/gameserver.h>

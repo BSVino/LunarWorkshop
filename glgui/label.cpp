@@ -4,6 +4,8 @@
 #include <FTGL/ftgl.h>
 
 #include <tinker/cvar.h>
+#include <renderer/renderingcontext.h>
+#include <renderer/shaders.h>
 
 #include "rootpanel.h"
 
@@ -23,7 +25,7 @@ CLabel::CLabel()
 	m_bNeedsCompute = false;
 	m_sText = "";
 	m_eAlign = TA_MIDDLECENTER;
-	m_FGColor = Color(255, 255, 255, 255);
+	m_clrText = Color(255, 255, 255, 255);
 	m_bScissor = false;
 
 	m_pLinkClickListener = NULL;
@@ -45,7 +47,7 @@ CLabel::CLabel(const tstring& sText, const tstring& sFont, size_t iSize)
 	m_bNeedsCompute = false;
 	m_sText = "";
 	m_eAlign = TA_MIDDLECENTER;
-	m_FGColor = Color(255, 255, 255, 255);
+	m_clrText = Color(255, 255, 255, 255);
 	m_bScissor = false;
 
 	m_pLinkClickListener = NULL;
@@ -67,7 +69,7 @@ CLabel::CLabel(float x, float y, float w, float h, const tstring& sText, const t
 	m_bNeedsCompute = false;
 	m_sText = "";
 	m_eAlign = TA_MIDDLECENTER;
-	m_FGColor = Color(255, 255, 255, 255);
+	m_clrText = Color(255, 255, 255, 255);
 	m_bScissor = false;
 
 	m_pLinkClickListener = NULL;
@@ -93,24 +95,7 @@ void CLabel::Paint(float x, float y, float w, float h)
 	if (m_bNeedsCompute)
 		ComputeLines();
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-
-	if (m_bScissor)
-	{
-		float cx, cy;
-		GetAbsPos(cx, cy);
-		glScissor((int)cx, (int)(glgui::CRootPanel::Get()->GetHeight()-cy-GetHeight()-3), (int)GetWidth(), (int)GetHeight()+3);
-		glEnable(GL_SCISSOR_TEST);
-	}
-
-	Color FGColor = m_FGColor;
-	if (!m_bEnabled)
-		FGColor.SetColor(m_FGColor.r()/2, m_FGColor.g()/2, m_FGColor.b()/2, m_iAlpha);
-
 	m_iCharsDrawn = 0;
-
-	glColor4ubv(FGColor);
 
 	float ax, ay;
 	GetAbsPos(ax, ay);
@@ -157,8 +142,7 @@ void CLabel::Paint(float x, float y, float w, float h)
 						}
 						else
 						{
-							if (glgui_showsections.GetBool())
-								CBaseControl::PaintRect(oSection.m_rArea.x + ax + ox, oSection.m_rArea.y + ay + oy, oSection.m_rArea.w, oSection.m_rArea.h);
+							CBaseControl::PaintRect(oSection.m_rArea.x + ax + ox, oSection.m_rArea.y + ay + oy, oSection.m_rArea.w, oSection.m_rArea.h);
 						}
 					}
 				}
@@ -167,11 +151,6 @@ void CLabel::Paint(float x, float y, float w, float h)
 			DrawSection(oLine, oLine.m_aSections[j], x, y, w, h);
 		}
 	}
-
-	if (m_bScissor)
-		glDisable(GL_SCISSOR_TEST);
-
-	glPopAttrib();
 
 	CBaseControl::Paint(x, y, w, h);
 }
@@ -183,12 +162,6 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 		m_iCharsDrawn += 1;
 		return;
 	}
-
-	Color FGColor = m_FGColor;
-	if (!m_bEnabled)
-		FGColor.SetColor(m_FGColor.r()/2, m_FGColor.g()/2, m_FGColor.b()/2, m_iAlpha);
-
-	glColor4ubv(FGColor);
 
 	float ox, oy;
 	GetAlignmentOffset(l.m_flLineWidth, l.m_flLineHeight, s.m_sFont, s.m_iFontSize, w, h, ox, oy);
@@ -212,7 +185,49 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 		PaintText3D(s.m_sText, iDrawChars, s.m_sFont, s.m_iFontSize, vecPosition);
 	}
 	else
-		PaintText(s.m_sText, iDrawChars, s.m_sFont, s.m_iFontSize, vecPosition.x, vecPosition.y);
+	{
+		Color clrText = m_clrText;
+		if (!m_bEnabled)
+			clrText.SetColor(m_clrText.r()/2, m_clrText.g()/2, m_clrText.b()/2, m_iAlpha);
+
+		FRect r(-1, -1, -1, -1);
+		CPanel* pParent = dynamic_cast<CPanel*>(GetParent());
+		while (pParent)
+		{
+			if (pParent && pParent->IsScissoring())
+			{
+				pParent->GetAbsPos(r.x, r.y);
+				r.w = pParent->GetWidth();
+				r.h = pParent->GetHeight();
+				break;
+			}
+			pParent = dynamic_cast<CPanel*>(pParent->GetParent());
+		}
+
+		if (m_bScissor)
+		{
+			TAssert(false);	// Untested
+			if (x < 0)
+			{
+				GetAbsPos(r.x, r.y);
+				r.w = GetWidth();
+				r.h = GetHeight();
+			}
+			else
+			{
+				FRect r2;
+
+				GetAbsPos(r2.x, r2.y);
+				r2.w = GetWidth();
+				r2.h = GetHeight();
+
+				if (!r.Union(r2))
+					r = FRect(-1, -1, -1, -1);
+			}
+		}
+
+		PaintText(s.m_sText, iDrawChars, s.m_sFont, s.m_iFontSize, vecPosition.x, vecPosition.y, clrText, r);
+	}
 
 	m_iCharsDrawn += s.m_sText.length()+1;
 }
@@ -283,26 +298,36 @@ float CLabel::GetFontHeight(const tstring& sFontName, int iFontFaceSize)
 	return s_apFonts[sFontName][iFontFaceSize]->LineHeight();
 }
 
-void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, float x, float y)
+void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, float x, float y, const Color& clrText, const FRect& rStencil)
 {
 	if (!GetFont(sFontName, iFontFaceSize))
 		AddFontSize(sFontName, iFontFaceSize);
 
 	float flBaseline = s_apFonts[sFontName][iFontFaceSize]->Ascender();
 
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0, CRootPanel::Get()->GetRight(), 0, CRootPanel::Get()->GetBottom(), -1, 1);
+	Matrix4x4 mFontProjection, mProjection;
+	mFontProjection.SetOrthogonal(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
 
-	glMatrixMode(GL_MODELVIEW);
+	mProjection = CRootPanel::GetContext()->GetProjection();
 
+	CRootPanel::GetContext()->UseProgram("text");
+	CRootPanel::GetContext()->SetProjection(mFontProjection);
+	CRootPanel::GetContext()->SetUniform("vecColor", clrText);
+
+	if (rStencil.x > 0)
+	{
+		CRootPanel::GetContext()->SetUniform("bScissor", true);
+		CRootPanel::GetContext()->SetUniform("vecScissor", Vector4D(&rStencil.x));
+	}
+	else
+		CRootPanel::GetContext()->SetUniform("bScissor", false);
+
+	ftglSetAttributeLocations(CRootPanel::GetContext()->GetActiveShader()->m_iPositionAttribute, CRootPanel::GetContext()->GetActiveShader()->m_iTexCoordAttribute);
 	s_apFonts[sFontName][iFontFaceSize]->Render(convertstring<tchar, FTGLchar>(sText).c_str(), iLength, FTPoint(x, CRootPanel::Get()->GetBottom()-y-flBaseline));
 
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glMatrixMode(GL_MODELVIEW);
+	CRootPanel::GetContext()->SetProjection(mProjection);
+	CRootPanel::GetContext()->SetUniform("bScissor", false);
+	CRootPanel::GetContext()->UseProgram("gui");
 }
 
 void CLabel::PaintText3D(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, Vector vecPosition)
@@ -310,7 +335,12 @@ void CLabel::PaintText3D(const tstring& sText, unsigned iLength, const tstring& 
 	if (!GetFont(sFontName, iFontFaceSize))
 		AddFontSize(sFontName, iFontFaceSize);
 
+	CRootPanel::GetContext()->UseProgram("text");
+
+	ftglSetAttributeLocations(CRootPanel::GetContext()->GetActiveShader()->m_iPositionAttribute, CRootPanel::GetContext()->GetActiveShader()->m_iTexCoordAttribute);
 	s_apFonts[sFontName][iFontFaceSize]->Render(convertstring<tchar, FTGLchar>(sText).c_str(), iLength, FTPoint(vecPosition.x, vecPosition.y, vecPosition.z));
+
+	CRootPanel::GetContext()->UseProgram("gui");
 }
 
 void CLabel::SetSize(float w, float h)
@@ -695,27 +725,27 @@ tstring CLabel::GetText()
 	return m_sText;
 }
 
-Color CLabel::GetFGColor()
+Color CLabel::GetTextColor()
 {
-	return m_FGColor;
+	return m_clrText;
 }
 
-void CLabel::SetFGColor(Color FGColor)
+void CLabel::SetTextColor(const Color& clrText)
 {
-	m_FGColor = FGColor;
-	SetAlpha(FGColor.a());
+	m_clrText = clrText;
+	SetAlpha(clrText.a());
 }
 
 void CLabel::SetAlpha(int a)
 {
 	CBaseControl::SetAlpha(a);
-	m_FGColor.SetAlpha(a);
+	m_clrText.SetAlpha(a);
 }
 
 void CLabel::SetAlpha(float a)
 {
 	CBaseControl::SetAlpha((int)(255*a));
-	m_FGColor.SetAlpha((int)(255*a));
+	m_clrText.SetAlpha((int)(255*a));
 }
 
 void CLabel::SetScissor(bool bScissor)

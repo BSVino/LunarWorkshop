@@ -103,7 +103,7 @@ void CConsole::Paint(float x, float y, float w, float h)
 	if (!BaseClass::IsVisible())
 		return;
 
-	glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 200));
+	glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 200), 1, true);
 
 	BaseClass::Paint(x, y, w, h);
 
@@ -122,9 +122,9 @@ void CConsole::Paint(float x, float y, float w, float h)
 		}
 
 		if (bAbbreviated)
-			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)(iCommandsToShow+1)*13+3, Color(0, 0, 0, 200));
+			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)(iCommandsToShow+1)*13+3, Color(0, 0, 0, 200), 0, true);
 		else
-			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)iCommandsToShow*13+3, Color(0, 0, 0, 200));
+			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)iCommandsToShow*13+3, Color(0, 0, 0, 200), 0, true);
 
 		int iCommandsToSkip = 0;
 		if (m_iAutoComplete >= 0 && asCommands.size())
@@ -132,10 +132,10 @@ void CConsole::Paint(float x, float y, float w, float h)
 			int iAutoComplete = m_iAutoComplete % asCommands.size();
 
 			if (iAutoComplete < 5)
-				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*iAutoComplete, w, 13+3, Color(100, 100, 100, 200));
+				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*iAutoComplete, w, 13+3, Color(100, 100, 100, 200), 2);
 			else
 			{
-				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*4, w, 13+3, Color(100, 100, 100, 200));
+				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*4, w, 13+3, Color(100, 100, 100, 200), 2);
 				iCommandsToSkip = iAutoComplete - 4;
 			}
 

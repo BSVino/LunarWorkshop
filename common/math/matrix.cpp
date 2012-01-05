@@ -248,21 +248,18 @@ void Matrix4x4::SetRotation(const Quaternion& q)
 	m[2][2] = 1 - x2 - y2;
 }
 
-void Matrix4x4::SetOrientation(const Vector& v)
+void Matrix4x4::SetOrientation(const Vector& v, const Vector& vecUp)
 {
 	Vector vecDir = v.Normalized();
 
-	Vector vecRight, vecUp;
-	vecUp = Vector(0, 1, 0);
-	if (vecDir != vecUp && vecDir != Vector(0, -1, 0))
+	Vector vecRight;
+	if (vecDir != vecUp && vecDir != -vecUp)
 		vecRight = vecDir.Cross(vecUp).Normalized();
 	else
 		vecRight = Vector(0, 0, 1);
 
-	vecUp = vecRight.Cross(vecDir).Normalized();
-
 	SetForwardVector(vecDir);
-	SetUpVector(vecUp);
+	SetUpVector(vecRight.Cross(vecDir).Normalized());
 	SetRightVector(vecRight);
 }
 
@@ -284,6 +281,55 @@ void Matrix4x4::SetReflection(const Vector& vecPlane)
 	m[1][0] = m[0][1] = -2 * vecPlane.x * vecPlane.y;
 	m[2][0] = m[0][2] = -2 * vecPlane.x * vecPlane.z;
 	m[1][2] = m[2][1] = -2 * vecPlane.y * vecPlane.z;
+}
+
+void Matrix4x4::SetPerspective(float flFOV, float flAspectRatio, float flNear, float flFar)
+{
+	float flRight = flNear * tan(flFOV * M_PI / 360);
+	float flLeft = -flRight;
+
+	float flBottom = flLeft / flAspectRatio;
+	float flTop = flRight / flAspectRatio;
+
+	SetFrustum(flLeft, flRight, flBottom, flTop, flNear, flFar);
+}
+
+void Matrix4x4::SetFrustum(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar)
+{
+	Identity();
+
+	float flXD = flRight - flLeft;
+	float flYD = flTop - flBottom;
+	float flZD = flFar - flNear;
+
+	m[0][0] = (2 * flNear) / flXD;
+	m[1][1] = (2 * flNear) / flYD;
+
+	m[0][2] = (flRight + flLeft) / flXD;
+	m[1][2] = (flTop + flBottom) / flYD;
+	m[2][2] = -(flFar + flNear) / flZD;
+	m[3][2] = -1;
+
+	m[2][3] = -(2 * flFar * flNear) / flZD;
+
+	m[3][3] = 0;
+}
+
+void Matrix4x4::SetOrthogonal(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar)
+{
+	Identity();
+
+	float flXD = flRight - flLeft;
+	float flYD = flTop - flBottom;
+	float flZD = flFar - flNear;
+
+	m[0][0] = 2.0f / flXD;
+	m[1][1] = 2.0f / flYD;
+	m[2][2] = -2.0f / flZD;
+
+	m[3][0] = -(flRight + flLeft) / flXD;
+	m[3][1] = -(flTop + flBottom) / flYD;
+	m[3][2] = -(flFar + flNear) / flZD;
 }
 
 Matrix4x4 Matrix4x4::operator+=(const Vector& v)

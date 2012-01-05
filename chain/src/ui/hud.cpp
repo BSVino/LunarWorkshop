@@ -1,11 +1,11 @@
 #include "hud.h"
 
 #include <tengine/game/gameserver.h>
-#include <tengine/renderer/renderer.h>
-#include <tengine/renderer/renderingcontext.h>
+#include <renderer/game_renderer.h>
+#include <renderer/renderingcontext.h>
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
-#include <tengine/models/texturelibrary.h>
+#include <textures/texturelibrary.h>
 #include <tinker/keys.h>
 
 #include "../chain_game.h"

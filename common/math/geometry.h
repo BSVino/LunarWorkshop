@@ -26,13 +26,80 @@ public:
 		h = H;
 	}
 
-	T Size() const { return w*h; }
+public:
+	T		Size() const { return w*h; }
 
-	T Right() const { return x + w; }
-	T Bottom() const { return y + h; }
+	T		Right() const { return x + w; }
+	T		Bottom() const { return y + h; }
 
+	void	SetRight(float r);
+	void	SetBottom(float b);
+
+	bool	Intersects(const TRect<T>& F) const;
+	bool	Union(const TRect<T>& r);
+
+public:
 	T x, y, w, h;
 };
+
+template <class T>
+void TRect<T>::SetRight(float r)
+{
+	w = r - x;
+}
+
+template <class T>
+void TRect<T>::SetBottom(float b)
+{
+	h = b - y;
+}
+
+template <class T>
+bool TRect<T>::Intersects(const TRect<T>& r) const
+{
+	if (x > r.Right())
+		return false;
+
+	if (r.x > Right())
+		return false;
+
+	if (y > r.Bottom())
+		return false;
+
+	if (r.y > Bottom())
+		return false;
+
+	return true;
+}
+
+template <class T>
+bool TRect<T>::Union(const TRect<T>& r)
+{
+	if (!Intersects(r))
+		return false;
+
+	if (r.x > x)
+	{
+		T right = Right();
+		x = r.x;
+		SetRight(right);
+	}
+
+	if (r.y > y)
+	{
+		T bottom = Bottom();
+		y = r.y;
+		SetBottom(bottom);
+	}
+
+	if (Right() < r.Right())
+		SetRight(r.Right());
+
+	if (Bottom() < r.Bottom())
+		SetBottom(r.Bottom());
+
+	return true;
+}
 
 typedef TRect<int> Rect;
 typedef TRect<float> FRect;

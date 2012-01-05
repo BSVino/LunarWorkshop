@@ -111,7 +111,7 @@ public:
 	float										GetGameTime() { return m_flGameTime; };
 	size_t										GetFrame() { return m_iFrame; }
 
-	class CRenderer*							GetRenderer();
+	class CGameRenderer*						GetRenderer();
 	class CCamera*								GetCamera() { return m_pCamera; };
 
 	bool										IsLoading() { return m_bLoading; };

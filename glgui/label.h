@@ -97,8 +97,8 @@ namespace glgui
 		virtual size_t				GetNumSections(size_t iLine) const { return m_aLines[iLine].m_aSections.size(); }
 		virtual const CLineSection&	GetSection(size_t iLine, size_t iSection) const { return m_aLines[iLine].m_aSections[iSection]; }
 
-		virtual Color	GetFGColor();
-		virtual void	SetFGColor(Color FGColor);
+		virtual Color	GetTextColor();
+		virtual void	SetTextColor(const Color& clrText);
 		virtual void	SetAlpha(int a);
 		virtual void	SetAlpha(float a);
 
@@ -122,7 +122,7 @@ namespace glgui
 
 		static float	GetTextWidth(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize);
 		static float	GetFontHeight(const tstring& sFontName, int iFontFaceSize);
-		static void		PaintText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, float x, float y);
+		static void		PaintText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, float x, float y, const Color& clrText = Color(), const FRect& rStencil = FRect(-1, -1, -1, -1));
 		static void		PaintText3D(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, Vector vecPosition);
 
 	protected:
@@ -131,7 +131,7 @@ namespace glgui
 		bool			m_b3D;
 		Vector			m_vec3DMouse;
 		tstring			m_sText;
-		Color			m_FGColor;
+		Color			m_clrText;
 		bool			m_bScissor;
 
 		TextAlign		m_eAlign;

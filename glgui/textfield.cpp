@@ -5,6 +5,8 @@
 
 #include <tinker_platform.h>
 #include <tinker/keys.h>
+#include <renderer/shaders.h>
+#include <renderer/renderingcontext.h>
 
 #include "label.h"
 #include "rootpanel.h"
@@ -41,105 +43,49 @@ void CTextField::Paint(float x, float y, float w, float h)
 	if (m_iAlpha == 0)
 		return;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
+	glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 0), 1);
+
+	float flCursor = CLabel::GetFont("sans-serif", m_iFontFaceSize)->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str(), m_iCursor);
+	if (HasFocus() && (fmod(CRootPanel::Get()->GetTime() - m_flBlinkTime, 1) < 0.5f))
+		glgui::CRootPanel::PaintRect(x + 4 + flCursor + m_flRenderOffset, y+3, 1, h-6, Color(200, 200, 200, 255), 1);
 
 	Color FGColor = m_FGColor;
 	if (!m_bEnabled)
 		FGColor.SetColor(m_FGColor.r()/2, m_FGColor.g()/2, m_FGColor.b()/2, m_iAlpha);
 
-	glColor4ubv(FGColor);
+	CRootPanel::GetContext()->SetUniform("vecColor", m_FGColor);
 
 	FTFont* pFont = CLabel::GetFont("sans-serif", m_iFontFaceSize);
 
 	DrawLine(m_sText.c_str(), (unsigned int)m_sText.length(), x+4, y, w-8, h);
-
-	glEnable(GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glColor4ubv(Color(200, 200, 200, 255));
-
-	glMaterialfv(GL_FRONT, GL_AMBIENT, Vector(0.0f, 0.0f, 0.0f));
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, Vector(1.0f, 1.0f, 1.0f));
-	glMaterialfv(GL_FRONT, GL_SPECULAR, Vector(0.2f, 0.2f, 0.3f));
-	glMaterialfv(GL_FRONT, GL_EMISSION, Vector(0.0f, 0.0f, 0.0f));
-	glMaterialf(GL_FRONT, GL_SHININESS, 20.0f);
-
-	glLineWidth(1);
-
-	glBegin(GL_LINES);
-		// Bottom line
-		glNormal3f(-0.707106781f, 0.707106781f, 0);
-		glVertex2f(x, y);
-		glNormal3f(0.707106781f, 0.707106781f, 0);
-		glVertex2f(x+w-1, y);
-
-		// Top line
-		glNormal3f(-0.707106781f, -0.707106781f, 0);
-		glVertex2f(x, y+h-1);
-		glNormal3f(0.707106781f, -0.707106781f, 0);
-		glVertex2f(x+w-1, y+h-1);
-
-		// Left line
-		glNormal3f(-0.707106781f, 0.707106781f, 0);
-		glVertex2f(x, y+1);
-		glNormal3f(-0.707106781f, -0.707106781f, 0);
-		glVertex2f(x, y+h-1);
-
-		// Right line
-		glNormal3f(0.707106781f, 0.707106781f, 0);
-		glVertex2f(x+w, y+1);
-		glNormal3f(0.707106781f, -0.707106781f, 0);
-		glVertex2f(x+w, y+h-1);
-
-		float flCursor = CLabel::GetFont("sans-serif", m_iFontFaceSize)->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str(), m_iCursor);
-		if (HasFocus() && (fmod(CRootPanel::Get()->GetTime() - m_flBlinkTime, 1) < 0.5f))
-		{
-			glNormal3f(0.707106781f, 0.707106781f, 0);
-			glVertex2f(x + 4 + flCursor + m_flRenderOffset, y+5);
-			glNormal3f(0.707106781f, -0.707106781f, 0);
-			glVertex2f(x + 4 + flCursor + m_flRenderOffset, y+h-5);
-		}
-
-	glEnd();
-
-	glDisable(GL_BLEND);
-
-	glPopAttrib();
 }
 
 void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float y, float w, float h)
 {
 	FTFont* pFont = CLabel::GetFont("sans-serif", m_iFontFaceSize);
 
-	float lw = pFont->Advance(convertstring<tchar, FTGLchar>(pszText).c_str(), iLength);
-	float t = pFont->LineHeight();
+	float flMargin = (h-pFont->LineHeight())/2;
+	Vector vecPosition = Vector((float)x + m_flRenderOffset, (float)y - flMargin + pFont->LineHeight(), 0);
 
-	float th = GetTextHeight() - t;
+	Matrix4x4 mFontProjection, mProjection;
+	mFontProjection.SetOrthogonal(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
 
-	float flBaseline = (float)pFont->FaceSize()/2 + pFont->Descender()/2;
-
-	Vector vecPosition = Vector((float)x + m_flRenderOffset, (float)y + flBaseline + h/2 - th/2, 0);
-
-	// FWTextureFont code. Spurious calls to CreateTexture (deep in FW) during Advance() cause unacceptable slowdowns
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0, CRootPanel::Get()->GetRight(), 0, CRootPanel::Get()->GetBottom(), -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
+	mProjection = CRootPanel::GetContext()->GetProjection();
 
 	float cx, cy;
 	GetAbsPos(cx, cy);
-	glScissor((int)cx+4, 0, (int)GetWidth()-8, 1000);
-	glEnable(GL_SCISSOR_TEST);
+
+	CRootPanel::GetContext()->UseProgram("text");
+	CRootPanel::GetContext()->SetUniform("bScissor", true);
+	CRootPanel::GetContext()->SetUniform("vecScissor", Vector4D(cx+4, 0, GetWidth()-8, 1000));
+	CRootPanel::GetContext()->SetProjection(mFontProjection);
+
+	ftglSetAttributeLocations(CRootPanel::GetContext()->GetActiveShader()->m_iPositionAttribute, CRootPanel::GetContext()->GetActiveShader()->m_iTexCoordAttribute);
 	pFont->Render(convertstring<tchar, FTGLchar>(pszText).c_str(), iLength, FTPoint(vecPosition.x, CRootPanel::Get()->GetBottom()-vecPosition.y));
-	glDisable(GL_SCISSOR_TEST);
 
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glMatrixMode(GL_MODELVIEW);
+	CRootPanel::GetContext()->SetProjection(mProjection);
+	CRootPanel::GetContext()->SetUniform("bScissor", false);
+	CRootPanel::GetContext()->UseProgram("gui");
 }
 
 void CTextField::SetFocus(bool bFocus)

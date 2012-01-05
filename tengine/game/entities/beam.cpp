@@ -1,6 +1,7 @@
 #include "beam.h"
 
 #include <renderer/renderingcontext.h>
+#include <renderer/game_renderer.h>
 
 REGISTER_ENTITY(CBeam);
 

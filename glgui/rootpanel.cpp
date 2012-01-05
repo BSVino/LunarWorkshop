@@ -1,6 +1,6 @@
 #include "rootpanel.h"
 
-#include <GL/glew.h>
+#include <renderer/renderingcontext.h>
 
 #include "menu.h"
 
@@ -81,31 +81,16 @@ void CRootPanel::Paint(float x, float y, float w, float h)
 {
 	SetSize(w, h);
 
-	// Switch GL to 2d drawing mode.
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(x, x+w, y+h, y, -1000, 1000);
+	Matrix4x4 mProjection;
+	mProjection.SetOrthogonal(x, x+w, y+h, y, -1000, 1000);
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
+	::CRenderingContext c;
+	m_pRenderingContext = &c;
 
-	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT);
-
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
-	if (m_bUseLighting)
-		glEnable(GL_LIGHTING);
-	else
-		glDisable(GL_LIGHTING);
-	glEnable(GL_COLOR_MATERIAL);
-
-#ifdef TINKER_OPTIMIZE_SOFTWARE
-	glShadeModel(GL_FLAT);
-#else
-	glShadeModel(GL_SMOOTH);
-#endif
+	c.SetProjection(mProjection);
+	c.UseProgram("gui");
+	c.SetDepthTest(false);
+	c.UseFrameBuffer(NULL);
 
 	CPanel::Paint(x, y, w, h);
 
@@ -119,15 +104,7 @@ void CRootPanel::Paint(float x, float y, float w, float h)
 		m_pDragging->GetCurrentDraggable()->Paint(mx-iWidth/2, my-iHeight/2, iWidth, iHeight, true);
 	}
 
-	glEnable(GL_DEPTH_TEST);
-
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();   
-
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-
-	glPopAttrib();
+	m_pRenderingContext = nullptr;
 }
 
 void CRootPanel::Layout()
@@ -135,10 +112,6 @@ void CRootPanel::Layout()
 	// Don't layout if 
 	if (m_pDragging)
 		return;
-
-	int aiViewport[4];
-	glGetIntegerv(GL_VIEWPORT, aiViewport);
-	SetDimensions((float)aiViewport[0], (float)aiViewport[1], (float)aiViewport[2], (float)aiViewport[3]);
 
 	CPanel::Layout();
 }
@@ -332,8 +305,4 @@ void CRootPanel::GetFullscreenMousePos(int& mx, int& my)
 {
 	mx = Get()->m_iMX;
 	my = Get()->m_iMY;
-}
-
-void CRootPanel::DrawRect(float x, float y, float x2, float y2)
-{
 }

@@ -7,8 +7,8 @@
 #include <matrix.h>
 #include <color.h>
 
-#include "render_common.h"
-#include "renderingcontext.h"
+#include <renderer/render_common.h>
+#include <renderer/renderingcontext.h>
 
 class CRopeRenderer
 {

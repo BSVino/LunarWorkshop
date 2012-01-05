@@ -1,5 +1,6 @@
 #include "tree.h"
 
+#include <renderer/renderingcontext.h>
 #include <GL/glew.h>
 
 #include "rootpanel.h"
@@ -22,9 +23,6 @@ CTree::CTree(size_t iArrowTexture, size_t iEditTexture, size_t iVisibilityTextur
 
 	m_pfnDroppedCallback = NULL;
 	m_pDroppedListener = NULL;
-
-	m_clrBackground = Color(0, 0, 0);
-	m_clrBackground.SetAlpha(0);
 
 	m_bMouseDown = false;
 
@@ -103,19 +101,26 @@ void CTree::Paint(float x, float y)
 
 void CTree::Paint(float x, float y, float w, float h)
 {
-	if (m_clrBackground.a() > 0)
-		CRootPanel::PaintRect(x, y, w, h, m_clrBackground);
-
 	Color clrHilight = g_clrBoxHi;
 	clrHilight.SetAlpha(100);
 	Color clrSelected = g_clrBoxHi;
+
+	bool bScissor = m_bScissoring;
+	float sx, sy;
+	if (bScissor)
+	{
+		GetAbsPos(sx, sy);
+
+		CRootPanel::GetContext()->SetUniform("bScissor", true);
+		CRootPanel::GetContext()->SetUniform("vecScissor", Vector4D(sx, sy, GetWidth(), GetHeight()));
+	}
 
 	if (m_iHilighted != ~0)
 	{
 		IControl* pNode = m_apAllNodes[m_iHilighted];
 		float cx, cy, cw, ch;
 		pNode->GetAbsDimensions(cx, cy, cw, ch);
-		CRootPanel::PaintRect(cx, cy, cw, ch, clrHilight);
+		CRootPanel::PaintRect(cx, cy, cw, ch, clrHilight, 2);
 	}
 
 	if (m_iSelected != ~0 && m_apAllNodes[m_iSelected]->IsVisible())
@@ -123,7 +128,7 @@ void CTree::Paint(float x, float y, float w, float h)
 		IControl* pNode = m_apAllNodes[m_iSelected];
 		float cx, cy, cw, ch;
 		pNode->GetAbsDimensions(cx, cy, cw, ch);
-		CRootPanel::PaintRect(cx, cy, cw, ch, clrSelected);
+		CRootPanel::PaintRect(cx, cy, cw, ch, clrSelected, 2);
 	}
 
 	CPanel::Paint(x, y, w, h);
@@ -414,27 +419,7 @@ void CTreeNode::Paint(float x, float y, float w, float h, bool bFloating)
 	{
 		flIconSize = 12;
 
-		glPushAttrib(GL_ENABLE_BIT);
-		glEnable(GL_BLEND);
-		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glDisable(GL_LIGHTING);
-		glEnable(GL_TEXTURE_2D);
-
-		glBindTexture(GL_TEXTURE_2D, (GLuint)m_iIconTexture);
-		glColor4f(1,1,1,1);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0, 1);
-			glVertex2f(x+12, y);
-			glTexCoord2f(0, 0);
-			glVertex2f(x+12, y+flIconSize);
-			glTexCoord2f(1, 0);
-			glVertex2f(x+12+flIconSize, y+flIconSize);
-			glTexCoord2f(1, 1);
-			glVertex2f(x+12+flIconSize, y);
-		glEnd();
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		glPopAttrib();
+		PaintTexture(m_iIconTexture, x+12, y, flIconSize, flIconSize);
 	}
 
 	m_pLabel->Paint();
@@ -545,7 +530,7 @@ void CTreeNode::CExpandButton::Think()
 void CTreeNode::CExpandButton::Paint(float x, float y, float w, float h)
 {
 	glPushAttrib(GL_ENABLE_BIT);
-	glEnable(GL_BLEND);
+	glEnablei(GL_BLEND, 0);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
@@ -558,19 +543,7 @@ void CTreeNode::CExpandButton::Paint(float x, float y, float w, float h)
 	// Hehe.
 	// glRotatef((float)(glutGet(GLUT_ELAPSED_TIME)%3600)/5, 0, 0, 1);
 
-	glBindTexture(GL_TEXTURE_2D, (GLuint)m_iTexture);
-	glColor4f(1,1,1,1);
-	glBegin(GL_QUADS);
-		glTexCoord2f(0, 1);
-		glVertex2f(-w/2, -h/2);
-		glTexCoord2f(1, 1);
-		glVertex2f(-w/2, h/2);
-		glTexCoord2f(1, 0);
-		glVertex2f(w/2, h/2);
-		glTexCoord2f(0, 0);
-		glVertex2f(w/2, -h/2);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, 0);
+	PaintTexture(m_iTexture, -w/2, -h/2, w, h);
 
 	glPopMatrix();
 

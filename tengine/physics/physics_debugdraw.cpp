@@ -5,7 +5,7 @@
 #include <renderer/renderingcontext.h>
 #include <game/gameserver.h>
 #include <tinker/application.h>
-#include <renderer/renderer.h>
+#include <renderer/game_renderer.h>
 
 btIDebugDraw* debugDrawerPtr;
 

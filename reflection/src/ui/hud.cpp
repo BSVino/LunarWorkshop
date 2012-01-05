@@ -3,8 +3,8 @@
 #include <tinker_platform.h>
 
 #include <tengine/game/gameserver.h>
-#include <tengine/renderer/renderer.h>
-#include <tengine/renderer/renderingcontext.h>
+#include <renderer/game_renderer.h>
+#include <renderer/game_renderingcontext.h>
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
 #include <tinker/cvar.h>
@@ -56,7 +56,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 
 	if (pPlayerCharacter && pPlayerCharacter->GetToken())
 	{
-		CRenderingContext c(GameServer()->GetRenderer());
+		CGameRenderingContext c(GameServer()->GetRenderer());
 		c.Translate(Vector((float)w-100, (float)h-100, 0));
 		c.Scale(300, 300, 300);
 		c.Rotate(-90.0f, Vector(0, 0, 1));
@@ -121,7 +121,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 			tstring sTip = pMomento->GetMomentoName();
 			float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 			float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-			glgui::CBaseControl::PaintRect(vecScreen.x - 5, vecScreen.y - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+			glgui::CBaseControl::PaintRect(vecScreen.x - 5, vecScreen.y - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 1);
 			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, vecScreen.x, vecScreen.y);
 
 			continue;
@@ -141,7 +141,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 				tstring sTip = sprintf("%c - Swap", iKey);
 				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
 				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 			}
 			else
@@ -149,7 +149,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 				tstring sTip = sprintf("%c - Pick up", iKey);
 				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
 				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 			}
 			break;
@@ -169,7 +169,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 				tstring sTip = sprintf("%c - Swap", iKey);
 				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
 				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 			}
 			else
@@ -177,7 +177,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 				tstring sTip = sprintf("%c - Place", iKey);
 				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
 				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 			}
 			break;

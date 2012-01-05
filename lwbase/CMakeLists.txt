@@ -1,5 +1,5 @@
 include_directories (
-	${PROJECT_SOURCE_DIR}/ext-deps/EASTL/include
+	${PROJECT_SOURCE_DIR}/../ext-deps/EASTL/include
 	../
 	../common
 	../common/math
@@ -7,17 +7,17 @@ include_directories (
 
 if (WIN32)
 	include_directories (
-		${PROJECT_SOURCE_DIR}/ext-deps/pthreads-w32-2-8-0-release
+		${PROJECT_SOURCE_DIR}/../ext-deps/pthreads-w32-2-8-0-release
 	)
 endif (WIN32)
 
 set (LWBASE_SOURCES
-	../ext-deps/EASTL/src/allocator.cpp
-	../ext-deps/EASTL/src/assert.cpp
-	../ext-deps/EASTL/src/fixed_pool.cpp
-	../ext-deps/EASTL/src/hashtable.cpp
-	../ext-deps/EASTL/src/red_black_tree.cpp
-	../ext-deps/EASTL/src/string.cpp
+	../../ext-deps/EASTL/src/allocator.cpp
+	../../ext-deps/EASTL/src/assert.cpp
+	../../ext-deps/EASTL/src/fixed_pool.cpp
+	../../ext-deps/EASTL/src/hashtable.cpp
+	../../ext-deps/EASTL/src/red_black_tree.cpp
+	../../ext-deps/EASTL/src/string.cpp
 
 	../common/configfile.cpp
 	../common/eastl.cpp

@@ -13,7 +13,7 @@ CCheckBox::CCheckBox()
 
 void CCheckBox::Paint(float x, float y, float w, float h)
 {
-	glEnable(GL_BLEND);
+	glEnablei(GL_BLEND, 0);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glColor4ubv(Color(200, 200, 200, 255));
@@ -52,7 +52,7 @@ void CCheckBox::Paint(float x, float y, float w, float h)
 		glVertex2f(x+w, y+h-1);
 	glEnd();
 
-	glDisable(GL_BLEND);
+	glDisablei(GL_BLEND, 0);
 
 	if (m_bDown)
 		CRootPanel::PaintRect(x+2, y+2, w-4, h-4, g_clrBoxHi);

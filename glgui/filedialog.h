@@ -15,7 +15,6 @@ namespace glgui
 
 	public:
 		virtual void				Layout();
-		virtual void				Paint(float x, float y, float w, float h);
 
 		EVENT_CALLBACK(CFileDialog, NewDirectory);
 		EVENT_CALLBACK(CFileDialog, Explore);

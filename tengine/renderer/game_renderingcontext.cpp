@@ -1,0 +1,152 @@
+#include "game_renderingcontext.h"
+
+#include <GL/glew.h>
+#include <IL/il.h>
+#include <IL/ilu.h>
+
+#include <maths.h>
+#include <simplex.h>
+
+#include <models/models.h>
+#include <renderer/shaders.h>
+#include <tinker/application.h>
+#include <tinker/cvar.h>
+#include <tinker/profiler.h>
+#include <game/gameserver.h>
+#include <textures/texturelibrary.h>
+#include <renderer/renderer.h>
+#include <toys/toy.h>
+
+#include "game_renderer.h"
+
+CGameRenderingContext::CGameRenderingContext(CGameRenderer* pRenderer)
+{
+	m_pRenderer = pRenderer;
+}
+
+void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntity)
+{
+	CModel* pModel = CModelLibrary::GetModel(iModel);
+
+	if (!pModel)
+		return;
+
+	if (m_pRenderer->IsBatching())
+	{
+		TAssert(m_eBlend == BLEND_NONE);
+
+		m_pRenderer->AddToBatch(pModel, pEntity, m_mTransformations, m_clrRender, m_bColorSwap, m_clrSwap, m_bReverseWinding);
+	}
+	else
+	{
+		m_pRenderer->m_pRendering = pEntity;
+
+		for (size_t m = 0; m < pModel->m_aiVertexBuffers.size(); m++)
+		{
+			if (!pModel->m_aiVertexBufferSizes[m])
+				continue;
+
+			glActiveTexture(GL_TEXTURE0);
+
+			glBindTexture(GL_TEXTURE_2D, (GLuint)pModel->m_aiTextures[m]);
+
+			RenderModel(pModel, m);
+		}
+
+		glUseProgram(0);
+
+		m_pRenderer->m_pRendering = nullptr;
+	}
+
+	if (pModel->m_pToy->GetNumSceneAreas())
+	{
+		size_t iSceneArea = m_pRenderer->GetSceneAreaPosition(pModel);
+
+		if (iSceneArea >= pModel->m_pToy->GetNumSceneAreas())
+		{
+			for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
+			{
+				AABB aabbBounds = pModel->m_pToy->GetSceneAreaAABB(i);
+				if (!m_pRenderer->IsSphereInFrustum(aabbBounds.Center(), aabbBounds.Size().Length()/2))
+					continue;
+
+				RenderModel(CModelLibrary::FindModel(pModel->m_pToy->GetSceneAreaFileName(i)), pEntity);
+			}
+		}
+		else
+		{
+			for (size_t i = 0; i < pModel->m_pToy->GetSceneAreaNumVisible(iSceneArea); i++)
+			{
+				size_t iSceneAreaToRender = pModel->m_pToy->GetSceneAreasVisible(iSceneArea, i);
+
+				AABB aabbBounds = pModel->m_pToy->GetSceneAreaAABB(iSceneAreaToRender);
+				if (!m_pRenderer->IsSphereInFrustum(aabbBounds.Center(), aabbBounds.Size().Length()/2))
+					continue;
+
+				RenderModel(CModelLibrary::FindModel(pModel->m_pToy->GetSceneAreaFileName(iSceneAreaToRender)), pEntity);
+			}
+		}
+	}
+}
+
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
+
+void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
+{
+	m_pRenderer->SetupShader(this, pModel, iMaterial);
+
+	TAssert(m_pShader);
+	if (!m_pShader)
+		return;
+
+	if (!pModel || !m_pShader)
+		return;
+
+	SetUniform("mGlobal", m_mTransformations);
+
+	int iWinding = (m_bInitialWinding?GL_CCW:GL_CW);
+	if (m_bReverseWinding)
+		iWinding = (m_bInitialWinding?GL_CW:GL_CCW);
+	glFrontFace(iWinding);
+
+	glBindBuffer(GL_ARRAY_BUFFER, pModel->m_aiVertexBuffers[iMaterial]);
+
+//	if (m_pShader->m_iNormalAttribute != ~0)
+//		glEnableVertexAttribArray(m_pShader->m_iNormalAttribute);
+//	if (m_pShader->m_iColorAttribute != ~0)
+//		glEnableVertexAttribArray(m_pShader->m_iColorAttribute);
+
+	if (m_pShader->m_iTexCoordAttribute != ~0)
+		glEnableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
+	glEnableVertexAttribArray(m_pShader->m_iPositionAttribute);
+
+//	if (m_pShader->m_iNormalAttribute != ~0)
+//		glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecNormal) - ((size_t)&v)));
+//	if (m_pShader->m_iColorAttribute != ~0)
+//		glVertexAttribPointer(m_pShader->m_iColorAttribute, 3, GL_UNSIGNED_BYTE, true, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.clrColor) - ((size_t)&v)));
+
+	if (m_pShader->m_iTexCoordAttribute != ~0)
+		glVertexAttribPointer(m_pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, pModel->m_pToy->GetVertexSize(), BUFFER_OFFSET(pModel->m_pToy->GetVertexUV()));
+	glVertexAttribPointer(m_pShader->m_iPositionAttribute, 3, GL_FLOAT, false, pModel->m_pToy->GetVertexSize(), BUFFER_OFFSET(pModel->m_pToy->GetVertexPosition()));
+
+	glDrawArrays(GL_TRIANGLES, 0, pModel->m_aiVertexBufferSizes[iMaterial]);
+
+//	if (m_pShader->m_iNormalAttribute != ~0)
+//		glDisableVertexAttribArray(m_pShader->m_iNormalAttribute);
+//	if (m_pShader->m_iColorAttribute != ~0)
+//		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
+
+	if (m_pShader->m_iTexCoordAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
+	glDisableVertexAttribArray(m_pShader->m_iPositionAttribute);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void CGameRenderingContext::RenderBillboard(const tstring& sTexture, float flRadius)
+{
+	Vector vecUp, vecRight;
+	m_pRenderer->GetCameraVectors(NULL, &vecRight, &vecUp);
+
+	BaseClass::RenderBillboard(sTexture, flRadius, vecUp, vecRight);
+}

@@ -13,7 +13,7 @@
 #include <tinker/cvar.h>
 #include <tinker/profiler.h>
 #include <game/gameserver.h>
-#include <models/texturelibrary.h>
+#include <textures/texturelibrary.h>
 #include <renderer/renderer.h>
 
 CRopeRenderer::CRopeRenderer(CRenderer *pRenderer, size_t iTexture, Vector vecStart, float flWidth)

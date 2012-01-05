@@ -7,6 +7,7 @@
 #include <renderer/renderingcontext.h>
 #include <tinker/cvar.h>
 #include <tinker/profiler.h>
+#include <models/models.h>
 
 #include "reflection_game.h"
 #include "mirror.h"
@@ -14,7 +15,7 @@
 #include "kaleidobeast.h"
 
 CReflectionRenderer::CReflectionRenderer()
-	: CRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
+	: CGameRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
 {
 	for (size_t i = 0; i < 5; i++)
 		m_aoReflectionBuffers.push_back(CreateFrameBuffer(m_iWidth, m_iHeight, (fb_options_e)(FB_TEXTURE|FB_DEPTH|FB_LINEAR)));
@@ -29,9 +30,9 @@ void CReflectionRenderer::Initialize()
 
 void CReflectionRenderer::LoadShaders()
 {
-	CShaderLibrary::AddShader("brightpass", "pass", "brightpass");
+	BaseClass::LoadShaders();
+
 	CShaderLibrary::AddShader("model", "pass", "model");
-	CShaderLibrary::AddShader("blur", "pass", "blur");
 	CShaderLibrary::AddShader("reflection", "pass", "reflection");
 }
 
@@ -78,7 +79,7 @@ void CReflectionRenderer::SetupFrame()
 		CMirror* pMirror = apMirrors[i];
 
 		// Render a reflected world to our reflection buffer.
-		glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)m_aoReflectionBuffers[i].m_iFB);
+		glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)m_aoReflectionBuffers[i].m_iFB);
 		glViewport(0, 0, (GLsizei)m_aoReflectionBuffers[i].m_iWidth, (GLsizei)m_aoReflectionBuffers[i].m_iHeight);
 
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -112,28 +113,17 @@ void CReflectionRenderer::StartRendering()
 		return;
 	}
 
-	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT|GL_CURRENT_BIT);
-
 	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
 
 	if (pPlayerCharacter && (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) ^ pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
 		glFrontFace(GL_CW);
 
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
-	gluPerspective(
+	m_mProjection.SetPerspective(
 			m_flCameraFOV,
 			(float)m_iWidth/(float)m_iHeight,
 			m_flCameraNear,
 			m_flCameraFar
 		);
-
-	glMatrixMode(GL_MODELVIEW);
-
-	glPushMatrix();
-	glLoadIdentity();
 
 	Vector vecCameraPosition = m_vecCameraPosition;
 	Vector vecCameraTarget = m_vecCameraTarget;
@@ -155,39 +145,34 @@ void CReflectionRenderer::StartRendering()
 		vecCameraUp = mReflect * m_vecCameraUp;
 	}
 
-	gluLookAt(vecCameraPosition.x, vecCameraPosition.y, vecCameraPosition.z,
-		vecCameraTarget.x, vecCameraTarget.y, vecCameraTarget.z,
-		vecCameraUp.x, vecCameraUp.y, vecCameraUp.z);
+	m_mView.SetOrientation(vecCameraTarget - vecCameraPosition, vecCameraUp);
+	m_mView.AddTranslation(vecCameraPosition);
 
 	// Transform back to global space
-	glTranslatef(vecMirror.x, vecMirror.y, vecMirror.z);
+	m_mView.AddTranslation(vecMirror);
 
 	// Do the reflection
-	glMultMatrixf(mReflect);
+	m_mView *= mReflect;
 
 	// Transform to mirror's space
-	glTranslatef(-vecMirror.x, -vecMirror.y, -vecMirror.z);
+	m_mView.AddTranslation(-vecMirror);
 
-	glGetDoublev( GL_MODELVIEW_MATRIX, m_aiModelView );
-	glGetDoublev( GL_PROJECTION_MATRIX, m_aiProjection );
+	for (size_t i = 0; i < 16; i++)
+	{
+		m_aflModelView[i] = ((float*)m_mView)[i];
+		m_aflProjection[i] = ((float*)m_mProjection)[i];
+	}
 
-	Matrix4x4 mModelView, mProjection;
-	glGetFloatv( GL_MODELVIEW_MATRIX, mModelView );
-	glGetFloatv( GL_PROJECTION_MATRIX, mProjection );
-
-	m_oFrustum.CreateFrom(mProjection * mModelView);
+	m_oFrustum.CreateFrom(m_mProjection * m_mView);
 
 	// Optimization opportunity: shrink the view frustum to the edges and surface of the mirror?
 
 	// Momentarily return the viewport to the window size. This is because if the scene buffer is not the same as the window size,
 	// the viewport here will be the scene buffer size, but we need it to be the window size so we can do world/screen transformations.
-	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 	glGetIntegerv( GL_VIEWPORT, m_aiViewport );
-	glPopAttrib();
 
 	glEnable(GL_CULL_FACE);
-	glEnable(GL_TEXTURE_2D);
 }
 
 void CReflectionRenderer::FinishRendering()
@@ -205,23 +190,12 @@ void CReflectionRenderer::FinishRendering()
 
 void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
 {
-	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT|GL_CURRENT_BIT);
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
-	gluPerspective(
+	m_mProjection.SetPerspective(
 			m_flCameraFOV,
 			(float)m_iWidth/(float)m_iHeight,
 			m_flCameraNear,
 			m_flCameraFar
 		);
-
-	glMatrixMode(GL_MODELVIEW);
-
-	glPushMatrix();
-	glLoadIdentity();
 
 	Vector vecMirror = pMirror->GetGlobalOrigin();
 	Vector vecMirrorForward = pMirror->GetGlobalTransform().GetForwardVector();
@@ -244,39 +218,35 @@ void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
 
 	mReflect *= pMirror->GetReflection();
 
-	gluLookAt(vecCameraPosition.x, vecCameraPosition.y, vecCameraPosition.z,
-		vecCameraTarget.x, vecCameraTarget.y, vecCameraTarget.z,
-		vecCameraUp.x, vecCameraUp.y, vecCameraUp.z);
+	m_mView.SetOrientation(vecCameraTarget - vecCameraPosition, vecCameraUp);
+	m_mView.AddTranslation(vecCameraPosition);
 
 	// Transform back to global space
-	glTranslatef(vecMirror.x, vecMirror.y, vecMirror.z);
+	m_mView.AddTranslation(vecMirror);
 
 	// Do the reflection
-	glMultMatrixf(mReflect);
+	m_mView *= mReflect;
 
 	// Transform to mirror's space
-	glTranslatef(-vecMirror.x, -vecMirror.y, -vecMirror.z);
+	m_mView.AddTranslation(-vecMirror);
 
-	glGetDoublev( GL_MODELVIEW_MATRIX, m_aiModelView );
-	glGetDoublev( GL_PROJECTION_MATRIX, m_aiProjection );
+	for (size_t i = 0; i < 16; i++)
+	{
+		m_aflModelView[i] = ((float*)m_mView)[i];
+		m_aflProjection[i] = ((float*)m_mProjection)[i];
+	}
 
-	Matrix4x4 mModelView, mProjection;
-	glGetFloatv( GL_MODELVIEW_MATRIX, mModelView );
-	glGetFloatv( GL_PROJECTION_MATRIX, mProjection );
+	m_oFrustum.CreateFrom(m_mProjection * m_mView);
 
-	m_oFrustum.CreateFrom(mProjection * mModelView);
-
-	// Optimization opportunity: shrink the view frustum to the edges and surface of the mirror?
+	// TODO: Optimization opportunity: shrink the view frustum to the edges and surface of the mirror
 
 	// Momentarily return the viewport to the window size. This is because if the scene buffer is not the same as the window size,
 	// the viewport here will be the scene buffer size, but we need it to be the window size so we can do world/screen transformations.
-	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 	glGetIntegerv( GL_VIEWPORT, m_aiViewport );
-	glPopAttrib();
+	glViewport(0, 0, (GLsizei)m_oSceneBuffer.m_iWidth, (GLsizei)m_oSceneBuffer.m_iHeight);
 
 	glEnable(GL_CULL_FACE);
-	glEnable(GL_TEXTURE_2D);
 }
 
 extern CVar r_bloom;
@@ -285,27 +255,22 @@ void CReflectionRenderer::RenderFullscreenBuffers()
 {
 	TPROF("CReflectionRenderer::RenderFullscreenBuffers");
 
-	if (ShouldUseFramebuffers())
-	{
-		if (ShouldUseShaders())
-			SetupSceneShader();
+	SetupSceneShader();
 
-		RenderFrameBufferFullscreen(&m_oSceneBuffer);
+	RenderFrameBufferFullscreen(&m_oSceneBuffer);
 
-		if (ShouldUseShaders())
-			ClearProgram();
-	}
+	ClearProgram();
 
-	glEnable(GL_BLEND);
+	glEnablei(GL_BLEND, 0);
 
-	if (ShouldUseFramebuffers() && r_bloom.GetBool())
+	if (r_bloom.GetBool())
 	{
 		glBlendFunc(GL_ONE, GL_ONE);
 		for (size_t i = 0; i < BLOOM_FILTERS; i++)
 			RenderFrameBufferFullscreen(&m_oBloom1Buffers[i]);
 	}
 
-	glDisable(GL_BLEND);
+	glDisablei(GL_BLEND, 0);
 }
 
 void CReflectionRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial)
@@ -322,7 +287,7 @@ void CReflectionRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size
 
 	if (bModel && pModel->m_aiTextures[iMaterial] == 0 && iBuffer != ~0)
 	{
-		c->BindTexture(GetReflectionTexture(iBuffer));
+		c->BindBufferTexture(GetReflectionBuffer(iBuffer));
 
 		c->UseProgram("reflection");
 		c->SetUniform("bDiffuse", true);
@@ -367,9 +332,9 @@ void CReflectionRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size
 	BaseClass::SetupShader(c, pModel, iMaterial);
 }
 
-size_t CReflectionRenderer::GetReflectionTexture(size_t i)
+CFrameBuffer& CReflectionRenderer::GetReflectionBuffer(size_t i)
 {
-	return m_aoReflectionBuffers[i].m_iMap;
+	return m_aoReflectionBuffers[i];
 }
 
 bool CReflectionRenderer::ShouldRenderPhysicsDebug() const

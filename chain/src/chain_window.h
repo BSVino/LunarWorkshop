@@ -1,7 +1,7 @@
 #ifndef CHAIN_WINDOW_H
 #define CHAIN_WINDOW_H
 
-#include <tinker/gamewindow.h>
+#include <ui/gamewindow.h>
 
 class CChainWindow : public CGameWindow
 {
