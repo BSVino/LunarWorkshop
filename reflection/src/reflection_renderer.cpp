@@ -102,6 +102,11 @@ void CReflectionRenderer::SetupFrame()
 		m_bRenderingReflection = false;
 	}
 
+	if (CVar::GetCVarValue("game_mode") == "menu")
+		m_bDrawBackground = true;
+	else
+		m_bDrawBackground = false;
+
 	BaseClass::SetupFrame();
 }
 
@@ -118,7 +123,7 @@ void CReflectionRenderer::StartRendering()
 	if (pPlayerCharacter && (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) ^ pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
 		glFrontFace(GL_CW);
 
-	m_mProjection.SetPerspective(
+	m_mProjection.ProjectPerspective(
 			m_flCameraFOV,
 			(float)m_iWidth/(float)m_iHeight,
 			m_flCameraNear,
@@ -126,7 +131,7 @@ void CReflectionRenderer::StartRendering()
 		);
 
 	Vector vecCameraPosition = m_vecCameraPosition;
-	Vector vecCameraTarget = m_vecCameraTarget;
+	Vector vecCameraDirection = m_vecCameraDirection;
 	Vector vecCameraUp = m_vecCameraUp;
 
 	CMirror* pMirror = pPlayerCharacter->GetMirrorInside();
@@ -141,21 +146,22 @@ void CReflectionRenderer::StartRendering()
 		mInverseTranslate = mTranslate.InvertedRT();
 
 		vecCameraPosition = mTranslate * (mReflect * (mInverseTranslate * m_vecCameraPosition));
-		vecCameraTarget = mTranslate * (mReflect * (mInverseTranslate * m_vecCameraTarget));
+		vecCameraDirection = mTranslate.TransformVector(mReflect.TransformVector(mInverseTranslate.TransformVector(m_vecCameraDirection)));
 		vecCameraUp = mReflect * m_vecCameraUp;
 	}
 
-	m_mView.SetOrientation(vecCameraTarget - vecCameraPosition, vecCameraUp);
-	m_mView.AddTranslation(vecCameraPosition);
+	m_mView.ConstructCameraView(vecCameraPosition, vecCameraDirection, vecCameraUp);
 
 	// Transform back to global space
-	m_mView.AddTranslation(vecMirror);
+/*	m_mView.AddTranslation(vecMirror);
 
 	// Do the reflection
 	m_mView *= mReflect;
 
 	// Transform to mirror's space
 	m_mView.AddTranslation(-vecMirror);
+
+	m_mView.InvertRT();*/
 
 	for (size_t i = 0; i < 16; i++)
 	{
@@ -190,7 +196,7 @@ void CReflectionRenderer::FinishRendering()
 
 void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
 {
-	m_mProjection.SetPerspective(
+	m_mProjection.ProjectPerspective(
 			m_flCameraFOV,
 			(float)m_iWidth/(float)m_iHeight,
 			m_flCameraNear,
@@ -201,7 +207,7 @@ void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
 	Vector vecMirrorForward = pMirror->GetGlobalTransform().GetForwardVector();
 
 	Vector vecCameraPosition = m_vecCameraPosition;
-	Vector vecCameraTarget = m_vecCameraTarget;
+	Vector vecCameraDirection = m_vecCameraDirection;
 	Vector vecCameraUp = m_vecCameraUp;
 
 	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
@@ -213,13 +219,12 @@ void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
 	mInverseTranslate = mTranslate.InvertedRT();
 
 	vecCameraPosition = mTranslate * (mReflect * (mInverseTranslate * m_vecCameraPosition));
-	vecCameraTarget = mTranslate * (mReflect * (mInverseTranslate * m_vecCameraTarget));
+	vecCameraDirection = mTranslate.TransformVector(mReflect.TransformVector(mInverseTranslate.TransformVector(m_vecCameraDirection)));
 	vecCameraUp = mReflect * m_vecCameraUp;
 
 	mReflect *= pMirror->GetReflection();
 
-	m_mView.SetOrientation(vecCameraTarget - vecCameraPosition, vecCameraUp);
-	m_mView.AddTranslation(vecCameraPosition);
+	m_mView.ConstructCameraView(vecCameraPosition, vecCameraDirection, vecCameraUp);
 
 	// Transform back to global space
 	m_mView.AddTranslation(vecMirror);

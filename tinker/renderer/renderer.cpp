@@ -232,15 +232,14 @@ void CRenderer::StartRendering()
 {
 	TPROF("CRenderer::StartRendering");
 
-	m_mProjection.SetPerspective(
+	m_mProjection.ProjectPerspective(
 			m_flCameraFOV,
 			(float)m_iWidth/(float)m_iHeight,
 			m_flCameraNear,
 			m_flCameraFar
 		);
 
-	m_mView.SetOrientation(m_vecCameraTarget - m_vecCameraPosition, m_vecCameraUp);
-	m_mView.SetTranslation(m_vecCameraPosition);
+	m_mView.ConstructCameraView(m_vecCameraPosition, m_vecCameraDirection, m_vecCameraUp);
 
 	for (size_t i = 0; i < 16; i++)
 	{
@@ -252,15 +251,14 @@ void CRenderer::StartRendering()
 	{
 		Matrix4x4 mProjection, mView;
 
-		mProjection.SetPerspective(
+		mProjection.ProjectPerspective(
 				m_flFrustumFOV,
 				(float)m_iWidth/(float)m_iHeight,
 				m_flFrustumNear,
 				m_flFrustumFar
 			);
 
-		mView.SetOrientation(m_vecFrustumTarget - m_vecFrustumPosition, m_vecCameraUp);
-		mView.SetTranslation(m_vecFrustumPosition);
+		mView.ConstructCameraView(m_vecFrustumPosition, m_vecFrustumDirection, m_vecCameraUp);
 
 		m_oFrustum.CreateFrom(mProjection * mView);
 	}
@@ -312,7 +310,7 @@ void CRenderer::FinishFrame()
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_COLOR_MATERIAL);
 
-	m_mProjection.SetOrthogonal(0, (float)m_iWidth, (float)m_iHeight, 0, -1, 1);
+	m_mProjection.ProjectOrthographic(0, (float)m_iWidth, (float)m_iHeight, 0, -1, 1);
 
 	m_mView.Identity();
 
@@ -464,7 +462,7 @@ void CRenderer::RenderMapFullscreen(size_t iMap, bool bMapIsMultisample)
 void CRenderer::RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer, bool bMapIsMultisample)
 {
 	Matrix4x4 mProjection, mView;
-	mProjection.SetOrthogonal(0, (float)pBuffer->m_iWidth, (float)pBuffer->m_iHeight, 0, -1, 1);
+	mProjection.ProjectOrthographic(0, (float)pBuffer->m_iWidth, (float)pBuffer->m_iHeight, 0, -1, 1);
 
 	glBindFramebuffer(GL_FRAMEBUFFER_EXT, (GLuint)pBuffer->m_iFB);
 	glViewport(0, 0, (GLsizei)pBuffer->m_iWidth, (GLsizei)pBuffer->m_iHeight);
@@ -509,11 +507,11 @@ void CRenderer::RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer, bool bMapI
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void CRenderer::FrustumOverride(Vector vecPosition, Vector vecTarget, float flFOV, float flNear, float flFar)
+void CRenderer::FrustumOverride(Vector vecPosition, Vector vecDirection, float flFOV, float flNear, float flFar)
 {
 	m_bFrustumOverride = true;
 	m_vecFrustumPosition = vecPosition;
-	m_vecFrustumTarget = vecTarget;
+	m_vecFrustumDirection = vecDirection;
 	m_flFrustumFOV = flFOV;
 	m_flFrustumNear = flNear;
 	m_flFrustumFar = flFar;
@@ -526,7 +524,7 @@ void CRenderer::CancelFrustumOverride()
 
 Vector CRenderer::GetCameraVector()
 {
-	return (m_vecCameraTarget - m_vecCameraPosition).Normalized();
+	return m_vecCameraDirection;
 }
 
 void CRenderer::GetCameraVectors(Vector* pvecForward, Vector* pvecRight, Vector* pvecUp)
@@ -557,19 +555,19 @@ void CRenderer::SetSize(int w, int h)
 	m_iWidth = w;
 	m_iHeight = h;
 
-	m_vecFullscreenTexCoords[0] = Vector2D(0, 1);
-	m_vecFullscreenTexCoords[1] = Vector2D(0, 0);
-	m_vecFullscreenTexCoords[2] = Vector2D(1, 0);
-	m_vecFullscreenTexCoords[4] = Vector2D(0, 1);
-	m_vecFullscreenTexCoords[5] = Vector2D(1, 0);
-	m_vecFullscreenTexCoords[6] = Vector2D(1, 1);
+	m_vecFullscreenTexCoords[0] = Vector2D(0, 0);
+	m_vecFullscreenTexCoords[1] = Vector2D(1, 1);
+	m_vecFullscreenTexCoords[2] = Vector2D(0, 1);
+	m_vecFullscreenTexCoords[3] = Vector2D(0, 0);
+	m_vecFullscreenTexCoords[4] = Vector2D(1, 0);
+	m_vecFullscreenTexCoords[5] = Vector2D(1, 1);
 
-	m_vecFullscreenVertices[0] = Vector2D(0, 0);
-	m_vecFullscreenVertices[1] = Vector2D(0, (float)m_iHeight);
-	m_vecFullscreenVertices[2] = Vector2D((float)m_iWidth, (float)m_iHeight);
-	m_vecFullscreenVertices[3] = Vector2D(0, 0);
-	m_vecFullscreenVertices[4] = Vector2D((float)m_iWidth, (float)m_iHeight);
-	m_vecFullscreenVertices[5] = Vector2D((float)m_iWidth, 0);
+	m_vecFullscreenVertices[0] = Vector(-1, -1, 0);
+	m_vecFullscreenVertices[1] = Vector(1, 1, 0);
+	m_vecFullscreenVertices[2] = Vector(-1, 1, 0);
+	m_vecFullscreenVertices[3] = Vector(-1, -1, 0);
+	m_vecFullscreenVertices[4] = Vector(1, -1, 0);
+	m_vecFullscreenVertices[5] = Vector(1, 1, 0);
 }
 
 void CRenderer::ClearProgram()

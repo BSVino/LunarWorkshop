@@ -25,7 +25,7 @@ void CCamera::Think()
 	if (bFreeMode != m_bFreeMode)
 	{
 		m_vecFreeCamera = GetCameraPosition();
-		m_angFreeCamera = VectorAngles((GetCameraTarget() - GetCameraPosition()).Normalized());
+		m_angFreeCamera = VectorAngles((GetCameraDirection()).Normalized());
 		m_bFreeMode = bFreeMode;
 		CApplication::Get()->SetMouseCursorEnabled(!m_bFreeMode);
 	}
@@ -41,7 +41,7 @@ void CCamera::Think()
 	else
 	{
 		if (shrink_frustum.GetBool())
-			GameServer()->GetRenderer()->FrustumOverride(GetCameraPosition(), GetCameraTarget(), GetCameraFOV()-1, GetCameraNear()+1, GetCameraFar()-1);
+			GameServer()->GetRenderer()->FrustumOverride(GetCameraPosition(), GetCameraDirection(), GetCameraFOV()-1, GetCameraNear()+1, GetCameraFar()-1);
 	}
 }
 
@@ -53,12 +53,12 @@ TVector CCamera::GetCameraPosition()
 	return TVector(30, 30, 30);
 }
 
-TVector CCamera::GetCameraTarget()
+TVector CCamera::GetCameraDirection()
 {
 	if (m_bFreeMode)
-		return m_vecFreeCamera + AngleVector(m_angFreeCamera);
+		return AngleVector(m_angFreeCamera);
 
-	return TVector(0,0,0);
+	return TVector(1,0,0);
 }
 
 TVector CCamera::GetCameraUp()
@@ -111,7 +111,7 @@ void CCamera::KeyDown(int c)
 		if (lock_freemode_frustum.GetBool())
 		{
 			if (m_bFreeMode)
-				GameServer()->GetRenderer()->FrustumOverride(GetCameraPosition(), GetCameraTarget(), GetCameraFOV(), GetCameraNear(), GetCameraFar());
+				GameServer()->GetRenderer()->FrustumOverride(GetCameraPosition(), GetCameraDirection(), GetCameraFOV(), GetCameraNear(), GetCameraFar());
 			else
 				GameServer()->GetRenderer()->CancelFrustumOverride();
 		}

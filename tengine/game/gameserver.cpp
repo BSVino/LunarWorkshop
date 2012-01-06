@@ -686,7 +686,7 @@ void CGameServer::Render()
 	CRenderer* pRenderer = GameWindow()->GetRenderer();
 
 	pRenderer->SetCameraPosition(m_pCamera->GetCameraPosition());
-	pRenderer->SetCameraTarget(m_pCamera->GetCameraTarget());
+	pRenderer->SetCameraDirection(m_pCamera->GetCameraDirection());
 	pRenderer->SetCameraUp(m_pCamera->GetCameraUp());
 	pRenderer->SetCameraFOV(m_pCamera->GetCameraFOV());
 	pRenderer->SetCameraNear(m_pCamera->GetCameraNear());

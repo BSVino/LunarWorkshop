@@ -13,7 +13,7 @@ public:
 	virtual void	Think();
 
 	virtual TVector	GetCameraPosition();
-	virtual TVector	GetCameraTarget();
+	virtual TVector	GetCameraDirection();
 	virtual TVector	GetCameraUp();
 	virtual float	GetCameraFOV();
 	virtual float	GetCameraNear() { return 1.0f; };

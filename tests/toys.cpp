@@ -145,6 +145,7 @@ void test_scene()
 	TAssert(bWrite);
 
 	CToyUtil ts;
+	ts.SetGameDirectory(".");
 	size_t iSceneArea1 = ts.AddSceneArea("testscene1.toy");
 	size_t iSceneArea2 = ts.AddSceneArea("testscene2.toy");
 	size_t iSceneArea3 = ts.AddSceneArea("testscene3.toy");
@@ -172,11 +173,11 @@ void test_scene()
 	TAssert(pToy->GetSceneAreaNumVisible(2) == 2);
 	TAssert(pToy->GetSceneAreasVisible(0, 0) == 0);	// Is visible to itself
 	TAssert(pToy->GetSceneAreasVisible(0, 1) == 1);	// Is visible to its neighbor
-	TAssert(pToy->GetSceneAreasVisible(1, 0) == 1);	// Is visible to itself
-	TAssert(pToy->GetSceneAreasVisible(1, 1) == 0);	// Is visible to its neighbor
+	TAssert(pToy->GetSceneAreasVisible(1, 0) == 0);	// Is visible to its neighbor
+	TAssert(pToy->GetSceneAreasVisible(1, 1) == 1);	// Is visible to itself
 	TAssert(pToy->GetSceneAreasVisible(1, 2) == 2);	// Is visible to its neighbor
-	TAssert(pToy->GetSceneAreasVisible(2, 0) == 2);	// Is visible to itself
-	TAssert(pToy->GetSceneAreasVisible(2, 1) == 1);	// Is visible to its neighbor
+	TAssert(pToy->GetSceneAreasVisible(2, 0) == 1);	// Is visible to its neighbor
+	TAssert(pToy->GetSceneAreasVisible(2, 1) == 2);	// Is visible to itself
 
 	delete pToy;
 }

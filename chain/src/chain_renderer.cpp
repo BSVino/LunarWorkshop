@@ -12,7 +12,7 @@
 CChainRenderer::CChainRenderer()
 	: CGameRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
 {
-	FrustumOverride(Vector(0, 0, 10), Vector(0, 0, 0), 45, 0.1f, 50);
+	FrustumOverride(Vector(0, 0, 10), Vector(1, 0, 0), 45, 0.1f, 50);
 
 	m_oMouseoverBuffer1 = CreateFrameBuffer(m_iWidth, m_iHeight, FB_TEXTURE);
 	m_oMouseoverBuffer2 = CreateFrameBuffer(m_iWidth, m_iHeight, FB_TEXTURE);

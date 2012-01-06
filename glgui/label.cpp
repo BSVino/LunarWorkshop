@@ -306,10 +306,11 @@ void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sF
 	float flBaseline = s_apFonts[sFontName][iFontFaceSize]->Ascender();
 
 	Matrix4x4 mFontProjection, mProjection;
-	mFontProjection.SetOrthogonal(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
+	mFontProjection.ProjectOrthographic(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
 
 	mProjection = CRootPanel::GetContext()->GetProjection();
 
+	CRootPanel::GetContext()->SetBlend(BLEND_ALPHA);
 	CRootPanel::GetContext()->UseProgram("text");
 	CRootPanel::GetContext()->SetProjection(mFontProjection);
 	CRootPanel::GetContext()->SetUniform("vecColor", clrText);

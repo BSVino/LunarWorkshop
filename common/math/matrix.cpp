@@ -283,7 +283,7 @@ void Matrix4x4::SetReflection(const Vector& vecPlane)
 	m[1][2] = m[2][1] = -2 * vecPlane.y * vecPlane.z;
 }
 
-void Matrix4x4::SetPerspective(float flFOV, float flAspectRatio, float flNear, float flFar)
+void Matrix4x4::ProjectPerspective(float flFOV, float flAspectRatio, float flNear, float flFar)
 {
 	float flRight = flNear * tan(flFOV * M_PI / 360);
 	float flLeft = -flRight;
@@ -291,10 +291,10 @@ void Matrix4x4::SetPerspective(float flFOV, float flAspectRatio, float flNear, f
 	float flBottom = flLeft / flAspectRatio;
 	float flTop = flRight / flAspectRatio;
 
-	SetFrustum(flLeft, flRight, flBottom, flTop, flNear, flFar);
+	ProjectFrustum(flLeft, flRight, flBottom, flTop, flNear, flFar);
 }
 
-void Matrix4x4::SetFrustum(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar)
+void Matrix4x4::ProjectFrustum(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar)
 {
 	Identity();
 
@@ -305,17 +305,17 @@ void Matrix4x4::SetFrustum(float flLeft, float flRight, float flBottom, float fl
 	m[0][0] = (2 * flNear) / flXD;
 	m[1][1] = (2 * flNear) / flYD;
 
-	m[0][2] = (flRight + flLeft) / flXD;
-	m[1][2] = (flTop + flBottom) / flYD;
+	m[2][0] = (flRight + flLeft) / flXD;
+	m[2][1] = (flTop + flBottom) / flYD;
 	m[2][2] = -(flFar + flNear) / flZD;
-	m[3][2] = -1;
+	m[2][3] = -1;
 
-	m[2][3] = -(2 * flFar * flNear) / flZD;
+	m[3][2] = -(2 * flFar * flNear) / flZD;
 
 	m[3][3] = 0;
 }
 
-void Matrix4x4::SetOrthogonal(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar)
+void Matrix4x4::ProjectOrthographic(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar)
 {
 	Identity();
 
@@ -330,6 +330,20 @@ void Matrix4x4::SetOrthogonal(float flLeft, float flRight, float flBottom, float
 	m[3][0] = -(flRight + flLeft) / flXD;
 	m[3][1] = -(flTop + flBottom) / flYD;
 	m[3][2] = -(flFar + flNear) / flZD;
+}
+
+void Matrix4x4::ConstructCameraView(const Vector& vecPosition, const Vector& vecDirection, const Vector& vecUp)
+{
+	TAssertNoMsg(fabs(vecDirection.LengthSqr()-1) < 0.0001f);
+
+	Vector vecCamSide = vecDirection.Cross(vecUp).Normalized();
+	Vector vecCamUp = vecCamSide.Cross(vecDirection);
+
+	SetForwardVector(Vector(vecCamSide.x, vecCamUp.x, -vecDirection.x));
+	SetUpVector(Vector(vecCamSide.y, vecCamUp.y, -vecDirection.y));
+	SetRightVector(Vector(vecCamSide.z, vecCamUp.z, -vecDirection.z));
+
+	AddTranslation(-vecPosition);
 }
 
 Matrix4x4 Matrix4x4::operator+=(const Vector& v)

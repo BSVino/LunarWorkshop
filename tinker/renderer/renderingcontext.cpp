@@ -498,7 +498,6 @@ void CRenderingContext::SetPositionBuffer(size_t iOffset, size_t iStride)
 
 void CRenderingContext::SetTexCoordBuffer(float* pflBuffer, size_t iStride)
 {
-	TAssert(m_pShader->m_iTexCoordAttribute != ~0);
 	if (m_pShader->m_iTexCoordAttribute == ~0)
 		return;
 
@@ -508,7 +507,6 @@ void CRenderingContext::SetTexCoordBuffer(float* pflBuffer, size_t iStride)
 
 void CRenderingContext::SetTexCoordBuffer(size_t iOffset, size_t iStride)
 {
-	TAssert(m_pShader->m_iTexCoordAttribute != ~0);
 	if (m_pShader->m_iTexCoordAttribute == ~0)
 		return;
 

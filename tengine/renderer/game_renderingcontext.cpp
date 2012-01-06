@@ -20,6 +20,7 @@
 #include "game_renderer.h"
 
 CGameRenderingContext::CGameRenderingContext(CGameRenderer* pRenderer)
+	: CRenderingContext(pRenderer)
 {
 	m_pRenderer = pRenderer;
 }
@@ -89,7 +90,7 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 	}
 }
 
-#define BUFFER_OFFSET(i) ((char *)NULL + (i))
+#define BUFFER_OFFSET(i) (size_t)((char *)NULL + (i))
 
 void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 {
@@ -102,6 +103,10 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	if (!pModel || !m_pShader)
 		return;
 
+	Vector vecCameraPosition = m_pRenderer->m_vecCameraPosition;
+	Vector vecCameraDirection = m_pRenderer->m_vecCameraDirection;
+	Vector vecCameraUp = m_pRenderer->m_vecCameraUp;
+
 	SetUniform("mGlobal", m_mTransformations);
 
 	int iWinding = (m_bInitialWinding?GL_CCW:GL_CW);
@@ -109,38 +114,10 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 		iWinding = (m_bInitialWinding?GL_CW:GL_CCW);
 	glFrontFace(iWinding);
 
-	glBindBuffer(GL_ARRAY_BUFFER, pModel->m_aiVertexBuffers[iMaterial]);
-
-//	if (m_pShader->m_iNormalAttribute != ~0)
-//		glEnableVertexAttribArray(m_pShader->m_iNormalAttribute);
-//	if (m_pShader->m_iColorAttribute != ~0)
-//		glEnableVertexAttribArray(m_pShader->m_iColorAttribute);
-
-	if (m_pShader->m_iTexCoordAttribute != ~0)
-		glEnableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
-	glEnableVertexAttribArray(m_pShader->m_iPositionAttribute);
-
-//	if (m_pShader->m_iNormalAttribute != ~0)
-//		glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.vecNormal) - ((size_t)&v)));
-//	if (m_pShader->m_iColorAttribute != ~0)
-//		glVertexAttribPointer(m_pShader->m_iColorAttribute, 3, GL_UNSIGNED_BYTE, true, sizeof(Vertex_t), BUFFER_OFFSET(((size_t)&v.clrColor) - ((size_t)&v)));
-
-	if (m_pShader->m_iTexCoordAttribute != ~0)
-		glVertexAttribPointer(m_pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, pModel->m_pToy->GetVertexSize(), BUFFER_OFFSET(pModel->m_pToy->GetVertexUV()));
-	glVertexAttribPointer(m_pShader->m_iPositionAttribute, 3, GL_FLOAT, false, pModel->m_pToy->GetVertexSize(), BUFFER_OFFSET(pModel->m_pToy->GetVertexPosition()));
-
-	glDrawArrays(GL_TRIANGLES, 0, pModel->m_aiVertexBufferSizes[iMaterial]);
-
-//	if (m_pShader->m_iNormalAttribute != ~0)
-//		glDisableVertexAttribArray(m_pShader->m_iNormalAttribute);
-//	if (m_pShader->m_iColorAttribute != ~0)
-//		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
-
-	if (m_pShader->m_iTexCoordAttribute != ~0)
-		glDisableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
-	glDisableVertexAttribArray(m_pShader->m_iPositionAttribute);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	BeginRenderVertexArray(pModel->m_aiVertexBuffers[iMaterial]);
+	SetPositionBuffer(0u, pModel->m_pToy->GetVertexSize());
+	SetTexCoordBuffer(BUFFER_OFFSET(pModel->m_pToy->GetVertexUV()), pModel->m_pToy->GetVertexSize());
+	EndRenderVertexArray(pModel->m_aiVertexBufferSizes[iMaterial]);
 }
 
 void CGameRenderingContext::RenderBillboard(const tstring& sTexture, float flRadius)

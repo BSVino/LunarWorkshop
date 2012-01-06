@@ -65,21 +65,20 @@ void CGameRenderer::DrawSkybox()
 	CCamera* pCamera = GameServer()->GetCamera();
 
 	SetCameraPosition(pCamera->GetCameraPosition());
-	SetCameraTarget(pCamera->GetCameraTarget());
+	SetCameraDirection(pCamera->GetCameraDirection());
 	SetCameraUp(pCamera->GetCameraUp());
 	SetCameraFOV(pCamera->GetCameraFOV());
 	SetCameraNear(pCamera->GetCameraNear());
 	SetCameraFar(pCamera->GetCameraFar());
 
-	m_mProjection.SetPerspective(
+	m_mProjection.ProjectPerspective(
 			m_flCameraFOV,
 			(float)m_iWidth/(float)m_iHeight,
 			m_flCameraNear,
 			m_flCameraFar
 		);
 
-	m_mView.SetOrientation(m_vecCameraTarget - m_vecCameraPosition, m_vecCameraUp);
-	m_mView.SetTranslation(m_vecCameraPosition);
+	m_mView.ConstructCameraView(m_vecCameraPosition, m_vecCameraDirection, m_vecCameraUp);
 
 	glEnable(GL_CULL_FACE);
 

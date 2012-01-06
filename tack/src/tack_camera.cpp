@@ -29,17 +29,12 @@ Vector CTackCamera::GetCameraPosition()
 	return pCharacter->GetGlobalOrigin() + AngleVector(EAngle(cam_pitch.GetFloat(), -180, 0)) * cam_distance.GetFloat();
 }
 
-Vector CTackCamera::GetCameraTarget()
+Vector CTackCamera::GetCameraDirection()
 {
 	if (m_bFreeMode)
-		return BaseClass::GetCameraTarget();
+		return BaseClass::GetCameraDirection();
 
-	CTackCharacter* pCharacter = TackGame()->GetLocalPlayerCharacter();
-
-	if (!pCharacter)
-		return Vector();
-
-	return pCharacter->GetGlobalOrigin();
+	return AngleVector(EAngle(-cam_pitch.GetFloat(), 180, 0));
 }
 
 float CTackCamera::GetCameraFOV()

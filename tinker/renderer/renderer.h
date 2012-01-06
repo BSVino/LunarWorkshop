@@ -79,19 +79,19 @@ public:
 	void			RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer, bool bMapIsMultisample = false);
 
 	void			SetCameraPosition(Vector vecCameraPosition) { m_vecCameraPosition = vecCameraPosition; };
-	void			SetCameraTarget(Vector vecCameraTarget) { m_vecCameraTarget = vecCameraTarget; };
+	void			SetCameraDirection(Vector vecCameraDirection) { m_vecCameraDirection = vecCameraDirection; };
 	void			SetCameraUp(Vector vecCameraUp) { m_vecCameraUp = vecCameraUp; };
 	void			SetCameraFOV(float flFOV) { m_flCameraFOV = flFOV; };
 	void			SetCameraNear(float flNear) { m_flCameraNear = flNear; };
 	void			SetCameraFar(float flFar) { m_flCameraFar = flFar; };
 
 	Vector			GetCameraPosition() { return m_vecCameraPosition; };
-	Vector			GetCameraTarget() { return m_vecCameraTarget; };
+	Vector			GetCameraDirection() { return m_vecCameraDirection; };
 	float			GetCameraFOV() { return m_flCameraFOV; };
 	float			GetCameraNear() { return m_flCameraNear; };
 	float			GetCameraFar() { return m_flCameraFar; };
 
-	void			FrustumOverride(Vector vecPosition, Vector vecTarget, float flFOV, float flNear, float flFar);
+	void			FrustumOverride(Vector vecPosition, Vector vecDirection, float flFOV, float flNear, float flFar);
 	void			CancelFrustumOverride();
 	const Frustum&	GetFrustum() const { return m_oFrustum; }
 
@@ -134,7 +134,7 @@ protected:
 	size_t			m_iHeight;
 
 	Vector			m_vecCameraPosition;
-	Vector			m_vecCameraTarget;
+	Vector			m_vecCameraDirection;
 	Vector			m_vecCameraUp;
 	float			m_flCameraFOV;
 	float			m_flCameraNear;
@@ -145,7 +145,7 @@ protected:
 
 	bool			m_bFrustumOverride;
 	Vector			m_vecFrustumPosition;
-	Vector			m_vecFrustumTarget;
+	Vector			m_vecFrustumDirection;
 	float			m_flFrustumFOV;
 	float			m_flFrustumNear;
 	float			m_flFrustumFar;
@@ -157,7 +157,7 @@ protected:
 	Frustum			m_oFrustum;
 
 	Vector2D		m_vecFullscreenTexCoords[6];
-	Vector2D		m_vecFullscreenVertices[6];
+	Vector			m_vecFullscreenVertices[6];
 
 	bool			m_bDrawBackground;
 

@@ -26,12 +26,12 @@ Vector CChainCamera::GetCameraPosition()
 	return Vector(0, 0, 10);
 }
 
-Vector CChainCamera::GetCameraTarget()
+Vector CChainCamera::GetCameraDirection()
 {
 	if (m_bFreeMode)
-		return BaseClass::GetCameraTarget();
+		return BaseClass::GetCameraDirection();
 
-	return Vector(0, 0, 0);
+	return Vector(1, 0, 0);
 }
 
 float CChainCamera::GetCameraFOV()

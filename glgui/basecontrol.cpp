@@ -285,11 +285,11 @@ void CBaseControl::MakeQuad()
 	} avecData[] =
 	{
 		{ Vector(0, 0, 0),		Vector2D(0, 1),		0 },
-		{ Vector(0, 10, 0),		Vector2D(0, 0),		1 },
-		{ Vector(10, 10, 0),		Vector2D(1, 0),		2 },
+		{ Vector(0, 1, 0),		Vector2D(0, 0),		1 },
+		{ Vector(1, 1, 0),		Vector2D(1, 0),		2 },
 		{ Vector(0, 0, 0),		Vector2D(0, 1),		0 },
-		{ Vector(10, 10, 0),		Vector2D(1, 0),		2 },
-		{ Vector(10, 0, 0),		Vector2D(1, 1),		3 },
+		{ Vector(1, 1, 0),		Vector2D(1, 0),		2 },
+		{ Vector(1, 0, 0),		Vector2D(1, 1),		3 },
 	};
 
 	s_iQuad = CRenderer::LoadVertexDataIntoGL(sizeof(avecData), (float*)&avecData[0]);

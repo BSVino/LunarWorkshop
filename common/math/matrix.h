@@ -59,9 +59,11 @@ public:
 	void		SetScale(const Vector& vecScale);
 	void		SetReflection(const Vector& vecPlaneNormal);			// Reflection around a plane with this normal which passes through the center of the local space.
 																		// Assumes the plane normal passed in is normalized.
-	void		SetPerspective(float flFOV, float flAspectRatio, float flNear, float flFar);						// Just like gluPerspectives
-	void		SetFrustum(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar);	// Just like glFrustum
-	void		SetOrthogonal(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar);	// Just like glOrtho
+
+	void		ProjectPerspective(float flFOV, float flAspectRatio, float flNear, float flFar);							// Just like gluPerspectives
+	void		ProjectFrustum(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar);		// Just like glFrustum
+	void		ProjectOrthographic(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar);	// Just like glOrtho
+	void		ConstructCameraView(const Vector& vecPosition, const Vector& vecDirection, const Vector& vecUp);			// Like gluLookAt but a direction parameter instead of target
 
 	// Add a translation
 	Matrix4x4	operator+=(const Vector& v);

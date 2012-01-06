@@ -13,7 +13,7 @@ public:
 
 public:
 	virtual Vector				GetCameraPosition();
-	virtual Vector				GetCameraTarget();
+	virtual Vector				GetCameraDirection();
 	virtual float				GetCameraFOV();
 };
 
