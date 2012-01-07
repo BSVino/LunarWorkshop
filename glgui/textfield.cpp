@@ -65,28 +65,23 @@ void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float
 	FTFont* pFont = CLabel::GetFont("sans-serif", m_iFontFaceSize);
 
 	float flMargin = (h-pFont->LineHeight())/2;
-	Vector vecPosition = Vector((float)x + m_flRenderOffset, (float)y - flMargin + pFont->LineHeight(), 0);
+	Vector vecPosition = Vector((float)x + m_flRenderOffset, (float)CRootPanel::Get()->GetBottom() - y + flMargin - pFont->LineHeight(), 0);
 
-	Matrix4x4 mFontProjection, mProjection;
+	Matrix4x4 mFontProjection;
 	mFontProjection.ProjectOrthographic(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
-
-	mProjection = CRootPanel::GetContext()->GetProjection();
 
 	float cx, cy;
 	GetAbsPos(cx, cy);
 
-	CRootPanel::GetContext()->SetBlend(BLEND_ALPHA);
-	CRootPanel::GetContext()->UseProgram("text");
-	CRootPanel::GetContext()->SetUniform("bScissor", true);
-	CRootPanel::GetContext()->SetUniform("vecScissor", Vector4D(cx+4, 0, GetWidth()-8, 1000));
-	CRootPanel::GetContext()->SetProjection(mFontProjection);
+	::CRenderingContext c(nullptr, true);
+	c.SetBlend(BLEND_ALPHA);
+	c.UseProgram("text");
+	c.SetUniform("bScissor", true);
+	c.SetUniform("vecScissor", Vector4D(cx+4, 0, GetWidth()-8, 1000));
+	c.SetProjection(mFontProjection);
+	c.Translate(vecPosition);
 
-	ftglSetAttributeLocations(CRootPanel::GetContext()->GetActiveShader()->m_iPositionAttribute, CRootPanel::GetContext()->GetActiveShader()->m_iTexCoordAttribute);
-	pFont->Render(convertstring<tchar, FTGLchar>(pszText).c_str(), iLength, FTPoint(vecPosition.x, CRootPanel::Get()->GetBottom()-vecPosition.y));
-
-	CRootPanel::GetContext()->SetProjection(mProjection);
-	CRootPanel::GetContext()->SetUniform("bScissor", false);
-	CRootPanel::GetContext()->UseProgram("gui");
+	c.RenderText(pszText, iLength, "sans-serif", m_iFontFaceSize);
 }
 
 void CTextField::SetFocus(bool bFocus)

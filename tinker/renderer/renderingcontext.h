@@ -106,6 +106,8 @@ public:
 	void					SetCustomIntBuffer(const char* pszName, size_t iSize, size_t iOffset, size_t iStride);
 	void					EndRenderVertexArray(size_t iVertices);
 
+	void					RenderText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize);
+
 protected:
 	inline CRenderContext&	GetContext();
 

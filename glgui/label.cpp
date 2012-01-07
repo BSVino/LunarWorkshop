@@ -300,48 +300,38 @@ float CLabel::GetFontHeight(const tstring& sFontName, int iFontFaceSize)
 
 void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, float x, float y, const Color& clrText, const FRect& rStencil)
 {
-	if (!GetFont(sFontName, iFontFaceSize))
-		AddFontSize(sFontName, iFontFaceSize);
+	Matrix4x4 mFontProjection;
+	mFontProjection.ProjectOrthographic(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
 
 	float flBaseline = s_apFonts[sFontName][iFontFaceSize]->Ascender();
 
-	Matrix4x4 mFontProjection, mProjection;
-	mFontProjection.ProjectOrthographic(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
+	::CRenderingContext c(nullptr, true);
 
-	mProjection = CRootPanel::GetContext()->GetProjection();
-
-	CRootPanel::GetContext()->SetBlend(BLEND_ALPHA);
-	CRootPanel::GetContext()->UseProgram("text");
-	CRootPanel::GetContext()->SetProjection(mFontProjection);
-	CRootPanel::GetContext()->SetUniform("vecColor", clrText);
+	c.SetBlend(BLEND_ALPHA);
+	c.UseProgram("text");
+	c.SetProjection(mFontProjection);
+	c.SetUniform("vecColor", clrText);
+	c.Translate(Vector(x, CRootPanel::Get()->GetBottom()-y-flBaseline, 0));
 
 	if (rStencil.x > 0)
 	{
-		CRootPanel::GetContext()->SetUniform("bScissor", true);
-		CRootPanel::GetContext()->SetUniform("vecScissor", Vector4D(&rStencil.x));
+		c.SetUniform("bScissor", true);
+		c.SetUniform("vecScissor", Vector4D(&rStencil.x));
 	}
 	else
-		CRootPanel::GetContext()->SetUniform("bScissor", false);
+		c.SetUniform("bScissor", false);
 
-	ftglSetAttributeLocations(CRootPanel::GetContext()->GetActiveShader()->m_iPositionAttribute, CRootPanel::GetContext()->GetActiveShader()->m_iTexCoordAttribute);
-	s_apFonts[sFontName][iFontFaceSize]->Render(convertstring<tchar, FTGLchar>(sText).c_str(), iLength, FTPoint(x, CRootPanel::Get()->GetBottom()-y-flBaseline));
-
-	CRootPanel::GetContext()->SetProjection(mProjection);
-	CRootPanel::GetContext()->SetUniform("bScissor", false);
-	CRootPanel::GetContext()->UseProgram("gui");
+	c.RenderText(sText, iLength, sFontName, iFontFaceSize);
 }
 
 void CLabel::PaintText3D(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, Vector vecPosition)
 {
-	if (!GetFont(sFontName, iFontFaceSize))
-		AddFontSize(sFontName, iFontFaceSize);
+	::CRenderingContext c(nullptr, true);
+	
+	c.UseProgram("text");
+	c.Translate(vecPosition);
 
-	CRootPanel::GetContext()->UseProgram("text");
-
-	ftglSetAttributeLocations(CRootPanel::GetContext()->GetActiveShader()->m_iPositionAttribute, CRootPanel::GetContext()->GetActiveShader()->m_iTexCoordAttribute);
-	s_apFonts[sFontName][iFontFaceSize]->Render(convertstring<tchar, FTGLchar>(sText).c_str(), iLength, FTPoint(vecPosition.x, vecPosition.y, vecPosition.z));
-
-	CRootPanel::GetContext()->UseProgram("gui");
+	c.RenderText(sText, iLength, sFontName, iFontFaceSize);
 }
 
 void CLabel::SetSize(float w, float h)

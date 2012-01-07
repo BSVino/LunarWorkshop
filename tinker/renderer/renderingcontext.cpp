@@ -3,10 +3,12 @@
 #include <GL/glew.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
+#include <FTGL/ftgl.h>
 
 #include <maths.h>
 #include <simplex.h>
 
+#include <glgui/label.h>
 #include <renderer/shaders.h>
 #include <tinker/application.h>
 #include <tinker/cvar.h>
@@ -621,6 +623,31 @@ void CRenderingContext::EndRenderVertexArray(size_t iVertices)
 		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void CRenderingContext::RenderText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize)
+{
+	TAssert(m_pShader);
+	if (!m_pShader)
+		return;
+
+	TAssert(m_pShader->m_iPositionAttribute >= 0);
+	TAssert(m_pShader->m_iTexCoordAttribute >= 0);
+
+	if (!glgui::CLabel::GetFont(sFontName, iFontFaceSize))
+		glgui::CLabel::AddFontSize(sFontName, iFontFaceSize);
+
+	SetUniform("mProjection", GetContext().m_mProjection);
+	SetUniform("mView", GetContext().m_mView);
+
+	// Take the position out and let FTGL do it. It looks sharper that way.s
+	Matrix4x4 mTransformations = GetContext().m_mTransformations;
+	Vector vecPosition = mTransformations.GetTranslation();
+	mTransformations.SetTranslation(Vector());
+	SetUniform("mGlobal", mTransformations);
+
+	ftglSetAttributeLocations(m_pShader->m_iPositionAttribute, m_pShader->m_iTexCoordAttribute);
+	glgui::CLabel::GetFont(sFontName, iFontFaceSize)->Render(sText.c_str(), iLength, FTPoint(vecPosition.x, vecPosition.y, vecPosition.z));
 }
 
 CRenderingContext::CRenderContext& CRenderingContext::GetContext()
