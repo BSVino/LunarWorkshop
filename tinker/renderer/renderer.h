@@ -66,7 +66,6 @@ public:
 	virtual void	FinishFrame();
 	virtual void	RenderOffscreenBuffers();
 	virtual void	RenderFullscreenBuffers();
-	virtual void	SetupSceneShader() {};
 
 	virtual float	BloomBrightnessCutoff() const { return 0.6f; }
 	void			RenderBloomPass(CFrameBuffer* apSources, CFrameBuffer* apTargets, bool bHorizontal);
@@ -101,9 +100,6 @@ public:
 	bool			IsSphereInFrustum(const Vector& vecCenter, float flRadius);
 
 	void			SetSize(int w, int h);
-
-	void			ClearProgram();
-	void			UseProgram(size_t i);
 
 	Vector			ScreenPosition(Vector vecWorld);
 	Vector			WorldPosition(Vector vecScreen);

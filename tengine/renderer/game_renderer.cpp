@@ -205,7 +205,7 @@ void CGameRenderer::BeginBatching()
 		it->second.clear();
 }
 
-void CGameRenderer::AddToBatch(class CModel* pModel, const CBaseEntity* pEntity, const Matrix4x4& mTransformations, const Color& clrRender, bool bClrSwap, const Color& clrSwap, bool bReverseWinding)
+void CGameRenderer::AddToBatch(class CModel* pModel, const CBaseEntity* pEntity, const Matrix4x4& mTransformations, const Color& clrRender, bool bReverseWinding)
 {
 	TAssert(pModel);
 	if (!pModel)
@@ -218,9 +218,7 @@ void CGameRenderer::AddToBatch(class CModel* pModel, const CBaseEntity* pEntity,
 		pBatch->pEntity = pEntity;
 		pBatch->pModel = pModel;
 		pBatch->mTransformation = mTransformations;
-		pBatch->bSwap = bClrSwap;
 		pBatch->bReverseWinding = bReverseWinding;
-		pBatch->clrSwap = clrSwap;
 		pBatch->clrRender = clrRender;
 		pBatch->iMaterial = i;
 	}
@@ -236,6 +234,7 @@ void CGameRenderer::RenderBatches()
 		return;
 
 	CGameRenderingContext c(this);
+	c.UseFrameBuffer(GetSceneBuffer());
 
 	for (eastl::map<size_t, eastl::vector<CRenderBatch> >::iterator it = m_aBatches.begin(); it != m_aBatches.end(); it++)
 	{
@@ -328,7 +327,4 @@ void CGameRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size_t iMa
 
 	c->SetUniform("vecColor", c->GetColor());
 	c->SetUniform("flAlpha", c->GetAlpha());
-	c->SetUniform("bColorSwapInAlpha", c->IsColorSwapActive());
-	if (c->IsColorSwapActive())
-		c->SetUniform("vecColorSwap", c->GetColorSwap());
 }

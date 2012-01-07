@@ -305,11 +305,6 @@ void CRenderer::FinishRendering()
 
 void CRenderer::FinishFrame()
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_COLOR_MATERIAL);
-
 	m_mProjection.ProjectOrthographic(0, (float)m_iWidth, (float)m_iHeight, 0, -1, 1);
 
 	m_mView.Identity();
@@ -355,11 +350,7 @@ void CRenderer::RenderFullscreenBuffers()
 {
 	TPROF("CRenderer::RenderFullscreenBuffers");
 
-	SetupSceneShader();
-
 	RenderFrameBufferFullscreen(&m_oSceneBuffer);
-
-	ClearProgram();
 
 	glEnablei(GL_BLEND, 0);
 
@@ -398,8 +389,6 @@ void CRenderer::RenderBloomPass(CFrameBuffer* apSources, CFrameBuffer* apTargets
 
 		RenderFrameBufferToBuffer(&apSources[i], &apTargets[i]);
     }
-
-	ClearProgram();
 }
 
 void CRenderer::RenderFrameBufferFullscreen(CFrameBuffer* pBuffer)
@@ -438,8 +427,9 @@ void CRenderer::RenderRBToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestinati
 
 void CRenderer::RenderMapFullscreen(size_t iMap, bool bMapIsMultisample)
 {
-	CRenderingContext c(this);
+	CRenderingContext c;
 
+	c.SetDepthTest(false);
 	c.UseFrameBuffer(0);
 
 	if (!c.GetActiveProgram())
@@ -568,16 +558,6 @@ void CRenderer::SetSize(int w, int h)
 	m_vecFullscreenVertices[3] = Vector(-1, -1, 0);
 	m_vecFullscreenVertices[4] = Vector(1, -1, 0);
 	m_vecFullscreenVertices[5] = Vector(1, 1, 0);
-}
-
-void CRenderer::ClearProgram()
-{
-	glUseProgram(0);
-}
-
-void CRenderer::UseProgram(size_t i)
-{
-	glUseProgram(i);
 }
 
 Vector CRenderer::ScreenPosition(Vector vecWorld)
@@ -918,6 +898,10 @@ void CRenderer::UnloadTextureData(unsigned int iTexture)
 
 void R_ReadPixels(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
 {
+	size_t iFBO = 0;
+	if (asTokens.size() > 1)
+		iFBO = stoi(asTokens[1]);
+
 	int aiViewport[4];
 	glGetIntegerv( GL_VIEWPORT, aiViewport );
 
@@ -926,7 +910,7 @@ void R_ReadPixels(class CCommand* pCommand, eastl::vector<tstring>& asTokens, co
 
 	unsigned char* pixels = new unsigned char[iWidth*iHeight*4];
 
-	glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)0);
+	glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)iFBO);
 	glViewport(0, 0, (GLsizei)iWidth, (GLsizei)iHeight);
 	glReadPixels(0, 0, iWidth, iHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
@@ -939,7 +923,10 @@ void R_ReadPixels(class CCommand* pCommand, eastl::vector<tstring>& asTokens, co
 	// Formats like PNG and VTF don't work unless it's in integer format.
 	ilConvertImage(IL_RGBA, IL_UNSIGNED_INT);
 
-	ilSaveImage(convertstring<char, ILchar>("readpixels.png").c_str());
+	ilEnable(IL_FILE_OVERWRITE);
+
+	tstring sFilename = sprintf("readpixels-%d.png", iFBO);
+	ilSaveImage(convertstring<tchar, ILchar>(GetAppDataDirectory(Application()->AppDirectory(), sFilename)).c_str());
 
 	ilDeleteImages(1,&iDevILId);
 

@@ -15,65 +15,122 @@
 #include <renderer/renderer.h>
 #include <toys/toy.h>
 
-CRenderingContext::CRenderingContext(CRenderer* pRenderer)
+eastl::vector<CRenderingContext::CRenderContext> CRenderingContext::s_aContexts;
+
+CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 {
 	m_pRenderer = pRenderer;
 
-	m_pShader = NULL;
-
-	if (m_pRenderer)
-	{
-		SetProjection(m_pRenderer->m_mProjection);
-		SetView(m_pRenderer->m_mView);
-	}
-
-	m_bBoundTexture = false;
-	m_bFBO = false;
-	m_iProgram = 0;
-	m_bAttribs = false;
-
-	m_bColorSwap = false;
-
-	m_clrRender = ::Color(255, 255, 255, 255);
+	s_aContexts.push_back();
 
 	int iWinding;
 	glGetIntegerv(GL_FRONT_FACE, &iWinding);
 	m_bInitialWinding = (iWinding == GL_CCW);
-	m_bReverseWinding = false;
 
-	m_eBlend = BLEND_NONE;
-	m_flAlpha = 1;
+	if (bInherit && s_aContexts.size() > 1)
+	{
+		CRenderContext& oLastContext = s_aContexts[s_aContexts.size()-2];
+
+		GetContext().m_mProjection = oLastContext.m_mProjection;
+		GetContext().m_mView = oLastContext.m_mView;
+		GetContext().m_mTransformations = oLastContext.m_mTransformations;
+
+		GetContext().m_iTexture = oLastContext.m_iTexture;
+		GetContext().m_pFrameBuffer = oLastContext.m_pFrameBuffer;
+		GetContext().m_sProgram = oLastContext.m_sProgram;
+
+		GetContext().m_eBlend = oLastContext.m_eBlend;
+		GetContext().m_flAlpha = oLastContext.m_flAlpha;
+		GetContext().m_bDepthMask = oLastContext.m_bDepthMask;
+		GetContext().m_bDepthTest = oLastContext.m_bDepthTest;
+		GetContext().m_bCull = oLastContext.m_bCull;
+		GetContext().m_bReverseWinding = oLastContext.m_bReverseWinding;
+
+		m_pShader = CShaderLibrary::GetShader(GetContext().m_sProgram);
+
+		if (m_pShader)
+			m_iProgram = m_pShader->m_iProgram;
+	}
+	else
+	{
+		m_pShader = NULL;
+
+		if (m_pRenderer)
+		{
+			SetProjection(m_pRenderer->m_mProjection);
+			SetView(m_pRenderer->m_mView);
+		}
+
+		BindTexture(0);
+		UseFrameBuffer(NULL);
+		UseProgram("");
+
+		SetBlend(BLEND_NONE);
+		SetAlpha(1);
+		SetDepthMask(true);
+		SetDepthTest(true);
+		SetBackCulling(true);
+		SetReverseWinding(false);
+	}
 }
 
 CRenderingContext::~CRenderingContext()
 {
-	if (m_bBoundTexture)
-	{
-		for (size_t i = 0; i < 8; i++)
-			glBindTexture(GL_TEXTURE_2D, 0);
-	}
+	TAssert(s_aContexts.size());
 
-	if (m_bFBO)
+	s_aContexts.pop_back();
+
+	if (s_aContexts.size())
 	{
+		BindTexture(GetContext().m_iTexture);
+		UseFrameBuffer(GetContext().m_pFrameBuffer);
+		UseProgram(GetContext().m_sProgram);
+
+		if (GetContext().m_sProgram.length())
+		{
+			SetUniform("mProjection", GetContext().m_mProjection);
+			SetUniform("mView", GetContext().m_mView);
+			SetUniform("mGlobal", GetContext().m_mTransformations);
+		}
+
+		SetBlend(GetContext().m_eBlend);
+		SetAlpha(GetContext().m_flAlpha);
+		SetDepthMask(GetContext().m_bDepthMask);
+		SetDepthTest(GetContext().m_bDepthTest);
+		SetBackCulling(GetContext().m_bCull);
+		SetReverseWinding(GetContext().m_bReverseWinding);
+
+		int iWinding = (m_bInitialWinding?GL_CCW:GL_CW);
+		if (GetContext().m_bReverseWinding)
+			iWinding = (m_bInitialWinding?GL_CW:GL_CCW);
+		glFrontFace(iWinding);
+	}
+	else
+	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		if (m_pRenderer)
 			glViewport(0, 0, (GLsizei)m_pRenderer->m_iWidth, (GLsizei)m_pRenderer->m_iHeight);
 		else
 			glViewport(0, 0, (GLsizei)Application()->GetWindowWidth(), (GLsizei)Application()->GetWindowHeight());
-	}
 
-	if (m_iProgram)
 		glUseProgram(0);
 
-	glDisablei(GL_BLEND, 0);
-	glDepthMask(GL_TRUE);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+		glDisablei(GL_BLEND, 0);
+
+		glDepthMask(true);
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
+
+		glFrontFace(GL_CCW);
+	}
 }
 
 void CRenderingContext::SetProjection(const Matrix4x4& m)
 {
-	m_mProjection = m;
+	GetContext().m_mProjection = m;
 
 	if (m_pShader)
 		SetUniform("mProjection", m);
@@ -81,7 +138,7 @@ void CRenderingContext::SetProjection(const Matrix4x4& m)
 
 void CRenderingContext::SetView(const Matrix4x4& m)
 {
-	m_mView = m;
+	GetContext().m_mView = m;
 
 	if (m_pShader)
 		SetUniform("mView", m);
@@ -89,12 +146,12 @@ void CRenderingContext::SetView(const Matrix4x4& m)
 
 void CRenderingContext::Transform(const Matrix4x4& m)
 {
-	m_mTransformations *= m;
+	GetContext().m_mTransformations *= m;
 }
 
 void CRenderingContext::Translate(const Vector& vecTranslate)
 {
-	m_mTransformations.AddTranslation(vecTranslate);
+	GetContext().m_mTransformations.AddTranslation(vecTranslate);
 }
 
 void CRenderingContext::Rotate(float flAngle, Vector vecAxis)
@@ -102,22 +159,22 @@ void CRenderingContext::Rotate(float flAngle, Vector vecAxis)
 	Matrix4x4 mRotation;
 	mRotation.SetRotation(flAngle, vecAxis);
 
-	m_mTransformations *= mRotation;
+	GetContext().m_mTransformations *= mRotation;
 }
 
 void CRenderingContext::Scale(float flX, float flY, float flZ)
 {
-	m_mTransformations.AddScale(Vector(flX, flY, flZ));
+	GetContext().m_mTransformations.AddScale(Vector(flX, flY, flZ));
 }
 
 void CRenderingContext::ResetTransformations()
 {
-	m_mTransformations.Identity();
+	GetContext().m_mTransformations.Identity();
 }
 
 void CRenderingContext::LoadTransform(const Matrix4x4& m)
 {
-	m_mTransformations = m;
+	GetContext().m_mTransformations = m;
 }
 
 void CRenderingContext::SetBlend(blendtype_t eBlend)
@@ -134,12 +191,13 @@ void CRenderingContext::SetBlend(blendtype_t eBlend)
 	else
 		glDisablei(GL_BLEND, 0);
 
-	m_eBlend = eBlend;
+	GetContext().m_eBlend = eBlend;
 }
 
 void CRenderingContext::SetDepthMask(bool bDepthMask)
 {
 	glDepthMask(bDepthMask);
+	GetContext().m_bDepthMask = bDepthMask;
 }
 
 void CRenderingContext::SetDepthTest(bool bDepthTest)
@@ -148,6 +206,7 @@ void CRenderingContext::SetDepthTest(bool bDepthTest)
 		glEnable(GL_DEPTH_TEST);
 	else
 		glDisable(GL_DEPTH_TEST);
+	GetContext().m_bDepthTest = bDepthTest;
 }
 
 void CRenderingContext::SetBackCulling(bool bCull)
@@ -156,17 +215,12 @@ void CRenderingContext::SetBackCulling(bool bCull)
 		glEnable(GL_CULL_FACE);
 	else
 		glDisable(GL_CULL_FACE);
-}
-
-void CRenderingContext::SetColorSwap(const ::Color& clrSwap)
-{
-	m_bColorSwap = true;
-	m_clrSwap = clrSwap;
+	GetContext().m_bCull = bCull;
 }
 
 void CRenderingContext::SetReverseWinding(bool bReverse)
 {
-	m_bReverseWinding = bReverse;
+	GetContext().m_bReverseWinding = bReverse;
 }
 
 void CRenderingContext::RenderSphere()
@@ -183,7 +237,6 @@ void CRenderingContext::RenderSphere()
 		gluDeleteQuadric(pQuadric);
 	}
 
-	glColor4ubv(m_clrRender);
 	glCallList(iSphereCallList);
 }
 
@@ -209,15 +262,15 @@ void CRenderingContext::RenderBillboard(const tstring& sTexture, float flRadius,
 
 void CRenderingContext::UseFrameBuffer(const CFrameBuffer* pBuffer)
 {
+	GetContext().m_pFrameBuffer = pBuffer;
+
 	if (pBuffer)
 	{
-		m_bFBO = true;
 		glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)pBuffer->m_iFB);
 		glViewport(0, 0, (GLsizei)pBuffer->m_iWidth, (GLsizei)pBuffer->m_iHeight);
 	}
 	else
 	{
-		m_bFBO = false;
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		if (m_pRenderer)
 			glViewport(0, 0, (GLsizei)m_pRenderer->m_iWidth, (GLsizei)m_pRenderer->m_iHeight);
@@ -228,11 +281,14 @@ void CRenderingContext::UseFrameBuffer(const CFrameBuffer* pBuffer)
 
 void CRenderingContext::UseProgram(const tstring& sProgram)
 {
+	GetContext().m_sProgram = sProgram;
+
 	m_pShader = CShaderLibrary::GetShader(sProgram);
 	if (sProgram.length())
 		TAssert(m_pShader);
 	if (!m_pShader)
 	{
+		m_iProgram = 0;
 		glUseProgram(0);
 		return;
 	}
@@ -240,48 +296,55 @@ void CRenderingContext::UseProgram(const tstring& sProgram)
 	m_iProgram = m_pShader->m_iProgram;
 	glUseProgram((GLuint)m_pShader->m_iProgram);
 
-	SetUniform("mProjection", m_mProjection);
-	SetUniform("mView", m_mView);
+	SetUniform("mProjection", GetContext().m_mProjection);
+	SetUniform("mView", GetContext().m_mView);
 }
 
 void CRenderingContext::SetUniform(const char* pszName, int iValue)
 {
+	TAssert(m_pShader);
 	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
 	glUniform1i(iUniform, iValue);
 }
 
 void CRenderingContext::SetUniform(const char* pszName, float flValue)
 {
+	TAssert(m_pShader);
 	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
 	glUniform1f(iUniform, flValue);
 }
 
 void CRenderingContext::SetUniform(const char* pszName, const Vector& vecValue)
 {
+	TAssert(m_pShader);
 	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
 	glUniform3fv(iUniform, 1, vecValue);
 }
 
 void CRenderingContext::SetUniform(const char* pszName, const Vector4D& vecValue)
 {
+	TAssert(m_pShader);
 	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
 	glUniform4fv(iUniform, 1, vecValue);
 }
 
 void CRenderingContext::SetUniform(const char* pszName, const ::Color& clrValue)
 {
+	TAssert(m_pShader);
 	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
 	glUniform4fv(iUniform, 1, Vector4D(clrValue));
 }
 
 void CRenderingContext::SetUniform(const char* pszName, const Matrix4x4& mValue)
 {
+	TAssert(m_pShader);
 	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
 	glUniformMatrix4fv(iUniform, 1, false, mValue);
 }
 
 void CRenderingContext::SetUniform(const char* pszName, size_t iSize, const float* aflValues)
 {
+	TAssert(m_pShader);
 	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
 	glUniform1fv(iUniform, iSize, aflValues);
 }
@@ -293,15 +356,21 @@ void CRenderingContext::BindTexture(const tstring& sName, int iChannel)
 
 void CRenderingContext::BindTexture(size_t iTexture, int iChannel)
 {
+	// Not tested since the move to a stack
+	TAssert(iChannel == 0);
+
 	glActiveTexture(GL_TEXTURE0+iChannel);
 
 	glBindTexture(GL_TEXTURE_2D, (GLuint)iTexture);
 
-	m_bBoundTexture = true;
+	GetContext().m_iTexture = iTexture;
 }
 
 void CRenderingContext::BindBufferTexture(const CFrameBuffer& oBuffer, int iChannel)
 {
+	// Not tested since the move to a stack
+	TAssert(iChannel == 0);
+
 	glActiveTexture(GL_TEXTURE0+iChannel);
 
 	if (oBuffer.m_bMultiSample)
@@ -309,7 +378,7 @@ void CRenderingContext::BindBufferTexture(const CFrameBuffer& oBuffer, int iChan
 	else
 		glBindTexture(GL_TEXTURE_2D, (GLuint)oBuffer.m_iMap);
 
-	m_bBoundTexture = true;
+	GetContext().m_iTexture = oBuffer.m_iMap;
 }
 
 void CRenderingContext::SetColor(const ::Color& c)
@@ -439,7 +508,9 @@ void CRenderingContext::Vertex(const Vector& v)
 
 void CRenderingContext::EndRender()
 {
-	SetUniform("mGlobal", m_mTransformations);
+	SetUniform("mProjection", GetContext().m_mProjection);
+	SetUniform("mView", GetContext().m_mView);
+	SetUniform("mGlobal", GetContext().m_mTransformations);
 
 	if (m_bTexCoord && m_pShader->m_iTexCoordAttribute != ~0)
 	{
@@ -528,7 +599,9 @@ void CRenderingContext::SetCustomIntBuffer(const char* pszName, size_t iSize, si
 
 void CRenderingContext::EndRenderVertexArray(size_t iVertices)
 {
-	SetUniform("mGlobal", m_mTransformations);
+	SetUniform("mProjection", GetContext().m_mProjection);
+	SetUniform("mView", GetContext().m_mView);
+	SetUniform("mGlobal", GetContext().m_mTransformations);
 
 	glDrawArrays(GL_TRIANGLES, 0, iVertices);
 
@@ -541,4 +614,9 @@ void CRenderingContext::EndRenderVertexArray(size_t iVertices)
 		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+CRenderingContext::CRenderContext& CRenderingContext::GetContext()
+{
+	return s_aContexts.back();
 }

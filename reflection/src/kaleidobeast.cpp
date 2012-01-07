@@ -137,7 +137,7 @@ void CKaleidobeast::PostRender(bool bTransparent) const
 	if (!bTransparent)
 		return;
 
-	CRenderingContext c(GameServer()->GetRenderer());
+	CRenderingContext c(GameServer()->GetRenderer(), true);
 
 	c.Translate(GetGlobalOrigin());
 	c.Scale(DetectionDistance(), DetectionDistance(), DetectionDistance());

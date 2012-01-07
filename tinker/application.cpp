@@ -61,42 +61,44 @@ void CALLBACK GLDebugCallback(GLenum iSource, GLenum iType, GLuint id, GLenum iS
 
 	if (gl_debug.GetBool())
 	{
-		TMsg("OpenGL Debug Message (");
+		tstring sMessage = "OpenGL Debug Message (";
 
 		if (iSource == GL_DEBUG_SOURCE_API_ARB)
-			TMsg("Source: API ");
+			sMessage += "Source: API ";
 		else if (iSource == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
-			TMsg("Source: Window System ");
+			sMessage += "Source: Window System ";
 		else if (iSource == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB)
-			TMsg("Source: Shader Compiler ");
+			sMessage += "Source: Shader Compiler ";
 		else if (iSource == GL_DEBUG_SOURCE_THIRD_PARTY_ARB)
-			TMsg("Source: Third Party ");
+			sMessage += "Source: Third Party ";
 		else if (iSource == GL_DEBUG_SOURCE_APPLICATION_ARB)
-			TMsg("Source: Application ");
+			sMessage += "Source: Application ";
 		else if (iSource == GL_DEBUG_SOURCE_OTHER_ARB)
-			TMsg("Source: Other ");
+			sMessage += "Source: Other ";
 
 		if (iType == GL_DEBUG_TYPE_ERROR_ARB)
-			TMsg("Type: Error ");
+			sMessage += "Type: Error ";
 		else if (iType == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)
-			TMsg("Type: Deprecated Behavior ");
+			sMessage += "Type: Deprecated Behavior ";
 		else if (iType == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)
-			TMsg("Type: Undefined Behavior ");
+			sMessage += "Type: Undefined Behavior ";
 		else if (iType == GL_DEBUG_TYPE_PORTABILITY_ARB)
-			TMsg("Type: Portability ");
+			sMessage += "Type: Portability ";
 		else if (iType == GL_DEBUG_TYPE_PERFORMANCE_ARB)
-			TMsg("Type: Performance ");
+			sMessage += "Type: Performance ";
 		else if (iType == GL_DEBUG_TYPE_OTHER_ARB)
-			TMsg("Type: Other ");
+			sMessage += "Type: Other ";
 
 		if (iSeverity == GL_DEBUG_SEVERITY_HIGH_ARB)
-			TMsg("Severity: High) ");
+			sMessage += "Severity: High) ";
 		else if (iSeverity == GL_DEBUG_SEVERITY_MEDIUM_ARB)
-			TMsg("Severity: Medium) ");
+			sMessage += "Severity: Medium) ";
 		else if (iSeverity == GL_DEBUG_SEVERITY_LOW_ARB)
-			TMsg("Severity: Low) ");
+			sMessage += "Severity: Low) ";
 
-		TMsg(convertstring<GLchar, tchar>(pszMessage) + "\n");
+		sMessage += convertstring<GLchar, tchar>(pszMessage) + "\n";
+
+		TMsg(convertstring<GLchar, tchar>(sMessage).c_str());
 	}
 }
 

@@ -78,9 +78,12 @@ void CReflectionRenderer::SetupFrame()
 
 		CMirror* pMirror = apMirrors[i];
 
+		StartRenderingReflection(pMirror);
+
+		CRenderingContext c(this);
+
 		// Render a reflected world to our reflection buffer.
-		glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)m_aoReflectionBuffers[i].m_iFB);
-		glViewport(0, 0, (GLsizei)m_aoReflectionBuffers[i].m_iWidth, (GLsizei)m_aoReflectionBuffers[i].m_iHeight);
+		c.UseFrameBuffer(&m_aoReflectionBuffers[i]);
 
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glColor4f(1, 1, 1, 1);
@@ -90,14 +93,10 @@ void CReflectionRenderer::SetupFrame()
 		CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
 
 		if (pPlayerCharacter && (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) == pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
-			glFrontFace(GL_CW);
+			c.SetReverseWinding(true);
 
-		StartRenderingReflection(pMirror);
 		GameServer()->RenderEverything();
 		FinishRendering();
-
-		if (pPlayerCharacter && (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) == pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
-			glFrontFace(GL_CCW);
 
 		m_bRenderingReflection = false;
 	}
@@ -119,9 +118,6 @@ void CReflectionRenderer::StartRendering()
 	}
 
 	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
-
-	if (pPlayerCharacter && (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) ^ pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
-		glFrontFace(GL_CW);
 
 	m_mProjection.ProjectPerspective(
 			m_flCameraFOV,
@@ -185,11 +181,6 @@ void CReflectionRenderer::FinishRendering()
 
 	if (CVar::GetCVarValue("game_mode") == "menu")
 		return;
-
-	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
-
-	if (pPlayerCharacter && (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) ^ pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
-		glFrontFace(GL_CCW);
 }
 
 void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
@@ -258,11 +249,7 @@ void CReflectionRenderer::RenderFullscreenBuffers()
 {
 	TPROF("CReflectionRenderer::RenderFullscreenBuffers");
 
-	SetupSceneShader();
-
 	RenderFrameBufferFullscreen(&m_oSceneBuffer);
-
-	ClearProgram();
 
 	glEnablei(GL_BLEND, 0);
 
@@ -325,9 +312,6 @@ void CReflectionRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size
 			c->SetUniform("vecColor", c->GetColor());
 
 		c->SetUniform("flAlpha", c->GetAlpha());
-		c->SetUniform("bColorSwapInAlpha", c->IsColorSwapActive());
-		if (c->IsColorSwapActive())
-			c->SetUniform("vecColorSwap", c->GetColorSwap());
 
 		return;
 	}

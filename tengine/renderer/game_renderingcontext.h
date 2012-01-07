@@ -14,7 +14,7 @@ class CGameRenderingContext : public CRenderingContext
 	DECLARE_CLASS(CGameRenderingContext, CRenderingContext);
 
 public:
-							CGameRenderingContext(class CGameRenderer* pRenderer);
+							CGameRenderingContext(class CGameRenderer* pRenderer, bool bInherit = false);	// Make bInherit true if you want to preserve and not clobber GL settings set previously
 
 public:
 	void					RenderModel(size_t iModel, const class CBaseEntity* pEntity = nullptr);

@@ -19,8 +19,8 @@
 
 #include "game_renderer.h"
 
-CGameRenderingContext::CGameRenderingContext(CGameRenderer* pRenderer)
-	: CRenderingContext(pRenderer)
+CGameRenderingContext::CGameRenderingContext(CGameRenderer* pRenderer, bool bInherit)
+	: CRenderingContext(pRenderer, bInherit)
 {
 	m_pRenderer = pRenderer;
 }
@@ -32,11 +32,17 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 	if (!pModel)
 		return;
 
-	if (m_pRenderer->IsBatching())
-	{
-		TAssert(m_eBlend == BLEND_NONE);
+	bool bBatchThis = true;
+	if (!m_pRenderer->IsBatching())
+		bBatchThis = false;
+	else if (m_pRenderer && GetContext().m_pFrameBuffer != m_pRenderer->GetSceneBuffer())
+		bBatchThis = false;
 
-		m_pRenderer->AddToBatch(pModel, pEntity, m_mTransformations, m_clrRender, m_bColorSwap, m_clrSwap, m_bReverseWinding);
+	if (bBatchThis)
+	{
+		TAssert(GetContext().m_eBlend == BLEND_NONE);
+
+		m_pRenderer->AddToBatch(pModel, pEntity, GetContext().m_mTransformations, m_clrRender, GetContext().m_bReverseWinding);
 	}
 	else
 	{
@@ -53,8 +59,6 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 
 			RenderModel(pModel, m);
 		}
-
-		glUseProgram(0);
 
 		m_pRenderer->m_pRendering = nullptr;
 	}
@@ -107,10 +111,12 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	Vector vecCameraDirection = m_pRenderer->m_vecCameraDirection;
 	Vector vecCameraUp = m_pRenderer->m_vecCameraUp;
 
-	SetUniform("mGlobal", m_mTransformations);
+	SetUniform("mProjection", GetContext().m_mProjection);
+	SetUniform("mView", GetContext().m_mView);
+	SetUniform("mGlobal", GetContext().m_mTransformations);
 
 	int iWinding = (m_bInitialWinding?GL_CCW:GL_CW);
-	if (m_bReverseWinding)
+	if (GetContext().m_bReverseWinding)
 		iWinding = (m_bInitialWinding?GL_CW:GL_CCW);
 	glFrontFace(iWinding);
 

@@ -788,7 +788,12 @@ void CBaseEntity::Render(bool bTransparent) const
 	PreRender(bTransparent);
 
 	do {
-		CGameRenderingContext r(GameServer()->GetRenderer());
+		CGameRenderingContext r(GameServer()->GetRenderer(), true);
+
+		// If another context already set this, don't clobber it.
+		if (!r.GetActiveFrameBuffer())
+			r.UseFrameBuffer(GameServer()->GetRenderer()->GetSceneBuffer());
+
 		r.Transform(GetRenderTransform());
 
 		ModifyContext(&r, bTransparent);

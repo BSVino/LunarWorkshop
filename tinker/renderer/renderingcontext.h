@@ -10,16 +10,36 @@
 
 class CRenderingContext
 {
+protected:
+	class CRenderContext
+	{
+	public:
+		Matrix4x4			m_mProjection;
+		Matrix4x4			m_mView;
+		Matrix4x4			m_mTransformations;
+
+		size_t				m_iTexture;
+		const class CFrameBuffer*	m_pFrameBuffer;
+		tstring				m_sProgram;
+
+		blendtype_t			m_eBlend;
+		float				m_flAlpha;
+		bool				m_bDepthMask;
+		bool				m_bDepthTest;
+		bool				m_bCull;
+		bool				m_bReverseWinding;
+	};
+
 public:
-							CRenderingContext(class CRenderer* pRenderer = nullptr);
+							CRenderingContext(class CRenderer* pRenderer = nullptr, bool bInherit = false);	// Make bInherit true if you want to preserve and not clobber GL settings set previously
 	virtual					~CRenderingContext();
 
 public:
 	void					SetProjection(const Matrix4x4& m);
 	void					SetView(const Matrix4x4& m);
 
-	Matrix4x4				GetProjection() { return m_mProjection; }
-	Matrix4x4				GetView() { return m_mView; }
+	Matrix4x4				GetProjection() { return GetContext().m_mProjection; }
+	Matrix4x4				GetView() { return GetContext().m_mView; }
 
 	void					Transform(const Matrix4x4& m);
 	void					Translate(const Vector& vecTranslate);
@@ -29,24 +49,22 @@ public:
 	void					LoadTransform(const Matrix4x4& m);
 
 	void					SetBlend(blendtype_t eBlend);
-	void					SetAlpha(float flAlpha) { m_flAlpha = flAlpha; };
+	void					SetAlpha(float flAlpha) { GetContext().m_flAlpha = flAlpha; };
 	void					SetDepthMask(bool bDepthMask);
 	void					SetDepthTest(bool bDepthTest);
 	void					SetBackCulling(bool bCull);
-	void					SetColorSwap(const ::Color& clrSwap);
 	void					SetReverseWinding(bool bReverse);
 
-	float					GetAlpha() { return m_flAlpha; };
-	blendtype_t				GetBlend() { return m_eBlend; };
+	float					GetAlpha() { return GetContext().m_flAlpha; };
+	blendtype_t				GetBlend() { return GetContext().m_eBlend; };
 	::Color					GetColor() { return m_clrRender; };
-	bool					IsColorSwapActive() { return m_bColorSwap; }
-	::Color					GetColorSwap() { return m_clrSwap; }
 
 	void					RenderSphere();
 
 	void					RenderBillboard(const tstring& sTexture, float flRadius, Vector vecUp, Vector vecRight);
 
 	void					UseFrameBuffer(const class CFrameBuffer* pBuffer);
+	const class CFrameBuffer* GetActiveFrameBuffer() { return GetContext().m_pFrameBuffer; }
 	void					UseProgram(const tstring& sProgram);
 	size_t					GetActiveProgram() { return m_iProgram; }
 	class CShader*			GetActiveShader() { return m_pShader; }
@@ -84,29 +102,18 @@ public:
 	void					SetCustomIntBuffer(const char* pszName, size_t iSize, size_t iOffset, size_t iStride);
 	void					EndRenderVertexArray(size_t iVertices);
 
+protected:
+	inline CRenderContext&	GetContext();
+
 public:
 	class CRenderer*		m_pRenderer;
-
-	Matrix4x4				m_mProjection;
-	Matrix4x4				m_mView;
-	Matrix4x4				m_mTransformations;
-
-	bool					m_bBoundTexture;
-	bool					m_bFBO;
-	size_t					m_iProgram;
 	class CShader*			m_pShader;
-	bool					m_bAttribs;
 
-	bool					m_bColorSwap;
-	::Color					m_clrSwap;
+	size_t					m_iProgram;
 
 	::Color					m_clrRender;
 
 	bool					m_bInitialWinding;
-	bool					m_bReverseWinding;
-
-	blendtype_t				m_eBlend;
-	float					m_flAlpha;
 
 	int						m_iDrawMode;
 	bool					m_bTexCoord;
@@ -119,6 +126,8 @@ public:
 	::Color					m_clrColor;
 	eastl::vector<::Color>	m_aclrColors;
 	eastl::vector<Vector>	m_avecVertices;
+
+	static eastl::vector<CRenderContext>	s_aContexts;
 };
 
 #endif

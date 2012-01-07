@@ -37,14 +37,14 @@ void CChainHUD::Paint(float x, float y, float w, float h)
 
 	if (pPage->m_sNextPage.length())
 	{
-		CRenderingContext c(GameServer()->GetRenderer());
+		CRenderingContext c(GameServer()->GetRenderer(), true);
 		c.SetBlend(BLEND_ALPHA);
 		CBaseControl::PaintTexture(CTextureLibrary::FindTextureID("textures/arrow.png"), w-100, h-100, 50, 25, Color(255, 255, 255, (unsigned char)(pStory->GetAlpha()*255)));
 	}
 
 	if (pPage->m_sPrevPage.length())
 	{
-		CRenderingContext c(GameServer()->GetRenderer());
+		CRenderingContext c(GameServer()->GetRenderer(), true);
 		c.SetBlend(BLEND_ALPHA);
 		CBaseControl::PaintTexture(CTextureLibrary::FindTextureID("textures/arrow.png"), 100, h-100, -50, 25, Color(255, 255, 255, (unsigned char)(pStory->GetAlpha()*255)));
 	}
