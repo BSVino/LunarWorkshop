@@ -152,16 +152,14 @@ void CReflectionRenderer::StartRendering()
 
 	m_mView.ConstructCameraView(vecCameraPosition, vecCameraDirection, vecCameraUp);
 
-	// Transform back to global space
-/*	m_mView.AddTranslation(vecMirror);
+	// Transform to mirror's space
+	m_mView.AddTranslation(vecMirror);
 
 	// Do the reflection
 	m_mView *= mReflect;
 
-	// Transform to mirror's space
+	// Transform back to global space
 	m_mView.AddTranslation(-vecMirror);
-
-	m_mView.InvertRT();*/
 
 	for (size_t i = 0; i < 16; i++)
 	{
@@ -226,13 +224,13 @@ void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
 
 	m_mView.ConstructCameraView(vecCameraPosition, vecCameraDirection, vecCameraUp);
 
-	// Transform back to global space
+	// Transform to mirror's space
 	m_mView.AddTranslation(vecMirror);
 
 	// Do the reflection
 	m_mView *= mReflect;
 
-	// Transform to mirror's space
+	// Transform back to global space
 	m_mView.AddTranslation(-vecMirror);
 
 	for (size_t i = 0; i < 16; i++)

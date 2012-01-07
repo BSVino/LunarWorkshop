@@ -334,6 +334,8 @@ void Matrix4x4::ProjectOrthographic(float flLeft, float flRight, float flBottom,
 
 void Matrix4x4::ConstructCameraView(const Vector& vecPosition, const Vector& vecDirection, const Vector& vecUp)
 {
+	Identity();
+
 	TAssertNoMsg(fabs(vecDirection.LengthSqr()-1) < 0.0001f);
 
 	Vector vecCamSide = vecDirection.Cross(vecUp).Normalized();
