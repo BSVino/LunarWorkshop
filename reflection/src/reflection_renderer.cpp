@@ -256,26 +256,6 @@ void CReflectionRenderer::StartRenderingReflection(class CRenderingContext* pCon
 	glViewport(0, 0, (GLsizei)m_oSceneBuffer.m_iWidth, (GLsizei)m_oSceneBuffer.m_iHeight);
 }
 
-extern CVar r_bloom;
-
-void CReflectionRenderer::RenderFullscreenBuffers(class CRenderingContext* pContext)
-{
-	TPROF("CReflectionRenderer::RenderFullscreenBuffers");
-
-	RenderFrameBufferFullscreen(&m_oSceneBuffer);
-
-	glEnablei(GL_BLEND, 0);
-
-	if (r_bloom.GetBool())
-	{
-		glBlendFunc(GL_ONE, GL_ONE);
-		for (size_t i = 0; i < BLOOM_FILTERS; i++)
-			RenderFrameBufferFullscreen(&m_oBloom1Buffers[i]);
-	}
-
-	glDisablei(GL_BLEND, 0);
-}
-
 void CReflectionRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial)
 {
 	bool bModel = false;

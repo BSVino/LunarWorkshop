@@ -21,6 +21,8 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 {
 	m_pRenderer = pRenderer;
 
+	m_clrRender = ::Color(255, 255, 255, 255);
+
 	s_aContexts.push_back();
 
 	if (bInherit && s_aContexts.size() > 1)
@@ -46,6 +48,8 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 
 		if (m_pShader)
 			m_iProgram = m_pShader->m_iProgram;
+		else
+			m_iProgram = 0;
 	}
 	else
 	{

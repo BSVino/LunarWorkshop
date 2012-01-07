@@ -312,8 +312,7 @@ void CRenderer::FinishRendering(class CRenderingContext* pContext)
 
 void CRenderer::FinishFrame(class CRenderingContext* pContext)
 {
-	m_mProjection.ProjectOrthographic(0, (float)m_iWidth, (float)m_iHeight, 0, -1, 1);
-
+	m_mProjection.Identity();
 	m_mView.Identity();
 
 	RenderOffscreenBuffers(pContext);
@@ -321,7 +320,7 @@ void CRenderer::FinishFrame(class CRenderingContext* pContext)
 	RenderFullscreenBuffers(pContext);
 }
 
-CVar r_bloom("r_bloom", "0");
+CVar r_bloom("r_bloom", "1");
 
 void CRenderer::RenderOffscreenBuffers(class CRenderingContext* pContext)
 {
@@ -343,8 +342,6 @@ void CRenderer::RenderOffscreenBuffers(class CRenderingContext* pContext)
 			RenderFrameBufferToBuffer(&m_oSceneBuffer, &m_oBloom1Buffers[i]);
 		}
 
-		c.UseProgram("");
-
 		RenderBloomPass(m_oBloom1Buffers, m_oBloom2Buffers, true);
 		RenderBloomPass(m_oBloom2Buffers, m_oBloom1Buffers, false);
 
@@ -353,22 +350,29 @@ void CRenderer::RenderOffscreenBuffers(class CRenderingContext* pContext)
 	}
 }
 
+CVar r_bloom_buffer("r_bloom_buffer", "-1");
+
 void CRenderer::RenderFullscreenBuffers(class CRenderingContext* pContext)
 {
 	TPROF("CRenderer::RenderFullscreenBuffers");
 
 	RenderFrameBufferFullscreen(&m_oSceneBuffer);
 
-	glEnablei(GL_BLEND, 0);
-
 	if (r_bloom.GetBool())
 	{
-		glBlendFunc(GL_ONE, GL_ONE);
-		for (size_t i = 0; i < BLOOM_FILTERS; i++)
-			RenderFrameBufferFullscreen(&m_oBloom1Buffers[i]);
+		if (r_bloom_buffer.GetInt() >= 0 && r_bloom_buffer.GetInt() < BLOOM_FILTERS)
+		{
+			CRenderingContext c(this);
+			RenderFrameBufferFullscreen(&m_oBloom1Buffers[r_bloom_buffer.GetInt()]);
+		}
+		else
+		{
+			CRenderingContext c(this);
+			c.SetBlend(BLEND_ADDITIVE);
+			for (size_t i = 0; i < BLOOM_FILTERS; i++)
+				RenderFrameBufferFullscreen(&m_oBloom1Buffers[i]);
+		}
 	}
-
-	glDisablei(GL_BLEND, 0);
 }
 
 #define KERNEL_SIZE   3
@@ -434,14 +438,17 @@ void CRenderer::RenderRBToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestinati
 
 void CRenderer::RenderMapFullscreen(size_t iMap, bool bMapIsMultisample)
 {
-	CRenderingContext c;
+	CRenderingContext c(this, true);
 
 	c.SetWinding(true);
 	c.SetDepthTest(false);
 	c.UseFrameBuffer(0);
 
 	if (!c.GetActiveProgram())
+	{
 		c.UseProgram("quad");
+		c.SetUniform("vecColor", Vector4D(1, 1, 1, 1));
+	}
 
 	c.SetUniform("iDiffuse", 0);
 	c.SetUniform("bDiffuse", true);
@@ -459,50 +466,30 @@ void CRenderer::RenderMapFullscreen(size_t iMap, bool bMapIsMultisample)
 
 void CRenderer::RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer, bool bMapIsMultisample)
 {
-	Matrix4x4 mProjection, mView;
-	mProjection.ProjectOrthographic(0, (float)pBuffer->m_iWidth, (float)pBuffer->m_iHeight, 0, -1, 1);
+	CRenderingContext c(this, true);
 
-	glBindFramebuffer(GL_FRAMEBUFFER_EXT, (GLuint)pBuffer->m_iFB);
-	glViewport(0, 0, (GLsizei)pBuffer->m_iWidth, (GLsizei)pBuffer->m_iHeight);
+	c.SetWinding(true);
+	c.SetDepthTest(false);
+	c.UseFrameBuffer(pBuffer);
 
-	int iProgram;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &iProgram);
-	if (iProgram == 0)
+	if (!c.GetActiveProgram())
 	{
-		iProgram = CShaderLibrary::GetProgram("model");
-		glUseProgram(iProgram);
-
-		int iDiffuse = glGetUniformLocation((GLuint)iProgram, "iDiffuse");
-		glUniform1i(iDiffuse, 0);
-
-		int bDiffuse = glGetUniformLocation((GLuint)iProgram, "bDiffuse");
-		glUniform1i(bDiffuse, true);
+		c.UseProgram("quad");
+		c.SetUniform("vecColor", Vector4D(1, 1, 1, 1));
 	}
 
-	TAssert(iProgram);
-	if (!iProgram)
-		return;
+	c.SetUniform("iDiffuse", 0);
+	c.SetUniform("bDiffuse", true);
 
-	int iTexCoordAttribute = glGetAttribLocation(iProgram, "vecTexCoord0");
+	c.BeginRenderVertexArray();
 
-	if (iTexCoordAttribute >= 0)
-	{
-		glEnableVertexAttribArray(iTexCoordAttribute);
-		glVertexAttribPointer(iTexCoordAttribute, 2, GL_FLOAT, false, 0, m_vecFullscreenTexCoords);
-	}
+	c.SetTexCoordBuffer(&m_vecFullscreenTexCoords[0][0]);
+	c.SetPositionBuffer(&m_vecFullscreenVertices[0][0]);
 
-	glActiveTexture(GL_TEXTURE0);
+	TAssert(!bMapIsMultisample);	// Must implement
+	c.BindTexture(iMap);
 
-	glVertexPointer(2, GL_FLOAT, 0, pBuffer->m_vecVertices);
-
-	if (bMapIsMultisample)
-		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, (GLuint)iMap);
-	else
-		glBindTexture(GL_TEXTURE_2D, (GLuint)iMap);
-
-	glDrawArrays(GL_QUADS, 0, 4);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
+	c.EndRenderVertexArray(6);
 }
 
 void CRenderer::FrustumOverride(Vector vecPosition, Vector vecDirection, float flFOV, float flNear, float flFar)

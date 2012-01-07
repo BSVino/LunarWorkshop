@@ -98,6 +98,9 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 
 void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 {
+	UseProgram("model");
+	SetUniform("vecColor", m_clrRender);
+
 	m_pRenderer->SetupShader(this, pModel, iMaterial);
 
 	TAssert(m_pShader);

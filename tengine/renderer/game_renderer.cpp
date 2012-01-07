@@ -249,6 +249,8 @@ void CGameRenderer::RenderBatches()
 			c.ResetTransformations();
 			c.LoadTransform(pBatch->mTransformation);
 
+			c.SetColor(pBatch->clrRender);
+
 			m_pRendering = pBatch->pEntity;
 			c.RenderModel(pBatch->pModel, pBatch->iMaterial);
 			m_pRendering = nullptr;

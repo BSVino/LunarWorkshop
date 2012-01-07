@@ -23,7 +23,6 @@ public:
 	virtual void	StartRendering(class CRenderingContext* pContext);
 	virtual void	FinishRendering(class CRenderingContext* pContext);
 	virtual void	StartRenderingReflection(class CRenderingContext* pContext, CMirror* pMirror);
-	virtual void	RenderFullscreenBuffers(class CRenderingContext* pContext);
 	bool			IsRenderingReflection() const { return m_bRenderingReflection; }
 
 	void			SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial);
