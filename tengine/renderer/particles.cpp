@@ -8,7 +8,7 @@
 #include <tinker/profiler.h>
 #include <models/models.h>
 #include <textures/texturelibrary.h>
-#include <renderer/renderer.h>
+#include <renderer/game_renderer.h>
 #include <renderer/game_renderingcontext.h>
 #include <ui/gamewindow.h>
 
@@ -532,7 +532,7 @@ void CSystemInstance::Render(CGameRenderingContext* c)
 	for (size_t i = 0; i < m_apChildren.size(); i++)
 		m_apChildren[i]->Render(c);
 
-	CRenderer* pRenderer = GameWindow()->GetRenderer();
+	CGameRenderer* pRenderer = GameWindow()->GetRenderer();
 
 	Vector vecForward, vecRight, vecUp;
 	pRenderer->GetCameraVectors(&vecForward, &vecRight, &vecUp);

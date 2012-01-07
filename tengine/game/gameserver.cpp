@@ -12,6 +12,7 @@
 #include <tinker/application.h>
 #include <tinker/profiler.h>
 #include <renderer/game_renderer.h>
+#include <renderer/game_renderingcontext.h>
 #include <renderer/particles.h>
 #include <sound/sound.h>
 #include <network/network.h>
@@ -683,7 +684,7 @@ void CGameServer::Render()
 
 	m_pCamera->Think();
 
-	CRenderer* pRenderer = GameWindow()->GetRenderer();
+	CGameRenderer* pRenderer = GameWindow()->GetRenderer();
 
 	pRenderer->SetCameraPosition(m_pCamera->GetCameraPosition());
 	pRenderer->SetCameraDirection(m_pCamera->GetCameraDirection());
@@ -692,13 +693,21 @@ void CGameServer::Render()
 	pRenderer->SetCameraNear(m_pCamera->GetCameraNear());
 	pRenderer->SetCameraFar(m_pCamera->GetCameraFar());
 
-	pRenderer->SetupFrame();
-	pRenderer->StartRendering();
+	pRenderer->PreRender();
 
-	RenderEverything();
+	{
+		CGameRenderingContext c(pRenderer);
+		pRenderer->ModifyContext(&c);
+		pRenderer->SetupFrame(&c);
+		pRenderer->StartRendering(&c);
 
-	pRenderer->FinishRendering();
-	pRenderer->FinishFrame();
+		RenderEverything();
+
+		pRenderer->FinishRendering(&c);
+		pRenderer->FinishFrame(&c);
+	}
+
+	pRenderer->PostRender();
 }
 
 void CGameServer::RenderEverything()

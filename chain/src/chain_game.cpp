@@ -16,7 +16,7 @@ CGame* CreateGame()
 	return GameServer()->Create<CChainGame>("CChainGame");
 }
 
-CRenderer* CreateRenderer()
+CGameRenderer* CreateRenderer()
 {
 	return new CChainRenderer();
 }

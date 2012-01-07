@@ -9,7 +9,7 @@ public:
 	const class CBaseEntity*	pEntity;
 	class CModel*				pModel;
 	Matrix4x4					mTransformation;
-	bool						bReverseWinding;
+	bool						bWinding;
 	Color						clrRender;
 	size_t						iMaterial;
 };
@@ -26,17 +26,17 @@ public:
 public:
 	virtual void	LoadShaders();
 
-	virtual void	SetupFrame();
-	virtual void	DrawSkybox();
+	virtual void	SetupFrame(class CRenderingContext* pContext);
+	virtual void	DrawSkybox(class CRenderingContext* pContext);
 	virtual void	ModifySkyboxContext(class CRenderingContext* c) {};
-	virtual void	FinishRendering();
+	virtual void	FinishRendering(class CRenderingContext* pContext);
 
 	void			SetSkybox(size_t ft, size_t bk, size_t lf, size_t rt, size_t up, size_t dn);
 	void			DisableSkybox();
 
 	bool			ShouldBatchThisFrame() { return m_bBatchThisFrame; }
 	void			BeginBatching();
-	void			AddToBatch(class CModel* pModel, const class CBaseEntity* pEntity, const Matrix4x4& mTransformations, const Color& clrRender, bool bReverseWinding);
+	void			AddToBatch(class CModel* pModel, const class CBaseEntity* pEntity, const Matrix4x4& mTransformations, const Color& clrRender, bool bWinding);
 	void			RenderBatches();
 	bool			IsBatching() { return m_bBatching; };
 

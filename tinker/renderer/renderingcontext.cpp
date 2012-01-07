@@ -23,10 +23,6 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 
 	s_aContexts.push_back();
 
-	int iWinding;
-	glGetIntegerv(GL_FRONT_FACE, &iWinding);
-	m_bInitialWinding = (iWinding == GL_CCW);
-
 	if (bInherit && s_aContexts.size() > 1)
 	{
 		CRenderContext& oLastContext = s_aContexts[s_aContexts.size()-2];
@@ -44,7 +40,7 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 		GetContext().m_bDepthMask = oLastContext.m_bDepthMask;
 		GetContext().m_bDepthTest = oLastContext.m_bDepthTest;
 		GetContext().m_bCull = oLastContext.m_bCull;
-		GetContext().m_bReverseWinding = oLastContext.m_bReverseWinding;
+		GetContext().m_bWinding = oLastContext.m_bWinding;
 
 		m_pShader = CShaderLibrary::GetShader(GetContext().m_sProgram);
 
@@ -70,7 +66,7 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 		SetDepthMask(true);
 		SetDepthTest(true);
 		SetBackCulling(true);
-		SetReverseWinding(false);
+		SetWinding(true);
 	}
 }
 
@@ -98,12 +94,7 @@ CRenderingContext::~CRenderingContext()
 		SetDepthMask(GetContext().m_bDepthMask);
 		SetDepthTest(GetContext().m_bDepthTest);
 		SetBackCulling(GetContext().m_bCull);
-		SetReverseWinding(GetContext().m_bReverseWinding);
-
-		int iWinding = (m_bInitialWinding?GL_CCW:GL_CW);
-		if (GetContext().m_bReverseWinding)
-			iWinding = (m_bInitialWinding?GL_CW:GL_CCW);
-		glFrontFace(iWinding);
+		SetWinding(GetContext().m_bWinding);
 	}
 	else
 	{
@@ -218,9 +209,21 @@ void CRenderingContext::SetBackCulling(bool bCull)
 	GetContext().m_bCull = bCull;
 }
 
-void CRenderingContext::SetReverseWinding(bool bReverse)
+void CRenderingContext::SetWinding(bool bWinding)
 {
-	GetContext().m_bReverseWinding = bReverse;
+	GetContext().m_bWinding = bWinding;
+	glFrontFace(bWinding?GL_CCW:GL_CW);
+}
+
+void CRenderingContext::ClearColor(const ::Color& clrClear)
+{
+	glClearColor((char)(clrClear.r()*255), (char)(clrClear.g()*255), (char)(clrClear.b()*255), (char)(clrClear.a()*255));
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void CRenderingContext::ClearDepth()
+{
+	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 void CRenderingContext::RenderSphere()

@@ -465,21 +465,21 @@ EAngle Matrix4x4::GetAngles() const
 {
 #ifdef _DEBUG
 	// If any of the below is not true then you have a matrix that has been scaled or reflected or something and it won't work to try to pull its Eulers
-	bool b = fabs(GetForwardVector().LengthSqr() - 1) < 0.000001f;
+	bool b = fabs(GetForwardVector().LengthSqr() - 1) < 0.00001f;
 	if (!b)
 	{
 		TAssertNoMsg(b);
 		return EAngle(0, 0, 0);
 	}
 
-	b = fabs(GetUpVector().LengthSqr() - 1) < 0.000001f;
+	b = fabs(GetUpVector().LengthSqr() - 1) < 0.00001f;
 	if (!b)
 	{
 		TAssertNoMsg(b);
 		return EAngle(0, 0, 0);
 	}
 
-	b = fabs(GetRightVector().LengthSqr() - 1) < 0.000001f;
+	b = fabs(GetRightVector().LengthSqr() - 1) < 0.00001f;
 	if (!b)
 	{
 		TAssertNoMsg(b);

@@ -42,7 +42,7 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 	{
 		TAssert(GetContext().m_eBlend == BLEND_NONE);
 
-		m_pRenderer->AddToBatch(pModel, pEntity, GetContext().m_mTransformations, m_clrRender, GetContext().m_bReverseWinding);
+		m_pRenderer->AddToBatch(pModel, pEntity, GetContext().m_mTransformations, m_clrRender, GetContext().m_bWinding);
 	}
 	else
 	{
@@ -110,15 +110,6 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	Vector vecCameraPosition = m_pRenderer->m_vecCameraPosition;
 	Vector vecCameraDirection = m_pRenderer->m_vecCameraDirection;
 	Vector vecCameraUp = m_pRenderer->m_vecCameraUp;
-
-	SetUniform("mProjection", GetContext().m_mProjection);
-	SetUniform("mView", GetContext().m_mView);
-	SetUniform("mGlobal", GetContext().m_mTransformations);
-
-	int iWinding = (m_bInitialWinding?GL_CCW:GL_CW);
-	if (GetContext().m_bReverseWinding)
-		iWinding = (m_bInitialWinding?GL_CW:GL_CCW);
-	glFrontFace(iWinding);
 
 	BeginRenderVertexArray(pModel->m_aiVertexBuffers[iMaterial]);
 	SetPositionBuffer(0u, pModel->m_pToy->GetVertexSize());

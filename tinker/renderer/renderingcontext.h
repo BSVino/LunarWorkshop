@@ -27,7 +27,7 @@ protected:
 		bool				m_bDepthMask;
 		bool				m_bDepthTest;
 		bool				m_bCull;
-		bool				m_bReverseWinding;
+		bool				m_bWinding;
 	};
 
 public:
@@ -53,11 +53,15 @@ public:
 	void					SetDepthMask(bool bDepthMask);
 	void					SetDepthTest(bool bDepthTest);
 	void					SetBackCulling(bool bCull);
-	void					SetReverseWinding(bool bReverse);
+	void					SetWinding(bool bWinding);	// True is default
 
 	float					GetAlpha() { return GetContext().m_flAlpha; };
 	blendtype_t				GetBlend() { return GetContext().m_eBlend; };
 	::Color					GetColor() { return m_clrRender; };
+	bool					GetWinding() { return GetContext().m_bWinding; };
+
+	void					ClearColor(const ::Color& clrClear = ::Color(0.0f, 0.0f, 0.0f, 1.0f));
+	void					ClearDepth();
 
 	void					RenderSphere();
 
@@ -112,8 +116,6 @@ public:
 	size_t					m_iProgram;
 
 	::Color					m_clrRender;
-
-	bool					m_bInitialWinding;
 
 	int						m_iDrawMode;
 	bool					m_bTexCoord;

@@ -57,16 +57,31 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 	if (pPlayerCharacter && pPlayerCharacter->GetToken())
 	{
 		CGameRenderingContext c(GameServer()->GetRenderer());
-		c.Translate(Vector((float)w-100, (float)h-100, 0));
-		c.Scale(300, 300, 300);
-		c.Rotate(-90.0f, Vector(0, 0, 1));
-		c.Rotate(-90.0f, Vector(1, 0, 0));
+
+		c.ClearDepth();
+
+		float flRatio = w/h;
+
+		Matrix4x4 mProjection;
+		mProjection.ProjectOrthographic(-flRatio, flRatio, -1, 1, -100, 100);
+		c.SetProjection(mProjection);
+
+		c.SetView(Matrix4x4());
+
+		c.Translate(Vector(flRatio*0.7f, -0.7f, 0));
+
+		float flScale = (1/pPlayerCharacter->GetToken()->GetBoundingBox().Size().Length())/2;
+		c.Scale(flScale, flScale, flScale);
+
+		c.Rotate(85.0f, Vector(0, 0, 1));
+		c.Rotate(15.0f, Vector(0, 1, 0));
+		c.Rotate(75.0f, Vector(1, 0, 0));
 
 		CToken* pToken = pPlayerCharacter->GetToken();
 		if (pToken->IsReflected() ^ (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) ^ pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
 		{
 			c.Scale(1, 1, -1);
-			c.SetReverseWinding(true);
+			c.SetWinding(false);
 		}
 
 		c.RenderModel(pPlayerCharacter->GetToken()->GetModelID());

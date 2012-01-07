@@ -45,7 +45,7 @@ void CToken::ModifyContext(CRenderingContext* pContext, bool bTransparent) const
 	if (IsReflected())
 	{
 		pContext->Scale(1, 1, -1);
-		pContext->SetReverseWinding(true);
+		pContext->SetWinding(!pContext->GetWinding());
 	}
 }
 

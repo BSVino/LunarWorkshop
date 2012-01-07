@@ -209,26 +209,35 @@ void CRenderer::PostFrame()
 {
 }
 
-void CRenderer::SetupFrame()
+void CRenderer::PreRender()
+{
+}
+
+void CRenderer::PostRender()
+{
+}
+
+void CRenderer::ModifyContext(class CRenderingContext* pContext)
+{
+	pContext->UseFrameBuffer(&m_oSceneBuffer);
+}
+
+void CRenderer::SetupFrame(class CRenderingContext* pContext)
 {
 	TPROF("CRenderer::SetupFrame");
 
-	glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)m_oSceneBuffer.m_iFB);
-	glViewport(0, 0, (GLsizei)m_oSceneBuffer.m_iWidth, (GLsizei)m_oSceneBuffer.m_iHeight);
-
-	glClear(GL_DEPTH_BUFFER_BIT);
+	pContext->ClearDepth();
 
 	if (m_bDrawBackground)
-		DrawBackground();
+		DrawBackground(pContext);
 }
 
-void CRenderer::DrawBackground()
+void CRenderer::DrawBackground(class CRenderingContext* pContext)
 {
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	pContext->ClearColor();
 }
 
-void CRenderer::StartRendering()
+void CRenderer::StartRendering(class CRenderingContext* pContext)
 {
 	TPROF("CRenderer::StartRendering");
 
@@ -270,13 +279,11 @@ void CRenderer::StartRendering()
 	glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 	glGetIntegerv( GL_VIEWPORT, m_aiViewport );
 	glViewport(0, 0, (GLsizei)m_oSceneBuffer.m_iWidth, (GLsizei)m_oSceneBuffer.m_iHeight);
-
-	glEnable(GL_CULL_FACE);
 }
 
 CVar show_frustum("debug_show_frustum", "no");
 
-void CRenderer::FinishRendering()
+void CRenderer::FinishRendering(class CRenderingContext* pContext)
 {
 	TPROF("CRenderer::FinishRendering");
 
@@ -303,20 +310,20 @@ void CRenderer::FinishRendering()
 	}
 }
 
-void CRenderer::FinishFrame()
+void CRenderer::FinishFrame(class CRenderingContext* pContext)
 {
 	m_mProjection.ProjectOrthographic(0, (float)m_iWidth, (float)m_iHeight, 0, -1, 1);
 
 	m_mView.Identity();
 
-	RenderOffscreenBuffers();
+	RenderOffscreenBuffers(pContext);
 
-	RenderFullscreenBuffers();
+	RenderFullscreenBuffers(pContext);
 }
 
 CVar r_bloom("r_bloom", "0");
 
-void CRenderer::RenderOffscreenBuffers()
+void CRenderer::RenderOffscreenBuffers(class CRenderingContext* pContext)
 {
 	if (r_bloom.GetBool())
 	{
@@ -346,7 +353,7 @@ void CRenderer::RenderOffscreenBuffers()
 	}
 }
 
-void CRenderer::RenderFullscreenBuffers()
+void CRenderer::RenderFullscreenBuffers(class CRenderingContext* pContext)
 {
 	TPROF("CRenderer::RenderFullscreenBuffers");
 
@@ -429,6 +436,7 @@ void CRenderer::RenderMapFullscreen(size_t iMap, bool bMapIsMultisample)
 {
 	CRenderingContext c;
 
+	c.SetWinding(true);
 	c.SetDepthTest(false);
 	c.UseFrameBuffer(0);
 

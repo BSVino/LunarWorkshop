@@ -44,19 +44,19 @@ void CGameRenderer::LoadShaders()
 	CShaderLibrary::AddShader("skybox", "skybox", "skybox");
 }
 
-void CGameRenderer::SetupFrame()
+void CGameRenderer::SetupFrame(class CRenderingContext* pContext)
 {
 	TPROF("CGameRenderer::SetupFrame");
 
 	m_bBatchThisFrame = r_batch.GetBool();
 
-	BaseClass::SetupFrame();
+	BaseClass::SetupFrame(pContext);
 
 	if (m_iSkyboxFT != ~0)
-		DrawSkybox();
+		DrawSkybox(pContext);
 }
 
-void CGameRenderer::DrawSkybox()
+void CGameRenderer::DrawSkybox(class CRenderingContext* pContext)
 {
 	TPROF("CGameRenderer::DrawSkybox");
 
@@ -132,11 +132,11 @@ void CGameRenderer::DrawSkybox()
 
 CVar show_physics("debug_show_physics", "no");
 
-void CGameRenderer::FinishRendering()
+void CGameRenderer::FinishRendering(class CRenderingContext* pContext)
 {
 	TPROF("CGameRenderer::FinishRendering");
 
-	BaseClass::FinishRendering();
+	BaseClass::FinishRendering(pContext);
 
 	if (show_physics.GetBool() && ShouldRenderPhysicsDebug())
 		GamePhysics()->DebugDraw(show_physics.GetInt());
@@ -205,7 +205,7 @@ void CGameRenderer::BeginBatching()
 		it->second.clear();
 }
 
-void CGameRenderer::AddToBatch(class CModel* pModel, const CBaseEntity* pEntity, const Matrix4x4& mTransformations, const Color& clrRender, bool bReverseWinding)
+void CGameRenderer::AddToBatch(class CModel* pModel, const CBaseEntity* pEntity, const Matrix4x4& mTransformations, const Color& clrRender, bool bWinding)
 {
 	TAssert(pModel);
 	if (!pModel)
@@ -218,7 +218,7 @@ void CGameRenderer::AddToBatch(class CModel* pModel, const CBaseEntity* pEntity,
 		pBatch->pEntity = pEntity;
 		pBatch->pModel = pModel;
 		pBatch->mTransformation = mTransformations;
-		pBatch->bReverseWinding = bReverseWinding;
+		pBatch->bWinding = bWinding;
 		pBatch->clrRender = clrRender;
 		pBatch->iMaterial = i;
 	}
@@ -244,7 +244,7 @@ void CGameRenderer::RenderBatches()
 		{
 			CRenderBatch* pBatch = &it->second[i];
 
-			c.SetReverseWinding(pBatch->bReverseWinding);
+			c.SetWinding(pBatch->bWinding);
 
 			c.ResetTransformations();
 			c.LoadTransform(pBatch->mTransformation);

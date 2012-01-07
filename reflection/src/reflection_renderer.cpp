@@ -36,13 +36,9 @@ void CReflectionRenderer::LoadShaders()
 	CShaderLibrary::AddShader("reflection", "pass", "reflection");
 }
 
-extern CVar r_batch;
-
-void CReflectionRenderer::SetupFrame()
+void CReflectionRenderer::PreRender()
 {
 	TPROF("CReflectionRenderer::SetupFrame");
-
-	m_bBatchThisFrame = r_batch.GetBool();
 
 	eastl::vector<CEntityHandle<CMirror> > apMirrors;
 	apMirrors.reserve(CMirror::GetNumMirrors());
@@ -78,42 +74,59 @@ void CReflectionRenderer::SetupFrame()
 
 		CMirror* pMirror = apMirrors[i];
 
-		StartRenderingReflection(pMirror);
-
 		CRenderingContext c(this);
+
+		StartRenderingReflection(&c, pMirror);
 
 		// Render a reflected world to our reflection buffer.
 		c.UseFrameBuffer(&m_aoReflectionBuffers[i]);
 
-		glClear(GL_DEPTH_BUFFER_BIT);
-		glColor4f(1, 1, 1, 1);
+		c.ClearDepth();
 
 		m_bRenderingReflection = true;
 
 		CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
 
-		if (pPlayerCharacter && (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) == pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
-			c.SetReverseWinding(true);
+		if (pPlayerCharacter)
+			c.SetWinding(!(pPlayerCharacter->IsReflected(REFLECTION_LATERAL) == pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)));
 
 		GameServer()->RenderEverything();
-		FinishRendering();
+		FinishRendering(&c);
 
 		m_bRenderingReflection = false;
 	}
 
+	BaseClass::PreRender();
+}
+
+void CReflectionRenderer::ModifyContext(class CRenderingContext* pContext)
+{
+	BaseClass::ModifyContext(pContext);
+
+	if (!Game()->GetNumLocalPlayers())
+		return;
+
+	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
+
+	if (pPlayerCharacter)
+		pContext->SetWinding(pPlayerCharacter->IsReflected(REFLECTION_LATERAL) == pPlayerCharacter->IsReflected(REFLECTION_VERTICAL));
+}
+
+void CReflectionRenderer::SetupFrame(class CRenderingContext* pContext)
+{
 	if (CVar::GetCVarValue("game_mode") == "menu")
 		m_bDrawBackground = true;
 	else
 		m_bDrawBackground = false;
 
-	BaseClass::SetupFrame();
+	BaseClass::SetupFrame(pContext);
 }
 
-void CReflectionRenderer::StartRendering()
+void CReflectionRenderer::StartRendering(class CRenderingContext* pContext)
 {
 	if (CVar::GetCVarValue("game_mode") == "menu")
 	{
-		BaseClass::StartRendering();
+		BaseClass::StartRendering(pContext);
 		return;
 	}
 
@@ -171,19 +184,17 @@ void CReflectionRenderer::StartRendering()
 	// the viewport here will be the scene buffer size, but we need it to be the window size so we can do world/screen transformations.
 	glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 	glGetIntegerv( GL_VIEWPORT, m_aiViewport );
-
-	glEnable(GL_CULL_FACE);
 }
 
-void CReflectionRenderer::FinishRendering()
+void CReflectionRenderer::FinishRendering(class CRenderingContext* pContext)
 {
-	BaseClass::FinishRendering();
+	BaseClass::FinishRendering(pContext);
 
 	if (CVar::GetCVarValue("game_mode") == "menu")
 		return;
 }
 
-void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
+void CReflectionRenderer::StartRenderingReflection(class CRenderingContext* pContext, CMirror* pMirror)
 {
 	m_mProjection.ProjectPerspective(
 			m_flCameraFOV,
@@ -191,6 +202,8 @@ void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
 			m_flCameraNear,
 			m_flCameraFar
 		);
+
+	pContext->SetProjection(m_mProjection);
 
 	Vector vecMirror = pMirror->GetGlobalOrigin();
 	Vector vecMirrorForward = pMirror->GetGlobalTransform().GetForwardVector();
@@ -224,6 +237,8 @@ void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
 	// Transform back to global space
 	m_mView.AddTranslation(-vecMirror);
 
+	pContext->SetView(m_mView);
+
 	for (size_t i = 0; i < 16; i++)
 	{
 		m_aflModelView[i] = ((float*)m_mView)[i];
@@ -239,13 +254,11 @@ void CReflectionRenderer::StartRenderingReflection(CMirror* pMirror)
 	glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 	glGetIntegerv( GL_VIEWPORT, m_aiViewport );
 	glViewport(0, 0, (GLsizei)m_oSceneBuffer.m_iWidth, (GLsizei)m_oSceneBuffer.m_iHeight);
-
-	glEnable(GL_CULL_FACE);
 }
 
 extern CVar r_bloom;
 
-void CReflectionRenderer::RenderFullscreenBuffers()
+void CReflectionRenderer::RenderFullscreenBuffers(class CRenderingContext* pContext)
 {
 	TPROF("CReflectionRenderer::RenderFullscreenBuffers");
 

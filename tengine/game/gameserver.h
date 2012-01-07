@@ -177,7 +177,7 @@ inline class CGameServer* GameServer()
 
 // Let the game directory define this.
 extern class CGame* CreateGame();
-extern class CRenderer* CreateRenderer();
+extern class CGameRenderer* CreateRenderer();
 extern class CCamera* CreateCamera();
 extern class CLevel* CreateLevel();
 extern class CHUDViewport* CreateHUD();

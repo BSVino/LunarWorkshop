@@ -17,11 +17,13 @@ public:
 	virtual void	Initialize();
 	virtual void	LoadShaders();
 
-	virtual void	SetupFrame();
-	virtual void	StartRendering();
-	virtual void	FinishRendering();
-	virtual void	StartRenderingReflection(CMirror* pMirror);
-	virtual void	RenderFullscreenBuffers();
+	virtual void	PreRender();
+	virtual void	ModifyContext(class CRenderingContext* pContext);
+	virtual void	SetupFrame(class CRenderingContext* pContext);
+	virtual void	StartRendering(class CRenderingContext* pContext);
+	virtual void	FinishRendering(class CRenderingContext* pContext);
+	virtual void	StartRenderingReflection(class CRenderingContext* pContext, CMirror* pMirror);
+	virtual void	RenderFullscreenBuffers(class CRenderingContext* pContext);
 	bool			IsRenderingReflection() const { return m_bRenderingReflection; }
 
 	void			SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial);

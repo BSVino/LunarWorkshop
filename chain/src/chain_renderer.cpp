@@ -29,7 +29,7 @@ void CChainRenderer::LoadShaders()
 	CShaderLibrary::AddShader("mouseover", "pass", "mouseover");
 }
 
-void CChainRenderer::SetupFrame()
+void CChainRenderer::SetupFrame(class CRenderingContext* pContext)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_oMouseoverBuffer1.m_iFB);
 	glColor4f(0, 0, 0, 0);
@@ -38,7 +38,7 @@ void CChainRenderer::SetupFrame()
 	glBindFramebuffer(GL_FRAMEBUFFER, m_oMouseoverBuffer2.m_iFB);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	BaseClass::SetupFrame();
+	BaseClass::SetupFrame(pContext);
 
 	glColor4f(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -46,9 +46,9 @@ void CChainRenderer::SetupFrame()
 	glColor4f(1, 1, 1, 1);
 }
 
-void CChainRenderer::RenderFullscreenBuffers()
+void CChainRenderer::RenderFullscreenBuffers(class CRenderingContext* pContext)
 {
-	BaseClass::RenderFullscreenBuffers();
+	BaseClass::RenderFullscreenBuffers(pContext);
 
 	CRenderingContext c(this);
 	c.UseProgram("blur");

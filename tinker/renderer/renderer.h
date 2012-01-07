@@ -56,16 +56,22 @@ public:
 
 	CFrameBuffer	CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_options_e eOptions);
 
+	// PreFrame is run before thinks, physics, etc.
 	virtual void	PreFrame();
 	virtual void	PostFrame();
 
-	virtual void	SetupFrame();
-	virtual void	DrawBackground();
-	virtual void	StartRendering();
-	virtual void	FinishRendering();
-	virtual void	FinishFrame();
-	virtual void	RenderOffscreenBuffers();
-	virtual void	RenderFullscreenBuffers();
+	// PreRender is run before the primary rendering starts. Good time to render targets, ie cameras mirrors etc.
+	virtual void	PreRender();
+	virtual void	PostRender();
+
+	virtual void	ModifyContext(class CRenderingContext* pContext);
+	virtual void	SetupFrame(class CRenderingContext* pContext);
+	virtual void	DrawBackground(class CRenderingContext* pContext);
+	virtual void	StartRendering(class CRenderingContext* pContext);
+	virtual void	FinishRendering(class CRenderingContext* pContext);
+	virtual void	FinishFrame(class CRenderingContext* pContext);
+	virtual void	RenderOffscreenBuffers(class CRenderingContext* pContext);
+	virtual void	RenderFullscreenBuffers(class CRenderingContext* pContext);
 
 	virtual float	BloomBrightnessCutoff() const { return 0.6f; }
 	void			RenderBloomPass(CFrameBuffer* apSources, CFrameBuffer* apTargets, bool bHorizontal);
