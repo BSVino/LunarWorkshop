@@ -218,7 +218,7 @@ bool CShader::Compile()
 	int iVertexCompiled;
 	glGetShaderiv((GLuint)m_iVShader, GL_COMPILE_STATUS, &iVertexCompiled);
 
-//	if (iVertexCompiled != GL_TRUE)
+	if (iVertexCompiled != GL_TRUE || Application()->HasCommandLineSwitch("--debug-gl"))
 	{
 		int iLogLength = 0;
 		char szLog[1024];
@@ -234,7 +234,7 @@ bool CShader::Compile()
 	int iFragmentCompiled;
 	glGetShaderiv((GLuint)m_iFShader, GL_COMPILE_STATUS, &iFragmentCompiled);
 
-//	if (iFragmentCompiled != GL_TRUE)
+	if (iFragmentCompiled != GL_TRUE || Application()->HasCommandLineSwitch("--debug-gl"))
 	{
 		int iLogLength = 0;
 		char szLog[1024];
@@ -250,7 +250,7 @@ bool CShader::Compile()
 	int iProgramLinked;
 	glGetProgramiv((GLuint)m_iProgram, GL_LINK_STATUS, &iProgramLinked);
 
-//	if (iProgramLinked != GL_TRUE)
+	if (iProgramLinked != GL_TRUE || Application()->HasCommandLineSwitch("--debug-gl"))
 	{
 		int iLogLength = 0;
 		char szLog[1024];
