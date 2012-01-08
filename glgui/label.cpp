@@ -300,9 +300,12 @@ float CLabel::GetFontHeight(const tstring& sFontName, int iFontFaceSize)
 
 void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, float x, float y, const Color& clrText, const FRect& rStencil)
 {
+	if (!GetFont(sFontName, iFontFaceSize))
+		AddFontSize(sFontName, iFontFaceSize);
+
 	Matrix4x4 mFontProjection = Matrix4x4::ProjectOrthographic(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
 
-	float flBaseline = s_apFonts[sFontName][iFontFaceSize]->Ascender();
+	float flBaseline = GetFont(sFontName, iFontFaceSize)->Ascender();
 
 	::CRenderingContext c(nullptr, true);
 
