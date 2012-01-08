@@ -74,7 +74,7 @@ private:
 
 Color::Color()
 {
-	Color(0, 0, 0, 255);
+	SetColor(0, 0, 0, 255);
 }
 
 Color::Color(Vector v)
