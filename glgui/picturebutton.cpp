@@ -26,54 +26,14 @@ void CPictureButton::Paint(float x, float y, float w, float h)
 
 	if (m_bSheet)
 	{
-		glPushAttrib(GL_ENABLE_BIT);
-
-		glEnable(GL_BLEND);
-		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glDisable(GL_LIGHTING);
-		glEnable(GL_TEXTURE_2D);
-
-		glBindTexture(GL_TEXTURE_2D, (GLuint)m_iTexture);
-
-		glColor4f(1,1,1,(float)GetAlpha()*flHighlight/255);
-		glBegin(GL_QUADS);
-			glTexCoord2f((float)m_iSX/m_iTW, 1-(float)m_iSY/m_iTH);
-			glVertex2f(x, y);
-			glTexCoord2f((float)m_iSX/m_iTW, 1-((float)m_iSY+m_iSH)/m_iTH);
-			glVertex2f(x, y+h);
-			glTexCoord2f(((float)m_iSX+m_iSW)/m_iTW, 1-((float)m_iSY+m_iSH)/m_iTH);
-			glVertex2f(x+w, y+h);
-			glTexCoord2f(((float)m_iSX+m_iSW)/m_iTW, 1-(float)m_iSY/m_iTH);
-			glVertex2f(x+w, y);
-		glEnd();
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		glPopAttrib();
+		PaintSheet(m_iTexture, x, y, w, h, m_iSX, m_iSY, m_iSW, m_iSH, m_iTW, m_iTH, Color(255,255,255,(unsigned char)(GetAlpha()*flHighlight)));
 	}
 	else if (m_iTexture)
 	{
-		glPushAttrib(GL_ENABLE_BIT);
-
-		glEnable(GL_BLEND);
+		glEnablei(GL_BLEND, 0);
 		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glDisable(GL_LIGHTING);
-		glEnable(GL_TEXTURE_2D);
 
-		glBindTexture(GL_TEXTURE_2D, (GLuint)m_iTexture);
-		glColor4f(1,1,1,(float)GetAlpha()*flHighlight/255);
-		glBegin(GL_QUADS);
-			glTexCoord2f(0, 1);
-			glVertex2f(x, y);
-			glTexCoord2f(0, 0);
-			glVertex2f(x, y+h);
-			glTexCoord2f(1, 0);
-			glVertex2f(x+w, y+h);
-			glTexCoord2f(1, 1);
-			glVertex2f(x+w, y);
-		glEnd();
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		glPopAttrib();
+		PaintTexture(m_iTexture, x, y, w, h, Color(255,255,255,(unsigned char)(GetAlpha()*flHighlight)));
 	}
 	else
 	{

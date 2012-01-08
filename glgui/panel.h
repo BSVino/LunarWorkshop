@@ -52,16 +52,6 @@ namespace glgui
 		void					SetScissoring(bool b) { m_bScissoring = b; };
 		bool					IsScissoring() const { return m_bScissoring; };
 
-		typedef enum
-		{
-			BT_NONE	= 0,
-			BT_SOME = 1
-		} Border;
-
-		void					SetBorder(Border b) { m_eBorder = b; };
-
-		void					SetBackgroundColor(Color c) { m_clrBackground = c; };
-
 		FRect					GetControlBounds() const { return m_rControlBounds; };
 		FRect					GetControlOffset() const { return m_rControlOffset; };
 
@@ -71,16 +61,11 @@ namespace glgui
 		bool					ShouldControlOffset(IControl* pControl) const;
 
 	protected:
-		virtual void			PaintBorder(float x, float y, float w, float h);
-
 		eastl::vector<IControl*>	m_apControls;
 
 		// If two controls in the same panel are never layered, a single
 		// pointer should suffice. Otherwise a list must be created.
 		IControl*				m_pHasCursor;
-
-		Border					m_eBorder;
-		Color					m_clrBackground;
 
 		bool					m_bHighlight;
 		bool					m_bScissoring;

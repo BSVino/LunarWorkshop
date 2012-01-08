@@ -21,17 +21,17 @@ Vector CChainCamera::GetCameraPosition()
 
 	CPlayerCharacter* pCharacter = ChainGame()->GetLocalPlayerCharacter();
 	if (!pCharacter)
-		return Vector(10,0,0);
+		return Vector(0, 0, 10);
 
 	return Vector(0, 0, 10);
 }
 
-Vector CChainCamera::GetCameraTarget()
+Vector CChainCamera::GetCameraDirection()
 {
 	if (m_bFreeMode)
-		return BaseClass::GetCameraTarget();
+		return BaseClass::GetCameraDirection();
 
-	return Vector(0, 0, 0);
+	return Vector(0, 0, -1);
 }
 
 float CChainCamera::GetCameraFOV()

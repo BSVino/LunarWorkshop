@@ -50,9 +50,9 @@ void LoadMeshInstanceIntoToy(CConversionScene* pScene, CConversionMeshInstance* 
 				CConversionVertex* pVertex1 = pFace->GetVertex(k-1);
 				CConversionVertex* pVertex2 = pFace->GetVertex(k);
 
-				pToy->AddVertex(iMaterial, pMesh->GetVertex(pVertex0->v), pMesh->GetUV(pVertex0->vu));
-				pToy->AddVertex(iMaterial, pMesh->GetVertex(pVertex1->v), pMesh->GetUV(pVertex1->vu));
-				pToy->AddVertex(iMaterial, pMesh->GetVertex(pVertex2->v), pMesh->GetUV(pVertex2->vu));
+				pToy->AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex0->v), pMesh->GetUV(pVertex0->vu));
+				pToy->AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex1->v), pMesh->GetUV(pVertex1->vu));
+				pToy->AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex2->v), pMesh->GetUV(pVertex2->vu));
 			}
 		}
 	}
@@ -68,15 +68,8 @@ void LoadSceneNodeIntoToy(CConversionScene* pScene, CConversionSceneNode* pNode,
 
 	Matrix4x4 mTransformations = mParentTransformations;
 
-	bool bTransformationsIdentity = false;
-	if (pNode->m_mTransformations.IsIdentity())
-		bTransformationsIdentity = true;
-
-	if (!bTransformationsIdentity)
-	{
-		TAssert(!"Not entirely sure if this code works. Hasn't been tested.");
+	if (!pToy->IsUsingLocalTransformations())
 		mTransformations = mParentTransformations * pNode->m_mTransformations;
-	}
 
 	for (size_t i = 0; i < pNode->GetNumChildren(); i++)
 		LoadSceneNodeIntoToy(pScene, pNode->GetChild(i), mTransformations, pToy);
@@ -91,16 +84,22 @@ void LoadSceneIntoToy(CConversionScene* pScene, CToyUtil* pToy)
 		LoadSceneNodeIntoToy(pScene, pScene->GetScene(i), Matrix4x4(), pToy);
 }
 
+time_t g_iBinaryModificationTime;
+
 int main(int argc, char** args)
 {
 	printf("Toy Builder for Lunar Workshop's Tinker Engine\n");
 
-	if (argc < 1)
+	if (argc <= 1)
 	{
 		printf("Usage: %s input.obj output.toy [--physics input.obj]\n", args[0]);
 		printf("Usage: %s input.txt\n", args[0]);
 		return 1;
 	}
+
+	g_iBinaryModificationTime = GetFileModificationTime(args[0]);
+	if (!g_iBinaryModificationTime)
+		g_iBinaryModificationTime = GetFileModificationTime((tstring(args[0]) + ".exe").c_str());
 
 	CToyUtil t;
 
@@ -139,10 +138,30 @@ int main(int argc, char** args)
 				sPhysics = args[i+1];
 				i++;
 			}
+			else if (strcmp(args[i], "--use-global-transforms") == 0)
+				t.UseGlobalTransformations();
 		}
 
 		sOutput = FindAbsolutePath(args[2]);
 		t.SetOutputDirectory(sOutput.substr(0, sOutput.rfind(DIR_SEP)));
+
+		time_t iInputModificationTime = GetFileModificationTime(sInput.c_str());
+		time_t iOutputModificationTime = GetFileModificationTime(sOutput.c_str());
+		time_t iPhysicsModificationTime = GetFileModificationTime(sPhysics.c_str());
+
+		bool bRecompile = false;
+		if (iInputModificationTime > iOutputModificationTime)
+			bRecompile = true;
+		else if (iPhysicsModificationTime > iOutputModificationTime)
+			bRecompile = true;
+		else if (g_iBinaryModificationTime > iOutputModificationTime)
+			bRecompile = true;
+
+		if (!bRecompile)
+		{
+			printf("No changes detected. Skipping '%s'.\n\n", sOutput.c_str());
+			return 0;
+		}
 
 		LoadFromFiles(t, sInput, sPhysics);
 	}

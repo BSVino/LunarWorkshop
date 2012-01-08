@@ -16,11 +16,11 @@ public:
 
 public:
 	virtual TVector			GetCameraPosition();
-	virtual TVector			GetCameraTarget();
+	virtual TVector			GetCameraDirection();
 	virtual TVector			GetCameraUp();
 
 	virtual TVector			GetThirdPersonCameraPosition();
-	virtual TVector			GetThirdPersonCameraTarget();
+	virtual TVector			GetThirdPersonCameraDirection();
 
 	virtual void			KeyDown(int c);
 

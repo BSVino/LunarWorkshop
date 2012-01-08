@@ -26,7 +26,7 @@ public:
 	virtual void				CalculateGoalYaw();
 
 	virtual TFloat				EyeHeight() const { return 1.8f; }
-	virtual TFloat				CharacterSpeed() { return 7.0f; }
+	virtual TFloat				BaseCharacterSpeed() { return 7.0f; }
 	virtual TFloat				JumpStrength() { return 3.0f; }
 	virtual float				DamageRecoveryTime() const { return 0.8f; }
 

@@ -20,11 +20,15 @@ public:
 	virtual TVector				GetGoalVelocity();
 
 	virtual TFloat				EyeHeight() const;
-	virtual TFloat				CharacterSpeed() { return 7.0f; }
+	virtual TFloat				BaseCharacterSpeed() { return 5.0f; }
 	virtual TFloat				JumpStrength() { return 3.0f; }
 
 	virtual void				OnSetLocalTransform(Matrix4x4& mNew);
 	virtual void				TestMirror(CMirror* pMirror, Matrix4x4& mNew);
+	virtual void				Reflect(const Matrix4x4& mMirror, const Matrix4x4& mReflection, reflection_t eReflectionType, Matrix4x4& mNew, CMirror* pMirror = nullptr);
+
+	DECLARE_ENTITY_INPUT(ReflectVertical);
+	DECLARE_ENTITY_INPUT(ReflectLateral);
 
 	bool						IsReflected(reflection_t eReflectionType) const;
 	CMirror*					GetMirrorInside() const;

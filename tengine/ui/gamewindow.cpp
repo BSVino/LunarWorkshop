@@ -15,6 +15,7 @@
 #include <ui/hudviewport.h>
 #include <game/level.h>
 #include <renderer/particles.h>
+#include <renderer/game_renderer.h>
 
 CGameWindow::CGameWindow(int argc, char** argv)
 	: CApplication(argc, argv)
@@ -47,6 +48,7 @@ void CGameWindow::OpenWindow()
 	glgui::CRootPanel::Get()->AddControl(m_pHUD = CreateHUD());
 
 	glgui::CRootPanel::Get()->SetLighting(false);
+	glgui::CRootPanel::Get()->SetSize((float)GetWindowWidth(), (float)GetWindowHeight());
 	glgui::CRootPanel::Get()->Layout();
 
 	GameServer()->SetLoading(false);

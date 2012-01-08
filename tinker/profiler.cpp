@@ -165,16 +165,12 @@ void CProfiler::Render()
 	glPushMatrix();
 	glLoadIdentity();
 
-	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT);
-
 	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
 
 	glColor4ubv(Color(255, 255, 255, 255));
 
-	glgui::CBaseControl::PaintRect(flCurrLeft, flCurrTop, 400, 800, Color(0, 0, 0, 150));
+	glgui::CBaseControl::PaintRect(flCurrLeft, flCurrTop, 400, 800, Color(0, 0, 0, 150), 5, true);
 
 	Render(s_pBottomBlock, flCurrLeft, flCurrTop);
 
@@ -183,8 +179,6 @@ void CProfiler::Render()
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
-
-	glPopAttrib();
 }
 
 void CProfiler::Render(CPerfBlock* pBlock, float& flLeft, float& flTop)

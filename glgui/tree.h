@@ -134,8 +134,6 @@ namespace glgui
 
 		virtual void						SetDroppedListener(IEventListener* pListener, IEventListener::Callback pfnCallback);
 
-		void								SetBackgroundColor(const Color& clrBackground) { m_clrBackground = clrBackground; }
-
 		// IDroppable
 		virtual const FRect					GetHoldingRect() { return GetAbsDimensions(); };
 
@@ -172,8 +170,6 @@ namespace glgui
 
 		IEventListener::Callback			m_pfnDroppedCallback;
 		IEventListener*						m_pDroppedListener;
-
-		Color								m_clrBackground;
 
 		bool								m_bMouseDown;
 		int									m_iMouseDownX;

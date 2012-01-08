@@ -1,7 +1,7 @@
 #ifndef REFLECTION_WINDOW_H
 #define REFLECTION_WINDOW_H
 
-#include <tinker/gamewindow.h>
+#include <ui/gamewindow.h>
 
 class CReflectionWindow : public CGameWindow
 {

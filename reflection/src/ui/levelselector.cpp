@@ -3,7 +3,7 @@
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
 #include <glgui/tree.h>
-#include <tinker/gamewindow.h>
+#include <ui/gamewindow.h>
 #include <tinker/cvar.h>
 
 #include <game/gameserver.h>

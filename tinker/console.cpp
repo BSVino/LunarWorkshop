@@ -35,6 +35,7 @@ CConsole::CConsole()
 	m_bBackground = true;
 
 	m_iAutoComplete = -1;
+	m_iHistory = -1;
 }
 
 CConsole::~CConsole()
@@ -102,7 +103,7 @@ void CConsole::Paint(float x, float y, float w, float h)
 	if (!BaseClass::IsVisible())
 		return;
 
-	glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 200));
+	glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 200), 1, true);
 
 	BaseClass::Paint(x, y, w, h);
 
@@ -121,9 +122,9 @@ void CConsole::Paint(float x, float y, float w, float h)
 		}
 
 		if (bAbbreviated)
-			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)(iCommandsToShow+1)*13+3, Color(0, 0, 0, 200));
+			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)(iCommandsToShow+1)*13+3, Color(0, 0, 0, 200), 0, true);
 		else
-			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)iCommandsToShow*13+3, Color(0, 0, 0, 200));
+			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)iCommandsToShow*13+3, Color(0, 0, 0, 200), 0, true);
 
 		int iCommandsToSkip = 0;
 		if (m_iAutoComplete >= 0 && asCommands.size())
@@ -131,10 +132,10 @@ void CConsole::Paint(float x, float y, float w, float h)
 			int iAutoComplete = m_iAutoComplete % asCommands.size();
 
 			if (iAutoComplete < 5)
-				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*iAutoComplete, w, 13+3, Color(100, 100, 100, 200));
+				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*iAutoComplete, w, 13+3, Color(100, 100, 100, 200), 2);
 			else
 			{
-				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*4, w, 13+3, Color(100, 100, 100, 200));
+				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*4, w, 13+3, Color(100, 100, 100, 200), 2);
 				iCommandsToSkip = iAutoComplete - 4;
 			}
 
@@ -176,6 +177,7 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 
 	if (code == TINKER_KEY_ESCAPE)
 	{
+		m_pInput->SetText("");
 		CApplication::Get()->CloseConsole();
 		return true;
 	}
@@ -204,8 +206,40 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 
 			m_iAutoComplete = -1;
 
-			return true;
+			// If it's enter, fall through to below so it runs the command.
+			if (!(code == TINKER_KEY_ENTER || code == TINKER_KEY_KP_ENTER))
+				return true;
 		}
+	}
+	else if (m_asHistory.size())
+	{
+		if (code == TINKER_KEY_DOWN)
+		{
+			if (m_iHistory >= 0 && m_iHistory < (int)m_asHistory.size()-1)
+			{
+				m_iHistory++;
+
+				m_pInput->SetText(m_asHistory[m_iHistory]);
+				m_pInput->SetCursorPosition(-1);
+			}
+			else if (m_iHistory == (int)m_asHistory.size()-1)
+			{
+				m_iHistory = -1;
+				m_pInput->SetText("");
+			}
+		}
+		else if (code == TINKER_KEY_UP)
+		{
+			if (m_iHistory == -1)
+				m_iHistory = m_asHistory.size()-1;
+			else if (m_iHistory > 1)
+				m_iHistory--;
+
+			m_pInput->SetText(m_asHistory[m_iHistory]);
+			m_pInput->SetCursorPosition(-1);
+		}
+		else
+			m_iHistory = -1;
 	}
 
 	if (code == TINKER_KEY_ENTER || code == TINKER_KEY_KP_ENTER)
@@ -216,6 +250,10 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 		PrintConsole(tstring("] ") + sText + "\n");
 
 		CCommand::Run(sText);
+
+		if (trim(sText).length())
+			m_asHistory.push_back(trim(sText));
+		m_iHistory = -1;
 
 		return true;
 	}

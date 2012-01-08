@@ -7,23 +7,24 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 include_directories (
-	${PROJECT_SOURCE_DIR}/ext-deps/EASTL/include
-	${PROJECT_SOURCE_DIR}/ext-deps/enet-1.3.0/include
-	${PROJECT_SOURCE_DIR}/ext-deps/enet-1.3.3/include
+	${PROJECT_SOURCE_DIR}/../ext-deps/EASTL/include
+	${PROJECT_SOURCE_DIR}/../ext-deps/enet-1.3.0/include
+	${PROJECT_SOURCE_DIR}/../ext-deps/enet-1.3.3/include
 	${CMAKE_SOURCE_DIR}/
 	${CMAKE_SOURCE_DIR}/common
 	${CMAKE_SOURCE_DIR}/common/math
+	${CMAKE_SOURCE_DIR}/tinker
 	${CMAKE_SOURCE_DIR}/tengine
 )
 
 if (WIN32)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/glew-1.7.0/include)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/glfw-1.3/include)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/include)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/pthreads-w32-2-8-0-release)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/SDL-1.2.14/include)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/SDL_mixer-1.2.11/include)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/src)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/glew-1.7.0/include)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/glfw-1.3/include)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/devil-1.7.8/include)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/pthreads-w32-2-8-0-release)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/SDL-1.2.14/include)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/SDL_mixer-1.2.11/include)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/src)
 endif (WIN32)
 
 set (TENGINE_GAME_SOURCES
@@ -52,8 +53,6 @@ set (TENGINE_GAME_ENTITY_SOURCES
 
 set (TENGINE_MODELS_SOURCES
 	models/models.cpp
-	models/texturelibrary.cpp
-	models/texturesheet.cpp
 )
 
 set (TENGINE_NETWORK_SOURCES
@@ -80,10 +79,9 @@ set (TENGINE_PHYSICS_SOURCES
 
 set (TENGINE_RENDERER_SOURCES
 	renderer/particles.cpp
-	renderer/renderer.cpp
-	renderer/renderingcontext.cpp
+	renderer/game_renderer.cpp
+	renderer/game_renderingcontext.cpp
 	renderer/roperenderer.cpp
-	renderer/shaders.cpp
 )
 
 set (TENGINE_SOUND_SOURCES
@@ -92,15 +90,13 @@ set (TENGINE_SOUND_SOURCES
 
 set (TENGINE_UI_SOURCES
 	ui/hudviewport.cpp
+	ui/gamewindow.cpp
+	ui/chatbox.cpp
 )
 
 set (TENGINE_TINKER_SOURCES
 	../tinker/lobby/lobby_client.cpp
 	../tinker/lobby/lobby_server.cpp
-	../tinker/portals/portal_steam.cpp
-	../tinker/gamewindow.cpp
-	../tinker/profiler.cpp
-	../tinker/chatbox.cpp
 )
 
 set (TENGINE_SOURCES
@@ -121,41 +117,41 @@ add_library(tengine STATIC ${TENGINE_SOURCES})
 target_link_libraries (tengine tinker modelconverter toys)
 
 if (WIN32)
-	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Debug/DevIL.lib)
-	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Debug/ILU.lib)
-	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/pthreads-w32-2-8-0-release/Debug/pthread.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/devil-1.7.8/msvc10/Debug/DevIL.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/devil-1.7.8/msvc10/Debug/ILU.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/pthreads-w32-2-8-0-release/Debug/pthread.lib)
 	if (WITH_NETWORKING)
-		target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/enet-1.3.0/Debug/enet.lib)
+		target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/enet-1.3.0/Debug/enet.lib)
 	endif (WITH_NETWORKING)
-	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/Debug/BulletDynamics_Debug.lib)
-	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/Debug/BulletCollision_Debug.lib)
-	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/Debug/LinearMath_Debug.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/lib/Debug/BulletDynamics_Debug.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/lib/Debug/BulletCollision_Debug.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/lib/Debug/LinearMath_Debug.lib)
 
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Release/DevIL.lib)
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/msvc10/Release/ILU.lib)
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/pthreads-w32-2-8-0-release/Release/pthread.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/devil-1.7.8/msvc10/Release/DevIL.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/devil-1.7.8/msvc10/Release/ILU.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/pthreads-w32-2-8-0-release/Release/pthread.lib)
 	if (WITH_NETWORKING)
-		target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/enet-1.3.0/Release/enet.lib)
+		target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/enet-1.3.0/Release/enet.lib)
 	endif (WITH_NETWORKING)
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/RelWithDebInfo/BulletDynamics_RelWithDebugInfo.lib)
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/RelWithDebInfo/BulletCollision_RelWithDebugInfo.lib)
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/ext-deps/bullet-2.79/lib/RelWithDebInfo/LinearMath_RelWithDebugInfo.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/lib/RelWithDebInfo/BulletDynamics_RelWithDebugInfo.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/lib/RelWithDebInfo/BulletCollision_RelWithDebugInfo.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/lib/RelWithDebInfo/LinearMath_RelWithDebugInfo.lib)
 
 	target_link_libraries(tengine iphlpapi ws2_32 Winmm)
 
 	target_link_libraries(tengine
-		${CMAKE_SOURCE_DIR}/ext-deps/SDL-1.2.14/lib/sdl.lib
-		${CMAKE_SOURCE_DIR}/ext-deps/SDL-1.2.14/lib/sdlmain.lib
-		${CMAKE_SOURCE_DIR}/ext-deps/SDL_mixer-1.2.11/lib/sdl_mixer.lib
+		${CMAKE_SOURCE_DIR}/../ext-deps/SDL-1.2.14/lib/sdl.lib
+		${CMAKE_SOURCE_DIR}/../ext-deps/SDL-1.2.14/lib/sdlmain.lib
+		${CMAKE_SOURCE_DIR}/../ext-deps/SDL_mixer-1.2.11/lib/sdl_mixer.lib
 	)
 endif (WIN32)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	if (WITH_NETWORKING)
-		target_link_libraries (tengine ${CMAKE_SOURCE_DIR}/ext-deps/enet-1.3.0/.libs/libenet.a)
+		target_link_libraries (tengine ${CMAKE_SOURCE_DIR}/../ext-deps/enet-1.3.0/.libs/libenet.a)
 	endif (WITH_NETWORKING)
-	target_link_libraries (tengine ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/lib/.libs/libIL.a)
-	target_link_libraries (tengine ${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/lib/.libs/libILU.a)
+	target_link_libraries (tengine ${CMAKE_SOURCE_DIR}/../ext-deps/devil-1.7.8/lib/.libs/libIL.a)
+	target_link_libraries (tengine ${CMAKE_SOURCE_DIR}/../ext-deps/devil-1.7.8/lib/.libs/libILU.a)
 	target_link_libraries (tengine /usr/lib/libpng.a)
 	target_link_libraries (tengine /usr/lib/libz.a)
 	target_link_libraries (tengine SDL SDL_mixer)

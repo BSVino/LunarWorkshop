@@ -55,10 +55,15 @@ public:
 	void		SetAngles(const EAngle& angDir);
 	void		SetRotation(float flAngle, const Vector& vecAxis);		// Assumes the axis is a normalized vector.
 	void		SetRotation(const Quaternion& q);
-	void		SetOrientation(const Vector& vecDir);
+	void		SetOrientation(const Vector& vecDir, const Vector& vecUp = Vector(0, 1, 0));
 	void		SetScale(const Vector& vecScale);
 	void		SetReflection(const Vector& vecPlaneNormal);			// Reflection around a plane with this normal which passes through the center of the local space.
 																		// Assumes the plane normal passed in is normalized.
+
+	static Matrix4x4	ProjectPerspective(float flFOV, float flAspectRatio, float flNear, float flFar);							// Just like gluPerspectives
+	static Matrix4x4	ProjectFrustum(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar);		// Just like glFrustum
+	static Matrix4x4	ProjectOrthographic(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar);	// Just like glOrtho
+	static Matrix4x4	ConstructCameraView(const Vector& vecPosition, const Vector& vecDirection, const Vector& vecUp);			// Like gluLookAt but a direction parameter instead of target
 
 	// Add a translation
 	Matrix4x4	operator+=(const Vector& v);

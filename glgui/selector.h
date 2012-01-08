@@ -110,7 +110,7 @@ namespace glgui
 					CRootPanel::PaintRect(flLeft + flWidth*(int)i/((int)m_aSelections.size()-1), y+h/2-5, 1, 10, Color(200, 200, 200, 255));
 			}
 
-			CRootPanel::PaintRect(HandleX()+2, HandleY()+2, HANDLE_SIZE-4, HANDLE_SIZE-4, g_clrBoxHi);
+			CRootPanel::PaintRect(HandleX()+2, HandleY()+2, HANDLE_SIZE-4, HANDLE_SIZE-4, g_clrBoxHi, 2);
 
 			CPanel::Paint(x, y, w, h);
 		}

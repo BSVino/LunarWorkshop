@@ -24,6 +24,8 @@ SAVEDATA_TABLE_BEGIN(CReflectionCharacter);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CReflectionCharacter);
+	INPUT_DEFINE(ReflectVertical);
+	INPUT_DEFINE(ReflectLateral);
 INPUTS_TABLE_END();
 
 CReflectionCharacter::CReflectionCharacter()
@@ -49,7 +51,7 @@ TVector CReflectionCharacter::GetGoalVelocity()
 
 float CReflectionCharacter::EyeHeight() const
 {
-	return 1.8f;
+	return 1.65f;
 }
 
 void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
@@ -81,7 +83,6 @@ void CReflectionCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
 	if (pMirror && vecNewOrigin != m_vecLocalOrigin)
 	{
 		Vector vecOldGlobalOrigin = GetGlobalOrigin();
-		Vector vecOldLocalOrigin = GetLocalOrigin();
 		Vector vecNewGlobalOrigin = GetParentGlobalTransform() * vecNewOrigin;
 
 		Matrix4x4 mMirror = pMirror->GetGlobalTransform();
@@ -94,107 +95,137 @@ void CReflectionCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
 		bool bPointInsideCheck = pMirror->IsPointInside(vecOldView, false);
 
 		if(bOldSide != bNewSide && bPointInsideCheck)
-		{
-			Matrix4x4 mReflection = pMirror->GetReflection();
+			Reflect(mMirror, pMirror->GetReflection(), pMirror->GetReflectionType(), mNew, pMirror);
+	}
+}
 
-			// Write out reflected origin.
-			Vector vecNewReflectedGlobalOrigin = mReflection * (vecNewGlobalOrigin - mMirror.GetTranslation()) + mMirror.GetTranslation();
+void CReflectionCharacter::Reflect(const Matrix4x4& mMirror, const Matrix4x4& mReflection, reflection_t eReflectionType, Matrix4x4& mNew, CMirror* pMirror)
+{
+	Vector vecNewOrigin = mNew.GetTranslation();
+	Vector vecNewGlobalOrigin = GetParentGlobalTransform() * vecNewOrigin;
+	Vector vecOldLocalOrigin = GetLocalOrigin();
 
-			if (HasMoveParent())
-				mNew.SetTranslation(GetMoveParent()->GetGlobalToLocalTransform() * vecNewReflectedGlobalOrigin);
-			else
-				mNew.SetTranslation(vecNewReflectedGlobalOrigin);
+	// Write out reflected origin.
+	Vector vecNewReflectedGlobalOrigin = mReflection * (vecNewGlobalOrigin - mMirror.GetTranslation()) + mMirror.GetTranslation();
+
+	if (HasMoveParent())
+		mNew.SetTranslation(GetMoveParent()->GetGlobalToLocalTransform() * vecNewReflectedGlobalOrigin);
+	else
+		mNew.SetTranslation(vecNewReflectedGlobalOrigin);
 
 #ifdef _DEBUG
-			// Should be on the same side as the old side, since it was reflected.
-			bool bOldReflectedSide = pMirror->GetSide(vecOldLocalOrigin + GetUpVector() * EyeHeight());
-			bool bNewReflectedSide = pMirror->GetSide(mNew.GetTranslation() + GetUpVector() * EyeHeight());
-			TAssert(bOldReflectedSide == bNewReflectedSide);
+	if (pMirror)
+	{
+		// Should be on the same side as the old side, since it was reflected.
+		bool bOldReflectedSide = pMirror->GetSide(vecOldLocalOrigin + GetUpVector() * EyeHeight());
+		bool bNewReflectedSide = pMirror->GetSide(mNew.GetTranslation() + GetUpVector() * EyeHeight());
+		TAssert(bOldReflectedSide == bNewReflectedSide);
+	}
 #endif
 
-			// Reflect the velocity
-			Vector vecVelocity = GetGlobalVelocity();
-			Vector vecReflectedVelocity = mReflection.TransformVector(vecVelocity);
-			SetGlobalVelocity(vecReflectedVelocity);
+	// Reflect the velocity
+	Vector vecVelocity = GetGlobalVelocity();
+	Vector vecReflectedVelocity = mReflection.TransformVector(vecVelocity);
+	SetGlobalVelocity(vecReflectedVelocity);
 
-			// Reflect the character's orientation
-			Vector vecForward = GetGlobalTransform().GetForwardVector();
-			Vector vecReflectedForward = mReflection.TransformVector(vecForward);
-			if (HasMoveParent())
-				mNew.SetOrientation(GetMoveParent()->GetGlobalToLocalTransform().TransformVector(vecReflectedForward));
-			else
-				mNew.SetOrientation(vecReflectedForward);
+	// Reflect the character's orientation
+	Vector vecForward = GetGlobalTransform().GetForwardVector();
+	Vector vecReflectedForward = mReflection.TransformVector(vecForward);
+	if (HasMoveParent())
+		mNew.SetOrientation(GetMoveParent()->GetGlobalToLocalTransform().TransformVector(vecReflectedForward));
+	else
+		mNew.SetOrientation(vecReflectedForward);
 
-			// Reflect the character's viewing vector
-			Vector vecView = AngleVector(GetViewAngles());
-			SetViewAngles(VectorAngles(mReflection.TransformVector(vecView)));
+	// Reflect the character's viewing vector
+	Vector vecView = AngleVector(GetViewAngles());
+	SetViewAngles(VectorAngles(mReflection.TransformVector(vecView)));
 
-			// Reflect the character's gravity
-			Vector vecGravity = GetGlobalGravity();
-			Vector vecReflectedGravity = mReflection.TransformVector(vecGravity);
-			SetGlobalGravity(vecReflectedGravity);
+	// Reflect the character's gravity
+	Vector vecGravity = GetGlobalGravity();
+	Vector vecReflectedGravity = mReflection.TransformVector(vecGravity);
+	SetGlobalGravity(vecReflectedGravity);
 
-			// Reflect the bounding box
-			Vector vecMaxs = GetBoundingBox().m_vecMaxs;
-			Vector vecMins = GetBoundingBox().m_vecMins;
-			Vector vecReflectedMaxs = mReflection.TransformVector(vecMaxs);
-			Vector vecReflectedMins = mReflection.TransformVector(vecMins);
+	// Reflect the bounding box
+	Vector vecMaxs = GetBoundingBox().m_vecMaxs;
+	Vector vecMins = GetBoundingBox().m_vecMins;
+	Vector vecReflectedMaxs = mReflection.TransformVector(vecMaxs);
+	Vector vecReflectedMins = mReflection.TransformVector(vecMins);
 
 #define swap_if_greater(x, y) \
-	if ((x) > (y)) \
-	{ \
-		float f = (x); \
-		(x) = (y); \
-		(y) = f; \
-	} \
+if ((x) > (y)) \
+{ \
+	float f = (x); \
+	(x) = (y); \
+	(y) = f; \
+} \
 
-			swap_if_greater(vecReflectedMins.x, vecReflectedMaxs.x);
-			swap_if_greater(vecReflectedMins.y, vecReflectedMaxs.y);
-			swap_if_greater(vecReflectedMins.z, vecReflectedMaxs.z);
+	swap_if_greater(vecReflectedMins.x, vecReflectedMaxs.x);
+	swap_if_greater(vecReflectedMins.y, vecReflectedMaxs.y);
+	swap_if_greater(vecReflectedMins.z, vecReflectedMaxs.z);
 
-			m_aabbBoundingBox = AABB(vecReflectedMins, vecReflectedMaxs);
+	m_aabbBoundingBox = AABB(vecReflectedMins, vecReflectedMaxs);
 
-			if (pMirror->GetReflectionType() == REFLECTION_LATERAL)
-				m_vecMoveVelocity.z = -m_vecMoveVelocity.z;
+	if (eReflectionType == REFLECTION_LATERAL)
+		m_vecMoveVelocity.z = -m_vecMoveVelocity.z;
 
-			bool bWasReflected = !!(m_iReflected&(1<<pMirror->GetReflectionType()));
-			if (bWasReflected)
-				m_iReflected &= ~(1<<pMirror->GetReflectionType());
-			else
-				m_iReflected |= (1<<pMirror->GetReflectionType());
+	bool bWasReflected = !!(m_iReflected&(1<<eReflectionType));
+	if (bWasReflected)
+		m_iReflected &= ~(1<<eReflectionType);
+	else
+		m_iReflected |= (1<<eReflectionType);
 
-			if (IsReflected(REFLECTION_ANY))
-				m_hMirrorInside = pMirror;
-			else
-				m_hMirrorInside = NULL;
+	if (IsReflected(REFLECTION_ANY))
+		m_hMirrorInside = pMirror;
+	else
+		m_hMirrorInside = NULL;
 
-			if (pMirror->GetReflectionType() == REFLECTION_VERTICAL)
-			{
-				if (IsReflected(REFLECTION_VERTICAL))
-					GamePhysics()->SetEntityUpVector(this, Vector(0, -1, 0));
-				else
-					GamePhysics()->SetEntityUpVector(this, Vector(0, 1, 0));
+	if (eReflectionType == REFLECTION_VERTICAL)
+	{
+		if (IsReflected(REFLECTION_VERTICAL))
+			GamePhysics()->SetEntityUpVector(this, Vector(0, -1, 0));
+		else
+			GamePhysics()->SetEntityUpVector(this, Vector(0, 1, 0));
 
-				if (IsReflected(REFLECTION_VERTICAL))
-					m_mVerticalReflection.SetReflection(Vector(0, 1, 0));
-				else
-					m_mVerticalReflection.Identity();
-			}
-			else if (pMirror->GetReflectionType() == REFLECTION_LATERAL)
-			{
-				if (IsReflected(REFLECTION_LATERAL))
-					m_mLateralReflection.SetReflection(pMirror->GetGlobalTransform().GetForwardVector());
-				else
-					m_mLateralReflection.Identity();
-			}
-
-			Reflected(pMirror->GetReflectionType());
-
-			CReflectionProxy::OnPlayerReflection(IsReflected(REFLECTION_LATERAL) ^ IsReflected(REFLECTION_VERTICAL));
-			if (pMirror->GetReflectionType() == REFLECTION_LATERAL)
-				CReflectionProxy::OnPlayerGravity(IsReflected(REFLECTION_VERTICAL));
-		}
+		if (IsReflected(REFLECTION_VERTICAL))
+			m_mVerticalReflection.SetReflection(Vector(0, 1, 0));
+		else
+			m_mVerticalReflection.Identity();
 	}
+	else if (eReflectionType == REFLECTION_LATERAL)
+	{
+		if (IsReflected(REFLECTION_LATERAL))
+			m_mLateralReflection.SetReflection(mMirror.GetForwardVector());
+		else
+			m_mLateralReflection.Identity();
+	}
+
+	Reflected(eReflectionType);
+
+	CReflectionProxy::OnPlayerReflection(IsReflected(REFLECTION_LATERAL) ^ IsReflected(REFLECTION_VERTICAL));
+	if (eReflectionType == REFLECTION_LATERAL)
+		CReflectionProxy::OnPlayerGravity(IsReflected(REFLECTION_VERTICAL));
+}
+
+void CReflectionCharacter::ReflectVertical(const eastl::vector<tstring>& asArgs)
+{
+	Matrix4x4 mReflection, mTransform;
+	mReflection.SetReflection(Vector(0, 1, 0));
+	mTransform = GetGlobalTransform();
+
+	Reflect(GetGlobalTransform(), mReflection, REFLECTION_VERTICAL, mTransform);
+
+	SetGlobalTransform(mTransform);
+}
+
+void CReflectionCharacter::ReflectLateral(const eastl::vector<tstring>& asArgs)
+{
+	Matrix4x4 mReflection, mTransform;
+	mReflection.SetReflection(Vector(1, 0, 0));
+	mTransform = GetGlobalTransform();
+
+	Reflect(GetGlobalTransform(), mReflection, REFLECTION_LATERAL, mTransform);
+
+	SetGlobalTransform(mTransform);
 }
 
 bool CReflectionCharacter::IsReflected(reflection_t eReflectionType) const

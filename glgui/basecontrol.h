@@ -21,6 +21,7 @@ namespace glgui
 		virtual void	Paint();
 		virtual void	Paint(float x, float y);
 		virtual void	Paint(float x, float y, float w, float h);
+		virtual void	PaintBackground(float x, float y, float w, float h);
 		virtual void	Layout() {};
 		virtual void	Think() {};
 		virtual void	UpdateScene() {};
@@ -75,9 +76,20 @@ namespace glgui
 		virtual void	SetTooltip(const tstring& sTip);
 		virtual tstring	GetTooltip() { return m_sTip; };
 
-		static void		PaintRect(float x, float y, float w, float h, const Color& c = g_clrBox);
+		void			SetBackgroundColor(Color c) { m_clrBackground = c; };
+
+		typedef enum
+		{
+			BT_NONE	= 0,
+			BT_SOME = 1
+		} Border;
+
+		void			SetBorder(Border b) { m_eBorder = b; };
+
+		static void		PaintRect(float x, float y, float w, float h, const Color& c = g_clrBox, int iBorder = 0, bool bHighlight = false);
 		static void		PaintTexture(size_t iTexture, float x, float y, float w, float h, const Color& c = Color(255, 255, 255, 255));
 		static void		PaintSheet(size_t iTexture, float x, float y, float w, float h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c = Color(255, 255, 255, 255));
+		static void		MakeQuad();
 
 	protected:
 		IControl*		m_pParent;
@@ -101,7 +113,12 @@ namespace glgui
 
 		bool			m_bFocus;
 
-		tstring	m_sTip;
+		tstring			m_sTip;
+
+		Color			m_clrBackground;
+		Border			m_eBorder;
+
+		static size_t	s_iQuad;
 	};
 };
 

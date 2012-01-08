@@ -4,6 +4,8 @@
 #include <iphlpapi.h>
 #include <tchar.h>
 #include <dbghelp.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <tstring.h>
 
@@ -71,6 +73,11 @@ void OpenBrowser(const tstring& sURL)
 void OpenExplorer(const tstring& sDirectory)
 {
 	ShellExecute(NULL, L"open", convertstring<tchar, wchar_t>(sDirectory).c_str(), NULL, NULL, SW_SHOWNORMAL);
+}
+
+void Alert(const tstring& sMessage)
+{
+	MessageBox(NULL, convertstring<tchar, wchar_t>(sMessage).c_str(), L"Alert", MB_ICONWARNING|MB_OK);
 }
 
 static int g_iMinidumpsWritten = 0;
@@ -270,6 +277,15 @@ tstring FindAbsolutePath(const tstring& sPath)
 	GetFullPathName(swPath.c_str(), MAX_PATH, szPath, nullptr);
 
 	return convertstring<wchar_t, tchar>(szPath);
+}
+
+time_t GetFileModificationTime(const char* pszFile)
+{
+	struct stat s;
+	if (stat(pszFile, &s) != 0)
+		return 0;
+
+	return s.st_mtime;
 }
 
 void DebugPrint(tstring sText)

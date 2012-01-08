@@ -499,18 +499,18 @@ void CAOGenerator::GenerateShadowMaps()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, iShadowMapSize, iShadowMapSize, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
 
 	GLuint iDepthRB;
-	glGenRenderbuffersEXT(1, &iDepthRB);
-	glBindRenderbufferEXT( GL_RENDERBUFFER, iDepthRB );
-	glRenderbufferStorageEXT( GL_RENDERBUFFER, GL_RGBA, iShadowMapSize, iShadowMapSize );
-	glBindRenderbufferEXT( GL_RENDERBUFFER, 0 );
+	glGenRenderbuffers(1, &iDepthRB);
+	glBindRenderbuffer( GL_RENDERBUFFER, iDepthRB );
+	glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA, iShadowMapSize, iShadowMapSize );
+	glBindRenderbuffer( GL_RENDERBUFFER, 0 );
 
 	// A frame buffer for holding the depth buffer shadow render
 	GLuint iDepthFB;
-	glGenFramebuffersEXT(1, &iDepthFB);
-	glBindFramebufferEXT(GL_FRAMEBUFFER, iDepthFB);
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, iShadowMap, 0);
-	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, iDepthRB);	// Unused
-	glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+	glGenFramebuffers(1, &iDepthFB);
+	glBindFramebuffer(GL_FRAMEBUFFER, iDepthFB);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, iShadowMap, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, iDepthRB);	// Unused
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	GLuint iUVMap;
 	glGenTextures(1, &iUVMap);
@@ -523,18 +523,18 @@ void CAOGenerator::GenerateShadowMaps()
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	GLuint iUVRB;
-	glGenRenderbuffersEXT(1, &iUVRB);
-	glBindRenderbufferEXT( GL_RENDERBUFFER, iUVRB );
-	glRenderbufferStorageEXT( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)m_iWidth, (GLsizei)m_iHeight );
-	glBindRenderbufferEXT( GL_RENDERBUFFER, 0 );
+	glGenRenderbuffers(1, &iUVRB);
+	glBindRenderbuffer( GL_RENDERBUFFER, iUVRB );
+	glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)m_iWidth, (GLsizei)m_iHeight );
+	glBindRenderbuffer( GL_RENDERBUFFER, 0 );
 
 	// A frame buffer for holding the UV layout once it is rendered flat with the shadow
 	GLuint iUVFB;
-	glGenFramebuffersEXT(1, &iUVFB);
-	glBindFramebufferEXT(GL_FRAMEBUFFER, iUVFB);
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, iUVMap, 0);
-	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, iUVRB);	// Unused
-	glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+	glGenFramebuffers(1, &iUVFB);
+	glBindFramebuffer(GL_FRAMEBUFFER, iUVFB);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, iUVMap, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, iUVRB);	// Unused
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	GLuint iAOMap;
 	glGenTextures(1, &iAOMap);
@@ -547,17 +547,17 @@ void CAOGenerator::GenerateShadowMaps()
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	GLuint iAORB;
-	glGenRenderbuffersEXT(1, &iAORB);
-	glBindRenderbufferEXT( GL_RENDERBUFFER, iAORB );
-	glRenderbufferStorageEXT( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)m_iWidth, (GLsizei)m_iHeight );
-	glBindRenderbufferEXT( GL_RENDERBUFFER, 0 );
+	glGenRenderbuffers(1, &iAORB);
+	glBindRenderbuffer( GL_RENDERBUFFER, iAORB );
+	glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)m_iWidth, (GLsizei)m_iHeight );
+	glBindRenderbuffer( GL_RENDERBUFFER, 0 );
 
 	// A frame buffer for holding the completed AO map
-	glGenFramebuffersEXT(1, &m_iAOFB);
-	glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)m_iAOFB);
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, iAOMap, 0);
-	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, iAORB);	// Unused
-	glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+	glGenFramebuffers(1, &m_iAOFB);
+	glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)m_iAOFB);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, iAOMap, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, iAORB);	// Unused
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	GLuint iSMVertexShader = glCreateShader(GL_VERTEX_SHADER);
 	const char* pszShaderSource = GetVSFlattenedShadowMap();
@@ -685,7 +685,7 @@ void CAOGenerator::GenerateShadowMaps()
 			// If we're looking from below and ground occlusion is on, don't bother with this render.
 			if (!(flPitch < -10 && m_bGroundOcclusion))
 			{
-				glBindFramebufferEXT(GL_FRAMEBUFFER, iDepthFB);
+				glBindFramebuffer(GL_FRAMEBUFFER, iDepthFB);
 				glViewport(0, 0, iShadowMapSize, iShadowMapSize);
 
 				glDisable(GL_CULL_FACE);
@@ -694,7 +694,7 @@ void CAOGenerator::GenerateShadowMaps()
 
 				glCallList(m_iSceneList);
 
-				glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 #ifdef AO_DEBUG
 				glDrawBuffer(GL_FRONT);
@@ -707,7 +707,7 @@ void CAOGenerator::GenerateShadowMaps()
 			Matrix4x4 mTextureMatrix = mBias*mLightProjection*mLightView;
 
 			// We're storing the resulting projection in GL_TEXTURE7 for later reference by the shader.
-			glBindFramebufferEXT(GL_FRAMEBUFFER, iUVFB);
+			glBindFramebuffer(GL_FRAMEBUFFER, iUVFB);
 
 			glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 
@@ -756,7 +756,7 @@ void CAOGenerator::GenerateShadowMaps()
 
 			glPopAttrib();
 
-			glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 #ifdef AO_DEBUG
 			glDrawBuffer(GL_FRONT);
@@ -768,9 +768,9 @@ void CAOGenerator::GenerateShadowMaps()
 			float flTimeBefore = CModelWindow::Get()->GetTime();
 
 			glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
-			glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)m_iAOFB);
+			glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)m_iAOFB);
 			AccumulateTexture(iUVMap);
-			glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 #ifdef AO_DEBUG
 			glDrawBuffer(GL_FRONT);
@@ -800,9 +800,9 @@ void CAOGenerator::GenerateShadowMaps()
 			break;
 	}
 
-	glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)m_iAOFB);
+	glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)m_iAOFB);
 	glReadPixels(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight, GL_RGBA, GL_FLOAT, m_pPixels);
-	glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	if (!m_bStopGenerating)
 	{
@@ -847,13 +847,13 @@ void CAOGenerator::GenerateShadowMaps()
 	glDeleteTextures(1, &iUVMap);
 	glDeleteTextures(1, &iAOMap);
 
-	glDeleteRenderbuffersEXT(1, &iDepthRB);
-	glDeleteRenderbuffersEXT(1, &iUVRB);
-	glDeleteRenderbuffersEXT(1, &iAORB);
+	glDeleteRenderbuffers(1, &iDepthRB);
+	glDeleteRenderbuffers(1, &iUVRB);
+	glDeleteRenderbuffers(1, &iAORB);
 
-	glDeleteFramebuffersEXT(1, &iDepthFB);
-	glDeleteFramebuffersEXT(1, &iUVFB);
-	glDeleteFramebuffersEXT(1, &m_iAOFB);
+	glDeleteFramebuffers(1, &iDepthFB);
+	glDeleteFramebuffers(1, &iUVFB);
+	glDeleteFramebuffers(1, &m_iAOFB);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -1459,9 +1459,9 @@ size_t CAOGenerator::GenerateTexture(bool bInMedias)
 			}
 			else
 			{
-				glBindFramebufferEXT(GL_FRAMEBUFFER, (GLuint)m_iAOFB);
+				glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)m_iAOFB);
 				glReadPixels(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight, GL_RGBA, GL_FLOAT, m_pPixels);
-				glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 				size_t iBufferSize = m_iWidth*m_iHeight*m_iPixelDepth;
 				for (size_t p = 0; p < iBufferSize; p+=m_iPixelDepth)

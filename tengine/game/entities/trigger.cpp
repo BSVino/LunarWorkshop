@@ -1,6 +1,8 @@
 #include "trigger.h"
 
 #include <physics/physics.h>
+#include <game/gameserver.h>
+#include <renderer/game_renderer.h>
 
 REGISTER_ENTITY(CTrigger);
 
@@ -10,8 +12,11 @@ NETVAR_TABLE_END();
 SAVEDATA_TABLE_BEGIN(CTrigger);
 	SAVEDATA_DEFINE_OUTPUT(OnStartTouch);
 	SAVEDATA_DEFINE_OUTPUT(OnEndTouch);
+	SAVEDATA_DEFINE_OUTPUT(OnStartVisible);
+	SAVEDATA_DEFINE_OUTPUT(OnEndVisible);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYVECTOR, CEntityHandle<CBaseEntity>, m_ahTouching);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYVECTOR, CEntityHandle<CBaseEntity>, m_ahLastTouching);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bVisible);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CTrigger);
@@ -21,7 +26,7 @@ void CTrigger::Spawn()
 {
 	BaseClass::Spawn();
 
-	AddToPhysics(CT_TRIGGER);
+	m_bVisible = false;
 }
 
 void CTrigger::OnSetModel()
@@ -35,13 +40,35 @@ void CTrigger::OnSetModel()
 	AddToPhysics(CT_TRIGGER);
 }
 
+void CTrigger::ClientSpawn()
+{
+	if (IsInPhysics())
+		RemoveFromPhysics();
+
+	AddToPhysics(CT_TRIGGER);
+
+	BaseClass::ClientSpawn();
+}
+
 void CTrigger::Think()
 {
 	BaseClass::Think();
+
+	bool bVisible = false;
+	if (IsActive())
+		bVisible = GameServer()->GetRenderer()->IsSphereInFrustum(GetGlobalCenter(), GetBoundingRadius());
+
+	if (bVisible && !m_bVisible)
+		StartVisible();
+	else if (!bVisible && m_bVisible)
+		EndVisible();
 }
 
 void CTrigger::Touching(const CBaseEntity* pOther)
 {
+	if (!IsActive())
+		return;
+
 	for (size_t i = 0; i < m_ahLastTouching.size(); i++)
 	{
 		if (m_ahLastTouching[i] == pOther)
@@ -53,7 +80,7 @@ void CTrigger::Touching(const CBaseEntity* pOther)
 		}
 	}
 
-	// Not in the LostTouching list, so it must be a new touch.
+	// Not in the LastTouching list, so it must be a new touch.
 	StartTouch(pOther);
 	m_ahTouching.push_back(pOther);
 }
@@ -84,4 +111,16 @@ void CTrigger::StartTouch(const CBaseEntity* pOther)
 void CTrigger::EndTouch(const CBaseEntity* pOther)
 {
 	CallOutput("OnEndTouch");
+}
+
+void CTrigger::StartVisible()
+{
+	m_bVisible = true;
+	CallOutput("OnStartVisible");
+}
+
+void CTrigger::EndVisible()
+{
+	m_bVisible = false;
+	CallOutput("OnEndVisible");
 }

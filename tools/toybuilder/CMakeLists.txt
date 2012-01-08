@@ -1,5 +1,5 @@
 include_directories (
-	${PROJECT_SOURCE_DIR}/ext-deps/EASTL/include
+	${PROJECT_SOURCE_DIR}/../ext-deps/EASTL/include
 	${CMAKE_SOURCE_DIR}
 	${CMAKE_SOURCE_DIR}/common
 	${CMAKE_SOURCE_DIR}/common/math

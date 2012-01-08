@@ -1,6 +1,6 @@
 #include "panel.h"
 
-#include <GL/glew.h>
+#include <renderer/renderingcontext.h>
 
 #include "rootpanel.h"
 #include "scrollbar.h"
@@ -10,8 +10,6 @@ using namespace glgui;
 CPanel::CPanel()
 	: CBaseControl(0, 0, 100, 100)
 {
-	SetBorder(BT_NONE);
-	SetBackgroundColor(Color(0, 0, 0, 0));
 	m_pHasCursor = NULL;
 	m_bHighlight = false;
 	m_bDestructing = false;
@@ -346,22 +344,16 @@ void CPanel::Paint(float x, float y, float w, float h)
 	if (!IsVisible())
 		return;
 
-	if (m_clrBackground.a())
-		CRootPanel::PaintRect(x, y, w, h, m_clrBackground);
-
-	if (m_eBorder == BT_SOME)
-		PaintBorder(x, y, w, h);
-
 	bool bScissor = m_bScissoring;
 	float sx, sy;
 	if (bScissor)
 	{
 		GetAbsPos(sx, sy);
-		sy = CRootPanel::Get()->GetHeight()-sy-GetHeight();
-		glScissor((int)sx, (int)sy, (int)GetWidth(), (int)GetHeight());
-		glEnable(GL_SCISSOR_TEST);
 
-		//CRootPanel::PaintRect(0, 0, CRootPanel::Get()->GetWidth(), CRootPanel::Get()->GetHeight(), Color(0, 0, 100));
+		//CRootPanel::PaintRect(sx, sy, GetWidth(), GetHeight(), Color(0, 0, 100, 50));
+
+		CRootPanel::GetContext()->SetUniform("bScissor", true);
+		CRootPanel::GetContext()->SetUniform("vecScissor", Vector4D(sx, sy, GetWidth(), GetHeight()));
 	}
 
 	size_t iCount = m_apControls.size();
@@ -373,19 +365,20 @@ void CPanel::Paint(float x, float y, float w, float h)
 
 		if (bScissor)
 		{
-			glScissor((int)sx, (int)sy, (int)GetWidth(), (int)GetHeight());
-			glEnable(GL_SCISSOR_TEST);
+			CRootPanel::GetContext()->SetUniform("bScissor", true);
+			CRootPanel::GetContext()->SetUniform("vecScissor", Vector4D(sx, sy, GetWidth(), GetHeight()));
 		}
 
 		// Translate this location to the child's local space.
 		float cx, cy, ax, ay;
 		pControl->GetAbsPos(cx, cy);
 		GetAbsPos(ax, ay);
+		pControl->PaintBackground(cx+x-ax, cy+y-ay, pControl->GetWidth(), pControl->GetHeight());
 		pControl->Paint(cx+x-ax, cy+y-ay);
 	}
 
 	if (bScissor)
-		glDisable(GL_SCISSOR_TEST);
+		CRootPanel::GetContext()->SetUniform("bScissor", false);
 
 	BaseClass::Paint(x, y, w, h);
 }
@@ -396,35 +389,6 @@ bool CPanel::ShouldControlOffset(IControl* pControl) const
 		return false;
 
 	return true;
-}
-
-void CPanel::PaintBorder(float x, float y, float w, float h)
-{
-	glBegin(GL_LINES);
-		// Bottom line
-		glNormal3f(-0.707106781f, 0.707106781f, 0);
-		glVertex2f(x, y);
-		glNormal3f(0.707106781f, 0.707106781f, 0);
-		glVertex2f(x+w-1, y);
-
-		// Top line
-		glNormal3f(-0.707106781f, -0.707106781f, 0);
-		glVertex2f(x, y+h-1);
-		glNormal3f(0.707106781f, -0.707106781f, 0);
-		glVertex2f(x+w-1, y+h-1);
-
-		// Left line
-		glNormal3f(-0.707106781f, 0.707106781f, 0);
-		glVertex2f(x, y+1);
-		glNormal3f(-0.707106781f, -0.707106781f, 0);
-		glVertex2f(x, y+h-1);
-
-		// Right line
-		glNormal3f(0.707106781f, 0.707106781f, 0);
-		glVertex2f(x+w, y+1);
-		glNormal3f(0.707106781f, -0.707106781f, 0);
-		glVertex2f(x+w, y+h-1);
-	glEnd();
 }
 
 void CPanel::Think()

@@ -35,7 +35,7 @@ public:
 	virtual void				MouseInput(int iButton, int iState);
 
 	class CGameServer*			GetGameServer() { return m_pGameServer; };
-	class CRenderer*			GetRenderer() { return m_pRenderer; };
+	class CGameRenderer*		GetRenderer() { return m_pRenderer; };
 
 	void						OpenChat();
 	void						CloseChat();
@@ -46,7 +46,7 @@ public:
 
 protected:
 	class CGameServer*			m_pGameServer;
-	class CRenderer*			m_pRenderer;
+	class CGameRenderer*		m_pRenderer;
 
 	class CChatBox*				m_pChatBox;
 

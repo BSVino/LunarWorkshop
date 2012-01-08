@@ -50,7 +50,7 @@ void CScrollBar::Paint(float x, float y, float w, float h)
 		CRootPanel::PaintRect(flLeft, y+h/2-5, 1, 10, Color(200, 200, 200, 255));
 		CRootPanel::PaintRect(flLeft + flWidth, y+h/2-5, 1, 10, Color(200, 200, 200, 255));
 
-		CRootPanel::PaintRect(HandleX()+2, HandleY()+2, m_flHandleSize-4, HANDLE_SIZE-4, g_clrBoxHi);
+		CRootPanel::PaintRect(HandleX()+2, HandleY()+2, m_flHandleSize-4, HANDLE_SIZE-4, g_clrBoxHi, 2);
 
 		CBaseControl::Paint(x, y, w, h);
 	}
@@ -64,7 +64,7 @@ void CScrollBar::Paint(float x, float y, float w, float h)
 		CRootPanel::PaintRect(x+w/2-5, flTop, 10, 1, Color(200, 200, 200, 255));
 		CRootPanel::PaintRect(x+w/2-5, flTop + flHeight, 10, 1, Color(200, 200, 200, 255));
 
-		CRootPanel::PaintRect(HandleX()+2, HandleY()+2, HANDLE_SIZE-4, m_flHandleSize-4, g_clrBoxHi);
+		CRootPanel::PaintRect(HandleX()+2, HandleY()+2, HANDLE_SIZE-4, m_flHandleSize-4, g_clrBoxHi, 2);
 
 		CBaseControl::Paint(x, y, w, h);
 	}

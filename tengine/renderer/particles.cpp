@@ -7,10 +7,10 @@
 #include <tinker/cvar.h>
 #include <tinker/profiler.h>
 #include <models/models.h>
-#include <models/texturelibrary.h>
-
-#include "renderer.h"
-#include "renderingcontext.h"
+#include <textures/texturelibrary.h>
+#include <renderer/game_renderer.h>
+#include <renderer/game_renderingcontext.h>
+#include <ui/gamewindow.h>
 
 CParticleSystemLibrary* CParticleSystemLibrary::s_pParticleSystemLibrary = NULL;
 static CParticleSystemLibrary g_pParticleSystemLibrary = CParticleSystemLibrary();
@@ -106,14 +106,11 @@ void CParticleSystemLibrary::Render()
 
 	if (true)
 	{
-		CRenderingContext c(GameServer()->GetRenderer());
-		if (GameServer()->GetRenderer()->ShouldUseShaders())
-		{
-			c.UseProgram("model");
-			c.SetUniform("bDiffuse", true);
-			c.SetUniform("iDiffuse", 0);
-			c.SetUniform("bColorSwapInAlpha", false);
-		}
+		CGameRenderingContext c(GameServer()->GetRenderer(), true);
+		c.UseProgram("model");
+		c.SetUniform("bDiffuse", true);
+		c.SetUniform("iDiffuse", 0);
+		c.SetUniform("bColorSwapInAlpha", false);
 
 		for (it = pPSL->m_apInstances.begin(); it != pPSL->m_apInstances.end(); it++)
 		{
@@ -125,14 +122,11 @@ void CParticleSystemLibrary::Render()
 
 	if (true)
 	{
-		CRenderingContext c(GameServer()->GetRenderer());
-		if (GameServer()->GetRenderer()->ShouldUseShaders())
-		{
-			c.UseProgram("model");
-			c.SetUniform("bDiffuse", true);
-			c.SetUniform("iDiffuse", 0);
-			c.SetUniform("bColorSwapInAlpha", false);
-		}
+		CGameRenderingContext c(GameServer()->GetRenderer(), true);
+		c.UseProgram("model");
+		c.SetUniform("bDiffuse", true);
+		c.SetUniform("iDiffuse", 0);
+		c.SetUniform("bColorSwapInAlpha", false);
 
 		for (it = pPSL->m_apInstances.begin(); it != pPSL->m_apInstances.end(); it++)
 		{
@@ -533,12 +527,12 @@ void CSystemInstance::SpawnParticle()
 		pNewParticle->m_flBillboardYaw = 0;
 }
 
-void CSystemInstance::Render(CRenderingContext* c)
+void CSystemInstance::Render(CGameRenderingContext* c)
 {
 	for (size_t i = 0; i < m_apChildren.size(); i++)
 		m_apChildren[i]->Render(c);
 
-	CRenderer* pRenderer = GameServer()->GetRenderer();
+	CGameRenderer* pRenderer = GameWindow()->GetRenderer();
 
 	Vector vecForward, vecRight, vecUp;
 	pRenderer->GetCameraVectors(&vecForward, &vecRight, &vecUp);
@@ -558,10 +552,7 @@ void CSystemInstance::Render(CRenderingContext* c)
 
 		if (m_pSystem->GetModel())
 		{
-			if (pRenderer->ShouldUseShaders())
-				c->SetUniform("flAlpha", pParticle->m_flAlpha);
-			else
-				c->SetAlpha(pParticle->m_flAlpha);
+			c->SetUniform("flAlpha", pParticle->m_flAlpha);
 
 			if (m_bColorOverride)
 				c->SetColor(m_clrOverride);
@@ -603,10 +594,7 @@ void CSystemInstance::Render(CRenderingContext* c)
 			Vector vecBL = vecOrigin - vecParticleRight - vecParticleUp;
 			Vector vecBR = vecOrigin + vecParticleRight - vecParticleUp;
 
-			if (pRenderer->ShouldUseShaders())
-				c->SetUniform("flAlpha", pParticle->m_flAlpha);
-			else
-				c->SetAlpha(pParticle->m_flAlpha);
+			c->SetUniform("flAlpha", pParticle->m_flAlpha);
 
 			if (m_bColorOverride)
 				c->SetColor(m_clrOverride);

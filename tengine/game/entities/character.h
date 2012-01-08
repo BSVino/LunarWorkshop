@@ -28,7 +28,11 @@ public:
 	void							StopMove(movetype_t);
 	virtual TVector					GetGoalVelocity();
 	virtual void					MoveThink();
+	virtual void					MoveThink_NoClip();
 	virtual void					Jump();
+
+	virtual void					SetNoClip(bool bOn);
+	virtual bool					GetNoClip() const { return m_bNoClip; }
 
 	virtual bool					CanAttack() const;
 	virtual void					Attack();
@@ -43,9 +47,10 @@ public:
 	CPlayer*						GetControllingPlayer() const;
 
 	virtual TFloat					EyeHeight() const { return 180.0f; }
-	virtual TFloat					CharacterSpeed() { return 80.0f; }
+	virtual TFloat					BaseCharacterSpeed() { return 80.0f; }
 	virtual TFloat					CharacterAcceleration() { return 4.0f; }
 	virtual TFloat					JumpStrength() { return 150.0f; }
+	virtual TFloat					CharacterSpeed();
 
 	virtual float					AttackTime() const { return 0.3f; }
 	virtual float					AttackDamage() const { return 50; }
@@ -76,6 +81,8 @@ protected:
 	bool							m_bTransformMoveByView;
 	Vector							m_vecGoalVelocity;
 	Vector							m_vecMoveVelocity;
+
+	bool							m_bNoClip;
 
 	float							m_flLastAttack;
 

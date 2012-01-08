@@ -14,11 +14,11 @@ public:
 	virtual void				Think();
 
 	virtual Vector				GetCameraPosition();
-	virtual Vector				GetCameraTarget();
+	virtual Vector				GetCameraDirection();
 	virtual Vector				GetCameraUp();
 	virtual float				GetCameraFOV();
 	virtual float				GetCameraNear() { return 0.01f; };
-	virtual float				GetCameraFar() { return 100.0f; };
+	virtual float				GetCameraFar() { return 500.0f; };
 };
 
 #endif

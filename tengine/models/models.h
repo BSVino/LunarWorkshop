@@ -19,6 +19,7 @@ public:
 public:
 	bool					Load();
 	size_t					LoadBufferIntoGL(size_t iMaterial);
+	void					UnloadBufferFromGL(size_t iBuffer);
 
 public:
 	size_t					m_iReferences;

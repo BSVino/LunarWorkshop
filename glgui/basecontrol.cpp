@@ -1,15 +1,20 @@
 #include "basecontrol.h"
 
-#include <GL/glew.h>
+#include <renderer/renderer.h>
+#include <renderer/renderingcontext.h>
 
 #include "rootpanel.h"
 #include "label.h"
 
 using namespace glgui;
 
+size_t CBaseControl::s_iQuad = ~0;
+
 CBaseControl::CBaseControl(float x, float y, float w, float h)
 {
 	SetParent(NULL);
+	SetBorder(BT_NONE);
+	SetBackgroundColor(Color(0, 0, 0, 0));
 	m_flX = x;
 	m_flY = y;
 	m_flW = w;
@@ -169,91 +174,129 @@ void CBaseControl::Paint(float x, float y, float w, float h)
 		if (iTooltipRight > CRootPanel::Get()->GetWidth())
 			mx -= (int)(iTooltipRight - CRootPanel::Get()->GetWidth());
 
-		PaintRect((float)mx-3, my-flFontHeight+1, flTextWidth+6, flFontHeight+6); 
-		glColor4ubv(Color(255, 255, 255, 255));
+		PaintRect((float)mx-3, my-flFontHeight+1, flTextWidth+6, flFontHeight+6, g_clrBox, 3); 
 		CLabel::PaintText(m_sTip, m_sTip.length(), "sans-serif", iFontSize, (float)mx, (float)my);
 	}
 }
 
-void CBaseControl::PaintRect(float x, float y, float w, float h, const Color& c)
+void CBaseControl::PaintBackground(float x, float y, float w, float h)
 {
-	glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT);
+	if (m_eBorder == BT_NONE && m_clrBackground.a() == 0)
+		return;
 
-	glEnable(GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	PaintRect(x, y, w, h, m_clrBackground, (m_eBorder == BT_SOME)?5:0, true);
+}
 
-	glColor4ubv(c);
+void CBaseControl::PaintRect(float x, float y, float w, float h, const Color& c, int iBorder, bool bHighlight)
+{
+	CRenderingContext* r = CRootPanel::GetContext();
+	TAssert(r);
+	if (!r)
+		return;
 
-	glMaterialfv(GL_FRONT, GL_AMBIENT, Vector(0.0f, 0.0f, 0.0f));
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, Vector(1.0f, 1.0f, 1.0f));
-	glMaterialfv(GL_FRONT, GL_SPECULAR, Vector(0.2f, 0.2f, 0.3f));
-	glMaterialfv(GL_FRONT, GL_EMISSION, Vector(0.0f, 0.0f, 0.0f));
-	glMaterialf(GL_FRONT, GL_SHININESS, 20.0f);
+	MakeQuad();
 
-	glLineWidth(1);
+	r->SetBlend(BLEND_ALPHA);
+	r->SetUniform("iBorder", iBorder);
+	r->SetUniform("bHighlight", bHighlight);
+	r->SetUniform("vecColor", c);
+	r->SetUniform("bDiffuse", false);
+	r->SetUniform("bTexCoords", false);
 
-	glBegin(GL_QUADS);
-		glNormal3f(-0.707106781f, 0.707106781f, 0);	// Give 'em normals so that the light falls on them cool-like.
-		glVertex2f(x, y);
-		glNormal3f(-0.707106781f, -0.707106781f, 0);
-		glVertex2f(x, y+h);
-		glNormal3f(0.707106781f, -0.707106781f, 0);
-		glVertex2f(x+w, y+h);
-		glNormal3f(0.707106781f, 0.707106781f, 0);
-		glVertex2f(x+w, y);
-	glEnd();
+	r->SetUniform("vecDimensions", Vector4D(x, y, w, h));
 
-	glPopAttrib();
+	r->BeginRenderVertexArray(s_iQuad);
+	r->SetPositionBuffer(0u, 24);
+	r->SetTexCoordBuffer(12, 24);
+	r->SetCustomIntBuffer("iVertex", 1, 20, 24);
+	r->EndRenderVertexArray(6);
 }
 
 void CBaseControl::PaintTexture(size_t iTexture, float x, float y, float w, float h, const Color& c)
 {
-	glPushAttrib(GL_ENABLE_BIT);
+	CRenderingContext* r = CRootPanel::GetContext();
+	TAssert(r);
+	if (!r)
+		return;
+
+	MakeQuad();
 
 	if ((w < 0) ^ (h < 0))
-		glDisable(GL_CULL_FACE);
+		r->SetBackCulling(false);
 
-	glEnable(GL_TEXTURE_2D);
+	r->SetBlend(BLEND_ALPHA);
+	r->SetUniform("iBorder", 0);
+	r->SetUniform("bHighlight", false);
+	r->SetUniform("vecColor", c);
+	r->SetUniform("bDiffuse", true);
+	r->SetUniform("bTexCoords", false);
 
-	glBindTexture(GL_TEXTURE_2D, (GLuint)iTexture);
-	glColor4ubv(c);
-	glBegin(GL_QUADS);
-		glTexCoord2f(0, 1);
-		glVertex2f(x, y);
-		glTexCoord2f(0, 0);
-		glVertex2f(x, y+h);
-		glTexCoord2f(1, 0);
-		glVertex2f(x+w, y+h);
-		glTexCoord2f(1, 1);
-		glVertex2f(x+w, y);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, 0);
+	r->SetUniform("vecDimensions", Vector4D(x, y, w, h));
 
-	glPopAttrib();
+	r->BindTexture(iTexture);
+
+	r->BeginRenderVertexArray(s_iQuad);
+	r->SetPositionBuffer(0u, 24);
+	r->SetTexCoordBuffer(12, 24);
+	r->SetCustomIntBuffer("iVertex", 1, 20, 24);
+	r->EndRenderVertexArray(6);
+
+	r->SetBackCulling(true);
 }
 
 void CBaseControl::PaintSheet(size_t iTexture, float x, float y, float w, float h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c)
 {
-	glPushAttrib(GL_ENABLE_BIT);
+	CRenderingContext* r = CRootPanel::GetContext();
+	TAssert(r);
+	if (!r)
+		return;
 
-	glEnable(GL_TEXTURE_2D);
-	glDisable(GL_CULL_FACE);
+	MakeQuad();
 
-	glBindTexture(GL_TEXTURE_2D, (GLuint)iTexture);
-	glColor4ubv(c);
-	glBegin(GL_QUADS);
-		glTexCoord2f((float)sx/tw, 1-(float)sy/th);
-		glVertex2f(x, y);
-		glTexCoord2f((float)sx/tw, 1-((float)sy+sh)/th);
-		glVertex2f(x, y+h);
-		glTexCoord2f(((float)sx+sw)/tw, 1-((float)sy+sh)/th);
-		glVertex2f(x+w, y+h);
-		glTexCoord2f(((float)sx+sw)/tw, 1-(float)sy/th);
-		glVertex2f(x+w, y);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, 0);
+	if ((w < 0) ^ (h < 0))
+		r->SetBackCulling(false);
 
-	glPopAttrib();
+	r->SetBlend(BLEND_ALPHA);
+	r->SetUniform("iBorder", 0);
+	r->SetUniform("bHighlight", false);
+	r->SetUniform("vecColor", c);
+	r->SetUniform("bDiffuse", true);
+	r->SetUniform("bTexCoords", true);
+
+	r->SetUniform("vecDimensions", Vector4D(x, y, w, h));
+	r->SetUniform("vecTexCoords", Vector4D((float)sx/(float)tw, (float)sy/(float)th, (float)sw/(float)tw, (float)sh/(float)th));
+
+	r->BindTexture(iTexture);
+
+	r->BeginRenderVertexArray(s_iQuad);
+	r->SetPositionBuffer(0u, 24);
+	r->SetTexCoordBuffer(12, 24);
+	r->SetCustomIntBuffer("iVertex", 1, 20, 24);
+	r->EndRenderVertexArray(6);
+
+	r->SetBackCulling(true);
+}
+
+void CBaseControl::MakeQuad()
+{
+	if (s_iQuad != ~0)
+		return;
+
+	struct {
+		Vector vecPosition;
+		Vector2D vecTexCoord;
+		int iIndex;
+	} avecData[] =
+	{
+		{ Vector(0, 0, 0),		Vector2D(0, 1),		0 },
+		{ Vector(0, 1, 0),		Vector2D(0, 0),		1 },
+		{ Vector(1, 1, 0),		Vector2D(1, 0),		2 },
+		{ Vector(0, 0, 0),		Vector2D(0, 1),		0 },
+		{ Vector(1, 1, 0),		Vector2D(1, 0),		2 },
+		{ Vector(1, 0, 0),		Vector2D(1, 1),		3 },
+	};
+
+	s_iQuad = CRenderer::LoadVertexDataIntoGL(sizeof(avecData), (float*)&avecData[0]);
 }
 
 bool CBaseControl::IsCursorListener()

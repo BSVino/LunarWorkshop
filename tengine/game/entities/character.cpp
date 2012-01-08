@@ -7,6 +7,7 @@
 #include <renderer/renderer.h>
 #include <renderer/renderingcontext.h>
 #include <physics/physics.h>
+#include <renderer/game_renderer.h>
 
 #include "player.h"
 
@@ -24,6 +25,7 @@ SAVEDATA_TABLE_BEGIN(CCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bTransformMoveByView);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecGoalVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecMoveVelocity);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bNoClip);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLastAttack);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TFloat, m_flMaxStepSize);
 SAVEDATA_TABLE_END();
@@ -35,6 +37,7 @@ INPUTS_TABLE_END();
 CCharacter::CCharacter()
 {
 	m_bTransformMoveByView = true;
+	m_bNoClip = false;
 
 	SetMass(60);
 }
@@ -61,7 +64,10 @@ void CCharacter::Think()
 {
 	BaseClass::Think();
 
-	MoveThink();
+	if (m_bNoClip)
+		MoveThink_NoClip();
+	else
+		MoveThink();
 }
 
 void CCharacter::Move(movetype_t eMoveType)
@@ -114,7 +120,7 @@ void CCharacter::MoveThink()
 		if (m_bTransformMoveByView)
 		{
 			Vector vecUp = GetUpVector();
-		
+
 			if (HasMoveParent() && GetMoveParent()->TransformsChildUp())
 			{
 				TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
@@ -142,9 +148,54 @@ void CCharacter::MoveThink()
 		GamePhysics()->SetControllerWalkVelocity(this, Vector(0, 0, 0));
 }
 
+void CCharacter::MoveThink_NoClip()
+{
+	float flSimulationFrameTime = 0.01f;
+
+	TVector vecGoalVelocity = GetGoalVelocity();
+
+	m_vecMoveVelocity.x = Approach(vecGoalVelocity.x, m_vecMoveVelocity.x, GameServer()->GetFrameTime()*CharacterAcceleration());
+	m_vecMoveVelocity.y = 0;
+	m_vecMoveVelocity.z = Approach(vecGoalVelocity.z, m_vecMoveVelocity.z, GameServer()->GetFrameTime()*CharacterAcceleration());
+
+	if (m_vecMoveVelocity.LengthSqr() > 0)
+	{
+		TVector vecMove = m_vecMoveVelocity * CharacterSpeed();
+		TVector vecLocalVelocity;
+
+		if (m_bTransformMoveByView)
+		{
+			Vector vecUp = GetUpVector();
+
+			if (HasMoveParent() && GetMoveParent()->TransformsChildUp())
+			{
+				TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
+				vecUp = mGlobalToLocal.TransformVector(vecUp);
+			}
+
+			TMatrix m = GetLocalTransform();
+			m.SetAngles(GetViewAngles());
+
+			vecLocalVelocity = m.TransformVector(vecMove);
+		}
+		else
+			vecLocalVelocity = vecMove;
+
+		SetGlobalOrigin(GetGlobalOrigin() + GameServer()->GetFrameTime()*vecLocalVelocity);
+	}
+}
+
 void CCharacter::Jump()
 {
 	GamePhysics()->CharacterJump(this);
+}
+
+void CCharacter::SetNoClip(bool bOn)
+{
+	m_bNoClip = bOn;
+
+	GamePhysics()->SetControllerWalkVelocity(this, Vector(0, 0, 0));
+	GamePhysics()->SetControllerColliding(this, !m_bNoClip);
 }
 
 bool CCharacter::CanAttack() const
@@ -241,7 +292,7 @@ void CCharacter::ShowPlayerVectors() const
 
 	TVector vecEyeHeight = GetUpVector() * EyeHeight();
 
-	CRenderingContext c(GameServer()->GetRenderer());
+	CRenderingContext c(GameServer()->GetRenderer(), true);
 
 	c.UseProgram("model");
 	c.Translate((GetGlobalOrigin()));
@@ -286,6 +337,16 @@ void CCharacter::SetControllingPlayer(CPlayer* pCharacter)
 CPlayer* CCharacter::GetControllingPlayer() const
 {
 	return m_hControllingPlayer;
+}
+
+CVar sv_noclip_multiplier("sv_noclip_multiplier", "2");
+
+TFloat CCharacter::CharacterSpeed()
+{
+	if (m_bNoClip)
+		return BaseCharacterSpeed() * sv_noclip_multiplier.GetFloat();
+	else
+		return BaseCharacterSpeed();
 }
 
 void CCharacter::SetViewAngles(const eastl::vector<tstring>& asArgs)

@@ -1,9 +1,9 @@
 #include "kaleidobeast.h"
 
 #include <physics/physics.h>
-#include <renderer/renderer.h>
+#include <renderer/game_renderer.h>
 #include <renderer/renderingcontext.h>
-#include <tinker/gamewindow.h>
+#include <ui/gamewindow.h>
 #include <game/entities/beam.h>
 
 #include "reflection_game.h"
@@ -137,7 +137,7 @@ void CKaleidobeast::PostRender(bool bTransparent) const
 	if (!bTransparent)
 		return;
 
-	CRenderingContext c(GameServer()->GetRenderer());
+	CRenderingContext c(GameServer()->GetRenderer(), true);
 
 	c.Translate(GetGlobalOrigin());
 	c.Scale(DetectionDistance(), DetectionDistance(), DetectionDistance());

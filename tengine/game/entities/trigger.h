@@ -11,6 +11,7 @@ class CTrigger : public CBaseEntity
 public:
 	void				Spawn();
 	virtual void		OnSetModel();
+	virtual void		ClientSpawn();
 
 	virtual void		Think();
 
@@ -24,11 +25,19 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnStartTouch);
 	DECLARE_ENTITY_OUTPUT(OnEndTouch);
 
+	virtual void		StartVisible();
+	virtual void		EndVisible();
+
+	DECLARE_ENTITY_OUTPUT(OnStartVisible);
+	DECLARE_ENTITY_OUTPUT(OnEndVisible);
+
 	virtual bool		ShouldRender() const { return false; };
 
 protected:
 	eastl::vector<CEntityHandle<CBaseEntity> >	m_ahTouching;
 	eastl::vector<CEntityHandle<CBaseEntity> >	m_ahLastTouching;
+
+	bool				m_bVisible;
 };
 
 #endif

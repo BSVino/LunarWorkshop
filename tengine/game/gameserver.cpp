@@ -11,7 +11,8 @@
 
 #include <tinker/application.h>
 #include <tinker/profiler.h>
-#include <renderer/renderer.h>
+#include <renderer/game_renderer.h>
+#include <renderer/game_renderingcontext.h>
 #include <renderer/particles.h>
 #include <sound/sound.h>
 #include <network/network.h>
@@ -19,11 +20,11 @@
 #include <datamanager/data.h>
 #include <datamanager/dataserializer.h>
 #include <models/models.h>
-#include <models/texturelibrary.h>
+#include <textures/texturelibrary.h>
 #include <tinker/portals/portal.h>
 #include <tinker/lobby/lobby_server.h>
 #include <tinker/cvar.h>
-#include <tinker/gamewindow.h>
+#include <ui/gamewindow.h>
 #include <physics/physics.h>
 
 #include "camera.h"
@@ -267,9 +268,10 @@ void CGameServer::LoadLevel(tstring sFile)
 			tstring sClass = "C" + pChildData->GetValueTString();
 
 			auto it = CBaseEntity::GetEntityRegistration().find(sClass);
+			TAssert(it != CBaseEntity::GetEntityRegistration().end());
 			if (it == CBaseEntity::GetEntityRegistration().end())
 			{
-				TAssert(!(tstring("Unregistered entity '") + sClass + "'\n").c_str());
+				TError("Unregistered entity '" + sClass + "'\n");
 				continue;
 			}
 
@@ -682,27 +684,35 @@ void CGameServer::Render()
 
 	m_pCamera->Think();
 
-	CRenderer* pRenderer = GameWindow()->GetRenderer();
+	CGameRenderer* pRenderer = GameWindow()->GetRenderer();
 
 	pRenderer->SetCameraPosition(m_pCamera->GetCameraPosition());
-	pRenderer->SetCameraTarget(m_pCamera->GetCameraTarget());
+	pRenderer->SetCameraDirection(m_pCamera->GetCameraDirection());
 	pRenderer->SetCameraUp(m_pCamera->GetCameraUp());
 	pRenderer->SetCameraFOV(m_pCamera->GetCameraFOV());
 	pRenderer->SetCameraNear(m_pCamera->GetCameraNear());
 	pRenderer->SetCameraFar(m_pCamera->GetCameraFar());
 
-	pRenderer->SetupFrame();
-	pRenderer->StartRendering();
+	pRenderer->PreRender();
 
-	RenderEverything();
+	{
+		CGameRenderingContext c(pRenderer);
+		pRenderer->ModifyContext(&c);
+		pRenderer->SetupFrame(&c);
+		pRenderer->StartRendering(&c);
 
-	pRenderer->FinishRendering();
-	pRenderer->FinishFrame();
+		RenderEverything();
+
+		pRenderer->FinishRendering(&c);
+		pRenderer->FinishFrame(&c);
+	}
+
+	pRenderer->PostRender();
 }
 
 void CGameServer::RenderEverything()
 {
-	CRenderer* pRenderer = GameWindow()->GetRenderer();
+	CGameRenderer* pRenderer = GetRenderer();
 
 	m_apRenderList.reserve(CBaseEntity::GetNumEntities());
 	m_apRenderList.clear();
@@ -1041,9 +1051,9 @@ void CGameServer::ClientInfo(int iConnection, CNetworkParameters* p)
 	m_bGotClientInfo = true;
 }
 
-CRenderer* CGameServer::GetRenderer()
+CGameRenderer* CGameServer::GetRenderer()
 {
-	return GameWindow()->GetRenderer();
+	return static_cast<CGameRenderer*>(GameWindow()->GetRenderer());
 }
 
 CGame* CGameServer::GetGame()

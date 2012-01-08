@@ -23,19 +23,19 @@ TVector CCharacterCamera::GetCameraPosition()
 	return pCharacter->GetGlobalOrigin() + pCharacter->EyeHeight() * pCharacter->GetUpVector();
 }
 
-TVector CCharacterCamera::GetCameraTarget()
+TVector CCharacterCamera::GetCameraDirection()
 {
 	if (m_bFreeMode)
-		return BaseClass::GetCameraPosition();
+		return BaseClass::GetCameraDirection();
 
 	CCharacter* pCharacter = m_hCharacter;
 	if (!pCharacter)
-		return BaseClass::GetCameraPosition();
+		return BaseClass::GetCameraDirection();
 
 	if (GetThirdPerson())
-		return GetThirdPersonCameraTarget();
+		return GetThirdPersonCameraDirection();
 
-	return pCharacter->GetGlobalOrigin() + pCharacter->EyeHeight() * pCharacter->GetUpVector() + AngleVector(pCharacter->GetViewAngles());
+	return AngleVector(pCharacter->GetViewAngles());
 }
 
 TVector CCharacterCamera::GetCameraUp()
@@ -66,19 +66,14 @@ TVector CCharacterCamera::GetThirdPersonCameraPosition()
 	return vecThird;
 }
 
-TVector CCharacterCamera::GetThirdPersonCameraTarget()
+TVector CCharacterCamera::GetThirdPersonCameraDirection()
 {
 	CCharacter* pCharacter = m_hCharacter;
 
 	if (!pCharacter)
 		return TVector();
 
-	TMatrix mView = TMatrix(pCharacter->GetViewAngles(), TVector());
-
-	TVector vecEyeHeight = pCharacter->GetUpVector() * pCharacter->EyeHeight();
-	vecEyeHeight += mView.GetRightVector() * cam_third_right.GetFloat();
-
-	return pCharacter->GetGlobalTransform().GetTranslation() + vecEyeHeight;
+	return AngleVector(pCharacter->GetViewAngles());
 }
 
 void CCharacterCamera::KeyDown(int c)

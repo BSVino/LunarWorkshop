@@ -20,6 +20,8 @@ void CPlayerCharacter::Precache()
 
 void CPlayerCharacter::Spawn()
 {
+	m_aabbBoundingBox = AABB(Vector(0, 0, 0), Vector(1, 1, 1));
+
 	BaseClass::Spawn();
 }
 

@@ -191,13 +191,13 @@ void CButton::PaintButton(float x, float y, float w, float h)
 {
 	if (m_bDown)
 	{
-		CRootPanel::PaintRect(x, y, w, h, m_clrDown);
+		CRootPanel::PaintRect(x, y, w, h, m_clrDown, 3);
 	}
 	else
 	{
 		Color clrBox = m_clrButton;
 		if (m_bEnabled)
 			clrBox.SetAlpha((int)RemapVal(m_flHighlight, 0, 1, 125, 255));
-		CRootPanel::PaintRect(x, y, w, h, clrBox);
+		CRootPanel::PaintRect(x, y, w, h, clrBox, 2, m_bEnabled && m_flHighlightGoal > 1);
 	}
 }

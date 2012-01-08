@@ -248,21 +248,18 @@ void Matrix4x4::SetRotation(const Quaternion& q)
 	m[2][2] = 1 - x2 - y2;
 }
 
-void Matrix4x4::SetOrientation(const Vector& v)
+void Matrix4x4::SetOrientation(const Vector& v, const Vector& vecUp)
 {
 	Vector vecDir = v.Normalized();
 
-	Vector vecRight, vecUp;
-	vecUp = Vector(0, 1, 0);
-	if (vecDir != vecUp && vecDir != Vector(0, -1, 0))
+	Vector vecRight;
+	if (vecDir != vecUp && vecDir != -vecUp)
 		vecRight = vecDir.Cross(vecUp).Normalized();
 	else
 		vecRight = Vector(0, 0, 1);
 
-	vecUp = vecRight.Cross(vecDir).Normalized();
-
 	SetForwardVector(vecDir);
-	SetUpVector(vecUp);
+	SetUpVector(vecRight.Cross(vecDir).Normalized());
 	SetRightVector(vecRight);
 }
 
@@ -284,6 +281,83 @@ void Matrix4x4::SetReflection(const Vector& vecPlane)
 	m[1][0] = m[0][1] = -2 * vecPlane.x * vecPlane.y;
 	m[2][0] = m[0][2] = -2 * vecPlane.x * vecPlane.z;
 	m[1][2] = m[2][1] = -2 * vecPlane.y * vecPlane.z;
+}
+
+Matrix4x4 Matrix4x4::ProjectPerspective(float flFOV, float flAspectRatio, float flNear, float flFar)
+{
+	float flRight = flNear * tan(flFOV * M_PI / 360);
+	float flLeft = -flRight;
+
+	float flBottom = flLeft / flAspectRatio;
+	float flTop = flRight / flAspectRatio;
+
+	return ProjectFrustum(flLeft, flRight, flBottom, flTop, flNear, flFar);
+}
+
+Matrix4x4 Matrix4x4::ProjectFrustum(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar)
+{
+	Matrix4x4 m;
+	
+	m.Identity();
+
+	float flXD = flRight - flLeft;
+	float flYD = flTop - flBottom;
+	float flZD = flFar - flNear;
+
+	m.m[0][0] = (2 * flNear) / flXD;
+	m.m[1][1] = (2 * flNear) / flYD;
+
+	m.m[2][0] = (flRight + flLeft) / flXD;
+	m.m[2][1] = (flTop + flBottom) / flYD;
+	m.m[2][2] = -(flFar + flNear) / flZD;
+	m.m[2][3] = -1;
+
+	m.m[3][2] = -(2 * flFar * flNear) / flZD;
+
+	m.m[3][3] = 0;
+
+	return m;
+}
+
+Matrix4x4 Matrix4x4::ProjectOrthographic(float flLeft, float flRight, float flBottom, float flTop, float flNear, float flFar)
+{
+	Matrix4x4 m;
+	
+	m.Identity();
+
+	float flXD = flRight - flLeft;
+	float flYD = flTop - flBottom;
+	float flZD = flFar - flNear;
+
+	m.m[0][0] = 2.0f / flXD;
+	m.m[1][1] = 2.0f / flYD;
+	m.m[2][2] = -2.0f / flZD;
+
+	m.m[3][0] = -(flRight + flLeft) / flXD;
+	m.m[3][1] = -(flTop + flBottom) / flYD;
+	m.m[3][2] = -(flFar + flNear) / flZD;
+
+	return m;
+}
+
+Matrix4x4 Matrix4x4::ConstructCameraView(const Vector& vecPosition, const Vector& vecDirection, const Vector& vecUp)
+{
+	Matrix4x4 m;
+	
+	m.Identity();
+
+	TAssertNoMsg(fabs(vecDirection.LengthSqr()-1) < 0.0001f);
+
+	Vector vecCamSide = vecDirection.Cross(vecUp).Normalized();
+	Vector vecCamUp = vecCamSide.Cross(vecDirection);
+
+	m.SetForwardVector(Vector(vecCamSide.x, vecCamUp.x, -vecDirection.x));
+	m.SetUpVector(Vector(vecCamSide.y, vecCamUp.y, -vecDirection.y));
+	m.SetRightVector(Vector(vecCamSide.z, vecCamUp.z, -vecDirection.z));
+
+	m.AddTranslation(-vecPosition);
+
+	return m;
 }
 
 Matrix4x4 Matrix4x4::operator+=(const Vector& v)
@@ -403,21 +477,21 @@ EAngle Matrix4x4::GetAngles() const
 {
 #ifdef _DEBUG
 	// If any of the below is not true then you have a matrix that has been scaled or reflected or something and it won't work to try to pull its Eulers
-	bool b = fabs(GetForwardVector().LengthSqr() - 1) < 0.000001f;
+	bool b = fabs(GetForwardVector().LengthSqr() - 1) < 0.00001f;
 	if (!b)
 	{
 		TAssertNoMsg(b);
 		return EAngle(0, 0, 0);
 	}
 
-	b = fabs(GetUpVector().LengthSqr() - 1) < 0.000001f;
+	b = fabs(GetUpVector().LengthSqr() - 1) < 0.00001f;
 	if (!b)
 	{
 		TAssertNoMsg(b);
 		return EAngle(0, 0, 0);
 	}
 
-	b = fabs(GetRightVector().LengthSqr() - 1) < 0.000001f;
+	b = fabs(GetRightVector().LengthSqr() - 1) < 0.00001f;
 	if (!b)
 	{
 		TAssertNoMsg(b);

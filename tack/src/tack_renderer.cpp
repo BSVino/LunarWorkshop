@@ -11,6 +11,8 @@ CTackRenderer::CTackRenderer()
 
 void CTackRenderer::LoadShaders()
 {
+	BaseClass::LoadShaders();
+
 	CShaderLibrary::AddShader("brightpass", "pass", "brightpass");
 	CShaderLibrary::AddShader("model", "pass", "model");
 	CShaderLibrary::AddShader("blur", "pass", "blur");

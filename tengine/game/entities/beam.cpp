@@ -1,6 +1,7 @@
 #include "beam.h"
 
 #include <renderer/renderingcontext.h>
+#include <renderer/game_renderer.h>
 
 REGISTER_ENTITY(CBeam);
 
@@ -31,7 +32,7 @@ void CBeam::PostRender(bool bTransparent) const
 	if (!bTransparent)
 		return;
 
-	CRenderingContext c(GameServer()->GetRenderer());
+	CRenderingContext c(GameServer()->GetRenderer(), true);
 
 	c.UseProgram("model");
 	c.SetUniform("bDiffuse", false);

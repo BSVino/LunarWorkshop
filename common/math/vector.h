@@ -557,6 +557,7 @@ public:
 				Vector4D(const Vector& v, float w);
 				Vector4D(const class Color& c);
 				Vector4D(float x, float y, float z, float w);
+				Vector4D(const float* xyzw);
 
 public:
 	Vector4D	operator+(const Vector4D& v) const;
@@ -569,6 +570,11 @@ public:
 	}
 
 	operator float*()
+	{
+		return(&x);
+	}
+
+	operator const float*() const
 	{
 		return(&x);
 	}
@@ -600,6 +606,11 @@ inline Vector4D::Vector4D(const Color& c)
 
 inline Vector4D::Vector4D(float X, float Y, float Z, float W)
 	: x(X), y(Y), z(Z), w(W)
+{
+}
+
+inline Vector4D::Vector4D(const float* xyzw)
+	: x(*xyzw), y(*(xyzw+1)), z(*(xyzw+2)), w(*(xyzw+3))
 {
 }
 

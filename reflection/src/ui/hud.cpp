@@ -3,8 +3,8 @@
 #include <tinker_platform.h>
 
 #include <tengine/game/gameserver.h>
-#include <tengine/renderer/renderer.h>
-#include <tengine/renderer/renderingcontext.h>
+#include <renderer/game_renderer.h>
+#include <renderer/game_renderingcontext.h>
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
 #include <tinker/cvar.h>
@@ -16,6 +16,7 @@
 #include "../reflection_player.h"
 #include "../token.h"
 #include "../receptacle.h"
+#include "../momento.h"
 #include "levelselector.h"
 
 CReflectionHUD::CReflectionHUD()
@@ -55,17 +56,30 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 
 	if (pPlayerCharacter && pPlayerCharacter->GetToken())
 	{
-		CRenderingContext c(GameServer()->GetRenderer());
-		c.Translate(Vector((float)w-100, (float)h-100, 0));
-		c.Scale(300, 300, 300);
-		c.Rotate(-90.0f, Vector(0, 0, 1));
-		c.Rotate(-90.0f, Vector(1, 0, 0));
+		CGameRenderingContext c(GameServer()->GetRenderer());
+
+		c.ClearDepth();
+
+		float flRatio = w/h;
+
+		c.SetProjection(Matrix4x4::ProjectOrthographic(-flRatio, flRatio, -1, 1, -100, 100));
+
+		c.SetView(Matrix4x4());
+
+		c.Translate(Vector(flRatio*0.7f, -0.7f, 0));
+
+		float flScale = (1/pPlayerCharacter->GetToken()->GetBoundingBox().Size().Length())/2;
+		c.Scale(flScale, flScale, flScale);
+
+		c.Rotate(85.0f, Vector(0, 0, 1));
+		c.Rotate(15.0f, Vector(0, 1, 0));
+		c.Rotate(75.0f, Vector(1, 0, 0));
 
 		CToken* pToken = pPlayerCharacter->GetToken();
 		if (pToken->IsReflected() ^ (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) ^ pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
 		{
 			c.Scale(1, 1, -1);
-			c.SetReverseWinding(true);
+			c.SetWinding(false);
 		}
 
 		c.RenderModel(pPlayerCharacter->GetToken()->GetModelID());
@@ -96,10 +110,43 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 			continue;
 
 		TFloat flRadius = flTokenRadius*flTokenRadius;
+
+		CMomento* pMomento = dynamic_cast<CMomento*>(pEntity);
+		if (pMomento)
+		{
+			if (!GameServer()->GetRenderer()->IsSphereInFrustum(pMomento->GetGlobalOrigin(), pMomento->GetBoundingRadius()))
+				continue;
+
+			if (pMomento->GetGlobalOrigin().DistanceSqr(pPlayerCharacter->GetGlobalCenter()) > flRadius)
+				continue;
+
+			Vector vecScreen = GameServer()->GetRenderer()->ScreenPosition(pMomento->GetGlobalOrigin()) + Vector(30, 0, 0);
+
+			if (vecScreen.x < 100)
+				continue;
+			if (vecScreen.y < 100)
+				continue;
+			if (vecScreen.x > GetWidth()-100)
+				continue;
+			if (vecScreen.y > GetHeight()-100)
+				continue;
+
+			tstring sTip = pMomento->GetMomentoName();
+			float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
+			float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
+			glgui::CBaseControl::PaintRect(vecScreen.x - 5, vecScreen.y - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 1);
+			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, vecScreen.x, vecScreen.y);
+
+			continue;
+		}
+
 		CToken* pToken = dynamic_cast<CToken*>(pEntity);
 		if (pToken)
 		{
 			if ((pPlayerCharacter->GetGlobalCenter() - pEntity->GetGlobalCenter()).LengthSqr() > flRadius)
+				continue;
+
+			if (pToken->GetReceptacle() && !pToken->GetReceptacle()->IsActive())
 				continue;
 
 			if (pPlayerCharacter->GetToken())
@@ -107,7 +154,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 				tstring sTip = sprintf("%c - Swap", iKey);
 				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
 				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 			}
 			else
@@ -115,7 +162,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 				tstring sTip = sprintf("%c - Pick up", iKey);
 				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
 				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 			}
 			break;
@@ -124,6 +171,9 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 		CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pEntity);
 		if (pReceptacle && pPlayerCharacter->GetToken() && pReceptacle->IsTokenValid(pPlayerCharacter->GetToken()))
 		{
+			if (!pReceptacle->IsActive())
+				continue;
+
 			if ((pPlayerCharacter->GetGlobalCenter() - pReceptacle->GetTokenPosition()).LengthSqr() > flRadius)
 				continue;
 
@@ -132,7 +182,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 				tstring sTip = sprintf("%c - Swap", iKey);
 				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
 				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 			}
 			else
@@ -140,7 +190,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 				tstring sTip = sprintf("%c - Place", iKey);
 				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150));
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
 				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 			}
 			break;

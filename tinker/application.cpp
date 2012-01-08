@@ -53,47 +53,52 @@ CVar gl_debug("gl_debug", GL_DEBUG_VALUE);
 
 void CALLBACK GLDebugCallback(GLenum iSource, GLenum iType, GLuint id, GLenum iSeverity, GLsizei iLength, const GLchar* pszMessage, GLvoid* pUserParam)
 {
-	TAssert(iSeverity != GL_DEBUG_SEVERITY_HIGH_AMD);
-	TAssert(iSeverity != GL_DEBUG_SEVERITY_MEDIUM_AMD);
+	if (iType != GL_DEBUG_TYPE_PERFORMANCE_ARB)
+	{
+		TAssert(iSeverity != GL_DEBUG_SEVERITY_HIGH_ARB);
+		TAssert(iSeverity != GL_DEBUG_SEVERITY_MEDIUM_ARB);
+	}
 
 	if (gl_debug.GetBool())
 	{
-		TMsg("OpenGL Debug Message (");
+		tstring sMessage = "OpenGL Debug Message (";
 
 		if (iSource == GL_DEBUG_SOURCE_API_ARB)
-			TMsg("Source: API ");
+			sMessage += "Source: API ";
 		else if (iSource == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
-			TMsg("Source: Window System ");
+			sMessage += "Source: Window System ";
 		else if (iSource == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB)
-			TMsg("Source: Shader Compiler ");
+			sMessage += "Source: Shader Compiler ";
 		else if (iSource == GL_DEBUG_SOURCE_THIRD_PARTY_ARB)
-			TMsg("Source: Third Party ");
+			sMessage += "Source: Third Party ";
 		else if (iSource == GL_DEBUG_SOURCE_APPLICATION_ARB)
-			TMsg("Source: Application ");
+			sMessage += "Source: Application ";
 		else if (iSource == GL_DEBUG_SOURCE_OTHER_ARB)
-			TMsg("Source: Other ");
+			sMessage += "Source: Other ";
 
 		if (iType == GL_DEBUG_TYPE_ERROR_ARB)
-			TMsg("Type: Error ");
+			sMessage += "Type: Error ";
 		else if (iType == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)
-			TMsg("Type: Deprecated Behavior ");
+			sMessage += "Type: Deprecated Behavior ";
 		else if (iType == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)
-			TMsg("Type: Undefined Behavior ");
+			sMessage += "Type: Undefined Behavior ";
 		else if (iType == GL_DEBUG_TYPE_PORTABILITY_ARB)
-			TMsg("Type: Portability ");
+			sMessage += "Type: Portability ";
 		else if (iType == GL_DEBUG_TYPE_PERFORMANCE_ARB)
-			TMsg("Type: Performance ");
+			sMessage += "Type: Performance ";
 		else if (iType == GL_DEBUG_TYPE_OTHER_ARB)
-			TMsg("Type: Other ");
+			sMessage += "Type: Other ";
 
 		if (iSeverity == GL_DEBUG_SEVERITY_HIGH_ARB)
-			TMsg("Severity: High) ");
+			sMessage += "Severity: High) ";
 		else if (iSeverity == GL_DEBUG_SEVERITY_MEDIUM_ARB)
-			TMsg("Severity: Medium) ");
+			sMessage += "Severity: Medium) ";
 		else if (iSeverity == GL_DEBUG_SEVERITY_LOW_ARB)
-			TMsg("Severity: Low) ");
+			sMessage += "Severity: Low) ";
 
-		TMsg(convertstring<GLchar, tchar>(pszMessage) + "\n");
+		sMessage += convertstring<GLchar, tchar>(pszMessage) + "\n";
+
+		TMsg(convertstring<GLchar, tchar>(sMessage).c_str());
 	}
 }
 
@@ -112,13 +117,22 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 	m_iWindowWidth = iWidth;
 	m_iWindowHeight = iHeight;
 
+    glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
+    glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 0);
+    glfwOpenWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_FALSE);
+
 	glfwOpenWindowHint(GLFW_WINDOW_RESIZABLE, bResizeable?GL_TRUE:GL_FALSE);
 
 	if (m_bMultisampling)
 		glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
 
 	if (HasCommandLineSwitch("--debug-gl"))
+	{
 		glfwOpenWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+
+		if (!GLEW_ARB_debug_output)
+			TMsg("Your drivers do not support GL_ARB_debug_output, so no GL debug output will be shown.\n");
+	}
 
 	glfwOpenWindowHint(GLFW_DEPTH_BITS, 16);
 	glfwOpenWindowHint(GLFW_RED_BITS, 8);
@@ -178,8 +192,6 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
 	glLineWidth(1.0);
 
 	m_bIsOpen = true;
@@ -216,7 +228,10 @@ void CApplication::DumpGLInfo()
 	if (pszShadingLanguageVersion)
 		o << "Shading Language Version: " << pszShadingLanguageVersion << std::endl;
 
-	eastl::string sExtensions = (char*)glGetString(GL_EXTENSIONS);
+	char* pszExtensions = (char*)glGetString(GL_EXTENSIONS);
+	eastl::string sExtensions;
+	if (pszExtensions)
+		sExtensions = pszExtensions;
 	eastl::vector<eastl::string> asExtensions;
 	strtok(sExtensions, asExtensions);
 	o << "Extensions:" << std::endl;

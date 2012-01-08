@@ -60,6 +60,9 @@ bool CReceptacle::IsTokenValid(const CToken* pToken) const
 
 void CReceptacle::SetToken(CToken* pToken)
 {
+	if (!IsActive())
+		return;
+
 	if (m_hToken.GetPointer())
 	{
 		if (IsTokenValid(pToken))

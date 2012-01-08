@@ -4,10 +4,11 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 include_directories (
-	${PROJECT_SOURCE_DIR}/ext-deps/EASTL/include
-	../
-	../common
-	../common/math
+	${PROJECT_SOURCE_DIR}/../ext-deps/EASTL/include
+	${CMAKE_SOURCE_DIR}/
+	${CMAKE_SOURCE_DIR}/common
+	${CMAKE_SOURCE_DIR}/common/math
+	${CMAKE_SOURCE_DIR}/tinker
 )
 
 set (TINKER_GLGUI_SOURCES
@@ -28,27 +29,43 @@ set (TINKER_GLGUI_SOURCES
 	../glgui/textfield.cpp
 )
 
+set (TINKER_RENDERER_SOURCES
+	renderer/renderer.cpp
+	renderer/renderingcontext.cpp
+	renderer/shaders.cpp
+)
+
+set (TINKER_TEXTURES_SOURCES
+	textures/texturelibrary.cpp
+	textures/texturesheet.cpp
+)
+
 set (TINKER_SOURCES
 	application.cpp
 	console.cpp
 	cvar.cpp
 	portals/portal_stubs.cpp
 	register.cpp
+	profiler.cpp
 
 	${TINKER_GLGUI_SOURCES}
+	${TINKER_RENDERER_SOURCES}
+	${TINKER_TEXTURES_SOURCES}
 )
 
 source_group(GLGUI FILES ${TINKER_GLGUI_SOURCES})
+source_group(Renderer FILES ${TINKER_RENDERER_SOURCES})
+source_group(Textures FILES ${TINKER_TEXTURES_SOURCES})
 
 if (WIN32)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/glew-1.7.0/include)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/glfw-1.3/include)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/devil-1.7.8/include)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/ftgl-2.1.3~rc5/src)
-	include_directories(${CMAKE_SOURCE_DIR}/ext-deps/freetype-2.3.11/include)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/glew-1.7.0/include)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/glfw-1.3/include)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/devil-1.7.8/include)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/ftgl-gl3/src)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/freetype-2.3.11/include)
 
 	set (TINKER_SOURCES ${TINKER_SOURCES}
-		${CMAKE_SOURCE_DIR}/ext-deps/glew-1.7.0/src/glew.c
+		${CMAKE_SOURCE_DIR}/../ext-deps/glew-1.7.0/src/glew.c
 	)
 endif (WIN32)
 
@@ -66,12 +83,12 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 if (WIN32)
-	target_link_libraries(tinker debug ${CMAKE_SOURCE_DIR}/ext-deps/ftgl-2.1.3~rc5/msvc/build/ftgl_static_D.lib)
-	target_link_libraries(tinker optimized ${CMAKE_SOURCE_DIR}/ext-deps/ftgl-2.1.3~rc5/msvc/build/ftgl_static.lib)
-	target_link_libraries(tinker debug ${CMAKE_SOURCE_DIR}/ext-deps/freetype-2.3.11/objs/win32/vc2010/freetype2311MT_D.lib)
-	target_link_libraries(tinker optimized ${CMAKE_SOURCE_DIR}/ext-deps/freetype-2.3.11/objs/win32/vc2010/freetype2311MT.lib)
-	target_link_libraries(tinker debug ${CMAKE_SOURCE_DIR}/ext-deps/glfw-1.3/src/Debug/GLFW.lib)
-	target_link_libraries(tinker optimized ${CMAKE_SOURCE_DIR}/ext-deps/glfw-1.3/src/RelWithDebInfo/GLFW.lib)
+	target_link_libraries(tinker debug ${CMAKE_SOURCE_DIR}/../ext-deps/ftgl-gl3/msvc/build/ftgl_static_D.lib)
+	target_link_libraries(tinker optimized ${CMAKE_SOURCE_DIR}/../ext-deps/ftgl-gl3/msvc/build/ftgl_static.lib)
+	target_link_libraries(tinker debug ${CMAKE_SOURCE_DIR}/../ext-deps/freetype-2.3.11/objs/win32/vc2010/freetype2311MT_D.lib)
+	target_link_libraries(tinker optimized ${CMAKE_SOURCE_DIR}/../ext-deps/freetype-2.3.11/objs/win32/vc2010/freetype2311MT.lib)
+	target_link_libraries(tinker debug ${CMAKE_SOURCE_DIR}/../ext-deps/glfw-1.3/src/Debug/GLFW.lib)
+	target_link_libraries(tinker optimized ${CMAKE_SOURCE_DIR}/../ext-deps/glfw-1.3/src/RelWithDebInfo/GLFW.lib)
 
 	target_link_libraries(tinker opengl32 glu32)
 endif (WIN32)

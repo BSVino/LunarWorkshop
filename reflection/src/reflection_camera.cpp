@@ -32,12 +32,12 @@ Vector CReflectionCamera::GetCameraPosition()
 	return BaseClass::GetCameraPosition();
 }
 
-Vector CReflectionCamera::GetCameraTarget()
+Vector CReflectionCamera::GetCameraDirection()
 {
 	if (CVar::GetCVarValue("game_mode") == "menu")
-		return CCamera::GetCameraPosition();
+		return CCamera::GetCameraDirection();
 
-	return BaseClass::GetCameraTarget();
+	return BaseClass::GetCameraDirection();
 }
 
 TVector CReflectionCamera::GetCameraUp()
@@ -50,5 +50,5 @@ TVector CReflectionCamera::GetCameraUp()
 
 float CReflectionCamera::GetCameraFOV()
 {
-	return 60;
+	return 80;
 }

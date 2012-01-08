@@ -5,7 +5,7 @@
 #include <toys/toy_util.h>
 #include <toys/toy.h>
 #include <renderer/renderer.h>
-#include <models/texturelibrary.h>
+#include <textures/texturelibrary.h>
 #include <physics/physics.h>
 #include <tinker/application.h>
 
@@ -180,10 +180,18 @@ CModel::~CModel()
 	if (m_pToy->GetPhysicsNumTris())
 		GamePhysics()->UnloadCollisionMesh(m_sFilename);
 
+	size_t iMaterials = m_pToy->GetNumMaterials();
+
+	for (size_t i = 0; i < iMaterials; i++)
+	{
+		if (m_pToy->GetMaterialNumVerts(i) == 0)
+			continue;
+
+		UnloadBufferFromGL(m_aiVertexBuffers[i]);
+	}
+
 	if (m_pToy)
 		delete m_pToy;
-
-	// TODO: Delete vertex buffer objects
 }
 
 bool CModel::Load()
@@ -227,4 +235,9 @@ bool CModel::Load()
 size_t CModel::LoadBufferIntoGL(size_t iMaterial)
 {
 	return CRenderer::LoadVertexDataIntoGL(m_pToy->GetMaterialNumVerts(iMaterial)*m_pToy->GetVertexSize(), m_pToy->GetMaterialVerts(iMaterial));
+}
+
+void CModel::UnloadBufferFromGL(size_t iBuffer)
+{
+	CRenderer::UnloadVertexDataFromGL(iBuffer);
 }
