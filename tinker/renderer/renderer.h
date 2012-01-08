@@ -142,9 +142,6 @@ protected:
 	float			m_flCameraNear;
 	float			m_flCameraFar;
 
-	Matrix4x4		m_mProjection;
-	Matrix4x4		m_mView;
-
 	bool			m_bFrustumOverride;
 	Vector			m_vecFrustumPosition;
 	Vector			m_vecFrustumDirection;

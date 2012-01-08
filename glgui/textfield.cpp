@@ -67,8 +67,7 @@ void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float
 	float flMargin = (h-pFont->LineHeight())/2;
 	Vector vecPosition = Vector((float)x + m_flRenderOffset, (float)CRootPanel::Get()->GetBottom() - y + flMargin - pFont->LineHeight(), 0);
 
-	Matrix4x4 mFontProjection;
-	mFontProjection.ProjectOrthographic(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
+	Matrix4x4 mFontProjection = Matrix4x4::ProjectOrthographic(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
 
 	float cx, cy;
 	GetAbsPos(cx, cy);
@@ -78,6 +77,7 @@ void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float
 	c.UseProgram("text");
 	c.SetUniform("bScissor", true);
 	c.SetUniform("vecScissor", Vector4D(cx+4, 0, GetWidth()-8, 1000));
+	c.SetUniform("vecColor", m_FGColor);
 	c.SetProjection(mFontProjection);
 	c.Translate(vecPosition);
 

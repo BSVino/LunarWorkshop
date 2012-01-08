@@ -28,12 +28,13 @@ public:
 	virtual void			Think();
 
 	virtual bool			ShouldRender() const { return true; }
+	virtual TFloat			GetBoundingRadius() const { return 1000; }	// So it's always in frustum
 
 	virtual void			OnRender(class CRenderingContext* pContext, bool bTransparent) const;
 
 	void					MousePressed();
 
-	float					LabelScale() const { return 100; }
+	float					LabelScale() const { return 150; }
 
 	size_t					GetNumPages() const { return m_asPages.size(); }
 	const tstring&			GetPageID(size_t i) const;

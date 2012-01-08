@@ -132,12 +132,12 @@ void CReflectionRenderer::StartRendering(class CRenderingContext* pContext)
 
 	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
 
-	m_mProjection.ProjectPerspective(
+	pContext->SetProjection(Matrix4x4::ProjectPerspective(
 			m_flCameraFOV,
 			(float)m_iWidth/(float)m_iHeight,
 			m_flCameraNear,
 			m_flCameraFar
-		);
+		));
 
 	Vector vecCameraPosition = m_vecCameraPosition;
 	Vector vecCameraDirection = m_vecCameraDirection;
@@ -159,24 +159,26 @@ void CReflectionRenderer::StartRendering(class CRenderingContext* pContext)
 		vecCameraUp = mReflect * m_vecCameraUp;
 	}
 
-	m_mView.ConstructCameraView(vecCameraPosition, vecCameraDirection, vecCameraUp);
+	Matrix4x4 mView = Matrix4x4::ConstructCameraView(vecCameraPosition, vecCameraDirection, vecCameraUp);
 
 	// Transform to mirror's space
-	m_mView.AddTranslation(vecMirror);
+	mView.AddTranslation(vecMirror);
 
 	// Do the reflection
-	m_mView *= mReflect;
+	mView *= mReflect;
 
 	// Transform back to global space
-	m_mView.AddTranslation(-vecMirror);
+	mView.AddTranslation(-vecMirror);
+
+	pContext->SetView(mView);
 
 	for (size_t i = 0; i < 16; i++)
 	{
-		m_aflModelView[i] = ((float*)m_mView)[i];
-		m_aflProjection[i] = ((float*)m_mProjection)[i];
+		m_aflModelView[i] = ((float*)pContext->GetView())[i];
+		m_aflProjection[i] = ((float*)pContext->GetProjection())[i];
 	}
 
-	m_oFrustum.CreateFrom(m_mProjection * m_mView);
+	m_oFrustum.CreateFrom(pContext->GetProjection() * pContext->GetView());
 
 	// Optimization opportunity: shrink the view frustum to the edges and surface of the mirror?
 
@@ -196,14 +198,12 @@ void CReflectionRenderer::FinishRendering(class CRenderingContext* pContext)
 
 void CReflectionRenderer::StartRenderingReflection(class CRenderingContext* pContext, CMirror* pMirror)
 {
-	m_mProjection.ProjectPerspective(
+	pContext->SetProjection(Matrix4x4::ProjectPerspective(
 			m_flCameraFOV,
 			(float)m_iWidth/(float)m_iHeight,
 			m_flCameraNear,
 			m_flCameraFar
-		);
-
-	pContext->SetProjection(m_mProjection);
+		));
 
 	Vector vecMirror = pMirror->GetGlobalOrigin();
 	Vector vecMirrorForward = pMirror->GetGlobalTransform().GetForwardVector();
@@ -226,26 +226,26 @@ void CReflectionRenderer::StartRenderingReflection(class CRenderingContext* pCon
 
 	mReflect *= pMirror->GetReflection();
 
-	m_mView.ConstructCameraView(vecCameraPosition, vecCameraDirection, vecCameraUp);
+	Matrix4x4 mView = Matrix4x4::ConstructCameraView(vecCameraPosition, vecCameraDirection, vecCameraUp);
 
 	// Transform to mirror's space
-	m_mView.AddTranslation(vecMirror);
+	mView.AddTranslation(vecMirror);
 
 	// Do the reflection
-	m_mView *= mReflect;
+	mView *= mReflect;
 
 	// Transform back to global space
-	m_mView.AddTranslation(-vecMirror);
+	mView.AddTranslation(-vecMirror);
 
-	pContext->SetView(m_mView);
+	pContext->SetView(mView);
 
 	for (size_t i = 0; i < 16; i++)
 	{
-		m_aflModelView[i] = ((float*)m_mView)[i];
-		m_aflProjection[i] = ((float*)m_mProjection)[i];
+		m_aflModelView[i] = ((float*)pContext->GetView())[i];
+		m_aflProjection[i] = ((float*)pContext->GetProjection())[i];
 	}
 
-	m_oFrustum.CreateFrom(m_mProjection * m_mView);
+	m_oFrustum.CreateFrom(pContext->GetProjection() * pContext->GetView());
 
 	// TODO: Optimization opportunity: shrink the view frustum to the edges and surface of the mirror
 

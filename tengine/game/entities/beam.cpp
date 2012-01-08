@@ -32,7 +32,7 @@ void CBeam::PostRender(bool bTransparent) const
 	if (!bTransparent)
 		return;
 
-	CRenderingContext c(GameServer()->GetRenderer());
+	CRenderingContext c(GameServer()->GetRenderer(), true);
 
 	c.UseProgram("model");
 	c.SetUniform("bDiffuse", false);

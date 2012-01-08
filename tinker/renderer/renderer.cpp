@@ -241,38 +241,36 @@ void CRenderer::StartRendering(class CRenderingContext* pContext)
 {
 	TPROF("CRenderer::StartRendering");
 
-	m_mProjection.ProjectPerspective(
+	pContext->SetProjection(Matrix4x4::ProjectPerspective(
 			m_flCameraFOV,
 			(float)m_iWidth/(float)m_iHeight,
 			m_flCameraNear,
 			m_flCameraFar
-		);
+		));
 
-	m_mView.ConstructCameraView(m_vecCameraPosition, m_vecCameraDirection, m_vecCameraUp);
+	pContext->SetView(Matrix4x4::ConstructCameraView(m_vecCameraPosition, m_vecCameraDirection, m_vecCameraUp));
 
 	for (size_t i = 0; i < 16; i++)
 	{
-		m_aflModelView[i] = ((float*)m_mView)[i];
-		m_aflProjection[i] = ((float*)m_mProjection)[i];
+		m_aflModelView[i] = ((float*)pContext->GetView())[i];
+		m_aflProjection[i] = ((float*)pContext->GetProjection())[i];
 	}
 
 	if (m_bFrustumOverride)
 	{
-		Matrix4x4 mProjection, mView;
-
-		mProjection.ProjectPerspective(
+		Matrix4x4 mProjection = Matrix4x4::ProjectPerspective(
 				m_flFrustumFOV,
 				(float)m_iWidth/(float)m_iHeight,
 				m_flFrustumNear,
 				m_flFrustumFar
 			);
 
-		mView.ConstructCameraView(m_vecFrustumPosition, m_vecFrustumDirection, m_vecCameraUp);
+		Matrix4x4 mView = Matrix4x4::ConstructCameraView(m_vecFrustumPosition, m_vecFrustumDirection, m_vecCameraUp);
 
 		m_oFrustum.CreateFrom(mProjection * mView);
 	}
 	else
-		m_oFrustum.CreateFrom(m_mProjection * m_mView);
+		m_oFrustum.CreateFrom(pContext->GetProjection() * pContext->GetView());
 
 	// Momentarily return the viewport to the window size. This is because if the scene buffer is not the same as the window size,
 	// the viewport here will be the scene buffer size, but we need it to be the window size so we can do world/screen transformations.
@@ -312,8 +310,8 @@ void CRenderer::FinishRendering(class CRenderingContext* pContext)
 
 void CRenderer::FinishFrame(class CRenderingContext* pContext)
 {
-	m_mProjection.Identity();
-	m_mView.Identity();
+	pContext->SetProjection(Matrix4x4());
+	pContext->SetView(Matrix4x4());
 
 	RenderOffscreenBuffers(pContext);
 

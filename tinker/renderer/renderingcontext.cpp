@@ -57,12 +57,6 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 	{
 		m_pShader = NULL;
 
-		if (m_pRenderer)
-		{
-			SetProjection(m_pRenderer->m_mProjection);
-			SetView(m_pRenderer->m_mView);
-		}
-
 		BindTexture(0);
 		UseFrameBuffer(NULL);
 		UseProgram("");
@@ -640,7 +634,7 @@ void CRenderingContext::RenderText(const tstring& sText, unsigned iLength, const
 	SetUniform("mProjection", GetContext().m_mProjection);
 	SetUniform("mView", GetContext().m_mView);
 
-	// Take the position out and let FTGL do it. It looks sharper that way.s
+	// Take the position out and let FTGL do it. It looks sharper that way.
 	Matrix4x4 mTransformations = GetContext().m_mTransformations;
 	Vector vecPosition = mTransformations.GetTranslation();
 	mTransformations.SetTranslation(Vector());

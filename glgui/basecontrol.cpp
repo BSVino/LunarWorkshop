@@ -225,6 +225,8 @@ void CBaseControl::PaintTexture(size_t iTexture, float x, float y, float w, floa
 		r->SetBackCulling(false);
 
 	r->SetBlend(BLEND_ALPHA);
+	r->SetUniform("iBorder", 0);
+	r->SetUniform("bHighlight", false);
 	r->SetUniform("vecColor", c);
 	r->SetUniform("bDiffuse", true);
 	r->SetUniform("bTexCoords", false);
@@ -255,6 +257,8 @@ void CBaseControl::PaintSheet(size_t iTexture, float x, float y, float w, float 
 		r->SetBackCulling(false);
 
 	r->SetBlend(BLEND_ALPHA);
+	r->SetUniform("iBorder", 0);
+	r->SetUniform("bHighlight", false);
 	r->SetUniform("vecColor", c);
 	r->SetUniform("bDiffuse", true);
 	r->SetUniform("bTexCoords", true);

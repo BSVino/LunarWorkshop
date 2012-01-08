@@ -292,7 +292,7 @@ void CCharacter::ShowPlayerVectors() const
 
 	TVector vecEyeHeight = GetUpVector() * EyeHeight();
 
-	CRenderingContext c(GameServer()->GetRenderer());
+	CRenderingContext c(GameServer()->GetRenderer(), true);
 
 	c.UseProgram("model");
 	c.Translate((GetGlobalOrigin()));

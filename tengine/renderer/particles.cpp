@@ -106,7 +106,7 @@ void CParticleSystemLibrary::Render()
 
 	if (true)
 	{
-		CGameRenderingContext c(GameServer()->GetRenderer());
+		CGameRenderingContext c(GameServer()->GetRenderer(), true);
 		c.UseProgram("model");
 		c.SetUniform("bDiffuse", true);
 		c.SetUniform("iDiffuse", 0);
@@ -122,7 +122,7 @@ void CParticleSystemLibrary::Render()
 
 	if (true)
 	{
-		CGameRenderingContext c(GameServer()->GetRenderer());
+		CGameRenderingContext c(GameServer()->GetRenderer(), true);
 		c.UseProgram("model");
 		c.SetUniform("bDiffuse", true);
 		c.SetUniform("iDiffuse", 0);

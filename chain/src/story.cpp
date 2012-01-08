@@ -213,23 +213,15 @@ void CStory::OnRender(CRenderingContext* pContext, bool bTransparent) const
 	if (!bTransparent)
 		return;
 
-	const Frustum& oFrustum = GameServer()->GetRenderer()->GetFrustum();
+	CRenderingContext c(GameServer()->GetRenderer(), true);
 
-/*	Vector vecTopLeft = FindPointAtZ(oFrustum, FRUSTUM_UP, FRUSTUM_LEFT, -10);
-	Vector vecTopRight = FindPointAtZ(oFrustum, FRUSTUM_UP, FRUSTUM_RIGHT, -10);
-	Vector vecBottomLeft = FindPointAtZ(oFrustum, FRUSTUM_DOWN, FRUSTUM_LEFT, -10);
-	Vector vecBottomRight = FindPointAtZ(oFrustum, FRUSTUM_DOWN, FRUSTUM_RIGHT, -10);
-
-	pContext->UseProgram("text");
-	pContext->BeginRenderQuads();
-	pContext->Color(Vector(0.5f, 0.5f, 0.5f));
-	pContext->Vertex(vecTopLeft/2);
-	pContext->Vertex(vecBottomLeft/2);
-	pContext->Vertex(vecBottomRight/2);
-	pContext->Vertex(vecTopRight/2);
-	pContext->EndRender();*/
+	c.SetDepthMask(false);
+	c.SetBlend(BLEND_ALPHA);
 
 	float flScale = LabelScale();
+
+	const Frustum& oFrustum = GameServer()->GetRenderer()->GetFrustum();
+
 	Vector vecTopRight = FindPointAtZ(oFrustum, FRUSTUM_UP, FRUSTUM_RIGHT, 0)*flScale*4/5;
 	Vector vecBottomLeft = FindPointAtZ(oFrustum, FRUSTUM_DOWN, FRUSTUM_LEFT, 0)*flScale*4/5;
 
@@ -238,9 +230,10 @@ void CStory::OnRender(CRenderingContext* pContext, bool bTransparent) const
 	m_pText->SetPos(vecBottomLeft.x, vecBottomLeft.y);
 	m_pText->SetSize(vecSize.x, vecSize.y);
 
-	pContext->Scale(1/flScale, 1/flScale, 1/flScale);
+	Matrix4x4 mView = c.GetView();
+	mView.AddScale(Vector(1/flScale, 1/flScale, 1/flScale));
+	c.SetView(mView);
 
-	pContext->UseProgram("");
 	m_pText->SetAlpha(m_flAlpha);
 	m_pText->Paint();
 
@@ -259,9 +252,8 @@ void CStory::OnRender(CRenderingContext* pContext, bool bTransparent) const
 		const CLabel::CLine& oLine = m_pText->GetLine(iLine);
 		const CLabel::CLineSection& oSection = m_pText->GetSection(iLine, iSection);
 
-		CRenderingContext c(GameServer()->GetRenderer());
+		CRenderingContext c(GameServer()->GetRenderer(), true);
 		c.UseFrameBuffer(&ChainRenderer()->GetMouseoverBuffer());
-		c.UseProgram("");
 		c.SetBlend(BLEND_ALPHA);
 
 		m_pText->SetTextColor(Color(1.0f, 1.0f, 0.0f, m_flAlpha*it->second.m_flValue));

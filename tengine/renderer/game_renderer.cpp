@@ -71,63 +71,59 @@ void CGameRenderer::DrawSkybox(class CRenderingContext* pContext)
 	SetCameraNear(pCamera->GetCameraNear());
 	SetCameraFar(pCamera->GetCameraFar());
 
-	m_mProjection.ProjectPerspective(
+	CRenderingContext c(this, true);
+
+	c.SetProjection(Matrix4x4::ProjectPerspective(
 			m_flCameraFOV,
 			(float)m_iWidth/(float)m_iHeight,
 			m_flCameraNear,
 			m_flCameraFar
-		);
+		));
 
-	m_mView.ConstructCameraView(m_vecCameraPosition, m_vecCameraDirection, m_vecCameraUp);
+	c.SetView(Matrix4x4::ConstructCameraView(m_vecCameraPosition, m_vecCameraDirection, m_vecCameraUp));
 
-	glEnable(GL_CULL_FACE);
+	c.SetDepthTest(false);
+	c.UseProgram("skybox");
 
-	{
-		CRenderingContext c(this);
+	ModifySkyboxContext(&c);
 
-		c.SetDepthTest(false);
-		c.UseProgram("skybox");
+	c.BeginRenderVertexArray();
+	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
+	c.SetPositionBuffer(&m_avecSkyboxFT[0][0]);
+	c.BindTexture(m_iSkyboxFT);
+	c.EndRenderVertexArray(6);
 
-		ModifySkyboxContext(&c);
+	c.BeginRenderVertexArray();
+	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
+	c.SetPositionBuffer(&m_avecSkyboxBK[0][0]);
+	c.BindTexture(m_iSkyboxBK);
+	c.EndRenderVertexArray(6);
 
-		c.BeginRenderVertexArray();
-		c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
-		c.SetPositionBuffer(&m_avecSkyboxFT[0][0]);
-		c.BindTexture(m_iSkyboxFT);
-		c.EndRenderVertexArray(6);
+	c.BeginRenderVertexArray();
+	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
+	c.SetPositionBuffer(&m_avecSkyboxLF[0][0]);
+	c.BindTexture(m_iSkyboxLF);
+	c.EndRenderVertexArray(6);
 
-		c.BeginRenderVertexArray();
-		c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
-		c.SetPositionBuffer(&m_avecSkyboxBK[0][0]);
-		c.BindTexture(m_iSkyboxBK);
-		c.EndRenderVertexArray(6);
+	c.BeginRenderVertexArray();
+	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
+	c.SetPositionBuffer(&m_avecSkyboxRT[0][0]);
+	c.BindTexture(m_iSkyboxRT);
+	c.EndRenderVertexArray(6);
 
-		c.BeginRenderVertexArray();
-		c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
-		c.SetPositionBuffer(&m_avecSkyboxLF[0][0]);
-		c.BindTexture(m_iSkyboxLF);
-		c.EndRenderVertexArray(6);
+	c.BeginRenderVertexArray();
+	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
+	c.SetPositionBuffer(&m_avecSkyboxUP[0][0]);
+	c.BindTexture(m_iSkyboxUP);
+	c.EndRenderVertexArray(6);
 
-		c.BeginRenderVertexArray();
-		c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
-		c.SetPositionBuffer(&m_avecSkyboxRT[0][0]);
-		c.BindTexture(m_iSkyboxRT);
-		c.EndRenderVertexArray(6);
+	c.BeginRenderVertexArray();
+	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
+	c.SetPositionBuffer(&m_avecSkyboxDN[0][0]);
+	c.BindTexture(m_iSkyboxDN);
+	c.EndRenderVertexArray(6);
 
-		c.BeginRenderVertexArray();
-		c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
-		c.SetPositionBuffer(&m_avecSkyboxUP[0][0]);
-		c.BindTexture(m_iSkyboxUP);
-		c.EndRenderVertexArray(6);
-
-		c.BeginRenderVertexArray();
-		c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
-		c.SetPositionBuffer(&m_avecSkyboxDN[0][0]);
-		c.BindTexture(m_iSkyboxDN);
-		c.EndRenderVertexArray(6);
-	}
-
-	glClear(GL_DEPTH_BUFFER_BIT);
+	c.ClearDepth();
 }
 
 CVar show_physics("debug_show_physics", "no");
@@ -233,7 +229,7 @@ void CGameRenderer::RenderBatches()
 	if (!ShouldBatchThisFrame())
 		return;
 
-	CGameRenderingContext c(this);
+	CGameRenderingContext c(this, true);
 	c.UseFrameBuffer(GetSceneBuffer());
 
 	for (eastl::map<size_t, eastl::vector<CRenderBatch> >::iterator it = m_aBatches.begin(); it != m_aBatches.end(); it++)

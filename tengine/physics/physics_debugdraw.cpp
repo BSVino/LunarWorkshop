@@ -20,7 +20,7 @@ void CPhysicsDebugDrawer::drawLine(const btVector3& from,const btVector3& to,con
 	if (!m_bDrawing)
 		return;
 
-	CRenderingContext c(GameServer()->GetRenderer());
+	CRenderingContext c(GameServer()->GetRenderer(), true);
 	c.UseProgram("model");
 	c.SetUniform("bDiffuse", false);
 	c.BeginRenderDebugLines();
@@ -74,7 +74,7 @@ void CPhysicsDebugDrawer::drawTriangle(const btVector3& a,const btVector3& b,con
 	if (!m_bDrawing)
 		return;
 
-	CRenderingContext r(GameServer()->GetRenderer());
+	CRenderingContext r(GameServer()->GetRenderer(), true);
 	r.UseProgram("model");
 	r.SetUniform("bDiffuse", false);
 	r.SetColor(Color(Vector((const float*)color)));
@@ -116,7 +116,7 @@ void CPhysicsDebugDrawer::drawContactPoint(const btVector3& pointOnB,const btVec
 	btVector3 to=pointOnB+normalOnB*1;//distance;
 	const btVector3& from = pointOnB;
 
-	CRenderingContext r(GameServer()->GetRenderer());
+	CRenderingContext r(GameServer()->GetRenderer(), true);
 	r.UseProgram("model");
 	r.SetUniform("bDiffuse", false);
 	r.SetColor(Color(Vector((const float*)color)));

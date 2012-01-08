@@ -182,7 +182,7 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 	if (Is3D())
 	{
 		vecPosition.y = -vecPosition.y;
-		PaintText3D(s.m_sText, iDrawChars, s.m_sFont, s.m_iFontSize, vecPosition);
+		PaintText3D(s.m_sText, iDrawChars, s.m_sFont, s.m_iFontSize, vecPosition, m_clrText);
 	}
 	else
 	{
@@ -300,8 +300,7 @@ float CLabel::GetFontHeight(const tstring& sFontName, int iFontFaceSize)
 
 void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, float x, float y, const Color& clrText, const FRect& rStencil)
 {
-	Matrix4x4 mFontProjection;
-	mFontProjection.ProjectOrthographic(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
+	Matrix4x4 mFontProjection = Matrix4x4::ProjectOrthographic(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
 
 	float flBaseline = s_apFonts[sFontName][iFontFaceSize]->Ascender();
 
@@ -324,11 +323,13 @@ void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sF
 	c.RenderText(sText, iLength, sFontName, iFontFaceSize);
 }
 
-void CLabel::PaintText3D(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, Vector vecPosition)
+void CLabel::PaintText3D(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, Vector vecPosition, const Color& clrText)
 {
 	::CRenderingContext c(nullptr, true);
 	
 	c.UseProgram("text");
+	c.SetUniform("bScissor", false);
+	c.SetUniform("vecColor", clrText);
 	c.Translate(vecPosition);
 
 	c.RenderText(sText, iLength, sFontName, iFontFaceSize);
@@ -656,7 +657,7 @@ void CLabel::ComputeLines(float w, float h)
 				// Looks like we've exceeded the label width. Find the previous space, and that's our word break. Add a new line.
 
 				int iBackup = iChar - iLastSpace;
-				if (iLastSpace == iLastBreak)
+				if (iLastSpace == iLastBreak || iLastSpace == 0 || iLength < iBackup)
 					iBackup = 0;
 
 				iChar -= iBackup;

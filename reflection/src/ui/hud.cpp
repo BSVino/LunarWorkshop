@@ -62,9 +62,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 
 		float flRatio = w/h;
 
-		Matrix4x4 mProjection;
-		mProjection.ProjectOrthographic(-flRatio, flRatio, -1, 1, -100, 100);
-		c.SetProjection(mProjection);
+		c.SetProjection(Matrix4x4::ProjectOrthographic(-flRatio, flRatio, -1, 1, -100, 100));
 
 		c.SetView(Matrix4x4());
 

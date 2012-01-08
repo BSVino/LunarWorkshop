@@ -12,8 +12,6 @@
 CChainRenderer::CChainRenderer()
 	: CGameRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
 {
-	FrustumOverride(Vector(0, 0, 10), Vector(1, 0, 0), 45, 0.1f, 50);
-
 	m_oMouseoverBuffer1 = CreateFrameBuffer(m_iWidth, m_iHeight, FB_TEXTURE);
 	m_oMouseoverBuffer2 = CreateFrameBuffer(m_iWidth, m_iHeight, FB_TEXTURE);
 }
@@ -22,28 +20,26 @@ void CChainRenderer::LoadShaders()
 {
 	BaseClass::LoadShaders();
 
-	CShaderLibrary::AddShader("brightpass", "pass", "brightpass");
 	CShaderLibrary::AddShader("model", "pass", "model");
-	CShaderLibrary::AddShader("blur", "pass", "blur");
-	CShaderLibrary::AddShader("text", "text", "text");
 	CShaderLibrary::AddShader("mouseover", "pass", "mouseover");
 }
 
 void CChainRenderer::SetupFrame(class CRenderingContext* pContext)
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, m_oMouseoverBuffer1.m_iFB);
-	glColor4f(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT);
+	CRenderingContext c;
+	c.UseFrameBuffer(&m_oMouseoverBuffer1);
+	c.ClearColor();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, m_oMouseoverBuffer2.m_iFB);
-	glClear(GL_COLOR_BUFFER_BIT);
+	c.UseFrameBuffer(&m_oMouseoverBuffer2);
+	c.ClearColor();
+
+	m_bDrawBackground = true;
+
+	c.UseFrameBuffer(&m_oSceneBuffer);
+
+	FrustumOverride(m_vecCameraPosition, m_vecCameraDirection, m_flCameraFOV, m_flCameraNear, m_flCameraFar);
 
 	BaseClass::SetupFrame(pContext);
-
-	glColor4f(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	glColor4f(1, 1, 1, 1);
 }
 
 void CChainRenderer::RenderFullscreenBuffers(class CRenderingContext* pContext)
@@ -52,9 +48,8 @@ void CChainRenderer::RenderFullscreenBuffers(class CRenderingContext* pContext)
 
 	CRenderingContext c(this);
 	c.UseProgram("blur");
-	glColor3f(1, 1, 0);
-	glEnablei(GL_BLEND, 0);
-	glBlendFunc(GL_ONE, GL_ONE);
+	c.SetUniform("vecColor", Color(255, 255, 0));
+	c.SetBlend(BLEND_ADDITIVE);
 
 	for (size_t i = 0; i < 5; i++)
 	{
@@ -62,24 +57,19 @@ void CChainRenderer::RenderFullscreenBuffers(class CRenderingContext* pContext)
 		c.SetUniform("flOffsetX", 1.2f / m_oMouseoverBuffer1.m_iWidth);
 		RenderFrameBufferToBuffer(&m_oMouseoverBuffer1, &m_oMouseoverBuffer2);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, m_oMouseoverBuffer1.m_iFB);
-		glColor4f(0, 0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glColor4f(1, 1, 1, 1);
+		c.UseFrameBuffer(&m_oMouseoverBuffer1);
+		c.ClearColor();
 
 		c.SetUniform("flOffsetX", 0.0f);
 		c.SetUniform("flOffsetY", 1.2f / m_oMouseoverBuffer1.m_iWidth);
 		RenderFrameBufferToBuffer(&m_oMouseoverBuffer2, &m_oMouseoverBuffer1);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, m_oMouseoverBuffer2.m_iFB);
-		glColor4f(0, 0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glColor4f(1, 1, 1, 1);
+		c.UseFrameBuffer(&m_oMouseoverBuffer2);
+		c.ClearColor();
 	}
 
 	c.UseProgram("mouseover");
 	RenderFrameBufferFullscreen(&m_oMouseoverBuffer1);
-	glDisablei(GL_BLEND, 0);
 }
 
 CChainRenderer* ChainRenderer()

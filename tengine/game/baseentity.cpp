@@ -823,7 +823,7 @@ void CBaseEntity::Render(bool bTransparent) const
 
 	if (show_centers.GetBool())
 	{
-		CRenderingContext r(GameServer()->GetRenderer());
+		CRenderingContext r(GameServer()->GetRenderer(), true);
 		r.UseProgram("model");
 		r.Translate(GetGlobalCenter());
 		r.BeginRenderDebugLines();

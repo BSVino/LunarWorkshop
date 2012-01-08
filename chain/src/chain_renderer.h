@@ -17,7 +17,6 @@ public:
 	virtual void	LoadShaders();
 
 	virtual void	SetupFrame(class CRenderingContext* pContext);
-	virtual void	DrawBackground(class CRenderingContext* pContext) {};
 	virtual void	RenderFullscreenBuffers(class CRenderingContext* pContext);
 
 	float			BloomBrightnessCutoff() const { return 1.25f; }

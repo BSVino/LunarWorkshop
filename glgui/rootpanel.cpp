@@ -81,8 +81,7 @@ void CRootPanel::Paint(float x, float y, float w, float h)
 {
 	SetSize(w, h);
 
-	Matrix4x4 mProjection;
-	mProjection.ProjectOrthographic(x, x+w, y+h, y, -1000, 1000);
+	Matrix4x4 mProjection = Matrix4x4::ProjectOrthographic(x, x+w, y+h, y, -1000, 1000);
 
 	::CRenderingContext c;
 	m_pRenderingContext = &c;
