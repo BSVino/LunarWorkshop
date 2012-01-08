@@ -111,13 +111,13 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 	glGetIntegerv(GL_SAMPLES, &m_iScreenSamples);
 	GLsizei iSamples = m_iScreenSamples;
 
-	bool bUseMultisample = !!GLEW_EXT_framebuffer_multisample;
+	bool bUseMultisample = false;// !!GLEW_EXT_framebuffer_multisample;
 	if (iSamples == 0)
 		bUseMultisample = false;
 	if (!(eOptions&FB_MULTISAMPLE))
 		bUseMultisample = false;
 
-	bool bMultisampleTexture = m_bUseMultisampleTextures;
+	bool bMultisampleTexture = m_bUseMultisampleTextures && bUseMultisample;
 
 	if ((eOptions&FB_TEXTURE) && !bMultisampleTexture)
 		bUseMultisample = false;
