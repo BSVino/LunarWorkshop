@@ -31,6 +31,18 @@ CShaderLibrary::CShaderLibrary()
 
 		fclose(f);
 	}
+
+	f = tfopen("shaders/header.si", "r");
+
+	TAssert(f);
+	if (f)
+	{
+		tstring sLine;
+		while (fgetts(sLine, f))
+			m_sHeader += sLine;
+
+		fclose(f);
+	}
 }
 
 CShaderLibrary::~CShaderLibrary()
@@ -172,7 +184,7 @@ CShader::CShader(const tstring& sName, const tstring& sVertexFile, const tstring
 
 bool CShader::Compile()
 {
-	tstring sShaderHeader;
+	tstring sShaderHeader = CShaderLibrary::GetShaderHeader();
 
 	if (CShaderLibrary::Get()->m_iSamples)
 		sShaderHeader += "#define USE_MULTISAMPLE_TEXTURES 1\n";

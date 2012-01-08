@@ -53,6 +53,7 @@ public:
 
 	static bool				IsCompiled() { return Get()->m_bCompiled; };
 
+	static tstring			GetShaderHeader() { return Get()->m_sHeader; }
 	static tstring			GetShaderFunctions() { return Get()->m_sFunctions; }
 
 	static CShaderLibrary*	Get() { return s_pShaderLibrary; };
@@ -70,6 +71,7 @@ protected:
 
 	int						m_iSamples;
 
+	tstring					m_sHeader;
 	tstring					m_sFunctions;
 
 private:
