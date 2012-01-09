@@ -5,7 +5,7 @@
 
 //#define DEBUG_WITH_GL
 #ifdef DEBUG_WITH_GL
-//#include <../../glew/include/GL/glew.h>
+//#include <../../gl3w/include/GL3/gl3w.h>
 
 void DrawBox(AABB& b, float c);
 void DrawTri(Vector v1, Vector v2, Vector v3, float r, float g, float b);

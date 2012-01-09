@@ -1,6 +1,6 @@
 #include "shaders.h"
 
-#include <GL/glew.h>
+#include <GL3/gl3w.h>
 #include <time.h>
 
 #include <common.h>

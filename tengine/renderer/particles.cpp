@@ -601,7 +601,7 @@ void CSystemInstance::Render(CGameRenderingContext* c)
 			else
 				c->SetColor(m_pSystem->GetColor());
 
-			c->BeginRenderQuads();
+			c->BeginRenderTriFan();
 
 			c->TexCoord(0.0f, 1.0f);
 			c->Vertex(vecTL);

@@ -1,6 +1,6 @@
 #include "chain_renderer.h"
 
-#include <GL/glew.h>
+#include <GL3/gl3w.h>
 
 #include <tinker/application.h>
 #include <renderer/shaders.h>

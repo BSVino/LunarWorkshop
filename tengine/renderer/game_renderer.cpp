@@ -1,6 +1,5 @@
 #include "game_renderer.h"
 
-#include <GL/glew.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 

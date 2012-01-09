@@ -1,9 +1,5 @@
 #include "roperenderer.h"
 
-#include <GL/glew.h>
-#include <IL/il.h>
-#include <IL/ilu.h>
-
 #include <maths.h>
 #include <simplex.h>
 

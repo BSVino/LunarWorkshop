@@ -1,6 +1,5 @@
 #include "game_renderingcontext.h"
 
-#include <GL/glew.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 
@@ -53,9 +52,7 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 			if (!pModel->m_aiVertexBufferSizes[m])
 				continue;
 
-			glActiveTexture(GL_TEXTURE0);
-
-			glBindTexture(GL_TEXTURE_2D, (GLuint)pModel->m_aiTextures[m]);
+			BindTexture(pModel->m_aiTextures[m]);
 
 			RenderModel(pModel, m);
 		}

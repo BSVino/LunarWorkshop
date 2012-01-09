@@ -1,7 +1,7 @@
 #include "tree.h"
 
 #include <renderer/renderingcontext.h>
-#include <GL/glew.h>
+#include <GL3/gl3w.h>
 
 #include "rootpanel.h"
 #include "scrollbar.h"
@@ -529,7 +529,9 @@ void CTreeNode::CExpandButton::Think()
 
 void CTreeNode::CExpandButton::Paint(float x, float y, float w, float h)
 {
-	glPushAttrib(GL_ENABLE_BIT);
+	TAssert(false);
+
+/*	glPushAttrib(GL_ENABLE_BIT);
 	glEnablei(GL_BLEND, 0);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_LIGHTING);
@@ -547,7 +549,7 @@ void CTreeNode::CExpandButton::Paint(float x, float y, float w, float h)
 
 	glPopMatrix();
 
-	glPopAttrib();
+	glPopAttrib();*/
 }
 
 void CTreeNode::CExpandButton::SetExpanded(bool bExpanded)

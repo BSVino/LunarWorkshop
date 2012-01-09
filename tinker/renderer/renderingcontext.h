@@ -86,6 +86,7 @@ public:
 
 	// Immediate mode emulation
 	void					BeginRenderTris();
+	void					BeginRenderTriFan();
 	void					BeginRenderQuads();
 	void					BeginRenderDebugLines();
 	void					TexCoord(float s, float t, int iChannel = 0);

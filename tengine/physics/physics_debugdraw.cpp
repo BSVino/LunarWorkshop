@@ -1,7 +1,5 @@
 #include "physics_debugdraw.h"
 
-#include <GL/glew.h>
-
 #include <renderer/renderingcontext.h>
 #include <game/gameserver.h>
 #include <tinker/application.h>

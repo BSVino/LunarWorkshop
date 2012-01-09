@@ -1,6 +1,6 @@
 #include "label.h"
 
-#include <GL/glew.h>
+#include <GL3/gl3w.h>
 #include <FTGL/ftgl.h>
 
 #include <tinker/cvar.h>
@@ -129,16 +129,7 @@ void CLabel::Paint(float x, float y, float w, float h)
 							float w = oSection.m_rArea.w;
 							float h = oSection.m_rArea.h;
 
-							glPushAttrib(GL_DEPTH_BUFFER_BIT|GL_CURRENT_BIT);
-							glColor4ubv(Color(50, 50, 50, 255));
-							glDepthMask(GL_FALSE);
-							glBegin(GL_QUADS);
-								glVertex2f(x, y);
-								glVertex2f(x+w, y);
-								glVertex2f(x+w, y+h);
-								glVertex2f(x, y+h);
-							glEnd();
-							glPopAttrib();
+							PaintRect(x, y, w, h, Color(50, 50, 50, 255));
 						}
 						else
 						{

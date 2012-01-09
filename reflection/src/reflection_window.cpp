@@ -1,6 +1,6 @@
 #include "reflection_window.h"
 
-#include <GL/glew.h>
+#include <GL3/gl3w.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 

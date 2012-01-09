@@ -48,6 +48,8 @@ set (TINKER_SOURCES
 	register.cpp
 	profiler.cpp
 
+	${CMAKE_SOURCE_DIR}/../ext-deps/gl3w/src/gl3w.c
+
 	${TINKER_GLGUI_SOURCES}
 	${TINKER_RENDERER_SOURCES}
 	${TINKER_TEXTURES_SOURCES}
@@ -58,15 +60,11 @@ source_group(Renderer FILES ${TINKER_RENDERER_SOURCES})
 source_group(Textures FILES ${TINKER_TEXTURES_SOURCES})
 
 if (WIN32)
-	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/glew-1.7.0/include)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/gl3w/include)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/glfw-1.3/include)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/devil-1.7.8/include)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/ftgl-gl3/src)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/freetype-2.3.11/include)
-
-	set (TINKER_SOURCES ${TINKER_SOURCES}
-		${CMAKE_SOURCE_DIR}/../ext-deps/glew-1.7.0/src/glew.c
-	)
 endif (WIN32)
 
 add_library(tinker STATIC ${TINKER_SOURCES})
@@ -78,7 +76,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	target_link_libraries (tinker /usr/lib/libftgl.a)
 	target_link_libraries (tinker /usr/lib/libfreetype.a)
 	target_link_libraries (tinker /usr/lib/libglfw.a)
-	target_link_libraries (tinker /usr/lib/libGLEW.a)
 	target_link_libraries (tinker X11 Xrandr GL GLU)
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 

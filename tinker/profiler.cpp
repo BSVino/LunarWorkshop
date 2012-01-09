@@ -1,11 +1,10 @@
 #include "profiler.h"
 
-#include <GL/glew.h>
-
 #include <strutils.h>
 
 #include <tinker/application.h>
 #include <tinker/cvar.h>
+#include <renderer/renderingcontext.h>
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
 
@@ -156,29 +155,18 @@ void CProfiler::Render()
 	float flCurrLeft = flWidth - 400;
 	float flCurrTop = 200;
 
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0, flWidth, flHeight, 0, -1, 1);
+	Matrix4x4 mProjection = Matrix4x4::ProjectOrthographic(0, flWidth, flHeight, 0, -1000, 1000);
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
+	CRenderingContext c;
 
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_COLOR_MATERIAL);
-
-	glColor4ubv(Color(255, 255, 255, 255));
+	c.SetProjection(mProjection);
+	c.UseProgram("gui");
+	c.SetDepthTest(false);
+	c.UseFrameBuffer(NULL);
 
 	glgui::CBaseControl::PaintRect(flCurrLeft, flCurrTop, 400, 800, Color(0, 0, 0, 150), 5, true);
 
 	Render(s_pBottomBlock, flCurrLeft, flCurrTop);
-
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();   
-
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
 }
 
 void CProfiler::Render(CPerfBlock* pBlock, float& flLeft, float& flTop)
@@ -194,8 +182,7 @@ void CProfiler::Render(CPerfBlock* pBlock, float& flLeft, float& flTop)
 
 	tstring sName = convertstring<char, tchar>(pBlock->GetName());
 	sName += sprintf(tstring(": %d ms"), (int)(pBlock->GetTime()*1000));
-	glColor4ubv(clrBlock);
-	glgui::CLabel::PaintText(sName, sName.length(), "sans-serif", 10, (float)flLeft, (float)flTop);
+	glgui::CLabel::PaintText(sName, sName.length(), "sans-serif", 10, (float)flLeft, (float)flTop, clrBlock);
 
 	for (eastl::map<eastl::string, CPerfBlock*>::iterator it = pBlock->m_apPerfBlocks.begin(); it != pBlock->m_apPerfBlocks.end(); it++)
 		Render(it->second, flLeft, flTop);

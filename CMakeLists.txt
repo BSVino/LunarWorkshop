@@ -20,12 +20,9 @@ if (WIN32)
 	set (CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO	"/ENTRY:mainCRTStartup /DEBUG /INCREMENTAL:NO" CACHE STRING "" FORCE)
 endif (WIN32)
 
-option(WITH_NETWORKING "Build with networking enabled." ON)
-option(OPTIMIZE_SOFTWARE "Build with an eye towards optimization of software implementations." OFF)
+option(BUILD_SMAK "Build SMAK" OFF)
 
-if (OPTIMIZE_SOFTWARE)
-	add_definitions(-DTINKER_OPTIMIZE_SOFTWARE)
-endif (OPTIMIZE_SOFTWARE)
+option(WITH_NETWORKING "Build with networking enabled." ON)
 
 if (NOT WITH_NETWORKING)
 	add_definitions(-DTINKER_NO_NETWORKING)
@@ -41,7 +38,6 @@ if (WIN32)
 	add_definitions(-D_CRT_NON_CONFORMING_SWPRINTFS)
 	add_definitions(-D_CHAR16T)
 	add_definitions(-D_UNICODE)
-	add_definitions(-DGLEW_STATIC)
 	add_definitions(-DFREEGLUT_STATIC)
 	add_definitions(-DFTGL_LIBRARY_STATIC)
 endif (WIN32)
@@ -65,6 +61,9 @@ add_subdirectory (tengine)
 
 add_subdirectory (reflection)
 add_subdirectory (chain)
-add_subdirectory (smak)
+
+if (BUILD_SMAK)
+	add_subdirectory (smak)
+endif (BUILD_SMAK)
 
 add_subdirectory (tests)

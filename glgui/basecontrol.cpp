@@ -189,92 +189,83 @@ void CBaseControl::PaintBackground(float x, float y, float w, float h)
 
 void CBaseControl::PaintRect(float x, float y, float w, float h, const Color& c, int iBorder, bool bHighlight)
 {
-	CRenderingContext* r = CRootPanel::GetContext();
-	TAssert(r);
-	if (!r)
-		return;
-
 	MakeQuad();
 
-	r->SetBlend(BLEND_ALPHA);
-	r->SetUniform("iBorder", iBorder);
-	r->SetUniform("bHighlight", bHighlight);
-	r->SetUniform("vecColor", c);
-	r->SetUniform("bDiffuse", false);
-	r->SetUniform("bTexCoords", false);
+	::CRenderingContext r(nullptr, true);
 
-	r->SetUniform("vecDimensions", Vector4D(x, y, w, h));
+	r.SetBlend(BLEND_ALPHA);
+	r.SetUniform("iBorder", iBorder);
+	r.SetUniform("bHighlight", bHighlight);
+	r.SetUniform("vecColor", c);
+	r.SetUniform("bDiffuse", false);
+	r.SetUniform("bTexCoords", false);
 
-	r->BeginRenderVertexArray(s_iQuad);
-	r->SetPositionBuffer(0u, 24);
-	r->SetTexCoordBuffer(12, 24);
-	r->SetCustomIntBuffer("iVertex", 1, 20, 24);
-	r->EndRenderVertexArray(6);
+	r.SetUniform("vecDimensions", Vector4D(x, y, w, h));
+
+	r.BeginRenderVertexArray(s_iQuad);
+	r.SetPositionBuffer(0u, 24);
+	r.SetTexCoordBuffer(12, 24);
+	r.SetCustomIntBuffer("iVertex", 1, 20, 24);
+	r.EndRenderVertexArray(6);
 }
 
 void CBaseControl::PaintTexture(size_t iTexture, float x, float y, float w, float h, const Color& c)
 {
-	CRenderingContext* r = CRootPanel::GetContext();
-	TAssert(r);
-	if (!r)
-		return;
-
 	MakeQuad();
 
+	::CRenderingContext r(nullptr, true);
+
 	if ((w < 0) ^ (h < 0))
-		r->SetBackCulling(false);
+		r.SetBackCulling(false);
 
-	r->SetBlend(BLEND_ALPHA);
-	r->SetUniform("iBorder", 0);
-	r->SetUniform("bHighlight", false);
-	r->SetUniform("vecColor", c);
-	r->SetUniform("bDiffuse", true);
-	r->SetUniform("bTexCoords", false);
+	r.SetBlend(BLEND_ALPHA);
+	r.SetUniform("iBorder", 0);
+	r.SetUniform("bHighlight", false);
+	r.SetUniform("vecColor", c);
+	r.SetUniform("bDiffuse", true);
+	r.SetUniform("bTexCoords", false);
 
-	r->SetUniform("vecDimensions", Vector4D(x, y, w, h));
+	r.SetUniform("vecDimensions", Vector4D(x, y, w, h));
 
-	r->BindTexture(iTexture);
+	r.BindTexture(iTexture);
 
-	r->BeginRenderVertexArray(s_iQuad);
-	r->SetPositionBuffer(0u, 24);
-	r->SetTexCoordBuffer(12, 24);
-	r->SetCustomIntBuffer("iVertex", 1, 20, 24);
-	r->EndRenderVertexArray(6);
+	r.BeginRenderVertexArray(s_iQuad);
+	r.SetPositionBuffer(0u, 24);
+	r.SetTexCoordBuffer(12, 24);
+	r.SetCustomIntBuffer("iVertex", 1, 20, 24);
+	r.EndRenderVertexArray(6);
 
-	r->SetBackCulling(true);
+	r.SetBackCulling(true);
 }
 
 void CBaseControl::PaintSheet(size_t iTexture, float x, float y, float w, float h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c)
 {
-	CRenderingContext* r = CRootPanel::GetContext();
-	TAssert(r);
-	if (!r)
-		return;
-
 	MakeQuad();
 
+	::CRenderingContext r(nullptr, true);
+
 	if ((w < 0) ^ (h < 0))
-		r->SetBackCulling(false);
+		r.SetBackCulling(false);
 
-	r->SetBlend(BLEND_ALPHA);
-	r->SetUniform("iBorder", 0);
-	r->SetUniform("bHighlight", false);
-	r->SetUniform("vecColor", c);
-	r->SetUniform("bDiffuse", true);
-	r->SetUniform("bTexCoords", true);
+	r.SetBlend(BLEND_ALPHA);
+	r.SetUniform("iBorder", 0);
+	r.SetUniform("bHighlight", false);
+	r.SetUniform("vecColor", c);
+	r.SetUniform("bDiffuse", true);
+	r.SetUniform("bTexCoords", true);
 
-	r->SetUniform("vecDimensions", Vector4D(x, y, w, h));
-	r->SetUniform("vecTexCoords", Vector4D((float)sx/(float)tw, (float)sy/(float)th, (float)sw/(float)tw, (float)sh/(float)th));
+	r.SetUniform("vecDimensions", Vector4D(x, y, w, h));
+	r.SetUniform("vecTexCoords", Vector4D((float)sx/(float)tw, (float)sy/(float)th, (float)sw/(float)tw, (float)sh/(float)th));
 
-	r->BindTexture(iTexture);
+	r.BindTexture(iTexture);
 
-	r->BeginRenderVertexArray(s_iQuad);
-	r->SetPositionBuffer(0u, 24);
-	r->SetTexCoordBuffer(12, 24);
-	r->SetCustomIntBuffer("iVertex", 1, 20, 24);
-	r->EndRenderVertexArray(6);
+	r.BeginRenderVertexArray(s_iQuad);
+	r.SetPositionBuffer(0u, 24);
+	r.SetTexCoordBuffer(12, 24);
+	r.SetCustomIntBuffer("iVertex", 1, 20, 24);
+	r.EndRenderVertexArray(6);
 
-	r->SetBackCulling(true);
+	r.SetBackCulling(true);
 }
 
 void CBaseControl::MakeQuad()

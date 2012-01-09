@@ -1,6 +1,6 @@
 #include "picturebutton.h"
 
-#include <GL/glew.h>
+#include <GL3/gl3w.h>
 
 using namespace glgui;
 

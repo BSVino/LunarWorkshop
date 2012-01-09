@@ -18,7 +18,7 @@ include_directories (
 )
 
 if (WIN32)
-	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/glew-1.7.0/include)
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/gl3w/include)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/glfw-1.3/include)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/devil-1.7.8/include)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/pthreads-w32-2-8-0-release)

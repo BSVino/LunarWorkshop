@@ -1,6 +1,7 @@
 #include "renderingcontext.h"
 
-#include <GL/glew.h>
+#include <GL3/gl3w.h>
+#include <GL/glu.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 #include <FTGL/ftgl.h>
@@ -228,19 +229,12 @@ void CRenderingContext::ClearDepth()
 
 void CRenderingContext::RenderSphere()
 {
-	static size_t iSphereCallList = 0;
+	static GLUquadricObj* pQuadric = nullptr;
 
-	if (iSphereCallList == 0)
-	{
-		GLUquadricObj* pQuadric = gluNewQuadric();
-		iSphereCallList = glGenLists(1);
-		glNewList((GLuint)iSphereCallList, GL_COMPILE);
-		gluSphere(pQuadric, 1, 20, 10);
-		glEndList();
-		gluDeleteQuadric(pQuadric);
-	}
+	if (pQuadric == nullptr)
+		pQuadric = gluNewQuadric();
 
-	glCallList(iSphereCallList);
+	gluSphere(pQuadric, 1, 20, 10);
 }
 
 void CRenderingContext::RenderBillboard(const tstring& sTexture, float flRadius, Vector vecUp, Vector vecRight)
@@ -251,7 +245,7 @@ void CRenderingContext::RenderBillboard(const tstring& sTexture, float flRadius,
 	vecRight *= flRadius;
 
 	BindTexture(iTexture);
-	BeginRenderQuads();
+	BeginRenderTriFan();
 		TexCoord(0.0f, 1.0f);
 		Vertex(-vecRight + vecUp);
 		TexCoord(0.0f, 0.0f);
@@ -403,6 +397,20 @@ void CRenderingContext::BeginRenderTris()
 	m_iDrawMode = GL_TRIANGLES;
 }
 
+void CRenderingContext::BeginRenderTriFan()
+{
+	m_avecTexCoord.clear();
+	m_aavecTexCoords.clear();
+	m_avecNormals.clear();
+	m_avecVertices.clear();
+
+	m_bTexCoord = false;
+	m_bNormal = false;
+	m_bColor = false;
+
+	m_iDrawMode = GL_TRIANGLE_FAN;
+}
+
 void CRenderingContext::BeginRenderQuads()
 {
 	m_avecTexCoord.clear();
@@ -414,7 +422,8 @@ void CRenderingContext::BeginRenderQuads()
 	m_bNormal = false;
 	m_bColor = false;
 
-	m_iDrawMode = GL_QUADS;
+	TAssert(false);
+	//m_iDrawMode = GL_QUADS;
 }
 
 void CRenderingContext::BeginRenderDebugLines()

@@ -1,6 +1,7 @@
 #include "renderer.h"
 
-#include <GL/glew.h>
+#include <GL3/gl3w.h>
+#include <GL/glu.h>
 #include <IL/il.h>
 #include <IL/ilu.h>
 
@@ -32,7 +33,7 @@ CRenderer::CRenderer(size_t iWidth, size_t iHeight)
 		exit(1);
 	}
 
-	m_bUseMultisampleTextures = !!GLEW_ARB_texture_multisample;
+	m_bUseMultisampleTextures = !!glTexImage2DMultisample;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glGetIntegerv(GL_SAMPLES, &m_iScreenSamples);
@@ -85,28 +86,6 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 	if (!(eOptions&(FB_TEXTURE|FB_RENDERBUFFER)))
 		eOptions = (fb_options_e)(eOptions|FB_TEXTURE);
 
-	if (!GLEW_ARB_texture_non_power_of_two && (eOptions&FB_TEXTURE))
-	{
-		// If non power of two textures are not supported, framebuffers the size of the screen will probably fuck up.
-		// I don't know this for sure but I'm not taking any chances. If the extension isn't supported, roll those
-		// framebuffer sizes up to the next power of two.
-		iWidth--;
-		iWidth |= iWidth >> 1;
-		iWidth |= iWidth >> 2;
-		iWidth |= iWidth >> 4;
-		iWidth |= iWidth >> 8;
-		iWidth |= iWidth >> 16;
-		iWidth++;
-
-		iHeight--;
-		iHeight |= iHeight >> 1;
-		iHeight |= iHeight >> 2;
-		iHeight |= iHeight >> 4;
-		iHeight |= iHeight >> 8;
-		iHeight |= iHeight >> 16;
-		iHeight++;
-	}
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glGetIntegerv(GL_SAMPLES, &m_iScreenSamples);
 	GLsizei iSamples = m_iScreenSamples;
@@ -139,8 +118,8 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 		{
 			glTexParameteri(iTextureTarget, GL_TEXTURE_MIN_FILTER, (eOptions&FB_LINEAR)?GL_LINEAR:GL_NEAREST);
 			glTexParameteri(iTextureTarget, GL_TEXTURE_MAG_FILTER, (eOptions&FB_LINEAR)?GL_LINEAR:GL_NEAREST);
-			glTexParameteri(iTextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
-			glTexParameteri(iTextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glTexParameteri(iTextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+			glTexParameteri(iTextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 			glTexImage2D(iTextureTarget, 0, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 		}
 		glBindTexture(iTextureTarget, 0);
@@ -150,7 +129,7 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 		glGenRenderbuffers(1, &oBuffer.m_iRB);
 		glBindRenderbuffer( GL_RENDERBUFFER, (GLuint)oBuffer.m_iRB );
 		if (bUseMultisample)
-			glRenderbufferStorageMultisampleEXT( GL_RENDERBUFFER, iSamples, GL_RGBA8, (GLsizei)iWidth, (GLsizei)iHeight );
+			glRenderbufferStorageMultisample( GL_RENDERBUFFER, iSamples, GL_RGBA8, (GLsizei)iWidth, (GLsizei)iHeight );
 		else
 			glRenderbufferStorage( GL_RENDERBUFFER, GL_RGBA8, (GLsizei)iWidth, (GLsizei)iHeight );
 		glBindRenderbuffer( GL_RENDERBUFFER, 0 );
@@ -161,7 +140,7 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 		glGenRenderbuffers(1, &oBuffer.m_iDepth);
 		glBindRenderbuffer( GL_RENDERBUFFER, (GLuint)oBuffer.m_iDepth );
 		if (bUseMultisample)
-			glRenderbufferStorageMultisampleEXT( GL_RENDERBUFFER, iSamples, GL_DEPTH_COMPONENT, (GLsizei)iWidth, (GLsizei)iHeight );
+			glRenderbufferStorageMultisample( GL_RENDERBUFFER, iSamples, GL_DEPTH_COMPONENT, (GLsizei)iWidth, (GLsizei)iHeight );
 		else
 			glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)iWidth, (GLsizei)iHeight );
 		glBindRenderbuffer( GL_RENDERBUFFER, 0 );
@@ -175,8 +154,8 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, (GLuint)oBuffer.m_iRB);
 	if (eOptions&FB_DEPTH)
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, (GLuint)oBuffer.m_iDepth);
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT);
-	TAssert(status == GL_FRAMEBUFFER_COMPLETE_EXT);
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	TAssert(status == GL_FRAMEBUFFER_COMPLETE);
 
 	GLint iFBSamples;
 	glGetIntegerv(GL_SAMPLES, &iFBSamples);
@@ -287,6 +266,8 @@ void CRenderer::FinishRendering(class CRenderingContext* pContext)
 
 	if (show_frustum.GetBool())
 	{
+		TAssert(false);
+
 		for (size_t i = 0; i < 6; i++)
 		{
 			Vector vecForward = m_oFrustum.p[i].n;
@@ -298,12 +279,12 @@ void CRenderer::FinishRendering(class CRenderingContext* pContext)
 			vecRight *= 100;
 			vecUp *= 100;
 
-			glBegin(GL_QUADS);
+/*			glBegin(GL_QUADS);
 				glVertex3fv(vecCenter + vecUp + vecRight);
 				glVertex3fv(vecCenter - vecUp + vecRight);
 				glVertex3fv(vecCenter - vecUp - vecRight);
 				glVertex3fv(vecCenter + vecUp - vecRight);
-			glEnd();
+			glEnd();*/
 		}
 	}
 }
@@ -420,16 +401,16 @@ void CRenderer::RenderRBFullscreen(CFrameBuffer* pSource)
 {
 	TAssert(false);		// ATI cards don't like this at all. Never do it.
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, (GLuint)pSource->m_iFB);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, (GLuint)pSource->m_iFB);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	glBlitFramebuffer(0, 0, pSource->m_iWidth, pSource->m_iHeight, 0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
 void CRenderer::RenderRBToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestination)
 {
-	glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, (GLuint)pSource->m_iFB);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, (GLuint)pDestination->m_iFB);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, (GLuint)pSource->m_iFB);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, (GLuint)pDestination->m_iFB);
 
 	glBlitFramebuffer(0, 0, pSource->m_iWidth, pSource->m_iHeight, 0, 0, pDestination->m_iWidth, pDestination->m_iHeight, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
@@ -575,7 +556,7 @@ Vector CRenderer::WorldPosition(Vector vecScreen)
 
 bool CRenderer::HardwareSupported()
 {
-	if (!GLEW_VERSION_3_0)
+	if (!gl3wIsSupported(3, 0))
 		return false;
 
 	// Compile a test framebuffer. If it fails we don't support framebuffers.
@@ -598,8 +579,8 @@ bool CRenderer::HardwareSupported()
 	glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)oBuffer.m_iFB);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, (GLuint)oBuffer.m_iMap, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, (GLuint)oBuffer.m_iDepth);
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT);
-	if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
 	{
 		TError("Test framebuffer compile failed.\n");
 		glDeleteTextures(1, &oBuffer.m_iMap);
@@ -665,18 +646,18 @@ bool CRenderer::HardwareSupported()
 size_t CRenderer::LoadVertexDataIntoGL(size_t iSizeInBytes, float* aflVertices)
 {
 	GLuint iVBO;
-	glGenBuffersARB(1, &iVBO);
-	glBindBufferARB(GL_ARRAY_BUFFER_ARB, iVBO);
+	glGenBuffers(1, &iVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, iVBO);
 
-	glBufferDataARB(GL_ARRAY_BUFFER_ARB, iSizeInBytes, 0, GL_STATIC_DRAW_ARB);
+	glBufferData(GL_ARRAY_BUFFER, iSizeInBytes, 0, GL_STATIC_DRAW);
 
-	glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, iSizeInBytes, aflVertices);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, iSizeInBytes, aflVertices);
 
     int iSize = 0;
-    glGetBufferParameterivARB(GL_ARRAY_BUFFER_ARB, GL_BUFFER_SIZE_ARB, &iSize);
+    glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &iSize);
     if(iSizeInBytes != iSize)
     {
-        glDeleteBuffersARB(1, &iVBO);
+        glDeleteBuffers(1, &iVBO);
 		TAssert(false);
         TError("CRenderer::LoadVertexDataIntoGL(): Data size is mismatch with input array\n");
 		return 0;
@@ -687,7 +668,7 @@ size_t CRenderer::LoadVertexDataIntoGL(size_t iSizeInBytes, float* aflVertices)
 
 void CRenderer::UnloadVertexDataFromGL(size_t iBuffer)
 {
-	glDeleteBuffersARB(1, &iBuffer);
+	glDeleteBuffers(1, &iBuffer);
 }
 
 size_t CRenderer::LoadTextureIntoGL(tstring sFilename, int iClamp)
@@ -750,15 +731,7 @@ size_t CRenderer::LoadTextureIntoGL(size_t iImageID, int iClamp)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	if (iClamp && !GLEW_EXT_texture_edge_clamp)
-		iClamp = 1;
-
 	if (iClamp == 1)
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	}
-	else if (iClamp == 2)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -791,15 +764,7 @@ size_t CRenderer::LoadTextureIntoGL(Color* pclrData, int iClamp)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	if (iClamp && !GLEW_EXT_texture_edge_clamp)
-		iClamp = 1;
-
 	if (iClamp == 1)
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	}
-	else if (iClamp == 2)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
