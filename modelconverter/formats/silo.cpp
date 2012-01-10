@@ -223,9 +223,18 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 			eastl::vector<tstring> aName;
 			tstrtok(sName, aName, "\"");	// Strip out the quotation marks.
 
-			tstring sDirectory = GetDirectory(sFilename);
+			FILE* fpTest = tfopen(aName[0].c_str(), "r");
 
-			pMaterial->m_sDiffuseTexture = sprintf(tstring("%s/%s"), sDirectory.c_str(), aName[0].c_str());
+			if (fpTest)
+			{
+				fclose(fpTest);
+				pMaterial->m_sDiffuseTexture = tstring(aName[0].c_str());
+			}
+			else
+			{
+				tstring sDirectory = GetDirectory(sFilename);
+				pMaterial->m_sDiffuseTexture = sprintf(tstring("%s/%s"), sDirectory.c_str(), aName[0].c_str());
+			}
 		}
 		else if (tstrncmp(pszToken, "-endMat", 7) == 0)
 		{

@@ -272,7 +272,12 @@ bool IsDirectory(tstring sPath)
 tstring FindAbsolutePath(const tstring& sPath)
 {
 	wchar_t szPath[MAX_PATH];
-	eastl::wstring swPath = convertstring<tchar, wchar_t>(sPath);
+	eastl::wstring swPath;
+
+	if (!sPath.length())
+		swPath = L".";
+	else
+		swPath = convertstring<tchar, wchar_t>(sPath);
 
 	GetFullPathName(swPath.c_str(), MAX_PATH, szPath, nullptr);
 

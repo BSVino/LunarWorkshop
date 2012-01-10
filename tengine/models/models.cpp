@@ -214,12 +214,15 @@ bool CModel::Load()
 			continue;
 
 		m_aiVertexBuffers[i] = LoadBufferIntoGL(i);
-		m_aiTextures[i] = CTextureLibrary::AddTextureID(GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialTexture(i));
 		m_aiVertexBufferSizes[i] = m_pToy->GetMaterialNumVerts(i);
+		m_aiTextures[i] = CTextureLibrary::AddTextureID(m_pToy->GetMaterialTexture(i));
+
+		if (!m_aiTextures[i])
+			m_aiTextures[i] = CTextureLibrary::AddTextureID(GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialTexture(i));
 
 		//TAssert(m_aiTextures[i]);
 		if (!m_aiTextures[i])
-			TError("Couldn't find texture \"" + GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialTexture(i) + "\"\n");
+			TError("Couldn't find texture \"" + m_pToy->GetMaterialTexture(i) + "\"\n");
 	}
 
 	if (m_pToy->GetPhysicsNumTris())

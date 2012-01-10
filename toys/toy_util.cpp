@@ -20,7 +20,25 @@ CToyUtil::CToyUtil()
 
 void CToyUtil::AddMaterial(const tstring& sTexture)
 {
-	m_asTextures.push_back(GetFilenameAndExtension(sTexture));
+	if (!sTexture.length())
+		m_asTextures.push_back(sTexture);
+	else
+	{
+		tstring sDirectoryPath = FindAbsolutePath(m_sGameDirectory);
+		tstring sTexturePath = FindAbsolutePath(sTexture);
+
+		if (m_sGameDirectory.length() && sTexturePath.find(sDirectoryPath) == 0)
+		{
+			size_t iLength = sDirectoryPath.length()+1;
+			if (sDirectoryPath.back() == '\\' || sDirectoryPath.back() == '/')
+				iLength = sDirectoryPath.length();
+
+			m_asTextures.push_back(ToForwardSlashes(sTexturePath.substr(iLength)));
+		}
+		else
+			m_asTextures.push_back(GetFilenameAndExtension(sTexture));
+	}
+
 	m_aaflData.push_back();
 }
 

@@ -117,7 +117,7 @@ int main(int argc, char** args)
 	}
 	else
 	{
-		if (argc < 2)
+		if (argc < 3)
 		{
 			printf("Usage: %s input.obj output.toy [--physics input.obj]\n", args[0]);
 			return 1;

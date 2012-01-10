@@ -56,3 +56,14 @@ inline tstring GetDirectory(const tstring& sFilename)
 		return ".";
 }
 
+inline tstring ToForwardSlashes(const tstring& sFilename)
+{
+	tstring sResult = sFilename;
+
+	for (size_t i = 0; i < sResult.length(); i++)
+		if (sResult[i] == '\\')
+			sResult[i] = '/';
+
+	return sResult;
+}
+

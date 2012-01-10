@@ -71,6 +71,9 @@ void LoadSceneAreas(CToyUtil& t, CData* pData)
 
 		CToyUtil ts;
 
+		ts.SetGameDirectory(t.GetGameDirectory());
+		ts.SetOutputDirectory(t.GetOutputDirectory());
+		ts.SetOutputFile(sprintf(t.GetOutputFile() + "_sa%d_" + tolower(pArea->GetValueTString()), i));
 		ts.UseLocalTransformations(t.IsUsingLocalTransformations());
 
 		CConversionSceneNode* pMeshNode = asScenes[sFile]->FindSceneNode(sMesh);
@@ -95,7 +98,7 @@ void LoadSceneAreas(CToyUtil& t, CData* pData)
 
 		tstring sGameOutput = pArea->FindChildValueTString("Output");
 		if (!sGameOutput.length())
-			sGameOutput = sprintf(t.GetOutputDirectory() + "/" + t.GetOutputFile() + "_sa%d_" + tolower(pArea->GetValueTString()) + ".toy", i);
+			sGameOutput = t.GetOutputDirectory() + "/" + ts.GetOutputFile() + ".toy";
 
 		tstring sFileOutput = FindAbsolutePath(t.GetGameDirectory() + DIR_SEP + sGameOutput);
 
