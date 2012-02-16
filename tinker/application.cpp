@@ -296,13 +296,13 @@ void CApplication::DumpGLInfo()
 
 	for (size_t i = 0; i < sizeof(aParameters)/sizeof(GLParameter); i++)
 	{
-		GLint iValue;
-		glGetIntegerv(aParameters[i].iParameter, &iValue);
+		GLint iValue[4];
+		glGetIntegerv(aParameters[i].iParameter, &iValue[0]);
 
 		if (glGetError() != GL_NO_ERROR)
 			continue;
 
-		o << aParameters[i].pszName << ": " << iValue << std::endl;
+		o << aParameters[i].pszName << ": " << iValue[0] << std::endl;
 	}
 }
 
