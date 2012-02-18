@@ -14,8 +14,6 @@ public:
 	void						Precache();
 	void						Spawn();
 
-	virtual EAngle				GetThirdPersonCameraAngles() const { return EAngle(); }
-
 	bool						ShouldRender() const { return true; };
 	void						PreRender(bool bTransparent) const;
 
@@ -29,6 +27,9 @@ public:
 	CToken*						GetToken() const;
 
 	virtual void				Reflected(reflection_t eReflectionType);
+
+	void						GoIntoScreen();
+	void						GoOutOfScreen();
 
 protected:
 	CEntityHandle<CMirror>		m_hMirror;

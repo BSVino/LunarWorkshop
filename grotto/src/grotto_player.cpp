@@ -37,14 +37,7 @@ void CGrottoPlayer::MouseMotion(int x, int y)
 	if (Application()->IsMouseCursorEnabled())
 		return;
 
-	if (GetPlayerCharacter()->IsReflected(REFLECTION_VERTICAL) && GetPlayerCharacter()->IsReflected(REFLECTION_LATERAL))
-		BaseClass::MouseMotion(-x, -y);
-	else if (GetPlayerCharacter()->IsReflected(REFLECTION_VERTICAL))
-		BaseClass::MouseMotion(x, -y);
-	else if (GetPlayerCharacter()->IsReflected(REFLECTION_LATERAL))
-		BaseClass::MouseMotion(-x, y);
-	else
-		BaseClass::MouseMotion(x, y);
+	return;
 }
 
 void CGrottoPlayer::MouseInput(int iButton, int iState)
@@ -71,6 +64,18 @@ void CGrottoPlayer::KeyPress(int c)
 		m_eCurrentMirror = MIRROR_VERTICAL;
 	if (c == '2')
 		m_eCurrentMirror = MIRROR_HORIZONTAL;
+
+	if (c == 'W')
+	{
+		GetPlayerCharacter()->GoIntoScreen();
+		return;
+	}
+
+	if (c == 'S')
+	{
+		GetPlayerCharacter()->GoOutOfScreen();
+		return;
+	}
 
 	BaseClass::KeyPress(c);
 }

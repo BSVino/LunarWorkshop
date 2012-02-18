@@ -39,8 +39,6 @@ void CPlayerCharacter::Spawn()
 	SetGlobalGravity(Vector(0, -9.8f, 0)*2);
 
 	BaseClass::Spawn();
-
-	m_bTransformMoveByView = false;
 }
 
 void CPlayerCharacter::PreRender(bool bTransparent) const
@@ -212,4 +210,22 @@ void CPlayerCharacter::Reflected(reflection_t eReflectionType)
 
 		pKaleidobeast->LosePlayer();
 	}
+}
+
+void CPlayerCharacter::GoIntoScreen()
+{
+	m_iDepthLevel++;
+
+	Vector vecPosition = GetGlobalOrigin();
+	vecPosition.z = (float)(m_iDepthLevel * METERS_PER_DEPTH);
+	SetGlobalOrigin(vecPosition);
+}
+
+void CPlayerCharacter::GoOutOfScreen()
+{
+	m_iDepthLevel--;
+
+	Vector vecPosition = GetGlobalOrigin();
+	vecPosition.z = (float)(m_iDepthLevel * METERS_PER_DEPTH);
+	SetGlobalOrigin(vecPosition);
 }

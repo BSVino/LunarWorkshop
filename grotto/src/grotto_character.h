@@ -6,6 +6,9 @@
 
 class CMirror;
 
+// One level every two meters
+#define METERS_PER_DEPTH 2
+
 class CGrottoCharacter : public CCharacter
 {
 	REGISTER_ENTITY_CLASS(CGrottoCharacter, CCharacter);
@@ -48,4 +51,6 @@ protected:
 	Matrix4x4					m_mLateralReflection;	// For rendering
 	Matrix4x4					m_mVerticalReflection;	// For rendering
 	CEntityHandle<CMirror>		m_hMirrorInside;
+
+	int							m_iDepthLevel;
 };

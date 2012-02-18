@@ -37,6 +37,8 @@ void CGrottoCharacter::Spawn()
 	BaseClass::Spawn();
 
 	m_iReflected = 0;
+
+	m_iDepthLevel = (int)(GetGlobalOrigin().z / METERS_PER_DEPTH);
 }
 
 TVector CGrottoCharacter::GetGoalVelocity()
