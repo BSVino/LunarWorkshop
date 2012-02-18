@@ -237,6 +237,38 @@ void CRenderingContext::RenderSphere()
 	gluSphere(pQuadric, 1, 20, 10);
 }
 
+void CRenderingContext::RenderWireBox(const AABB& aabbBounds)
+{
+	BeginRenderDebugLines();
+		Vertex(aabbBounds.m_vecMaxs);
+		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMaxs.z));
+		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMins.z));
+		Vertex(Vector(aabbBounds.m_vecMaxs.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMins.z));
+		Vertex(aabbBounds.m_vecMaxs);
+
+		Vertex(Vector(aabbBounds.m_vecMaxs.x, aabbBounds.m_vecMins.y, aabbBounds.m_vecMaxs.z));
+		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMins.y, aabbBounds.m_vecMaxs.z));
+		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMins.y, aabbBounds.m_vecMins.z));
+		Vertex(Vector(aabbBounds.m_vecMaxs.x, aabbBounds.m_vecMins.y, aabbBounds.m_vecMins.z));
+		Vertex(Vector(aabbBounds.m_vecMaxs.x, aabbBounds.m_vecMins.y, aabbBounds.m_vecMaxs.z));
+	EndRender();
+
+	BeginRenderDebugLines();
+		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMaxs.z));
+		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMins.y, aabbBounds.m_vecMaxs.z));
+	EndRender();
+
+	BeginRenderDebugLines();
+		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMins.z));
+		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMins.y, aabbBounds.m_vecMins.z));
+	EndRender();
+
+	BeginRenderDebugLines();
+		Vertex(Vector(aabbBounds.m_vecMaxs.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMins.z));
+		Vertex(Vector(aabbBounds.m_vecMaxs.x, aabbBounds.m_vecMins.y, aabbBounds.m_vecMins.z));
+	EndRender();
+}
+
 void CRenderingContext::RenderBillboard(const tstring& sTexture, float flRadius, Vector vecUp, Vector vecRight)
 {
 	size_t iTexture = CTextureLibrary::FindTextureID(sTexture);
@@ -520,6 +552,14 @@ void CRenderingContext::Vertex(const Vector& v)
 
 void CRenderingContext::EndRender()
 {
+	TAssert(m_pShader);
+	if (!m_pShader)
+	{
+		UseProgram("model");
+		if (!m_pShader)
+			return;
+	}
+
 	SetUniform("mProjection", GetContext().m_mProjection);
 	SetUniform("mView", GetContext().m_mView);
 	SetUniform("mGlobal", GetContext().m_mTransformations);

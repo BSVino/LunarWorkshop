@@ -44,14 +44,6 @@ void CPlayerCharacter::Spawn()
 void CPlayerCharacter::PreRender(bool bTransparent) const
 {
 	BaseClass::PreRender(bTransparent);
-
-	if (!bTransparent)
-	{
-		CGameRenderingContext c(GameServer()->GetRenderer());
-		c.Translate(GetRenderOrigin());
-		c.SetBackCulling(false);
-		c.RenderSphere();
-	}
 }
 
 void CPlayerCharacter::PlaceMirror(mirror_t eMirror)

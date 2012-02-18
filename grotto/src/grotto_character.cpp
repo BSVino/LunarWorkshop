@@ -21,6 +21,7 @@ SAVEDATA_TABLE_BEGIN(CGrottoCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mLateralReflection);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mVerticalReflection);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CMirror>, m_hMirrorInside);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iDepthLevel);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CGrottoCharacter);

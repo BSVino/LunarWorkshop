@@ -5,6 +5,7 @@
 #include <plane.h>
 #include <matrix.h>
 #include <color.h>
+#include <geometry.h>
 
 #include "render_common.h"
 
@@ -64,6 +65,7 @@ public:
 	void					ClearDepth();
 
 	void					RenderSphere();
+	void					RenderWireBox(const AABB& aabbBounds);
 
 	void					RenderBillboard(const tstring& sTexture, float flRadius, Vector vecUp, Vector vecRight);
 

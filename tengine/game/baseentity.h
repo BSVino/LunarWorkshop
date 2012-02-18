@@ -46,6 +46,13 @@ void ResizeVectorTmpl(char* pData, size_t iVectorSize)
 	pVector->resize(iVectorSize);
 }
 
+// The last three arguments are for error reporting if the unserialization goes awry.
+bool UnserializeString_bool(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+size_t UnserializeString_size_t(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+TVector UnserializeString_TVector(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+AABB UnserializeString_AABB(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+
 void UnserializeString_bool(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_int(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_size_t(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
@@ -85,6 +92,8 @@ public:
 	size_t					m_iSizeOfType;
 	UnserializeString		m_pfnUnserializeString;
 	ResizeVector			m_pfnResizeVector;
+	char					m_oDefault[24];
+	bool					m_bOverride;
 };
 
 typedef void (*EntityInputCallback)(const class CBaseEntity* pTarget, const eastl::vector<tstring>& sArgs);
@@ -281,6 +290,7 @@ void entity::RegisterSaveData() \
 	pSaveData->m_iSizeOfVariable = sizeof(name); \
 	pSaveData->m_iSizeOfType = sizeof(type); \
 	pSaveData->m_pfnResizeVector = &ResizeVectorTmpl<type>; \
+	pSaveData->m_bOverride = false; \
 	pGameServer->GenerateSaveCRC(pSaveData->m_eType); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iOffset); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfVariable); \
@@ -290,6 +300,16 @@ void entity::RegisterSaveData() \
 	SAVEDATA_DEFINE_COMMON(copy, type, name) \
 	pSaveData->m_pszHandle = handle; \
 	pSaveData->m_pfnUnserializeString = &UnserializeString_##type; \
+	memset(pSaveData->m_oDefault, 0, sizeof(type)); \
+
+#define SAVEDATA_DEFINE_HANDLE_DEFAULT(copy, type, name, handle, def) \
+	SAVEDATA_DEFINE_COMMON(copy, type, name) \
+	pSaveData->m_pszHandle = handle; \
+	pSaveData->m_pfnUnserializeString = &UnserializeString_##type; \
+	{ \
+		type iDefault = def; \
+		memcpy(pSaveData->m_oDefault, &iDefault, sizeof(def)); \
+	} \
 
 #define SAVEDATA_DEFINE(copy, type, name) \
 	SAVEDATA_DEFINE_COMMON(copy, type, name) \
@@ -300,11 +320,22 @@ void entity::RegisterSaveData() \
 	SAVEDATA_DEFINE_COMMON(copy, type, name) \
 	pSaveData->m_pszHandle = handle; \
 	pSaveData->m_pfnUnserializeString = &function; \
+	memset(pSaveData->m_oDefault, 0, sizeof(type)); \
+
+#define SAVEDATA_DEFINE_HANDLE_DEFAULT_FUNCTION(copy, type, name, handle, def, function) \
+	SAVEDATA_DEFINE_COMMON(copy, type, name) \
+	pSaveData->m_pszHandle = handle; \
+	pSaveData->m_pfnUnserializeString = &function; \
+	{ \
+		type iDefault = def; \
+		memcpy(pSaveData->m_oDefault, &iDefault, sizeof(def)); \
+	} \
 
 #define SAVEDATA_DEFINE_HANDLE_ENTITY(copy, type, name, handle) \
 	SAVEDATA_DEFINE_COMMON(copy, type, name) \
 	pSaveData->m_pszHandle = handle; \
 	pSaveData->m_pfnUnserializeString = &UnserializeString_EntityHandle; \
+	memset(pSaveData->m_oDefault, 0, sizeof(type)); \
 
 #define SAVEDATA_OMIT(name) \
 	pSaveData = &pRegistration->m_aSaveData.push_back(); \
@@ -315,6 +346,7 @@ void entity::RegisterSaveData() \
 	pSaveData->m_iSizeOfVariable = sizeof(name); \
 	pSaveData->m_iSizeOfType = 0; \
 	pSaveData->m_pfnResizeVector = NULL; \
+	pSaveData->m_bOverride = false; \
 	pGameServer->GenerateSaveCRC(pSaveData->m_eType); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iOffset); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfVariable); \
@@ -329,10 +361,22 @@ void entity::RegisterSaveData() \
 	pSaveData->m_iSizeOfVariable = sizeof(m_Output_##name); \
 	pSaveData->m_iSizeOfType = sizeof(CEntityOutput); \
 	pSaveData->m_pfnResizeVector = NULL; \
+	pSaveData->m_bOverride = false; \
 	pGameServer->GenerateSaveCRC(pSaveData->m_eType); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iOffset); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfVariable); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfType); \
+
+#define SAVEDATA_OVERRIDE_DEFAULT(copy, type, name, handle, def) \
+	pSaveData = &pRegistration->m_aSaveData.push_back(); \
+	pSaveData->m_eType = copy; \
+	pSaveData->m_pszVariableName = #name; \
+	pSaveData->m_pszHandle = handle; \
+	pSaveData->m_bOverride = true; \
+	{ \
+		type iDefault = def; \
+		memcpy(pSaveData->m_oDefault, &iDefault, sizeof(def)); \
+	} \
 
 #define SAVEDATA_TABLE_END() \
 	CheckSaveDataSize(pRegistration); \

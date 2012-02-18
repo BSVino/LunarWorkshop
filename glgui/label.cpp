@@ -309,7 +309,10 @@ void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sF
 	if (rStencil.x > 0)
 	{
 		c.SetUniform("bScissor", true);
-		c.SetUniform("vecScissor", Vector4D(&rStencil.x));
+
+		Vector4D vecStencil(&rStencil.x);
+		vecStencil.y = CRootPanel::Get()->GetBottom()-vecStencil.y-vecStencil.z;
+		c.SetUniform("vecScissor", vecStencil);
 	}
 	else
 		c.SetUniform("bScissor", false);

@@ -85,13 +85,13 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_OUTPUT(OnDeactivated);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sName, "Name");
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sClassName);
-	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, float, m_flMass, "Mass");
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, float, m_flMass, "Mass", 10);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hMoveParent, "MoveParent", UnserializeString_MoveParent);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_ahMoveChildren);
-	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, AABB, m_aabbBoundingBox, "BoundingBox");
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, AABB, m_aabbBoundingBox, "BoundingBox", AABB(Vector(-0.5f, -0.5f, -0.5f), Vector(0.5f, 0.5f, 0.5f)));
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bGlobalTransformsDirty);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TMatrix, m_mGlobalTransform);
-	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, TVector, m_vecGlobalGravity, "GlobalGravity");
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, TVector, m_vecGlobalGravity, "GlobalGravity", Vector(0, -9.8f, 0));
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TMatrix, m_mLocalTransform);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Quaternion, m_qLocalRotation);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, TVector, m_vecLocalOrigin, "LocalOrigin", UnserializeString_LocalOrigin);
@@ -99,19 +99,19 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, EAngle, m_angLocalAngles, "LocalAngles", UnserializeString_LocalAngles);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, TVector, m_vecLocalVelocity, "LocalVelocity");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iHandle);
-	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, bool, m_bTakeDamage, "TakeDamage");
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, bool, m_bTakeDamage, "TakeDamage", true);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, float, m_flTotalHealth, "TotalHealth");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, float, m_flHealth, "Health");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flTimeKilled);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLastTakeDamage);
-	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, bool, m_bActive, "Active");
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, bool, m_bActive, "Active", true);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CTeam>, m_hTeam);
-	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bVisible, "Visible");
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bVisible, "Visible", true);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bInPhysics);
 	SAVEDATA_DEFINE(CSaveData::DATA_OMIT, bool, m_bDeleted);	// Deleted entities are not saved.
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bClientSpawn);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup, "CollisionGroup");
-	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", UnserializeString_ModelID);
+	SAVEDATA_DEFINE_HANDLE_DEFAULT_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", ~0, UnserializeString_ModelID);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, float, m_flSpawnTime);
 SAVEDATA_TABLE_END();
@@ -1169,6 +1169,9 @@ void CBaseEntity::CheckSaveDataSize(CEntityRegistration* pRegistration)
 	{
 		CSaveData* pData = &pRegistration->m_aSaveData[i];
 
+		if (pData->m_bOverride)
+			continue;
+
 		// If bools have non-bools after them then the extra space is padded to retain four-byte alignment.
 		// So, round everything up. Might mean adding bools doesn't trigger it, oh well.
 		if (pData->m_iSizeOfVariable%4 == 0 && iSaveTableSize%4 != 0)
@@ -1633,9 +1636,64 @@ void CBaseEntity::FindEntitiesByName(const eastl::string& sName, eastl::vector<C
 	}
 }
 
+bool UnserializeString_bool(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+{
+	return (sData.comparei("yes") == 0 || sData.comparei("true") == 0 || sData.comparei("on") == 0 || stoi(sData) != 0);
+}
+
+size_t UnserializeString_size_t(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+{
+	return stoi(sData);
+}
+
+TVector UnserializeString_TVector(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	TAssert(asTokens.size() == 3);
+	if (asTokens.size() != 3)
+	{
+		TError("Entity '" + sName + "' (" + sClass + ":" + sHandle + ") wrong number of arguments for a vector (Format: \"x y z\")\n");
+		return TVector();
+	}
+
+	return Vector(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+}
+
+EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	TAssert(asTokens.size() == 3);
+	if (asTokens.size() != 3)
+	{
+		TError("Entity '" + sName + "' (" + sClass + ":" + sHandle + ") wrong number of arguments for an angle (Format: \"p y r\")\n");
+		return EAngle();
+	}
+
+	return EAngle(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+}
+
+AABB UnserializeString_AABB(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	TAssert(asTokens.size() == 6);
+	if (asTokens.size() != 6)
+	{
+		TError("Entity '" + sName + "' (" + sClass + ":" + sHandle + ") wrong number of arguments for an AABB (Format: \"x y z x y z\")\n");
+		return AABB();
+	}
+
+	return AABB(Vector(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2])), Vector(stof(asTokens[3]), stof(asTokens[4]), stof(asTokens[5])));
+}
+
 void UnserializeString_bool(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	bool bValue = (sData.comparei("yes") == 0 || sData.comparei("true") == 0 || sData.comparei("on") == 0 || stoi(sData) != 0);
+	bool bValue = UnserializeString_bool(sData);
 
 	bool* pData = (bool*)((char*)pEntity + pSaveData->m_iOffset);
 	switch(pSaveData->m_eType)
@@ -1670,7 +1728,7 @@ void UnserializeString_size_t(const tstring& sData, CSaveData* pSaveData, CBaseE
 {
 	TAssert(false);
 
-	size_t i = stoi(sData);
+	size_t i = UnserializeString_size_t(sData);
 
 	size_t* pData = (size_t*)((char*)pEntity + pSaveData->m_iOffset);
 	switch(pSaveData->m_eType)
@@ -1754,17 +1812,7 @@ void UnserializeString_tstring(const tstring& sData, CSaveData* pSaveData, CBase
 
 void UnserializeString_TVector(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	eastl::vector<tstring> asTokens;
-	tstrtok(sData, asTokens);
-
-	TAssert(asTokens.size() == 3);
-	if (asTokens.size() != 3)
-	{
-		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") wrong number of arguments for a vector\n");
-		return;
-	}
-
-	Vector vecData(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+	Vector vecData = UnserializeString_TVector(sData, pEntity->GetName(), pEntity->GetClassName(), pSaveData->m_pszHandle);
 
 	Vector* pData = (Vector*)((char*)pEntity + pSaveData->m_iOffset);
 	switch(pSaveData->m_eType)
@@ -1936,17 +1984,7 @@ void UnserializeString_EntityHandle(const tstring& sData, CSaveData* pSaveData, 
 
 void UnserializeString_LocalOrigin(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	eastl::vector<tstring> asTokens;
-	tstrtok(sData, asTokens);
-
-	TAssert(asTokens.size() == 3);
-	if (asTokens.size() != 3)
-	{
-		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") wrong number of arguments for a vector\n");
-		return;
-	}
-
-	Vector vecData(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+	Vector vecData = UnserializeString_TVector(sData, pEntity->GetName(), pEntity->GetClassName(), pSaveData->m_pszHandle);
 	pEntity->SetLocalOrigin(vecData);
 }
 

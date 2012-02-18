@@ -34,6 +34,7 @@ set (TENGINE_GAME_SOURCES
 	game/game.cpp
 	game/gameserver.cpp
 	game/level.cpp
+	game/leveleditor.cpp
 	game/networkedeffect.cpp
 	game/team.cpp
 )

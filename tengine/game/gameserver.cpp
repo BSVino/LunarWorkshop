@@ -29,6 +29,7 @@
 
 #include "camera.h"
 #include "level.h"
+#include "leveleditor.h"
 
 eastl::map<tstring, CPrecacheItem> CGameServer::s_aPrecacheClasses;
 CGameServer* CGameServer::s_pGameServer = NULL;
@@ -254,6 +255,8 @@ void CGameServer::LoadLevel(tstring sFile)
 
 	CData* pData = new CData();
 	CDataSerializer::Read(f, pData);
+
+	pLevel->CreateEntitiesFromData(pData);
 
 	// Create and name the entities first and add them to this array. This way we avoid a problem where
 	// one entity needs to connect to another entity which has not yet been created.
@@ -701,7 +704,10 @@ void CGameServer::Render()
 		pRenderer->SetupFrame(&c);
 		pRenderer->StartRendering(&c);
 
-		RenderEverything();
+		if (CLevelEditor::IsActive())
+			CLevelEditor::RenderEntities();
+		else
+			RenderEverything();
 
 		pRenderer->FinishRendering(&c);
 		pRenderer->FinishFrame(&c);

@@ -14,8 +14,10 @@
 #include <tengine/game/game.h>
 #include <ui/hudviewport.h>
 #include <game/level.h>
+#include <game/leveleditor.h>
 #include <renderer/particles.h>
 #include <renderer/game_renderer.h>
+#include <tinker/keys.h>
 
 CGameWindow::CGameWindow(int argc, char** argv)
 	: CApplication(argc, argv)
@@ -264,6 +266,7 @@ void CGameWindow::Run()
 			PostFrame();
 		}
 
+		CLevelEditor::Render();
 		CProfiler::Render();
 		SwapBuffers();
 	}
@@ -311,6 +314,12 @@ bool CGameWindow::KeyPress(int c)
 			CPlayer* pPlayer = Game()->GetLocalPlayer(i);
 			pPlayer->KeyPress(c);
 		}
+	}
+
+	if (c == TINKER_KEY_F2)
+	{
+		if (CLevelEditor::IsActive() || CVar::GetCVarBool("cheats"))
+			CLevelEditor::Toggle();
 	}
 
 	return false;
