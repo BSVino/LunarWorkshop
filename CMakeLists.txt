@@ -59,11 +59,15 @@ add_subdirectory (tools)
 add_subdirectory (tinker)
 add_subdirectory (tengine)
 
-add_subdirectory (reflection)
-add_subdirectory (chain)
+#add_subdirectory (reflection)
+add_subdirectory (grotto)
+
+if (BUILD_CHAIN)
+	add_subdirectory (chain)
+endif ()
 
 if (BUILD_SMAK)
 	add_subdirectory (smak)
-endif (BUILD_SMAK)
+endif ()
 
 add_subdirectory (tests)
