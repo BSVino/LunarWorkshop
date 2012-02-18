@@ -120,13 +120,13 @@ void CCamera::KeyDown(int c)
 	if (m_bFreeMode)
 	{
 		if (c == 'W')
-			m_vecFreeVelocity.x = 10.0f;
+			m_vecFreeVelocity.x = 1.0f;
 		if (c == 'S')
-			m_vecFreeVelocity.x = -10.0f;
+			m_vecFreeVelocity.x = -1.0f;
 		if (c == 'D')
-			m_vecFreeVelocity.z = 10.0f;
+			m_vecFreeVelocity.z = 1.0f;
 		if (c == 'A')
-			m_vecFreeVelocity.z = -10.0f;
+			m_vecFreeVelocity.z = -1.0f;
 	}
 }
 
