@@ -41,6 +41,12 @@ CApplication::CApplication(int argc, char** argv)
 	m_bMultisampling = false;
 
 	m_pConsole = NULL;
+
+	for (int i = 1; i < argc; i++)
+	{
+		if (m_apszCommandLine[i][0] == '+')
+			CCommand::Run(&m_apszCommandLine[i][1]);
+	}
 }
 
 #ifdef _DEBUG
