@@ -64,6 +64,8 @@ public:
 
 	DECLARE_ENTITY_INPUT(SetViewAngles);
 
+	virtual EAngle					GetThirdPersonCameraAngles() const { return GetViewAngles(); }
+
 	CBaseEntity*					GetGroundEntity() const { return m_hGround; }
 	void							SetGroundEntity(CBaseEntity* pEntity);
 
