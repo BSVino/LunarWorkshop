@@ -96,7 +96,7 @@ public:
 	const tstring&			GetGameMode() { return m_sGameMode; }
 
 	void					CreateEntitiesFromData(const CData* pData);
-	const eastl::vector<CLevelEntity>& GetEntityData() { return m_aLevelEntities; }
+	eastl::vector<CLevelEntity>& GetEntityData() { return m_aLevelEntities; }
 
 protected:
 	tstring					m_sName;

@@ -53,6 +53,8 @@ public:
 	void										Initialize();
 
 	void										LoadLevel(tstring sFile);
+	void										LoadLevel(class CLevel* pLevel);
+	void										RestartLevel();
 
 	void										SetupFromLobby(bool bFromLobby) { m_bSetupFromLobby = bFromLobby; };
 	bool										ShouldSetupFromLobby() { return m_bSetupFromLobby; };
@@ -150,6 +152,7 @@ protected:
 	class CCamera*								m_pCamera;
 
 	bool										m_bLoading;
+	bool										m_bRestartLevel;
 
 	int											m_iClient;
 	bool										m_bGotClientInfo;

@@ -56,6 +56,7 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 	m_iSaveCRC = 0;
 
 	m_bLoading = true;
+	m_bRestartLevel = false;
 
 	m_flHostTime = 0;
 	m_flGameTime = 0;
@@ -251,132 +252,125 @@ void CGameServer::LoadLevel(tstring sFile)
 {
 	CLevel* pLevel = GetLevel(sFile);
 
-	std::basic_ifstream<tchar> f(convertstring<tchar, char>(sFile).c_str());
+	if (m_bRestartLevel)
+		LoadLevel(pLevel);
+	else
+	{
+		std::basic_ifstream<tchar> f(convertstring<tchar, char>(sFile).c_str());
 
-	CData* pData = new CData();
-	CDataSerializer::Read(f, pData);
+		CData* pData = new CData();
+		CDataSerializer::Read(f, pData);
 
-	pLevel->CreateEntitiesFromData(pData);
+		pLevel->CreateEntitiesFromData(pData);
 
+		LoadLevel(pLevel);
+
+		delete pData;
+	}
+}
+
+void CGameServer::LoadLevel(CLevel* pLevel)
+{
 	// Create and name the entities first and add them to this array. This way we avoid a problem where
 	// one entity needs to connect to another entity which has not yet been created.
 	eastl::map<size_t, CBaseEntity*> apEntities;
 
-	for (size_t i = 0; i < pData->GetNumChildren(); i++)
+	auto aEntities = pLevel->GetEntityData();
+	for (size_t i = 0; i < aEntities.size(); i++)
 	{
-		CData* pChildData = pData->GetChild(i);
+		CLevelEntity* pLevelEntity = &aEntities[i];
 
-		if (pChildData->GetKey() == "Entity")
+		tstring sClass = "C" + pLevelEntity->m_sClass;
+
+		auto it = CBaseEntity::GetEntityRegistration().find(sClass);
+		TAssert(it != CBaseEntity::GetEntityRegistration().end());
+		if (it == CBaseEntity::GetEntityRegistration().end())
 		{
-			tstring sClass = "C" + pChildData->GetValueTString();
+			TError("Unregistered entity '" + sClass + "'\n");
+			continue;
+		}
 
-			auto it = CBaseEntity::GetEntityRegistration().find(sClass);
-			TAssert(it != CBaseEntity::GetEntityRegistration().end());
-			if (it == CBaseEntity::GetEntityRegistration().end())
+		AddToPrecacheList(sClass);
+
+		CBaseEntity* pEntity = Create<CBaseEntity>(sClass.c_str());
+
+		apEntities[i] = pEntity;
+
+		pEntity->SetName(pLevelEntity->GetName());
+
+		// Process outputs here so that they exist when handle callbacks run.
+		for (size_t k = 0; k < pLevelEntity->m_aOutputs.size(); k++)
+		{
+			auto pOutput = &pLevelEntity->m_aOutputs[i];
+			tstring sValue = pOutput->m_sOutput;
+
+			CSaveData* pSaveData = CBaseEntity::GetOutput(pEntity->GetClassName(), sValue);
+			TAssert(pSaveData);
+			if (!pSaveData)
 			{
-				TError("Unregistered entity '" + sClass + "'\n");
+				TError("Unknown output '" + sValue + "'\n");
 				continue;
 			}
 
-			AddToPrecacheList(sClass);
+			tstring sTarget = pOutput->m_sTargetName;
+			tstring sInput = pOutput->m_sInput;
+			tstring sArgs = pOutput->m_sArgs;
+			bool bKill = pOutput->m_bKill;
 
-			CBaseEntity* pEntity = Create<CBaseEntity>(sClass.c_str());
-
-			apEntities[i] = pEntity;
-
-			CData* pNameData = pChildData->FindChild("Name");
-			if (pNameData)
-				pEntity->SetName(pNameData->GetValueTString());
-
-			// Process outputs here so that they exist when handle callbacks run.
-			for (size_t k = 0; k < pChildData->GetNumChildren(); k++)
+			if (!sTarget.length())
 			{
-				CData* pField = pChildData->GetChild(k);
-
-				tstring sHandle = pField->GetKey();
-				tstring sValue = pField->GetValueTString();
-
-				if (sHandle == "Output")
-				{
-					CSaveData* pSaveData = CBaseEntity::GetOutput(pEntity->GetClassName(), sValue);
-					TAssert(pSaveData);
-					if (!pSaveData)
-					{
-						TError("Unknown output '" + sValue + "'\n");
-						continue;
-					}
-
-					tstring sTarget;
-					tstring sInput;
-					tstring sArgs;
-					bool bKill = false;
-
-					for (size_t o = 0; o < pField->GetNumChildren(); o++)
-					{
-						CData* pOutputData = pField->GetChild(o);
-
-						if (pOutputData->GetKey() == "Target")
-							sTarget = pOutputData->GetValueString();
-						else if (pOutputData->GetKey() == "Input")
-							sInput = pOutputData->GetValueString();
-						else if (pOutputData->GetKey() == "Args")
-							sArgs = pOutputData->GetValueString();
-						else if (pOutputData->GetKey() == "Kill")
-							bKill = pOutputData->GetValueBool();
-					}
-
-					if (!sTarget.length())
-					{
-						TAssert(false);
-						TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing a target.\n");
-						continue;
-					}
-
-					if (!sInput.length())
-					{
-						TAssert(false);
-						TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing an input.\n");
-						continue;
-					}
-
-					pEntity->AddOutputTarget(sValue, sTarget, sInput, sArgs, bKill);
-				}
+				TAssert(false);
+				TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing a target.\n");
+				continue;
 			}
+
+			if (!sInput.length())
+			{
+				TAssert(false);
+				TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing an input.\n");
+				continue;
+			}
+
+			pEntity->AddOutputTarget(sValue, sTarget, sInput, sArgs, bKill);
 		}
 	}
 
 	for (auto it = apEntities.begin(); it != apEntities.end(); it++)
 	{
-		CData* pChildData = pData->GetChild(it->first);
+		auto pLevelEntity = &aEntities[it->first];
 		CBaseEntity* pEntity = it->second;
 
-		for (size_t k = 0; k < pChildData->GetNumChildren(); k++)
+		for (auto it = pLevelEntity->m_asParameters.begin(); it != pLevelEntity->m_asParameters.end(); it++)
 		{
-			CData* pField = pChildData->GetChild(k);
+			tstring sHandle = it->first;
+			tstring sValue = it->second;
 
-			tstring sHandle = pField->GetKey();
-			tstring sValue = pField->GetValueTString();
-
-			if (sHandle != "Output")
+			CSaveData* pSaveData = CBaseEntity::GetSaveDataByHandle(pEntity->GetClassName(), sHandle.c_str());
+			TAssert(pSaveData);
+			if (!pSaveData)
 			{
-				CSaveData* pSaveData = CBaseEntity::GetSaveDataByHandle(pEntity->GetClassName(), sHandle.c_str());
-				TAssert(pSaveData);
-				if (!pSaveData)
-				{
-					TError("Unknown handle '" + sHandle + "'\n");
-					continue;
-				}
-
-				TAssert(pSaveData->m_pfnUnserializeString);
-				if (!pSaveData->m_pfnUnserializeString)
-					continue;
-
-				pSaveData->m_pfnUnserializeString(sValue, pSaveData, pEntity);
+				TError("Unknown handle '" + sHandle + "'\n");
+				continue;
 			}
+
+			TAssert(pSaveData->m_pfnUnserializeString);
+			if (!pSaveData->m_pfnUnserializeString)
+				continue;
+
+			pSaveData->m_pfnUnserializeString(sValue, pSaveData, pEntity);
 		}
 	}
+}
 
-	delete pData;
+void CGameServer::RestartLevel()
+{
+	SetLoading(false);
+	AllowPrecaches();
+	DestroyAllEntities(eastl::vector<eastl::string>(), true);
+	m_bRestartLevel = true;
+	Game()->SetupGame(CVar::GetCVarValue("game_mode"));
+	m_bRestartLevel = false;
+	SetLoading(false);
 }
 
 void CGameServer::ReadLevels()

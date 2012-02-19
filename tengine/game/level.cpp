@@ -24,6 +24,8 @@ void CLevel::OnReadInfo(const CData* pData)
 
 void CLevel::CreateEntitiesFromData(const CData* pData)
 {
+	m_aLevelEntities.clear();
+
 	for (size_t i = 0; i < pData->GetNumChildren(); i++)
 	{
 		CData* pChildData = pData->GetChild(i);

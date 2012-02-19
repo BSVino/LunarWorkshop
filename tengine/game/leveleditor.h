@@ -23,7 +23,7 @@ public:
 							CLevelEditor();
 
 public:
-	void					RenderEntity(class CLevelEntity* pEntity, bool bTransparent);
+	void					RenderEntity(size_t i, bool bTransparent);
 
 public:
 	static void				Toggle();
@@ -41,7 +41,7 @@ protected:
 
 	class CLevel*			m_pLevel;
 
-	glgui::CPanel*			m_pEditorPanel;
+	CEditorPanel*			m_pEditorPanel;
 };
 
 CLevelEditor* LevelEditor();

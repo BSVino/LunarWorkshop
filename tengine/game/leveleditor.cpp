@@ -64,8 +64,10 @@ CLevelEditor::CLevelEditor()
 	glgui::CRootPanel::Get()->AddControl(m_pEditorPanel);
 }
 
-void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent)
+void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
 {
+	CLevelEntity* pEntity = &m_pLevel->GetEntityData()[i];
+
 	CGameRenderingContext r(GameServer()->GetRenderer(), true);
 
 	// If another context already set this, don't clobber it.
@@ -82,6 +84,9 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent)
 
 	if (pEntity->GetModelID() != ~0)
 	{
+		if (m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i)
+			r.SetColor(Color(255, 0, 0));
+
 		if (r.GetBlend() == BLEND_NONE && !bTransparent)
 		{
 			TPROF("CLevelEditor::RenderEntity(Opaque)");
@@ -96,7 +101,10 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent)
 	else
 	{
 		r.UseProgram("model");
-		r.SetUniform("vecColor", Color(255, 255, 255));
+		if (m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i)
+			r.SetUniform("vecColor", Color(255, 0, 0));
+		else
+			r.SetUniform("vecColor", Color(255, 255, 255));
 		r.SetUniform("bDiffuse", false);
 		r.RenderWireBox(pEntity->GetBoundingBox());
 	}
@@ -146,6 +154,9 @@ void CLevelEditor::Deactivate()
 	LevelEditor()->m_pEditorPanel->SetVisible(false);
 
 	Application()->SetMouseCursorEnabled(LevelEditor()->m_bWasMouseActive);
+
+	if (LevelEditor()->m_pLevel && LevelEditor()->m_pLevel->GetEntityData().size())
+		GameServer()->RestartLevel();
 }
 
 void CLevelEditor::RenderEntities()
@@ -164,12 +175,12 @@ void CLevelEditor::RenderEntities()
 	auto aEntityData = LevelEditor()->m_pLevel->GetEntityData();
 	for (size_t i = 0; i < aEntityData.size(); i++)
 	{
-		LevelEditor()->RenderEntity(&aEntityData[i], false);
+		LevelEditor()->RenderEntity(i, false);
 	}
 
 	for (size_t i = 0; i < aEntityData.size(); i++)
 	{
-		LevelEditor()->RenderEntity(&aEntityData[i], true);
+		LevelEditor()->RenderEntity(i, true);
 	}
 }
 
