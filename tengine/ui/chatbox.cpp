@@ -8,7 +8,7 @@
 #include <tinker/console.h>
 #include <network/commands.h>
 #include <tinker/lobby/lobby_server.h>
-#include <game/game.h>
+#include <game/entities/game.h>
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
 #include <glgui/textfield.h>

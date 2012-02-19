@@ -1,7 +1,7 @@
 #ifndef TINKER_CHARACTER_H
 #define TINKER_CHARACTER_H
 
-#include <tengine/game/baseentity.h>
+#include <tengine/game/entities/baseentity.h>
 
 class CPlayer;
 

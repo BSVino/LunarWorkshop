@@ -28,26 +28,26 @@ if (WIN32)
 endif (WIN32)
 
 set (TENGINE_GAME_SOURCES
-	game/baseentity.cpp
 	game/camera.cpp
 	game/charactercamera.cpp
-	game/game.cpp
 	game/gameserver.cpp
 	game/level.cpp
 	game/leveleditor.cpp
 	game/networkedeffect.cpp
-	game/team.cpp
 )
 
 set (TENGINE_GAME_ENTITY_SOURCES
+	game/entities/baseentity.cpp
 	game/entities/beam.cpp
 	game/entities/counter.cpp
 	game/entities/character.cpp
+	game/entities/game.cpp
 	game/entities/kinematic.cpp
 	game/entities/logicgate.cpp
 	game/entities/mathgate.cpp
 	game/entities/player.cpp
 	game/entities/playerstart.cpp
+	game/entities/team.cpp
 	game/entities/trigger.cpp
 	game/entities/world.cpp
 )

@@ -1,6 +1,6 @@
 #include "player.h"
 
-#include <tengine/game/game.h>
+#include <game/entities/game.h>
 #include <tinker/cvar.h>
 
 #include "character.h"

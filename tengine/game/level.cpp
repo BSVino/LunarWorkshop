@@ -2,7 +2,7 @@
 
 #include <datamanager/data.h>
 #include <models/models.h>
-#include <game/baseentity.h>
+#include <game/entities/baseentity.h>
 
 void CLevel::ReadInfoFromData(const CData* pData)
 {

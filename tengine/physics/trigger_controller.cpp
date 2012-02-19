@@ -6,7 +6,7 @@
 #include "BulletCollision/CollisionDispatch/btCollisionWorld.h"
 #include "LinearMath/btDefaultMotionState.h"
 
-#include <game/baseentity.h>
+#include <game/entities/baseentity.h>
 #include <tinker/application.h>
 
 #include "bullet_physics.h"

@@ -5,7 +5,7 @@
 #include <EASTL/map.h>
 #include <EASTL/string.h>
 
-#include <game/baseentity.h>
+#include <game/entities/baseentity.h>
 
 class CSound
 {

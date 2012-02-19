@@ -13,8 +13,7 @@
 #include <tengine_config.h>
 
 #include <network/network.h>
-
-#include "entityhandle.h"
+#include <game/entityhandle.h>
 
 extern enum collision_type_e;
 
@@ -714,8 +713,8 @@ public: \
 	} \
 } g_Register##entity = CRegister##entity(); \
 
-#include "gameserver.h"
-#include "template_functions.h"
+#include <game/gameserver.h>
+#include <game/template_functions.h>
 
 template <class T>
 T* CBaseEntity::FindClosest(const TVector& vecPoint, CBaseEntity* pFurther)

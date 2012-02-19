@@ -1,6 +1,6 @@
 #pragma once
 
-#include <game/baseentity.h>
+#include <game/entities/baseentity.h>
 
 // This class is a math gate for entity I/O
 class CMathGate : public CBaseEntity

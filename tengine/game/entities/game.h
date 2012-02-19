@@ -4,10 +4,10 @@
 #include <EASTL/vector.h>
 
 #include <network/replication.h>
+#include <game/gameserver.h>
+#include <game/entities/player.h>
 
 #include "baseentity.h"
-#include "gameserver.h"
-#include "entities/player.h"
 
 class CGame : public CBaseEntity, public INetworkListener
 {

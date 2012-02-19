@@ -1,7 +1,7 @@
 #ifndef TINKER_KINEMATIC_H
 #define TINKER_KINEMATIC_H
 
-#include <game/baseentity.h>
+#include <game/entities/baseentity.h>
 
 // This class is a kinematic physics object that is controllable with entity I/O
 class CKinematic : public CBaseEntity

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tengine/game/baseentity.h>
+#include <tengine/game/entities/baseentity.h>
 
 class CBeam : public CBaseEntity
 {

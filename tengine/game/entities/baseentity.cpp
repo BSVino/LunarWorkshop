@@ -20,14 +20,14 @@
 #include "game.h"
 
 bool g_bAutoImporting = false;
-#include "entities/beam.h"
-#include "entities/counter.h"
-#include "entities/kinematic.h"
-#include "entities/logicgate.h"
-#include "entities/mathgate.h"
-#include "entities/playerstart.h"
-#include "entities/world.h"
-#include "entities/trigger.h"
+#include "beam.h"
+#include "counter.h"
+#include "kinematic.h"
+#include "logicgate.h"
+#include "mathgate.h"
+#include "playerstart.h"
+#include "world.h"
+#include "trigger.h"
 // Use this to force import of required entities.
 class CAutoImport
 {

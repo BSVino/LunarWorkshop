@@ -5,7 +5,7 @@
 #include <vector.h>
 #include <color.h>
 #include <geometry.h>
-#include <game/baseentity.h>
+#include <game/entities/baseentity.h>
 #include <renderer/renderer.h>
 
 class CParticle

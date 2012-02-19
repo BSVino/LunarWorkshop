@@ -4,7 +4,7 @@
 #include <tinker/cvar.h>
 #include <glgui/label.h>
 #include <game/gameserver.h>
-#include <game/game.h>
+#include <game/entities/game.h>
 #include <game/entities/character.h>
 
 CHUDViewport::CHUDViewport()

@@ -5,7 +5,7 @@
 #include <tinker/application.h>
 #include <tinker/cvar.h>
 
-#include <game/baseentity.h>
+#include <game/entities/baseentity.h>
 #include <game/gameserver.h>
 
 CNetworkedVariableData::CNetworkedVariableData()

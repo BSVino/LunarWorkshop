@@ -1,6 +1,6 @@
 #pragma once
 
-#include <game/game.h>
+#include <game/entities/game.h>
 
 class CGrottoGame : public CGame
 {

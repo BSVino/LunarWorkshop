@@ -1,7 +1,7 @@
-#include "baseentity.h"
+#include "entities/baseentity.h"
 // Always include baseentity.h first, it has some stuff this file relies on
 #ifndef TINKER_BASEENTITY_H
-#include "baseentity.h"
+#include "entities/baseentity.h"
 #endif
 
 #ifndef GAMESERVER_H

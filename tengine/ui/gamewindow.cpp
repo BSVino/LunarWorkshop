@@ -11,7 +11,7 @@
 #include <glgui/rootpanel.h>
 #include <game/camera.h>
 #include <renderer/renderer.h>
-#include <tengine/game/game.h>
+#include <tengine/game/entities/game.h>
 #include <ui/hudviewport.h>
 #include <game/level.h>
 #include <game/leveleditor.h>

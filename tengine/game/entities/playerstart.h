@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tengine/game/baseentity.h>
+#include <game/entities/baseentity.h>
 
 class CPlayerStart : public CBaseEntity
 {

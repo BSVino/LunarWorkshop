@@ -6,7 +6,7 @@
 
 #include <tinker/keys.h>
 #include <game/gameserver.h>
-#include <game/game.h>
+#include <game/entities/game.h>
 #include <glgui/rootpanel.h>
 #include <renderer/renderer.h>
 #include <tinker/cvar.h>

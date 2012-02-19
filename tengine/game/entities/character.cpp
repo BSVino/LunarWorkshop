@@ -3,7 +3,7 @@
 #include <matrix.h>
 #include <tinker/application.h>
 #include <tinker/cvar.h>
-#include <game/game.h>
+#include <game/entities/game.h>
 #include <renderer/renderer.h>
 #include <renderer/renderingcontext.h>
 #include <physics/physics.h>

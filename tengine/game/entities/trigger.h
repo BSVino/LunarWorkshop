@@ -1,7 +1,7 @@
 #ifndef TINKER_TRIGGER_H
 #define TINKER_TRIGGER_H
 
-#include <game/baseentity.h>
+#include <game/entities/baseentity.h>
 
 // This class is a kinematic physics object that is controllable with entity I/O
 class CTrigger : public CBaseEntity
