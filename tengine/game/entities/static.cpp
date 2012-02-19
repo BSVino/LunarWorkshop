@@ -1,19 +1,19 @@
-#include "world.h"
+#include "static.h"
 
 #include <physics/physics.h>
 
-REGISTER_ENTITY(CWorld);
+REGISTER_ENTITY(CStatic);
 
-NETVAR_TABLE_BEGIN(CWorld);
+NETVAR_TABLE_BEGIN(CStatic);
 NETVAR_TABLE_END();
 
-SAVEDATA_TABLE_BEGIN_EDITOR(CWorld);
+SAVEDATA_TABLE_BEGIN_EDITOR(CStatic);
 SAVEDATA_TABLE_END();
 
-INPUTS_TABLE_BEGIN(CWorld);
+INPUTS_TABLE_BEGIN(CStatic);
 INPUTS_TABLE_END();
 
-void CWorld::OnSetModel()
+void CStatic::OnSetModel()
 {
 	BaseClass::OnSetModel();
 

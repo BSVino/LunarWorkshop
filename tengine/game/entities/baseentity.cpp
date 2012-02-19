@@ -26,7 +26,7 @@ bool g_bAutoImporting = false;
 #include "logicgate.h"
 #include "mathgate.h"
 #include "playerstart.h"
-#include "world.h"
+#include "static.h"
 #include "trigger.h"
 // Use this to force import of required entities.
 class CAutoImport
@@ -42,7 +42,7 @@ public:
 			CLogicGate l;
 			CMathGate m;
 			CPlayerStart p;
-			CWorld w;
+			CStatic s;
 			CTrigger t;
 		}
 		g_bAutoImporting = false;
