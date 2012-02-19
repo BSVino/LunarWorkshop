@@ -15,7 +15,11 @@ CEditorPanel::CEditorPanel()
 {
 	m_pEntities = new glgui::CTree(0, 0, 0);
 	m_pEntities->SetBackgroundColor(Color(0, 0, 0, 100));
+	m_pEntities->SetSelectedListener(this, EntitySelected);
 	AddControl(m_pEntities);
+
+	m_pObjectTitle = new glgui::CLabel("", "sans-serif", 20);
+	AddControl(m_pObjectTitle);
 }
 
 void CEditorPanel::Layout()
@@ -28,12 +32,12 @@ void CEditorPanel::Layout()
 
 	SetDimensions(flCurrLeft, flCurrTop, 200, flHeight-40);
 
-	m_pEntities->SetPos(10, GetHeight()-210);
+	m_pEntities->SetPos(10, 10);
 	m_pEntities->SetSize(GetWidth() - 20, 200);
 
 	m_pEntities->ClearTree();
 
-	CLevel* pLevel = GameServer()->GetLevel(CVar::GetCVarValue("game_level"));
+	CLevel* pLevel = LevelEditor()->GetLevel();
 
 	if (pLevel)
 	{
@@ -51,7 +55,38 @@ void CEditorPanel::Layout()
 		}
 	}
 
+	m_pObjectTitle->SetPos(0, 220);
+	m_pObjectTitle->SetSize(GetWidth(), 25);
+
+	LayoutEntities();
+
 	BaseClass::Layout();
+}
+
+void CEditorPanel::LayoutEntities()
+{
+	m_pObjectTitle->SetText("(No Object Selected)");
+
+	CLevel* pLevel = LevelEditor()->GetLevel();
+
+	if (!pLevel)
+		return;
+
+	auto aEntities = pLevel->GetEntityData();
+
+	if (m_pEntities->GetSelectedNodeId() < aEntities.size())
+	{
+		CLevelEntity* pEntity = &aEntities[m_pEntities->GetSelectedNodeId()];
+		if (pEntity->GetName().length())
+			m_pObjectTitle->SetText(pEntity->m_sClass + ": " + pEntity->GetName());
+		else
+			m_pObjectTitle->SetText(pEntity->m_sClass);
+	}
+}
+
+void CEditorPanel::EntitySelectedCallback(const tstring& sArgs)
+{
+	LayoutEntities();
 }
 
 void CEditorCamera::Think()
@@ -83,6 +118,8 @@ void CEditorCamera::SetCameraOrientation(TVector vecPosition, Vector vecDirectio
 
 CLevelEditor::CLevelEditor()
 {
+	m_pLevel = nullptr;
+
 	m_bActive = false;
 	m_pEditorPanel = new CEditorPanel();
 	m_pEditorPanel->SetVisible(false);
@@ -160,7 +197,7 @@ void CLevelEditor::Toggle()
 
 bool CLevelEditor::IsActive()
 {
-	if (!LevelEditor())
+	if (!LevelEditor(false))
 		return false;
 
 	return LevelEditor()->m_bActive;
@@ -175,12 +212,12 @@ void CLevelEditor::Activate()
 
 	LevelEditor()->m_bActive = true;
 
+	LevelEditor()->m_pLevel = GameServer()->GetLevel(CVar::GetCVarValue("game_level"));
+
 	LevelEditor()->m_pEditorPanel->SetVisible(true);
 
 	LevelEditor()->m_bWasMouseActive = Application()->IsMouseCursorEnabled();
 	Application()->SetMouseCursorEnabled(true);
-
-	LevelEditor()->m_pLevel = GameServer()->GetLevel(CVar::GetCVarValue("game_level"));
 }
 
 void CLevelEditor::Deactivate()
@@ -225,9 +262,6 @@ void CLevelEditor::RenderEntities()
 
 void CLevelEditor::Render()
 {
-	if (!LevelEditor())
-		return;
-
 	if (!IsActive())
 		return;
 }
@@ -237,14 +271,20 @@ CCamera* CLevelEditor::GetCamera()
 	return LevelEditor()->m_pCamera;
 }
 
-CLevelEditor* LevelEditor()
+CLevelEditor* LevelEditor(bool bCreate)
 {
 	// This function won't work unless we're in dev mode.
 	// I don't want memory wasted on the level editor for most players.
 	if (!CVar::GetCVarBool("developer"))
 		return nullptr;
 
+	static bool bCreated = false;
+
+	if (!bCreated && !bCreate)
+		return nullptr;
+
 	static CLevelEditor* pLevelEditor = new CLevelEditor();
+	bCreated = true;
 
 	return pLevelEditor;
 }

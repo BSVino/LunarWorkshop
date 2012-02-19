@@ -4,7 +4,7 @@
 #include <glgui/panel.h>
 #include <game/camera.h>
 
-class CEditorPanel : public glgui::CPanel
+class CEditorPanel : public glgui::CPanel, public glgui::IEventListener
 {
 	DECLARE_CLASS(CEditorPanel, glgui::CPanel);
 
@@ -13,9 +13,13 @@ public:
 
 public:
 	void					Layout();
+	void					LayoutEntities();
+
+	EVENT_CALLBACK(CEditorPanel, EntitySelected);
 
 public:
 	glgui::CTree*			m_pEntities;
+	glgui::CLabel*			m_pObjectTitle;
 };
 
 class CEditorCamera : public CCamera
@@ -43,6 +47,7 @@ public:
 
 public:
 	void					RenderEntity(size_t i, bool bTransparent);
+	class CLevel*			GetLevel() { return m_pLevel; }
 
 public:
 	static void				Toggle();
@@ -67,4 +72,4 @@ protected:
 	CEditorCamera*			m_pCamera;
 };
 
-CLevelEditor* LevelEditor();
+CLevelEditor* LevelEditor(bool bCreate=true);

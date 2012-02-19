@@ -163,6 +163,9 @@ bool CTree::MousePressed(int code, int mx, int my)
 		}
 	}
 
+	if (m_pSelectedListener)
+		m_pfnSelectedCallback(m_pSelectedListener, "-1");
+
 	return false;
 }
 
