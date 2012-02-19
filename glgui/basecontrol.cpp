@@ -106,12 +106,12 @@ void CBaseControl::SetHeight(float h)
 
 void CBaseControl::SetLeft(float l)
 {
-	m_flY = l;
+	m_flX = l;
 }
 
 void CBaseControl::SetTop(float t)
 {
-	m_flX = t;
+	m_flY = t;
 }
 
 void CBaseControl::SetRight(float r)
@@ -124,6 +124,14 @@ void CBaseControl::SetBottom(float b)
 	m_flH = b - m_flY;
 }
 
+void CBaseControl::CenterX()
+{
+	if (!GetParent())
+		return;
+
+	SetLeft(GetParent()->GetWidth()/2-GetWidth()/2);
+}
+
 void CBaseControl::SetVisible(bool bVis)
 {
 	if (bVis && !m_bVisible)
@@ -134,8 +142,13 @@ void CBaseControl::SetVisible(bool bVis)
 
 bool CBaseControl::IsVisible()
 {
-	if (GetParent() && !GetParent()->IsVisible())
-		return false;
+	if (GetParent())
+	{
+		if (!GetParent()->IsVisible())
+			return false;
+		if (!GetParent()->IsChildVisible(this))
+			return false;
+	}
 	
 	return m_bVisible;
 }
@@ -174,7 +187,7 @@ void CBaseControl::Paint(float x, float y, float w, float h)
 		if (iTooltipRight > CRootPanel::Get()->GetWidth())
 			mx -= (int)(iTooltipRight - CRootPanel::Get()->GetWidth());
 
-		PaintRect((float)mx-3, my-flFontHeight+1, flTextWidth+6, flFontHeight+6, g_clrBox, 3); 
+		PaintRect((float)mx-3, (float)my-3, flTextWidth+6, flFontHeight+6, g_clrBox, 3); 
 		CLabel::PaintText(m_sTip, m_sTip.length(), "sans-serif", iFontSize, (float)mx, (float)my);
 	}
 }

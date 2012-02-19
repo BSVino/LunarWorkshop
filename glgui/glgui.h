@@ -23,6 +23,7 @@ namespace glgui
 	class CMenu;
 	class CMenuBar;
 	class CPanel;
+	class CMovablePanel;
 	class CPictureButton;
 	class CRootPanel;
 	class CSlidingPanel;
@@ -70,6 +71,7 @@ namespace glgui
 		virtual int			GetAlpha()=0;
 
 		virtual bool		IsVisible()=0;
+		virtual bool		IsChildVisible(IControl* pChild)=0;
 		virtual void		SetVisible(bool bVisible)=0;
 		virtual void		Paint()=0;
 		virtual void		Paint(float x, float y)=0;

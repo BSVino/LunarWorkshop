@@ -20,6 +20,7 @@ set (TINKER_GLGUI_SOURCES
 	../glgui/filedialog.cpp
 	../glgui/label.cpp
 	../glgui/menu.cpp
+	../glgui/movablepanel.cpp
 	../glgui/panel.cpp
 	../glgui/picturebutton.cpp
 	../glgui/rootpanel.cpp

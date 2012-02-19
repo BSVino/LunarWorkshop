@@ -21,6 +21,8 @@ namespace glgui
 
 	class CMenu : public CButton, public IEventListener
 	{
+		DECLARE_CLASS(CMenu, CButton);
+
 	public:
 									CMenu(const tstring& sTitle, bool bSubmenu = false);
 		virtual						~CMenu();
@@ -40,6 +42,9 @@ namespace glgui
 		EVENT_CALLBACK(CMenu, Close);
 		EVENT_CALLBACK(CMenu, Clicked);
 
+		void						OpenMenu();
+		void						CloseMenu();
+
 		virtual void				AddSubmenu(const tstring& sTitle, IEventListener* pListener = NULL, IEventListener::Callback pfnCallback = NULL);
 
 		virtual size_t				GetSelectedMenu();
@@ -47,10 +52,13 @@ namespace glgui
 	protected:
 		class CSubmenuPanel : public CPanel
 		{
+			DECLARE_CLASS(CSubmenuPanel, CPanel);
 		public:
-									CSubmenuPanel();
+									CSubmenuPanel(CMenu* pMenu);
 
 			void					Think();
+
+			virtual bool			IsVisible();
 
 			void					SetFakeHeight(float flFakeHeight) { m_flFakeHeight = flFakeHeight; };
 
@@ -59,6 +67,8 @@ namespace glgui
 
 			eastl::vector<float>	m_aflControlHighlightGoal;
 			eastl::vector<float>	m_aflControlHighlight;
+
+			CMenu*					m_pMenu;
 		};
 
 		bool						m_bSubmenu;

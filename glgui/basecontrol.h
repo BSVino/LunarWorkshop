@@ -50,9 +50,11 @@ namespace glgui
 		virtual float	GetTop() { return m_flY; };
 		virtual float	GetRight() { return m_flX + m_flW; };
 		virtual float	GetBottom() { return m_flY + m_flH; };
+		virtual void	CenterX();
 
 		virtual void	SetVisible(bool bVis);
 		virtual bool	IsVisible();
+		virtual bool	IsChildVisible(IControl* pChild) { return true; }
 
 		virtual void	LevelShutdown( void ) { return; };
 		virtual bool	KeyPressed(int iKey, bool bCtrlDown = false) { return false; };

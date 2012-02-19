@@ -179,9 +179,9 @@ bool CTree::MouseReleased(int code, int mx, int my)
 	return false;
 }
 
-void CTree::AddControl(IControl* pControl, bool bToTail)
+size_t CTree::AddControl(IControl* pControl, bool bToTail)
 {
-	BaseClass::AddControl(pControl, bToTail);
+	size_t iControl = BaseClass::AddControl(pControl, bToTail);
 
 	if (pControl != m_pVerticalScrollBar && pControl != m_pHorizontalScrollBar)
 	{
@@ -189,6 +189,8 @@ void CTree::AddControl(IControl* pControl, bool bToTail)
 		if (pTreeNode)
 			m_apAllNodes.push_back(pTreeNode);
 	}
+
+	return iControl;
 }
 
 void CTree::RemoveControl(IControl* pControl)

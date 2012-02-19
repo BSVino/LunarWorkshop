@@ -14,7 +14,7 @@ REGISTER_ENTITY(CKaleidobeast);
 NETVAR_TABLE_BEGIN(CKaleidobeast);
 NETVAR_TABLE_END();
 
-SAVEDATA_TABLE_BEGIN(CKaleidobeast);
+SAVEDATA_TABLE_BEGIN_EDITOR(CKaleidobeast);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bSeesPlayer);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bInitialPosition);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecInitialPosition);

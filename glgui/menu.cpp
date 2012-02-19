@@ -74,7 +74,7 @@ CMenu::CMenu(const tstring& sText, bool bSubmenu)
 	m_pfnMenuCallback = NULL;
 	m_pMenuListener = NULL;
 
-	m_pMenu = new CSubmenuPanel();
+	m_pMenu = new CSubmenuPanel(this);
 	CRootPanel::Get()->AddControl(m_pMenu, true);
 
 	m_pMenu->SetVisible(false);
@@ -94,6 +94,9 @@ void CMenu::Think()
 	// If our menu is open always stay highlighted.
 	if (m_pMenu->IsVisible())
 		flHightlightGoal = 1;
+
+	if (!IsVisible())
+		CloseMenu();
 
 	m_flHighlight = Approach(flHightlightGoal, m_flHighlight, CRootPanel::Get()->GetFrameTime()*3);
 	m_flMenuHighlight = Approach(m_flMenuHighlightGoal, m_flMenuHighlight, CRootPanel::Get()->GetFrameTime()*3);
@@ -125,10 +128,10 @@ void CMenu::Think()
 		m_MenuSelection = m_MenuSelectionGoal;
 	else
 	{
-		m_MenuSelection.x = Approach(m_MenuSelectionGoal.x, m_MenuSelection.x, CRootPanel::Get()->GetFrameTime()*400);
-		m_MenuSelection.y = Approach(m_MenuSelectionGoal.y, m_MenuSelection.y, CRootPanel::Get()->GetFrameTime()*400);
-		m_MenuSelection.w = Approach(m_MenuSelectionGoal.w, m_MenuSelection.w, CRootPanel::Get()->GetFrameTime()*400);
-		m_MenuSelection.h = Approach(m_MenuSelectionGoal.h, m_MenuSelection.h, CRootPanel::Get()->GetFrameTime()*400);
+		m_MenuSelection.x = Approach(m_MenuSelectionGoal.x, m_MenuSelection.x, CRootPanel::Get()->GetFrameTime()*800);
+		m_MenuSelection.y = Approach(m_MenuSelectionGoal.y, m_MenuSelection.y, CRootPanel::Get()->GetFrameTime()*800);
+		m_MenuSelection.w = Approach(m_MenuSelectionGoal.w, m_MenuSelection.w, CRootPanel::Get()->GetFrameTime()*800);
+		m_MenuSelection.h = Approach(m_MenuSelectionGoal.h, m_MenuSelection.h, CRootPanel::Get()->GetFrameTime()*800);
 	}
 
 	m_flMenuSelectionHighlight = Approach(m_flMenuSelectionHighlightGoal, m_flMenuSelectionHighlight, CRootPanel::Get()->GetFrameTime()*3);
@@ -162,7 +165,7 @@ void CMenu::Paint(float x, float y, float w, float h)
 	{
 		Color clrBox = m_clrButton;
 		clrBox.SetAlpha((int)RemapVal(m_flHighlight, 0, 1, 125, 255));
-		CRootPanel::PaintRect(x, y, w, h, clrBox);
+		CRootPanel::PaintRect(x, y, w, h, clrBox, 1);
 	}
 
 	if (m_pMenu->IsVisible())
@@ -215,8 +218,7 @@ void CMenu::OpenCallback(const tstring& sArgs)
 
 	if (m_pMenu->GetControls().size())
 	{
-		m_flMenuHeightGoal = 1;
-		m_flMenuHighlightGoal = 1;
+		OpenMenu();
 		Layout();
 	}
 }
@@ -224,10 +226,7 @@ void CMenu::OpenCallback(const tstring& sArgs)
 void CMenu::CloseCallback(const tstring& sArgs)
 {
 	if (m_pMenu->GetControls().size())
-	{
-		m_flMenuHeightGoal = 0;
-		m_flMenuHighlightGoal = 0;
-	}
+		CloseMenu();
 }
 
 void CMenu::ClickedCallback(const tstring& sArgs)
@@ -235,7 +234,20 @@ void CMenu::ClickedCallback(const tstring& sArgs)
 	CRootPanel::Get()->GetMenuBar()->SetActive(NULL);
 
 	if (m_pMenuListener)
-		m_pfnMenuCallback(m_pMenuListener, "");
+		m_pfnMenuCallback(m_pMenuListener, sArgs);
+}
+
+void CMenu::OpenMenu()
+{
+	m_flMenuHighlightGoal = 1;
+	m_flMenuHeightGoal = 1;
+}
+
+void CMenu::CloseMenu()
+{
+	m_flMenuHighlightGoal = 0;
+	m_flMenuHeightGoal = 0;
+	SetState(false, false);
 }
 
 void CMenu::AddSubmenu(const tstring& sTitle, IEventListener* pListener, IEventListener::Callback pfnCallback)
@@ -246,12 +258,12 @@ void CMenu::AddSubmenu(const tstring& sTitle, IEventListener* pListener, IEventL
 	pMenu->EnsureTextFits();
 	pMenu->SetToggleButton(false);
 
-	pMenu->SetClickedListener(pMenu, Clicked);
-
 	if (pListener)
 		pMenu->SetMenuListener(pListener, pfnCallback);
 
-	m_pMenu->AddControl(pMenu, true);
+	size_t iControl = m_pMenu->AddControl(pMenu, true);
+
+	pMenu->SetClickedListener(pMenu, Clicked, sprintf("%d " + sTitle, iControl));
 
 	m_apEntries.push_back(pMenu);
 }
@@ -276,9 +288,10 @@ size_t CMenu::GetSelectedMenu()
 	return ~0;
 }
 
-CMenu::CSubmenuPanel::CSubmenuPanel()
+CMenu::CSubmenuPanel::CSubmenuPanel(CMenu* pMenu)
 	: CPanel(0, 0, 100, 100)
 {
+	m_pMenu = pMenu;
 }
 
 void CMenu::CSubmenuPanel::Think()
@@ -313,4 +326,9 @@ void CMenu::CSubmenuPanel::Think()
 	}
 
 	CPanel::Think();
+}
+
+bool CMenu::CSubmenuPanel::IsVisible()
+{
+	return m_pMenu->IsVisible() && BaseClass::IsVisible();
 }

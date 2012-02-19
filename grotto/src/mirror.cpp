@@ -14,7 +14,7 @@ NETVAR_TABLE_END();
 
 void UnserializeString_MirrorType(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity);
 
-SAVEDATA_TABLE_BEGIN(CMirror);
+SAVEDATA_TABLE_BEGIN_EDITOR(CMirror);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", UnserializeString_MirrorType);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iBuffer);
 SAVEDATA_TABLE_END();

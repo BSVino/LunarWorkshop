@@ -37,9 +37,9 @@ namespace glgui
 		virtual void	SetState(bool bDown, bool bRegister = true);
 		virtual bool	GetState() {return m_bDown;};
 
-		virtual void	SetClickedListener(IEventListener* pListener, IEventListener::Callback pfnCallback);
+		virtual void	SetClickedListener(IEventListener* pListener, IEventListener::Callback pfnCallback, const tstring& sArgs="");
 		// Toggle buttons only
-		virtual void	SetUnclickedListener(IEventListener* pListener, IEventListener::Callback pfnCallback);
+		virtual void	SetUnclickedListener(IEventListener* pListener, IEventListener::Callback pfnCallback, const tstring& sArgs="");
 		virtual IEventListener::Callback	GetClickedListenerCallback() { return m_pfnClickCallback; };
 		virtual IEventListener*				GetClickedListener() { return m_pClickListener; };
 
@@ -58,9 +58,11 @@ namespace glgui
 		// Need multiple event listeners? Too bad! Make a list.
 		IEventListener::Callback m_pfnClickCallback;
 		IEventListener*	m_pClickListener;
+		tstring			m_sClickArgs;
 
 		IEventListener::Callback m_pfnUnclickCallback;
 		IEventListener*	m_pUnclickListener;
+		tstring			m_sUnclickArgs;
 
 		Color			m_clrButton;
 		Color			m_clrDown;

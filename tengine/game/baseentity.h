@@ -153,6 +153,7 @@ public:
 	eastl::vector<CNetworkedVariableData>	m_aNetworkVariables;
 	eastl::map<eastl::string, CEntityInput>		m_aInputs;
 	eastl::vector<tstring>		m_asPrecaches;
+	bool						m_bCreatableInEditor;
 };
 
 #define REGISTER_ENTITY_CLASS_NOBASE(entity) \
@@ -271,13 +272,20 @@ void entity::RegisterNetworkVariables() \
 	CheckTables(pszEntity); \
 } \
 
-#define SAVEDATA_TABLE_BEGIN(entity) \
+#define SAVEDATA_TABLE_BEGIN_COMMON(entity, editor) \
 void entity::RegisterSaveData() \
 { \
 	CEntityRegistration* pRegistration = GetRegisteredEntity(GetClassName()); \
 	pRegistration->m_aSaveData.clear(); \
+	pRegistration->m_bCreatableInEditor = editor; \
 	CGameServer* pGameServer = GameServer(); \
 	CSaveData* pSaveData = NULL; \
+
+#define SAVEDATA_TABLE_BEGIN(entity) \
+	SAVEDATA_TABLE_BEGIN_COMMON(entity, false) \
+
+#define SAVEDATA_TABLE_BEGIN_EDITOR(entity) \
+	SAVEDATA_TABLE_BEGIN_COMMON(entity, true) \
 
 #define SAVEDATA_DEFINE_COMMON(copy, type, name) \
 	pSaveData = &pRegistration->m_aSaveData.push_back(); \
@@ -620,6 +628,9 @@ public:
 	static void								Register(CBaseEntity* pEntity);
 	static CEntityRegistration*				GetRegisteredEntity(tstring sClassName);
 	static void								PrecacheCallback(CBaseEntity* pEntity);
+
+	static size_t							GetNumEntitiesRegistered();
+	static CEntityRegistration*				GetEntityRegistration(size_t iEntity);
 
 	static CSaveData*						GetSaveData(const char* pszClassName, const char* pszName);
 	static CSaveData*						GetSaveDataByHandle(const char* pszClassName, const char* pszHandle);

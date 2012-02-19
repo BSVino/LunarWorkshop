@@ -67,7 +67,7 @@ bool CSlidingPanel::MousePressed(int code, int mx, int my)
 	}
 }
 
-void CSlidingPanel::AddControl(IControl* pControl, bool bToTail)
+size_t CSlidingPanel::AddControl(IControl* pControl, bool bToTail)
 {
 	// The title and inner panel should be added to this panel.
 	// All other controls should be added to the inner panel.
@@ -76,11 +76,10 @@ void CSlidingPanel::AddControl(IControl* pControl, bool bToTail)
 
 	if (/*pControl != m_pTitle && */pControl != m_pInnerPanel)
 	{
-		m_pInnerPanel->AddControl(pControl, bToTail);
-		return;
+		return m_pInnerPanel->AddControl(pControl, bToTail);
 	}
 
-	CPanel::AddControl(pControl, bToTail);
+	return CPanel::AddControl(pControl, bToTail);
 }
 
 void CSlidingPanel::SetCurrent(bool bCurrent)
@@ -117,17 +116,19 @@ void CSlidingContainer::Layout()
 	CPanel::Layout();
 }
 
-void CSlidingContainer::AddControl(IControl* pControl, bool bToTail)
+size_t CSlidingContainer::AddControl(IControl* pControl, bool bToTail)
 {
 	if (!pControl)
-		return;
+		return ~0;
 
 	TAssert(dynamic_cast<CSlidingPanel*>(pControl));
 
-	CPanel::AddControl(pControl, bToTail);
+	size_t iControl = CPanel::AddControl(pControl, bToTail);
 
 	// Re-layout now that we've added some. Maybe this one is the current one!
 	SetCurrent(m_iCurrent);
+
+	return iControl;
 }
 
 bool CSlidingContainer::IsCurrent(int iPanel)

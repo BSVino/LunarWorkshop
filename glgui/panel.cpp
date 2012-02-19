@@ -229,10 +229,10 @@ IControl* CPanel::GetHasCursor()
 	return m_pHasCursor->GetHasCursor();
 }
 
-void CPanel::AddControl(IControl* pControl, bool bToTail)
+size_t CPanel::AddControl(IControl* pControl, bool bToTail)
 {
 	if (!pControl)
-		return;
+		return ~0;
 
 	TAssert(pControl != this);
 
@@ -244,9 +244,15 @@ void CPanel::AddControl(IControl* pControl, bool bToTail)
 	pControl->SetParent(this);
 
 	if (bToTail)
+	{
 		m_apControls.push_back(pControl);
+		return m_apControls.size()-1;
+	}
 	else
+	{
 		m_apControls.insert(m_apControls.begin(), pControl);
+		return 0;
+	}
 }
 
 void CPanel::RemoveControl(IControl* pControl)

@@ -1518,6 +1518,28 @@ void CBaseEntity::PrecacheCallback(CBaseEntity* pEntity)
 	pEntity->Precache();
 }
 
+size_t CBaseEntity::GetNumEntitiesRegistered()
+{
+	return GetEntityRegistration().size();
+}
+
+CEntityRegistration* CBaseEntity::GetEntityRegistration(size_t iEntity)
+{
+	if (iEntity >= GetNumEntitiesRegistered())
+		return nullptr;
+
+	// Not the fastest implementation but I don't think it needs to be.
+	size_t i = 0;
+	for (auto it = GetEntityRegistration().begin(); it != GetEntityRegistration().end(); it++, i++)
+	{
+		if (i == iEntity)
+			return &it->second;
+	}
+
+	TAssert(false);	 // Dunno how this could happen.
+	return nullptr;
+}
+
 CSaveData* CBaseEntity::GetSaveData(const char* pszClassName, const char* pszName)
 {
 	CEntityRegistration* pRegistration;

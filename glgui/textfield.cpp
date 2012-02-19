@@ -43,7 +43,7 @@ void CTextField::Paint(float x, float y, float w, float h)
 	if (m_iAlpha == 0)
 		return;
 
-	glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 0), 1);
+	glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 50), 3);
 
 	float flCursor = CLabel::GetFont("sans-serif", m_iFontFaceSize)->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str(), m_iCursor);
 	if (HasFocus() && (fmod(CRootPanel::Get()->GetTime() - m_flBlinkTime, 1) < 0.5f))

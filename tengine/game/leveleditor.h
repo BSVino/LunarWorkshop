@@ -2,7 +2,30 @@
 
 #include <tstring.h>
 #include <glgui/panel.h>
+#include <glgui/movablepanel.h>
 #include <game/camera.h>
+
+class CCreateEntityPanel : public glgui::CMovablePanel
+{
+	DECLARE_CLASS(CCreateEntityPanel, glgui::CMovablePanel);
+
+public:
+					CCreateEntityPanel();
+
+public:
+	void					Layout();
+
+	EVENT_CALLBACK(CCreateEntityPanel, ChooseClass);
+
+public:
+	glgui::CMenu*			m_pClass;
+
+	glgui::CLabel*			m_pNameLabel;
+	glgui::CTextField*		m_pNameText;
+
+	glgui::CLabel*			m_pModelLabel;
+	glgui::CTextField*		m_pModelText;
+};
 
 class CEditorPanel : public glgui::CPanel, public glgui::IEventListener
 {
@@ -39,15 +62,17 @@ public:
 	EAngle			m_angEditCamera;
 };
 
-class CLevelEditor
+class CLevelEditor : public glgui::IEventListener
 {
 public:
 							CLevelEditor();
-							~CLevelEditor();
+	virtual					~CLevelEditor();
 
 public:
 	void					RenderEntity(size_t i, bool bTransparent);
 	class CLevel*			GetLevel() { return m_pLevel; }
+
+	EVENT_CALLBACK(CLevelEditor, CreateEntity);
 
 public:
 	static void				Toggle();
@@ -68,6 +93,9 @@ protected:
 	class CLevel*			m_pLevel;
 
 	CEditorPanel*			m_pEditorPanel;
+
+	glgui::CPictureButton*	m_pCreateEntityButton;
+	CCreateEntityPanel*		m_pCreateEntityPanel;
 
 	CEditorCamera*			m_pCamera;
 };

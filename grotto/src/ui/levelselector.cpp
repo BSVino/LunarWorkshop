@@ -14,7 +14,7 @@ using namespace glgui;
 CLevelSelector::CLevelSelector()
 {
 	SetBorder(BT_SOME);
-	SetBackgroundColor(glgui::g_clrBox);
+	SetBackgroundColor(Color(37, 37, 37, 255));
 
 	SetWidth(400);
 

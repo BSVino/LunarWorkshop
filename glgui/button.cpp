@@ -91,27 +91,29 @@ void CButton::SetState(bool bDown, bool bRegister)
 	if (m_bToggle && !m_bToggleOn)
 	{
 		if (bRegister && m_pUnclickListener && m_pfnUnclickCallback)
-			m_pfnUnclickCallback(m_pUnclickListener, "");
+			m_pfnUnclickCallback(m_pUnclickListener, m_sUnclickArgs);
 	}
 	else
 	{
 		if (bRegister && m_pClickListener && m_pfnClickCallback)
-			m_pfnClickCallback(m_pClickListener, "");
+			m_pfnClickCallback(m_pClickListener, m_sClickArgs);
 	}
 }
 
-void CButton::SetClickedListener(IEventListener* pListener, IEventListener::Callback pfnCallback)
+void CButton::SetClickedListener(IEventListener* pListener, IEventListener::Callback pfnCallback, const tstring& sArgs)
 {
 	TAssert(pListener && pfnCallback || !pListener && !pfnCallback);
 	m_pClickListener = pListener;
 	m_pfnClickCallback = pfnCallback;
+	m_sClickArgs = sArgs;
 }
 
-void CButton::SetUnclickedListener(IEventListener* pListener, IEventListener::Callback pfnCallback)
+void CButton::SetUnclickedListener(IEventListener* pListener, IEventListener::Callback pfnCallback, const tstring& sArgs)
 {
 	TAssert(pListener && pfnCallback || !pListener && !pfnCallback);
 	m_pUnclickListener = pListener;
 	m_pfnUnclickCallback = pfnCallback;
+	m_sUnclickArgs = sArgs;
 }
 
 bool CButton::MousePressed(int code, int mx, int my)

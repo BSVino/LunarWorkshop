@@ -3,13 +3,79 @@
 #include <tinker/cvar.h>
 #include <glgui/rootpanel.h>
 #include <glgui/tree.h>
+#include <glgui/menu.h>
+#include <glgui/textfield.h>
 #include <tinker/application.h>
 #include <renderer/game_renderingcontext.h>
 #include <renderer/game_renderer.h>
 #include <tinker/profiler.h>
+#include <textures/texturelibrary.h>
 
 #include "level.h"
 #include "gameserver.h"
+
+CCreateEntityPanel::CCreateEntityPanel()
+	: glgui::CMovablePanel("Create Entity Tool")
+{
+	m_pClass = new glgui::CMenu("Choose Class");
+
+	for (size_t i = 0; i < CBaseEntity::GetNumEntitiesRegistered(); i++)
+	{
+		CEntityRegistration* pRegistration = CBaseEntity::GetEntityRegistration(i);
+
+		if (!pRegistration->m_bCreatableInEditor)
+			continue;
+
+		m_pClass->AddSubmenu(pRegistration->m_pszEntityClass+1, this, ChooseClass);
+	}
+
+	AddControl(m_pClass);
+
+	m_pNameLabel = new glgui::CLabel("Name:", "sans-serif", 10);
+	m_pNameLabel->SetAlign(glgui::CLabel::TA_LEFTCENTER);
+	AddControl(m_pNameLabel);
+	m_pNameText = new glgui::CTextField();
+	AddControl(m_pNameText);
+
+	m_pModelLabel = new glgui::CLabel("Model:", "sans-serif", 10);
+	m_pModelLabel->SetAlign(glgui::CLabel::TA_LEFTCENTER);
+	AddControl(m_pModelLabel);
+	m_pModelText = new glgui::CTextField();
+	AddControl(m_pModelText);
+}
+
+void CCreateEntityPanel::Layout()
+{
+	m_pClass->SetWidth(100);
+	m_pClass->SetHeight(30);
+	m_pClass->CenterX();
+	m_pClass->SetTop(30);
+
+	m_pNameLabel->SetLeft(15);
+	m_pNameLabel->SetTop(70);
+	m_pNameText->SetWidth(GetWidth()-30);
+	m_pNameText->CenterX();
+	m_pNameText->SetTop(85);
+
+	m_pModelLabel->SetLeft(15);
+	m_pModelLabel->SetTop(110);
+	m_pModelText->SetWidth(GetWidth()-30);
+	m_pModelText->CenterX();
+	m_pModelText->SetTop(125);
+
+	SetHeight(170);
+
+	BaseClass::Layout();
+}
+
+void CCreateEntityPanel::ChooseClassCallback(const tstring& sArgs)
+{
+	eastl::vector<tstring> asTokens;
+	strtok(sArgs, asTokens);
+
+	m_pClass->SetText(asTokens[1]);
+	m_pClass->Pop(true, true);
+}
 
 CEditorPanel::CEditorPanel()
 {
@@ -127,6 +193,18 @@ CLevelEditor::CLevelEditor()
 	m_pEditorPanel->SetBorder(glgui::CPanel::BT_SOME);
 	glgui::CRootPanel::Get()->AddControl(m_pEditorPanel);
 
+	m_pCreateEntityButton = new glgui::CPictureButton("Create", CTextureLibrary::AddTextureID("editor/create-entity.png"));
+	m_pCreateEntityButton->SetPos(glgui::CRootPanel::Get()->GetWidth()/2-m_pCreateEntityButton->GetWidth()/2, 20);
+	m_pCreateEntityButton->SetClickedListener(this, CreateEntity);
+	m_pCreateEntityButton->SetTooltip("Create Entity Tool");
+	glgui::CRootPanel::Get()->AddControl(m_pCreateEntityButton, true);
+
+	m_pCreateEntityPanel = new CCreateEntityPanel();
+	m_pCreateEntityPanel->SetBackgroundColor(Color(0, 0, 0, 255));
+	m_pCreateEntityPanel->SetHeaderColor(Color(100, 100, 100, 255));
+	m_pCreateEntityPanel->SetBorder(glgui::CPanel::BT_SOME);
+	m_pCreateEntityPanel->SetVisible(false);
+
 	m_pCamera = new CEditorCamera();
 }
 
@@ -136,6 +214,10 @@ CLevelEditor::~CLevelEditor()
 	delete m_pEditorPanel;
 
 	delete m_pCamera;
+
+	glgui::CRootPanel::Get()->RemoveControl(m_pCreateEntityButton);
+	delete m_pCreateEntityButton;
+	delete m_pCreateEntityPanel;
 }
 
 void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
@@ -182,6 +264,12 @@ void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
 		r.SetUniform("bDiffuse", false);
 		r.RenderWireBox(pEntity->GetBoundingBox());
 	}
+}
+
+void CLevelEditor::CreateEntityCallback(const tstring& sArgs)
+{
+	m_pCreateEntityPanel->SetPos(glgui::CRootPanel::Get()->GetWidth()/2-m_pCreateEntityPanel->GetWidth()/2, 72);
+	m_pCreateEntityPanel->SetVisible(true);
 }
 
 void CLevelEditor::Toggle()
