@@ -305,7 +305,10 @@ bool CGameWindow::KeyPress(int c)
 		return true;
 
 	if (GameServer() && GameServer()->GetCamera())
-		GameServer()->GetCamera()->KeyDown(c);
+	{
+		if (GameServer()->GetCamera()->KeyDown(c))
+			return true;
+	}
 
 	if (Game())
 	{
@@ -330,7 +333,10 @@ void CGameWindow::KeyRelease(int c)
 	BaseClass::KeyRelease(c);
 
 	if (GameServer() && GameServer()->GetCamera())
-		GameServer()->GetCamera()->KeyUp(c);
+	{
+		if (GameServer()->GetCamera()->KeyUp(c))
+			return;
+	}
 
 	if (Game())
 	{
@@ -377,7 +383,10 @@ void CGameWindow::MouseInput(int iButton, int iState)
 	BaseClass::MouseInput(iButton, iState);
 
 	if (GameServer() && GameServer()->GetCamera())
-		GameServer()->GetCamera()->MouseButton(iButton, iState);
+	{
+		if (GameServer()->GetCamera()->MouseButton(iButton, iState))
+			return;
+	}
 
 	if (Game())
 	{

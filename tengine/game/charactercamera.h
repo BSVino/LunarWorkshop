@@ -22,7 +22,7 @@ public:
 	virtual TVector			GetThirdPersonCameraPosition();
 	virtual TVector			GetThirdPersonCameraDirection();
 
-	virtual void			KeyDown(int c);
+	virtual bool			KeyDown(int c);
 
 	void					ToggleThirdPerson();
 	void					SetThirdPerson(bool bOn) { m_bThirdPerson = bOn; };

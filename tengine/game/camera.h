@@ -7,7 +7,7 @@
 class CCamera
 {
 public:
-				CCamera();
+					CCamera();
 
 public:
 	virtual void	Think();
@@ -22,9 +22,9 @@ public:
 	bool			GetFreeMode() { return m_bFreeMode; };
 
 	virtual void	MouseInput(int x, int y);
-	virtual void	MouseButton(int iButton, int iState) {};
-	virtual void	KeyDown(int c);
-	virtual void	KeyUp(int c);
+	virtual bool	MouseButton(int iButton, int iState) { return false; };
+	virtual bool	KeyDown(int c);
+	virtual bool	KeyUp(int c);
 
 public:
 	bool			m_bFreeMode;

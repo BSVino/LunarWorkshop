@@ -676,19 +676,19 @@ void CGameServer::Render()
 {
 	TPROF("CGameServer::Render");
 
-	if (!m_pCamera)
+	if (!GetCamera())
 		return;
 
-	m_pCamera->Think();
+	GetCamera()->Think();
 
 	CGameRenderer* pRenderer = GameWindow()->GetRenderer();
 
-	pRenderer->SetCameraPosition(m_pCamera->GetCameraPosition());
-	pRenderer->SetCameraDirection(m_pCamera->GetCameraDirection());
-	pRenderer->SetCameraUp(m_pCamera->GetCameraUp());
-	pRenderer->SetCameraFOV(m_pCamera->GetCameraFOV());
-	pRenderer->SetCameraNear(m_pCamera->GetCameraNear());
-	pRenderer->SetCameraFar(m_pCamera->GetCameraFar());
+	pRenderer->SetCameraPosition(GetCamera()->GetCameraPosition());
+	pRenderer->SetCameraDirection(GetCamera()->GetCameraDirection());
+	pRenderer->SetCameraUp(GetCamera()->GetCameraUp());
+	pRenderer->SetCameraFOV(GetCamera()->GetCameraFOV());
+	pRenderer->SetCameraNear(GetCamera()->GetCameraNear());
+	pRenderer->SetCameraFar(GetCamera()->GetCameraFar());
 
 	pRenderer->PreRender();
 
@@ -1054,6 +1054,14 @@ void CGameServer::ClientInfo(int iConnection, CNetworkParameters* p)
 CGameRenderer* CGameServer::GetRenderer()
 {
 	return static_cast<CGameRenderer*>(GameWindow()->GetRenderer());
+}
+
+CCamera* CGameServer::GetCamera()
+{
+	if (CLevelEditor::IsActive())
+		return CLevelEditor::GetCamera();
+
+	return m_pCamera;
 }
 
 CGame* CGameServer::GetGame()

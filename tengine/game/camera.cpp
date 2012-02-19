@@ -102,7 +102,7 @@ void CCamera::MouseInput(int x, int y)
 
 CVar lock_freemode_frustum("debug_lock_freemode_frustum", "no");
 
-void CCamera::KeyDown(int c)
+bool CCamera::KeyDown(int c)
 {
 	if (CVar::GetCVarBool("cheats") && c == 'Z')
 	{
@@ -115,32 +115,68 @@ void CCamera::KeyDown(int c)
 			else
 				GameServer()->GetRenderer()->CancelFrustumOverride();
 		}
+
+		return true;
 	}
 
 	if (m_bFreeMode)
 	{
 		if (c == 'W')
+		{
 			m_vecFreeVelocity.x = 1.0f;
+			return true;
+		}
+
 		if (c == 'S')
+		{
 			m_vecFreeVelocity.x = -1.0f;
+			return true;
+		}
+
 		if (c == 'D')
+		{
 			m_vecFreeVelocity.z = 1.0f;
+			return true;
+		}
+
 		if (c == 'A')
+		{
 			m_vecFreeVelocity.z = -1.0f;
+			return true;
+		}
 	}
+
+	return false;
 }
 
-void CCamera::KeyUp(int c)
+bool CCamera::KeyUp(int c)
 {
 	if (m_bFreeMode)
 	{
 		if (c == 'W')
+		{
 			m_vecFreeVelocity.x = 0.0f;
+			return true;
+		}
+
 		if (c == 'S')
+		{
 			m_vecFreeVelocity.x = 0.0f;
+			return true;
+		}
+
 		if (c == 'D')
+		{
 			m_vecFreeVelocity.z = 0.0f;
+			return true;
+		}
+
 		if (c == 'A')
+		{
 			m_vecFreeVelocity.z = 0.0f;
+			return true;
+		}
 	}
+
+	return false;
 }

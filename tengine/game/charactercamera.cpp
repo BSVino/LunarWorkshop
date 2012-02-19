@@ -76,12 +76,18 @@ TVector CCharacterCamera::GetThirdPersonCameraDirection()
 	return AngleVector(pCharacter->GetThirdPersonCameraAngles());
 }
 
-void CCharacterCamera::KeyDown(int c)
+bool CCharacterCamera::KeyDown(int c)
 {
-	BaseClass::KeyDown(c);
+	if (BaseClass::KeyDown(c))
+		return true;
 
 	if (c == 'X')
+	{
 		ToggleThirdPerson();
+		return true;
+	}
+
+	return false;
 }
 
 void CCharacterCamera::ToggleThirdPerson()

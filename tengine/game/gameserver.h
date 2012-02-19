@@ -114,7 +114,7 @@ public:
 	size_t										GetFrame() { return m_iFrame; }
 
 	class CGameRenderer*						GetRenderer();
-	class CCamera*								GetCamera() { return m_pCamera; };
+	class CCamera*								GetCamera();
 
 	bool										IsLoading() { return m_bLoading; };
 	void										SetLoading(bool bLoading) { m_bLoading = bLoading; };

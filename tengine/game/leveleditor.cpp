@@ -54,6 +54,33 @@ void CEditorPanel::Layout()
 	BaseClass::Layout();
 }
 
+void CEditorCamera::Think()
+{
+	BaseClass::Think();
+
+	if (m_bFreeMode)
+	{
+		m_vecEditCamera = m_vecFreeCamera;
+		m_angEditCamera = m_angFreeCamera;
+	}
+}
+
+TVector CEditorCamera::GetCameraPosition()
+{
+	return m_vecEditCamera;
+}
+
+TVector CEditorCamera::GetCameraDirection()
+{
+	return AngleVector(m_angEditCamera);
+}
+
+void CEditorCamera::SetCameraOrientation(TVector vecPosition, Vector vecDirection)
+{
+	m_vecEditCamera = vecPosition;
+	m_angEditCamera = VectorAngles(vecDirection);
+}
+
 CLevelEditor::CLevelEditor()
 {
 	m_bActive = false;
@@ -62,6 +89,16 @@ CLevelEditor::CLevelEditor()
 	m_pEditorPanel->SetBackgroundColor(Color(0, 0, 0, 150));
 	m_pEditorPanel->SetBorder(glgui::CPanel::BT_SOME);
 	glgui::CRootPanel::Get()->AddControl(m_pEditorPanel);
+
+	m_pCamera = new CEditorCamera();
+}
+
+CLevelEditor::~CLevelEditor()
+{
+	glgui::CRootPanel::Get()->RemoveControl(m_pEditorPanel);
+	delete m_pEditorPanel;
+
+	delete m_pCamera;
 }
 
 void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
@@ -134,6 +171,8 @@ void CLevelEditor::Activate()
 	if (!LevelEditor())
 		return;
 
+	LevelEditor()->m_pCamera->SetCameraOrientation(GameServer()->GetCamera()->GetCameraPosition(), GameServer()->GetCamera()->GetCameraDirection());
+
 	LevelEditor()->m_bActive = true;
 
 	LevelEditor()->m_pEditorPanel->SetVisible(true);
@@ -191,6 +230,11 @@ void CLevelEditor::Render()
 
 	if (!IsActive())
 		return;
+}
+
+CCamera* CLevelEditor::GetCamera()
+{
+	return LevelEditor()->m_pCamera;
 }
 
 CLevelEditor* LevelEditor()
