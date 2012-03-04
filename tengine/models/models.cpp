@@ -86,7 +86,7 @@ size_t CModelLibrary::AddModel(const tstring& sModel)
 	for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
 	{
 		if (CModelLibrary::AddModel(pModel->m_pToy->GetSceneAreaFileName(i)) == ~0)
-			TError("Area \"" + pModel->m_pToy->GetSceneAreaFileName(i) + "\" for model \"" + sModel + "\" could not be loaded.");
+			TError(tstring("Area \"") + pModel->m_pToy->GetSceneAreaFileName(i) + "\" for model \"" + sModel + "\" could not be loaded.");
 	}
 
 	return iLocation;
@@ -222,7 +222,7 @@ bool CModel::Load()
 
 		//TAssert(m_aiTextures[i]);
 		if (!m_aiTextures[i])
-			TError("Couldn't find texture \"" + m_pToy->GetMaterialTexture(i) + "\"\n");
+			TError(tstring("Couldn't find texture \"") + m_pToy->GetMaterialTexture(i) + "\"\n");
 	}
 
 	if (m_pToy->GetPhysicsNumTris())

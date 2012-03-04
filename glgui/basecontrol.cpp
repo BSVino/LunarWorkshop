@@ -1,5 +1,7 @@
 #include "basecontrol.h"
 
+#include <tinker/shell.h>
+
 #include <renderer/renderer.h>
 #include <renderer/renderingcontext.h>
 

@@ -5,6 +5,8 @@
 #include <tinker_platform.h>
 #include <convexhull.h>
 
+#include <shell.h>
+
 #include "toy.h"
 
 #include "toy_offsets.h"

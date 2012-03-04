@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <memory>
 
+#include <tinker/shell.h>
+
 #include <toys/toy_util.h>
 #include <toys/toy.h>
 

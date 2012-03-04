@@ -798,7 +798,7 @@ inline bool	TriangleIntersectsAABB(const AABB& oBox, const Vector& v0, const Vec
 
 inline bool	ConvexHullIntersectsAABB(const AABB& oBox, const eastl::vector<Vector>& avecPoints, const eastl::vector<size_t>& aiTriangles)
 {
-	TAssert(aiTriangles.size()%3 == 0);
+	TAssertNoMsg(aiTriangles.size()%3 == 0);
 
 	Vector vecCenter = oBox.Center();
 	Vector n;

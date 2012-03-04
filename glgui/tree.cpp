@@ -1,7 +1,9 @@
 #include "tree.h"
 
-#include <renderer/renderingcontext.h>
 #include <GL3/gl3w.h>
+
+#include <tinker/shell.h>
+#include <renderer/renderingcontext.h>
 
 #include "rootpanel.h"
 #include "scrollbar.h"

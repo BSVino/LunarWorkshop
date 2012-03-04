@@ -14,4 +14,4 @@ set (TOYBUILDER_SOURCES
 )
 
 add_executable (toybuilder ${TOYBUILDER_SOURCES})
-target_link_libraries (toybuilder lwbase modelconverter toys)
+target_link_libraries (toybuilder lwbase tinker modelconverter toys)

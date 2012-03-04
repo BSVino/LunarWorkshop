@@ -155,7 +155,7 @@ void CConsole::Paint(float x, float y, float w, float h)
 	}
 }
 
-void CConsole::PrintConsole(tstring sText)
+void CConsole::PrintConsole(const tstring& sText)
 {
 	DebugPrint(sText);
 	m_pOutput->AppendText(sText);
@@ -331,18 +331,6 @@ bool CApplication::IsConsoleOpen()
 
 	CConsole* pConsole = Get()->GetConsole();
 	return pConsole->IsOpen();
-}
-
-void CApplication::PrintConsole(tstring sText)
-{
-	if (!Get())
-	{
-		puts(convertstring<tchar, char>(sText).c_str());
-		return;
-	}
-
-	CConsole* pConsole = Get()->GetConsole();
-	pConsole->PrintConsole(sText);
 }
 
 CConsole* CApplication::GetConsole()

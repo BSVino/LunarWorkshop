@@ -14,4 +14,4 @@ set (TEST_SOURCES
 )
 
 add_executable (tests ${TEST_SOURCES})
-target_link_libraries (tests lwbase modelconverter toys)
+target_link_libraries (tests lwbase tinker modelconverter toys)

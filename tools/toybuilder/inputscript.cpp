@@ -1,6 +1,7 @@
 #include <tinker_platform.h>
 #include <files.h>
 
+#include <tinker/shell.h>
 #include <datamanager/dataserializer.h>
 #include <modelconverter/modelconverter.h>
 #include <toys/toy_util.h>
@@ -59,12 +60,12 @@ void LoadSceneAreas(CToyUtil& t, CData* pData)
 		auto it = asScenes.find(sFile);
 		if (it == asScenes.end())
 		{
-			printf("Reading model '%s' ...", sFile);
+			TMsg("Reading model '" + sFile + "' ...");
 			std::shared_ptr<CConversionScene> pScene(new CConversionScene());
 			CModelConverter c(pScene.get());
 
 			c.ReadModel(sFile);
-			printf(" Done.\n");
+			TMsg(" Done.\n");
 
 			asScenes[sFile] = pScene;
 		}
@@ -82,7 +83,7 @@ void LoadSceneAreas(CToyUtil& t, CData* pData)
 		TAssert(pMeshNode);
 		TAssert(pPhysicsNode);
 
-		printf("Building scene area toy ...");
+		TMsg("Building scene area toy ...");
 
 		if (pMeshNode)
 			LoadSceneNodeIntoToy(asScenes[sFile].get(), pMeshNode, Matrix4x4(), &ts);
@@ -94,7 +95,7 @@ void LoadSceneAreas(CToyUtil& t, CData* pData)
 		else
 			TError("Couldn't find a scene node in '" + sFile + "' named '" + sMesh + "'\n");
 
-		printf(" Done.\n");
+		TMsg(" Done.\n");
 
 		tstring sGameOutput = pArea->FindChildValueTString("Output");
 		if (!sGameOutput.length())
@@ -102,15 +103,15 @@ void LoadSceneAreas(CToyUtil& t, CData* pData)
 
 		tstring sFileOutput = FindAbsolutePath(t.GetGameDirectory() + DIR_SEP + sGameOutput);
 
-		printf(" Mesh materials: %d\n", ts.GetNumMaterials());
-		printf(" Mesh tris: %d\n", ts.GetNumVerts()/3);
-		printf(" Physics tris: %d\n", ts.GetNumPhysIndices()/3);
+		TMsg(sprintf(" Mesh materials: %d\n", ts.GetNumMaterials()));
+		TMsg(sprintf(" Mesh tris: %d\n", ts.GetNumVerts()/3));
+		TMsg(sprintf(" Physics tris: %d\n", ts.GetNumPhysIndices()/3));
 
-		printf("Writing scene area toy '%s' ...", sFileOutput);
+		TMsg("Writing scene area toy '" + sFileOutput + "' ...");
 		if (ts.Write(sFileOutput))
-			printf(" Done.\n");
+			TMsg(" Done.\n");
 		else
-			printf(" FAILED!\n");
+			TMsg(" FAILED!\n");
 
 		aiSceneIDs[pArea->GetValueTString()] = t.AddSceneArea(sGameOutput);
 	}
@@ -200,21 +201,24 @@ bool LoadFromInputScript(CToyUtil& t, const tstring& sScript, tstring& sOutput)
 
 	eastl::map<tstring, time_t> aiSceneModificationTimes;
 
-	for (size_t i = 0; i < pSceneAreas->GetNumChildren(); i++)
+	if (pSceneAreas)
 	{
-		CData* pArea = pSceneAreas->GetChild(i);
+		for (size_t i = 0; i < pSceneAreas->GetNumChildren(); i++)
+		{
+			CData* pArea = pSceneAreas->GetChild(i);
 
-		if (pArea->GetKey() != "Area")
-			continue;
+			if (pArea->GetKey() != "Area")
+				continue;
 
-		tstring sFile = pArea->FindChildValueTString("File");
-		TAssert(sFile.length());
-		if (!sFile.length())
-			continue;
+			tstring sFile = pArea->FindChildValueTString("File");
+			TAssert(sFile.length());
+			if (!sFile.length())
+				continue;
 
-		auto it = aiSceneModificationTimes.find(sFile);
-		if (it == aiSceneModificationTimes.end())
-			aiSceneModificationTimes[sFile] = GetFileModificationTime(sFile.c_str());
+			auto it = aiSceneModificationTimes.find(sFile);
+			if (it == aiSceneModificationTimes.end())
+				aiSceneModificationTimes[sFile] = GetFileModificationTime(sFile.c_str());
+		}
 	}
 
 	time_t iInputModificationTime = 0;
@@ -247,38 +251,45 @@ bool LoadFromInputScript(CToyUtil& t, const tstring& sScript, tstring& sOutput)
 
 	if (!bRecompile)
 	{
-		printf("No changes detected. Skipping '%s'.\n\n", sOutput.c_str());
-		exit(0);
+		if (Shell()->HasCommandLineSwitch("--force"))
+		{
+			TMsg("Forcing rebuild even though no changes detected.\n");
+		}
+		else
+		{
+			TMsg("No changes detected. Skipping '" + sOutput + "'.\n\n");
+			exit(0);
+		}
 	}
 
 	if (pMesh)
 	{
-		printf("Reading model '%s' ...", pMesh->GetValueTString());
+		TMsg("Reading model '" + pMesh->GetValueTString() + "' ...");
 		CConversionScene* pScene = new CConversionScene();
 		CModelConverter c(pScene);
 
 		c.ReadModel(pMesh->GetValueTString());
-		printf(" Done.\n");
+		TMsg(" Done.\n");
 
-		printf("Building toy mesh ...");
+		TMsg("Building toy mesh ...");
 		LoadSceneIntoToy(pScene, &t);
-		printf(" Done.\n");
+		TMsg(" Done.\n");
 
 		delete pScene;
 	}
 
 	if (pPhysics)
 	{
-		printf("Reading physics model '%s' ...", pPhysics->GetValueTString());
+		TMsg("Reading physics model '" + pPhysics->GetValueTString() + "' ...");
 		CConversionScene* pScene = new CConversionScene();
 		CModelConverter c(pScene);
 
 		c.ReadModel(pPhysics->GetValueTString());
-		printf(" Done.\n");
+		TMsg(" Done.\n");
 
-		printf("Building toy physics model ...");
+		TMsg("Building toy physics model ...");
 		LoadSceneIntoToyPhysics(pScene, &t);
-		printf(" Done.\n");
+		TMsg(" Done.\n");
 
 		delete pScene;
 	}

@@ -294,7 +294,7 @@ void CKDNode::AddTriangle(Vector v1, Vector v2, Vector v3, CConversionFace* pFac
 		if (m_aTris.size() == MIN_TRIS_NODE+1)
 		{
 			// We just grew to 4 tris, so just call build since <= 3 tris hasn't been built before.
-			TAssert(!m_pLeft);
+			TAssertNoMsg(!m_pLeft);
 			Build();
 			return;
 		}
@@ -332,7 +332,7 @@ void CKDNode::RemoveArea(const AABB& oBox)
 		CKDNode* pParent = m_pParent;
 		while (pParent)
 		{
-			TAssert(iTrianglesDeleted <= pParent->m_iTriangles);
+			TAssertNoMsg(iTrianglesDeleted <= pParent->m_iTriangles);
 			pParent->m_iTriangles -= iTrianglesDeleted;
 			pParent = pParent->m_pParent;
 		}
@@ -360,8 +360,8 @@ void CKDNode::RemoveArea(const AABB& oBox)
 		// If we're the parent then sometimes this is called when the tree isn't built yet and there's no problem then if the asserts fail.
 		if (m_pParent)
 		{
-			TAssert(iTrianglesDeleted == m_iTriangles - m_aTris.size());
-			TAssert(iTrianglesDeleted <= m_iTriangles);
+			TAssertNoMsg(iTrianglesDeleted == m_iTriangles - m_aTris.size());
+			TAssertNoMsg(iTrianglesDeleted <= m_iTriangles);
 		}
 
 		m_iTriangles = m_aTris.size();
@@ -522,7 +522,7 @@ bool CKDNode::Raytrace(const Ray& rayTrace, CTraceResult* pTR)
 		bool bHitsRight = RayIntersectsAABB(rayTrace, pThis->m_pRight->m_oBounds);
 
 		// If it hit this node then it's got to hit one of our child nodes since both child nodes add up to this one.
-		TAssert(bHitsRight || bHitsLeft);
+		TAssertNoMsg(bHitsRight || bHitsLeft);
 
 		if (bHitsLeft && !bHitsRight)
 		{
@@ -557,7 +557,7 @@ bool CKDNode::Raytrace(const Ray& rayTrace, CTraceResult* pTR)
 		}
 	}
 
-	TAssert(!pThis->m_pLeft);
+	TAssertNoMsg(!pThis->m_pLeft);
 
 #ifdef DEBUG_WITH_GL
 	DrawBox(pThis->m_oBounds, 0.6f);
@@ -629,7 +629,7 @@ bool CKDNode::Raytrace(const Vector& vecStart, const Vector& vecEnd, CTraceResul
 
 #ifdef _DEBUG
 		// If it hit this node then it's got to hit one of our child nodes since both child nodes add up to this one.
-		TAssert(bHitsRight || bHitsLeft);
+		TAssertNoMsg(bHitsRight || bHitsLeft);
 #endif
 
 		if (bHitsLeft && !bHitsRight)
@@ -665,7 +665,7 @@ bool CKDNode::Raytrace(const Vector& vecStart, const Vector& vecEnd, CTraceResul
 		}
 	}
 
-	TAssert(!pThis->m_pLeft);
+	TAssertNoMsg(!pThis->m_pLeft);
 
 #ifdef DEBUG_WITH_GL
 	DrawBox(m_oBounds, 0.6f);

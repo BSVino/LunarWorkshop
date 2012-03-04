@@ -5,9 +5,6 @@
 	typedef baseClassName BaseClass; \
 	typedef className ThisClass; \
 
-#define TMsg TMsgStdOut
-#define TError TErrorStdOut
-
 #ifdef __GNUC__
 
 #include <csignal>
@@ -46,7 +43,7 @@
 #define TAssert(x) \
 { \
 	if (!(x)) \
-		printf("Assert failed: " #x "\n"); \
+		TMsg("Assert failed: " #x "\n"); \
 } \
 
 #define TAssertNoMsg(x)

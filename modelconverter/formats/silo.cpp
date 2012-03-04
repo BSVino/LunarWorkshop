@@ -645,7 +645,7 @@ void CModelConverter::SaveSIA(const tstring& sFilename)
 
 			sFile << "-face " << pFace->GetNumVertices();
 
-			TAssert(pFace->GetNumEdges() == pFace->GetNumVertices());
+			TAssertNoMsg(pFace->GetNumEdges() == pFace->GetNumVertices());
 
 			for (size_t iVertsInFace = 0; iVertsInFace < pFace->GetNumVertices(); iVertsInFace++)
 			{
@@ -664,7 +664,7 @@ void CModelConverter::SaveSIA(const tstring& sFilename)
 						break;
 					}
 				}
-				TAssert(iEdge != ~0);
+				TAssertNoMsg(iEdge != ~0);
 
 				Vector vecUV = pMesh->GetUV(pVertex->vu);
 				sFile << " " << pVertex->v << " " << iEdge << " " << vecUV.x << " " << vecUV.y;

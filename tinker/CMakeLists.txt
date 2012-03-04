@@ -42,6 +42,7 @@ set (TINKER_TEXTURES_SOURCES
 )
 
 set (TINKER_SOURCES
+	shell.cpp
 	application.cpp
 	console.cpp
 	cvar.cpp

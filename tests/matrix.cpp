@@ -6,6 +6,8 @@
 #include <maths.h>
 #include <tstring.h>
 
+#include <tinker/shell.h>
+
 #define FULL_TEST
 
 void test_matrix()

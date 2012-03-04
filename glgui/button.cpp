@@ -1,5 +1,6 @@
 #include "button.h"
 
+#include <tinker/shell.h>
 #include <tinker/keys.h>
 
 #include "rootpanel.h"

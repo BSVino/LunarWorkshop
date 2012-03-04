@@ -1,5 +1,6 @@
 #include "texturelibrary.h"
 
+#include <tinker/shell.h>
 #include <renderer/renderer.h>
 
 CTextureLibrary* CTextureLibrary::s_pTextureLibrary = NULL;

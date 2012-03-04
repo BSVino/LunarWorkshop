@@ -1,5 +1,7 @@
 #include "slidingpanel.h"
 
+#include <tinker/shell.h>
+
 using namespace glgui;
 
 float CSlidingPanel::SLIDER_COLLAPSED_HEIGHT = 30;

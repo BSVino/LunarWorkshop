@@ -70,7 +70,7 @@ size_t CConvexHullGenerator::FindLowestPoint()
 				iIndex = i;
 
 			else
-				TAssert(m_avecPoints[i].y != m_avecPoints[iIndex].y || m_avecPoints[i].x != m_avecPoints[iIndex].x);	// duplicate point
+				TAssertNoMsg(m_avecPoints[i].y != m_avecPoints[iIndex].y || m_avecPoints[i].x != m_avecPoints[iIndex].x);	// duplicate point
 		}
 	}
 

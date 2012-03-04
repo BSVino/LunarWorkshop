@@ -4,6 +4,8 @@
 #include <common.h>
 #include <tstring.h>
 
+#include <tinker/shell.h>
+
 void test_eangles()
 {
 	Vector v;

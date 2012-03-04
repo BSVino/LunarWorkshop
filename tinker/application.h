@@ -9,7 +9,9 @@
 #include <color.h>
 #include <configfile.h>
 
-class CApplication
+#include "shell.h"
+
+class CApplication : public CShell
 {
 public:
 								CApplication(int argc, char** argv);
@@ -82,9 +84,6 @@ public:
 
 	virtual void				OnClientDisconnect(int iClient) {};
 
-	bool						HasCommandLineSwitch(const char* pszSwitch);
-	const char*					GetCommandLineSwitchValue(const char* pszSwitch);
-
 	void						InitRegistrationFile();
 	virtual bool				IsRegistered();
 	void						ReadProductCode();
@@ -98,7 +97,8 @@ public:
 	static void					CloseConsole();
 	static void					ToggleConsole();
 	static bool					IsConsoleOpen();
-	static void					PrintConsole(tstring sText);
+	virtual void				PrintConsole(const tstring& sText);
+	virtual void				PrintError(const tstring& sText);
 	class CConsole*				GetConsole();
 
 	static CApplication*		Get() { return s_pApplication; };
@@ -111,8 +111,6 @@ protected:
 	bool						m_bIsOpen;
 
 	bool						m_bMultisampling;
-
-	eastl::vector<const char*>	m_apszCommandLine;
 
 	ConfigFile					m_oRegFile;
 	eastl::string				m_sCode;
@@ -130,14 +128,5 @@ inline CApplication* Application()
 {
 	return CApplication::Get();
 }
-
-// Tinker messages and errors
-#undef TMsg
-#define TMsg CApplication::PrintConsole
-#undef TError
-#define TError(x) CApplication::PrintConsole(tstring("ERROR: ") + x)
-
-typedef void (*CreateApplicationCallback)(int argc, char** argv);
-void CreateApplicationWithErrorHandling(CreateApplicationCallback pfnCallback, int argc, char** argv);
 
 #endif

@@ -3,6 +3,7 @@
 #include <GL3/gl3w.h>
 #include <FTGL/ftgl.h>
 
+#include <tinker/shell.h>
 #include <tinker/cvar.h>
 #include <renderer/renderingcontext.h>
 #include <renderer/shaders.h>

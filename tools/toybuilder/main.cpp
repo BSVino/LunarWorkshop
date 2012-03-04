@@ -2,6 +2,7 @@
 
 #include <tinker_platform.h>
 
+#include <tinker/shell.h>
 #include <modelconverter/modelconverter.h>
 #include <toys/toy_util.h>
 
@@ -86,14 +87,22 @@ void LoadSceneIntoToy(CConversionScene* pScene, CToyUtil* pToy)
 
 time_t g_iBinaryModificationTime;
 
+class CToyBuilder : public CShell
+{
+public:
+	CToyBuilder(int argc, char** args) : CShell(argc, args) {};
+};
+
 int main(int argc, char** args)
 {
-	printf("Toy Builder for Lunar Workshop's Tinker Engine\n");
+	CToyBuilder c(argc, args);
+
+	TMsg("Toy Builder for Lunar Workshop's Tinker Engine\n");
 
 	if (argc <= 1)
 	{
-		printf("Usage: %s input.obj output.toy [--physics input.obj]\n", args[0]);
-		printf("Usage: %s input.txt\n", args[0]);
+		TMsg(tstring("Usage: ") + args[0] + " input.obj output.toy [--physics input.obj]\n");
+		TMsg(tstring("Usage: ") + args[0] + " input.txt\n");
 		return 1;
 	}
 
@@ -110,8 +119,8 @@ int main(int argc, char** args)
 	{
 		if (!LoadFromInputScript(t, sInput, sOutput))
 		{
-			printf("Usage: %s input.txt\n", args[0]);
-			printf("- input.txt must specify a game directory and an output file.\n");
+			TMsg(tstring("Usage: ") + args[0] + " input.txt\n");
+			TMsg("- input.txt must specify a game directory and an output file.\n");
 			return 1;
 		}
 	}
@@ -119,7 +128,7 @@ int main(int argc, char** args)
 	{
 		if (argc < 3)
 		{
-			printf("Usage: %s input.obj output.toy [--physics input.obj]\n", args[0]);
+			TMsg(tstring("Usage: ") + args[0] + " input.obj output.toy [--physics input.obj]\n");
 			return 1;
 		}
 
@@ -131,7 +140,7 @@ int main(int argc, char** args)
 			{
 				if (argc < i+1)
 				{
-					printf("Usage: %s input.obj output.toy [--physics input.obj]\n", args[0]);
+					TMsg(tstring("Usage: ") + args[0] + " input.obj output.toy [--physics input.obj]\n");
 					return 1;
 				}
 
@@ -159,60 +168,67 @@ int main(int argc, char** args)
 
 		if (!bRecompile)
 		{
-			printf("No changes detected. Skipping '%s'.\n\n", sOutput.c_str());
-			return 0;
+			if (Shell()->HasCommandLineSwitch("--force"))
+			{
+				TMsg("Forcing rebuild even though no changes detected.\n");
+			}
+			else
+			{
+				TMsg("No changes detected. Skipping '" + sOutput  + "'.\n\n");
+				return 0;
+			}
 		}
 
 		LoadFromFiles(t, sInput, sPhysics);
 	}
 
-	printf(" Mesh materials: %d\n", t.GetNumMaterials());
-	printf(" Mesh tris: %d\n", t.GetNumVerts()/3);
-	printf(" Physics tris: %d\n", t.GetNumPhysIndices()/3);
-	printf(" Scene areas: %d\n", t.GetNumSceneAreas());
+	TMsg(sprintf(" Mesh materials: %d\n", t.GetNumMaterials()));
+	TMsg(sprintf(" Mesh tris: %d\n", t.GetNumVerts()/3));
+	TMsg(sprintf(" Physics tris: %d\n", t.GetNumPhysIndices()/3));
+	TMsg(sprintf(" Scene areas: %d\n", t.GetNumSceneAreas()));
 
-	printf("Writing toy '%s' ...", sOutput);
+	TMsg(sprintf("Writing toy '" + sOutput + "' ..."));
 
 	if (!t.Write(sOutput))
 	{
-		printf("\nError writing to file.\n");
+		TMsg("\nError writing to file.\n");
 		return 1;
 	}
 
-	printf(" Done.\n");
+	TMsg(" Done.\n");
 
-	printf("Toy built successfully.\n\n");
+	TMsg("Toy built successfully.\n\n");
 
 	return 0;
 }
 
 void LoadFromFiles(CToyUtil& t, const tstring& sMesh, const tstring& sPhysics)
 {
-	printf("Reading model '%s' ...", sMesh);
+	TMsg("Reading model '%s" + sMesh + "' ...");
 	CConversionScene* pScene = new CConversionScene();
 	CModelConverter c(pScene);
 
 	c.ReadModel(sMesh);
-	printf(" Done.\n");
+	TMsg(" Done.\n");
 
-	printf("Building toy mesh ...");
+	TMsg("Building toy mesh ...");
 	LoadSceneIntoToy(pScene, &t);
-	printf(" Done.\n");
+	TMsg(" Done.\n");
 
 	delete pScene;
 
 	if (sPhysics.length())
 	{
-		printf("Reading physics model '%s' ...", sPhysics);
+		TMsg("Reading physics model '" + sPhysics + "' ...");
 		CConversionScene* pScene = new CConversionScene();
 		CModelConverter c(pScene);
 
 		c.ReadModel(sPhysics);
-		printf(" Done.\n");
+		TMsg(" Done.\n");
 
-		printf("Building toy physics model ...");
+		TMsg("Building toy physics model ...");
 		LoadSceneIntoToyPhysics(pScene, &t);
-		printf(" Done.\n");
+		TMsg(" Done.\n");
 
 		delete pScene;
 	}

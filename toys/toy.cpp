@@ -6,6 +6,8 @@
 #include <common.h>
 #include <tstring.h>
 
+#include <shell.h>
+
 #include "toy_offsets.h"
 
 CToy::CToy()

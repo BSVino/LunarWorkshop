@@ -1,5 +1,6 @@
 #include "rootpanel.h"
 
+#include <tinker/shell.h>
 #include <renderer/renderingcontext.h>
 
 #include "menu.h"

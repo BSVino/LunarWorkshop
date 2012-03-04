@@ -313,21 +313,21 @@ void CModelConverter::ReadOBJ(const tstring& sFilename)
 				{
 					if (f[0] < 0)
 						f[0] = (long)pMesh->GetNumVertices()+f[0]+1;
-					TAssert ( f[0] >= 1 && f[0] < (long)pMesh->GetNumVertices()+1 );
+					TAssertNoMsg ( f[0] >= 1 && f[0] < (long)pMesh->GetNumVertices()+1 );
 				}
 
 				if (bValues[1] && pMesh->GetNumUVs())
 				{
 					if (f[1] < 0)
 						f[1] = (long)pMesh->GetNumUVs()+f[1]+1;
-					TAssert ( f[1] >= 1 && f[1] < (long)pMesh->GetNumUVs()+1 );
+					TAssertNoMsg ( f[1] >= 1 && f[1] < (long)pMesh->GetNumUVs()+1 );
 				}
 
 				if (bValues[2] && pMesh->GetNumNormals())
 				{
 					if (f[2] < 0)
 						f[2] = (long)pMesh->GetNumNormals()+f[2]+1;
-					TAssert ( f[2] >= 1 && f[2] < (long)pMesh->GetNumNormals()+1 );
+					TAssertNoMsg ( f[2] >= 1 && f[2] < (long)pMesh->GetNumNormals()+1 );
 				}
 
 				// OBJ uses 1-based indexing.

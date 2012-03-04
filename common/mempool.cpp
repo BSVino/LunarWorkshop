@@ -29,7 +29,7 @@ CMemPool* CMemPool::AddPool(size_t iSize, size_t iHandle)
 	pPool->m_iMemoryAllocated = 0;
 	pPool->m_iHandle = iHandle;
 
-	TAssert(pPool->m_pMemPool);
+	TAssertNoMsg(pPool->m_pMemPool);
 
 	return pPool;
 }
@@ -139,7 +139,7 @@ void* CMemPool::Alloc(size_t iSize, size_t iHandle)
 		pReturn = pPool->Reserve(pPool->m_pMemPool, iSize);
 	}
 
-	TAssert(pReturn);
+	TAssertNoMsg(pReturn);
 
 	s_iMemoryAllocated += sizeof(CMemChunk) + iSize;
 	return pReturn;
@@ -191,7 +191,7 @@ void CMemPool::Free(void* p, size_t iHandle)
 			break;
 	}
 
-	TAssert(bFound);
+	TAssertNoMsg(bFound);
 }
 
 size_t CMemPool::GetMemPoolHandle()

@@ -108,7 +108,7 @@ void CConversionMesh::CalculateEdgeData()
 				AddEdgeToFace(iFace, iEdge);
 			}
 
-			TAssert(pFace->GetNumEdges() == pFace->GetNumVertices());
+			TAssertNoMsg(pFace->GetNumEdges() == pFace->GetNumVertices());
 
 			if (m_pScene->m_pWorkListener)
 				m_pScene->m_pWorkListener->WorkProgress(iFace);
@@ -131,7 +131,7 @@ void CConversionMesh::CalculateEdgeData()
 				pEdge->m_aiFaces.push_back(iFace);
 			}
 
-			TAssert(pFace->GetNumEdges() == pFace->GetNumVertices());
+			TAssertNoMsg(pFace->GetNumEdges() == pFace->GetNumVertices());
 
 			if (m_pScene->m_pWorkListener)
 				m_pScene->m_pWorkListener->WorkProgress(iFace);
@@ -712,7 +712,7 @@ Vector CConversionMeshInstance::GetBaseVector(int iVector, CConversionVertex* pV
 	else if (iVector == 2)
 		return GetNormal(pVertex->vn);
 
-	TAssert(false);
+	TAssertNoMsg(false);
 	return Vector(0,0,0);
 }
 
@@ -802,7 +802,7 @@ CConversionMaterialStub::CConversionMaterialStub(const tstring& sName)
 
 Vector CConversionFace::GetNormal()
 {
-	TAssert(GetNumVertices() >= 3);
+	TAssertNoMsg(GetNumVertices() >= 3);
 
 	if (m_bFaceNormal)
 		return m_vecFaceNormal;
@@ -831,7 +831,7 @@ Vector CConversionFace::GetNormal()
 
 Vector CConversionFace::GetCenter()
 {
-	TAssert(GetNumVertices() >= 3);
+	TAssertNoMsg(GetNumVertices() >= 3);
 
 	// Precompute this shit maybe?
 	Vector v(0, 0, 0);
@@ -1074,7 +1074,7 @@ void CConversionMesh::AddVertexToFace(size_t iFace, size_t v, size_t vu, size_t 
 void CConversionMesh::AddEdgeToFace(size_t iFace, size_t iEdge)
 {
 	m_aFaces[iFace].m_aEdges.push_back(iEdge);
-	TAssert(m_aFaces[iFace].GetNumEdges() <= m_aFaces[iFace].GetNumVertices());
+	TAssertNoMsg(m_aFaces[iFace].GetNumEdges() <= m_aFaces[iFace].GetNumVertices());
 }
 
 void CConversionMesh::RemoveFace(size_t iFace)
@@ -1109,7 +1109,7 @@ Vector CConversionMesh::GetBaseVector(int iVector, CConversionVertex* pVertex)
 	else if (iVector == 2)
 		return GetNormal(pVertex->vn);
 
-	TAssert(false);
+	TAssertNoMsg(false);
 	return Vector(0,0,0);
 }
 

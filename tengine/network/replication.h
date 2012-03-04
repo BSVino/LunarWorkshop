@@ -10,6 +10,8 @@
 #include <tengine_config.h>
 #include <strutils.h>
 
+#include <tinker/shell.h>
+
 #include "network.h"
 
 #define NET_CALLBACK_ENTITY(type, entity, pfn) \

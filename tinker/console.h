@@ -22,7 +22,7 @@ public:
 	virtual void			Paint() { Paint(GetLeft(), GetTop(), GetWidth(), GetHeight()); };
 	virtual void			Paint(float x, float y, float w, float h);
 
-	void					PrintConsole(tstring sText);
+	void					PrintConsole(const tstring& sText);
 
 	virtual bool			KeyPressed(int code, bool bCtrlDown = false);
 	virtual bool			CharPressed(int iKey);

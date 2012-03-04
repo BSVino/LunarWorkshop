@@ -20,9 +20,12 @@
 #include <tinker/cvar.h>
 #include <glgui/rootpanel.h>
 
+#include "console.h"
+
 CApplication* CApplication::s_pApplication = NULL;
 
 CApplication::CApplication(int argc, char** argv)
+	: CShell(argc, argv)
 {
 	ilInit();
 
@@ -35,12 +38,6 @@ CApplication::CApplication(int argc, char** argv)
 
 	for (int i = 0; i < argc; i++)
 		m_apszCommandLine.push_back(argv[i]);
-
-	m_bIsOpen = false;
-
-	m_bMultisampling = false;
-
-	m_pConsole = NULL;
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -702,45 +699,12 @@ bool CApplication::IsMouseCursorEnabled()
 	return m_bMouseEnabled;
 }
 
-bool CApplication::HasCommandLineSwitch(const char* pszSwitch)
+void CApplication::PrintConsole(const tstring& sText)
 {
-	for (size_t i = 0; i < m_apszCommandLine.size(); i++)
-	{
-		if (strcmp(m_apszCommandLine[i], pszSwitch) == 0)
-			return true;
-	}
-
-	return false;
+	GetConsole()->PrintConsole(sText);
 }
 
-const char* CApplication::GetCommandLineSwitchValue(const char* pszSwitch)
+void CApplication::PrintError(const tstring& sText)
 {
-	// -1 to prevent buffer overrun
-	for (size_t i = 0; i < m_apszCommandLine.size()-1; i++)
-	{
-		if (strcmp(m_apszCommandLine[i], pszSwitch) == 0)
-			return m_apszCommandLine[i+1];
-	}
-
-	return NULL;
-}
-
-void CreateApplicationWithErrorHandling(CreateApplicationCallback pfnCallback, int argc, char** argv)
-{
-#ifdef _WIN32
-#ifndef _DEBUG
-	__try
-	{
-#endif
-#endif
-
-		// Put in a different function to avoid warnings and errors associated with object deconstructors and try/catch blocks.
-		pfnCallback(argc, argv);
-
-#if defined(_WIN32) && !defined(_DEBUG)
-	}
-	__except (CreateMinidump(GetExceptionInformation(), "Tinker"), EXCEPTION_EXECUTE_HANDLER)
-	{
-	}
-#endif
+	GetConsole()->PrintConsole(tstring("ERROR: ") + sText);
 }

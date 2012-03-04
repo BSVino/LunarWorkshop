@@ -2,6 +2,8 @@
 
 #include <tinker_platform.h>
 
+#include <tinker/shell.h>
+
 #include "label.h"
 #include "textfield.h"
 #include "button.h"
@@ -57,7 +59,7 @@ CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, b
 
 CFileDialog::~CFileDialog()
 {
-	TAssert(s_pDialog == this);
+	TAssertNoMsg(s_pDialog == this);
 	s_pDialog = NULL;
 }
 
