@@ -3,7 +3,7 @@
 #include <common.h>
 #include <files.h>
 #include <tinker_platform.h>
-#include <convexhull.h>
+#include <mesh.h>
 
 #include <shell.h>
 
@@ -18,6 +18,16 @@ CToyUtil::CToyUtil()
 
 	m_flNeighborDistance = 1;
 	m_bUseLocalTransforms = true;	// Use local by default
+}
+
+tstring CToyUtil::GetGameDirectoryFile(const tstring& sFile) const
+{
+	return FindAbsolutePath(m_sGameDirectory + DIR_SEP + sFile);
+}
+
+tstring CToyUtil::GetScriptDirectoryFile(const tstring& sFile) const
+{
+	return FindAbsolutePath(m_sScriptDirectory + DIR_SEP + sFile);
 }
 
 void CToyUtil::AddMaterial(const tstring& sTexture)

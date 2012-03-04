@@ -21,14 +21,14 @@ public:
 
 	size_t					FindChildIndex(const tstring& sKey) const;
 	CData*					FindChild(const tstring& sKey) const;
-	tstring					FindChildValueTString(const tstring& sKey) const;
-	eastl::string			FindChildValueString(const tstring& sKey) const;
-	bool					FindChildValueBool(const tstring& sKey) const;
-	int						FindChildValueInt(const tstring& sKey) const;
-	size_t					FindChildValueUInt(const tstring& sKey) const;
-	float					FindChildValueFloat(const tstring& sKey) const;
-	Vector2D				FindChildValueVector2D(const tstring& sKey) const;
-	EAngle					FindChildValueEAngle(const tstring& sKey) const;
+	tstring					FindChildValueTString(const tstring& sKey, tstring sDefault="") const;
+	eastl::string			FindChildValueString(const tstring& sKey, eastl::string sDefault="") const;
+	bool					FindChildValueBool(const tstring& sKey, bool bDefault=false) const;
+	int						FindChildValueInt(const tstring& sKey, int iDefault=0) const;
+	size_t					FindChildValueUInt(const tstring& sKey, size_t iDefault=0) const;
+	float					FindChildValueFloat(const tstring& sKey, float flDefault=0) const;
+	Vector2D				FindChildValueVector2D(const tstring& sKey, Vector2D vecDefault=Vector()) const;
+	EAngle					FindChildValueEAngle(const tstring& sKey, EAngle angDefault=EAngle()) const;
 
 	tstring					GetKey() const { return m_sKey; }
 	tstring					GetValueTString() const { return m_sValue; }

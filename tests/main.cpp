@@ -1,3 +1,4 @@
+void test_mesh();
 void test_eangles();
 void test_matrix();
 void test_toys();
@@ -14,6 +15,7 @@ int main(int argc, char** args)
 {
 	CTester c(argc, args);
 
+	test_mesh();
 	test_eangles();
 	test_matrix();
 	test_toys();

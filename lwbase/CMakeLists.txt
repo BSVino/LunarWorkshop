@@ -29,7 +29,7 @@ set (LWBASE_SOURCES
 	../common/math/quaternion.cpp
 	../common/math/frustum.cpp
 	../common/math/vector.cpp
-	../common/math/convexhull.cpp
+	../common/math/mesh.cpp
 
 	../datamanager/data.cpp
 	../datamanager/dataserializer.cpp

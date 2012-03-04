@@ -55,74 +55,74 @@ CData* CData::FindChild(const tstring& sKey) const
 	return m_apChildren[iIndex];
 }
 
-tstring CData::FindChildValueTString(const tstring& sKey) const
+tstring CData::FindChildValueTString(const tstring& sKey, tstring sDefault) const
 {
 	CData* pChild = FindChild(sKey);
 	if (!pChild)
-		return "";
+		return sDefault;
 
 	return pChild->GetValueTString();
 }
 
-eastl::string CData::FindChildValueString(const tstring& sKey) const
+eastl::string CData::FindChildValueString(const tstring& sKey, eastl::string sDefault) const
 {
 	CData* pChild = FindChild(sKey);
 	if (!pChild)
-		return "";
+		return sDefault;
 
 	return pChild->GetValueString();
 }
 
-bool CData::FindChildValueBool(const tstring& sKey) const
+bool CData::FindChildValueBool(const tstring& sKey, bool bDefault) const
 {
 	CData* pChild = FindChild(sKey);
 	if (!pChild)
-		return false;
+		return bDefault;
 
 	return pChild->GetValueBool();
 }
 
-int CData::FindChildValueInt(const tstring& sKey) const
+int CData::FindChildValueInt(const tstring& sKey, int iDefault) const
 {
 	CData* pChild = FindChild(sKey);
 	if (!pChild)
-		return 0;
+		return iDefault;
 
 	return pChild->GetValueInt();
 }
 
-size_t CData::FindChildValueUInt(const tstring& sKey) const
+size_t CData::FindChildValueUInt(const tstring& sKey, size_t iDefault) const
 {
 	CData* pChild = FindChild(sKey);
 	if (!pChild)
-		return 0;
+		return iDefault;
 
 	return pChild->GetValueUInt();
 }
 
-float CData::FindChildValueFloat(const tstring& sKey) const
+float CData::FindChildValueFloat(const tstring& sKey, float flDefault) const
 {
 	CData* pChild = FindChild(sKey);
 	if (!pChild)
-		return 0;
+		return flDefault;
 
 	return pChild->GetValueFloat();
 }
 
-Vector2D CData::FindChildValueVector2D(const tstring& sKey) const
+Vector2D CData::FindChildValueVector2D(const tstring& sKey, Vector2D vecDefault) const
 {
 	CData* pChild = FindChild(sKey);
 	if (!pChild)
-		return Vector2D();
+		return vecDefault;
 
 	return pChild->GetValueVector2D();
 }
 
-EAngle CData::FindChildValueEAngle(const tstring& sKey) const
+EAngle CData::FindChildValueEAngle(const tstring& sKey, EAngle angDefault) const
 {
 	CData* pChild = FindChild(sKey);
 	if (!pChild)
-		return EAngle();
+		return angDefault;
 
 	return pChild->GetValueEAngle();
 }

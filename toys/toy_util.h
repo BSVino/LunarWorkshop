@@ -25,6 +25,11 @@ public:
 public:
 	tstring			GetGameDirectory() const { return m_sGameDirectory; }
 	void			SetGameDirectory(const tstring& sGame) { m_sGameDirectory = sGame; }
+	tstring			GetGameDirectoryFile(const tstring& sFile) const;
+
+	tstring			GetScriptDirectory() const { return m_sScriptDirectory; }
+	void			SetScriptDirectory(const tstring& sScript) { m_sScriptDirectory = sScript; }
+	tstring			GetScriptDirectoryFile(const tstring& sFile) const;
 
 	tstring			GetOutputDirectory() const { return m_sOutputDirectory; }
 	void			SetOutputDirectory(const tstring& sOutput) { m_sOutputDirectory = sOutput; }
@@ -63,6 +68,7 @@ public:
 
 protected:
 	tstring					m_sGameDirectory;
+	tstring					m_sScriptDirectory;
 	tstring					m_sOutputDirectory;
 	tstring					m_sOutputFile;
 
