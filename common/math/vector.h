@@ -446,6 +446,7 @@ public:
 				TemplateVector2D(const TemplateVector2D<double>& v);
 
 public:
+	float	Length() const;
 	float	LengthSqr() const;
 
 	TemplateVector2D<unit_t>	operator+(const TemplateVector2D<unit_t>& v) const;
@@ -517,6 +518,12 @@ template <class unit_t>
 inline TemplateVector2D<unit_t>::TemplateVector2D(const TemplateVector2D<double>& v)
 	: x((unit_t)v.x), y((unit_t)v.y)
 {
+}
+
+template <class unit_t>
+inline float TemplateVector2D<unit_t>::Length() const
+{
+	return sqrt(x*x + y*y);
 }
 
 template <class unit_t>

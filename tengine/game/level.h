@@ -31,6 +31,8 @@ public:
 		m_mGlobalTransform.SetCallbacks(&CalculateGlobalTransform, this);
 		m_bVisible.SetCallbacks(&CalculateVisible, this);
 		m_iModel.SetCallbacks(&CalculateModelID, this);
+		m_iTexture.SetCallbacks(&CalculateTextureID, this);
+		m_vecTextureModelScale.SetCallbacks(&CalculateTextureModelScale, this);
 		m_aabbBounds.SetCallbacks(&CalculateBoundingBox, this);
 		m_sName.SetCallbacks(&CalculateName, this);
 	}
@@ -40,6 +42,8 @@ public:
 	Matrix4x4							GetGlobalTransform() { return m_mGlobalTransform; }
 	bool								IsVisible() { return m_bVisible; }
 	size_t								GetModelID() { return m_iModel; }
+	size_t								GetTextureModelID() { return m_iTexture; }
+	Vector2D							GetTextureModelScale() { return m_vecTextureModelScale; }
 	AABB								GetBoundingBox() { return m_aabbBounds; }
 	tstring								GetName() { return m_sName; }
 
@@ -47,6 +51,8 @@ public:
 	static Matrix4x4					CalculateGlobalTransform(CLevelEntity* pThis);
 	static bool							CalculateVisible(CLevelEntity* pThis);
 	static size_t						CalculateModelID(CLevelEntity* pThis);
+	static size_t						CalculateTextureID(CLevelEntity* pThis);
+	static Vector2D						CalculateTextureModelScale(CLevelEntity* pThis);
 	static AABB							CalculateBoundingBox(CLevelEntity* pThis);
 	static tstring						CalculateName(CLevelEntity* pThis);
 
@@ -55,10 +61,12 @@ public:
 	eastl::map<tstring, tstring>		m_asParameters;
 
 	CCachedValue<Matrix4x4, CLevelEntity>	m_mGlobalTransform;
-	CCachedValue<bool, CLevelEntity>	m_bVisible;
-	CCachedValue<size_t, CLevelEntity>	m_iModel;
-	CCachedValue<AABB, CLevelEntity>	m_aabbBounds;
-	CCachedValue<tstring, CLevelEntity>	m_sName;
+	CCachedValue<bool, CLevelEntity>		m_bVisible;
+	CCachedValue<size_t, CLevelEntity>		m_iModel;
+	CCachedValue<size_t, CLevelEntity>		m_iTexture;
+	CCachedValue<Vector2D, CLevelEntity>	m_vecTextureModelScale;
+	CCachedValue<AABB, CLevelEntity>		m_aabbBounds;
+	CCachedValue<tstring, CLevelEntity>		m_sName;
 
 	class CLevelEntityOutput
 	{

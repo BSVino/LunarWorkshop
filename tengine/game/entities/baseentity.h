@@ -49,6 +49,7 @@ void ResizeVectorTmpl(char* pData, size_t iVectorSize)
 bool UnserializeString_bool(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 size_t UnserializeString_size_t(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 TVector UnserializeString_TVector(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 AABB UnserializeString_AABB(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 
@@ -59,6 +60,7 @@ void UnserializeString_float(const tstring& sData, class CSaveData* pData, class
 void UnserializeString_tstring(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_TVector(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_Vector(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_Vector2D(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_EAngle(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_Matrix4x4(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_AABB(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
@@ -438,6 +440,9 @@ public:
 	class CModel*							GetModel() const;
 	virtual void							OnSetModel() {};
 
+	void									SetTextureModel(size_t iTexture) { m_iTexture = iTexture; }
+	size_t									GetTextureModelID() const { return m_iTexture; };
+
 	virtual Matrix4x4						GetRenderTransform() const { return Matrix4x4(GetGlobalTransform()); };
 	virtual Vector							GetRenderOrigin() const { return GetRenderTransform().GetTranslation(); };
 	EAngle									GetRenderAngles() const { return GetRenderTransform().GetAngles(); };
@@ -542,7 +547,7 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnActivated);
 	DECLARE_ENTITY_OUTPUT(OnDeactivated);
 
-	virtual bool							ShouldRender() const { return (size_t)m_iModel != ~0; };
+	virtual bool							ShouldRender() const { return (size_t)m_iModel != ~0 || (size_t)m_iTexture != 0; };
 	virtual bool							ShouldRenderModel() const { return true; };
 	virtual void							PreRender(bool bTransparent) const;
 	virtual void							ModifyContext(class CRenderingContext* pContext, bool bTransparent) const {};
@@ -692,6 +697,8 @@ protected:
 	CNetworkedVariable<int>					m_iCollisionGroup;
 
 	CNetworkedVariable<size_t>				m_iModel;
+	CNetworkedVariable<size_t>				m_iTexture;
+	CNetworkedVariable<Vector2D>			m_vecTextureModelScale;
 
 	size_t									m_iSpawnSeed;
 	CNetworkedVariable<float>				m_flSpawnTime;

@@ -47,6 +47,7 @@ set (TENGINE_GAME_ENTITY_SOURCES
 	game/entities/mathgate.cpp
 	game/entities/player.cpp
 	game/entities/playerstart.cpp
+	game/entities/prop.cpp
 	game/entities/static.cpp
 	game/entities/team.cpp
 	game/entities/trigger.cpp

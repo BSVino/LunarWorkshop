@@ -2,6 +2,7 @@
 
 #include <datamanager/data.h>
 #include <models/models.h>
+#include <textures/texturelibrary.h>
 #include <game/entities/baseentity.h>
 
 void CLevel::ReadInfoFromData(const CData* pData)
@@ -124,6 +125,22 @@ size_t CLevelEntity::CalculateModelID(CLevelEntity* pThis)
 {
 	tstring sModel = pThis->GetParameterValue("Model");
 	return CModelLibrary::FindModel(sModel);
+}
+
+size_t CLevelEntity::CalculateTextureID(CLevelEntity* pThis)
+{
+	tstring sTexture = pThis->GetParameterValue("Model");
+	return CTextureLibrary::FindTextureID(sTexture);
+}
+
+Vector2D CLevelEntity::CalculateTextureModelScale(CLevelEntity* pThis)
+{
+	tstring sScale = pThis->GetParameterValue("TextureScale");
+
+	if (sScale.length())
+		return UnserializeString_Vector2D(sScale);
+
+	return Vector2D(1, 1);
 }
 
 AABB CLevelEntity::CalculateBoundingBox(CLevelEntity* pThis)

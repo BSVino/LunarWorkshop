@@ -209,7 +209,7 @@ void CPlayerCharacter::GoIntoScreen()
 	m_iDepthLevel++;
 
 	Vector vecPosition = GetGlobalOrigin();
-	vecPosition.z = (float)(m_iDepthLevel * METERS_PER_DEPTH);
+	vecPosition.x = (float)(m_iDepthLevel * METERS_PER_DEPTH);
 	SetGlobalOrigin(vecPosition);
 }
 
@@ -218,6 +218,6 @@ void CPlayerCharacter::GoOutOfScreen()
 	m_iDepthLevel--;
 
 	Vector vecPosition = GetGlobalOrigin();
-	vecPosition.z = (float)(m_iDepthLevel * METERS_PER_DEPTH);
+	vecPosition.x = (float)(m_iDepthLevel * METERS_PER_DEPTH);
 	SetGlobalOrigin(vecPosition);
 }

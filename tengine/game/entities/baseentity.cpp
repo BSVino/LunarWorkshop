@@ -28,6 +28,7 @@ bool g_bAutoImporting = false;
 #include "playerstart.h"
 #include "static.h"
 #include "trigger.h"
+#include "prop.h"
 // Use this to force import of required entities.
 class CAutoImport
 {
@@ -44,6 +45,7 @@ public:
 			CPlayerStart p;
 			CStatic s;
 			CTrigger t;
+			CProp p2;
 		}
 		g_bAutoImporting = false;
 	}
@@ -70,6 +72,8 @@ NETVAR_TABLE_BEGIN(CBaseEntity);
 	NETVAR_DEFINE(CEntityHandle<CBaseEntity>, m_hTeam);
 	NETVAR_DEFINE(int, m_iCollisionGroup);
 	NETVAR_DEFINE(size_t, m_iModel);
+	NETVAR_DEFINE(size_t, m_iTexture);
+	NETVAR_DEFINE_INTERVAL(Vector2D, m_vecTextureModelScale, 0.15f);
 	NETVAR_DEFINE(float, m_flSpawnTime);
 NETVAR_TABLE_END();
 
@@ -112,6 +116,8 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bClientSpawn);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup, "CollisionGroup");
 	SAVEDATA_DEFINE_HANDLE_DEFAULT_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", ~0, UnserializeString_ModelID);
+	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, size_t, m_iTexture);
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, Vector2D, m_vecTextureModelScale, "TextureScale", Vector2D(1, 1));
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, float, m_flSpawnTime);
 SAVEDATA_TABLE_END();
@@ -163,6 +169,7 @@ CBaseEntity::CBaseEntity()
 	m_bInPhysics = false;
 
 	m_iModel = ~0;
+	m_iTexture = ~0;
 
 	m_iSpawnSeed = 0;
 
@@ -201,6 +208,9 @@ TVector CBaseEntity::GetGlobalCenter() const
 
 TFloat CBaseEntity::GetBoundingRadius() const
 {
+	if (m_iTexture.Get() != 0)
+		return m_vecTextureModelScale.Get().Length()/2;
+
 	return m_aabbBoundingBox.Size().Length()/2;
 }
 
@@ -800,17 +810,31 @@ void CBaseEntity::Render(bool bTransparent) const
 
 		if (r.GetAlpha() > 0)
 		{
-			if (ShouldRenderModel() && m_iModel != (size_t)~0)
+			if (ShouldRenderModel())
 			{
-				if (r.GetBlend() == BLEND_NONE && !bTransparent)
+				if (m_iModel != (size_t)~0)
 				{
-					TPROF("CRenderingContext::RenderModel(Opaque)");
-					r.RenderModel(GetModelID(), this);
+					if (r.GetBlend() == BLEND_NONE && !bTransparent)
+					{
+						TPROF("CRenderingContext::RenderModel(Opaque)");
+						r.RenderModel(GetModelID(), this);
+					}
+					else if (r.GetBlend() != BLEND_NONE && bTransparent)
+					{
+						TPROF("CRenderingContext::RenderModel(Transparent)");
+						r.RenderModel(GetModelID(), this);
+					}
 				}
-				else if (r.GetBlend() != BLEND_NONE && bTransparent)
+
+				if (m_iTexture != (size_t)~0)
 				{
-					TPROF("CRenderingContext::RenderModel(Transparent)");
-					r.RenderModel(GetModelID(), this);
+					if (bTransparent)
+					{
+						TPROF("CRenderingContext::RenderModel(Texture)");
+						r.SetBlend(BLEND_ALPHA);
+						r.Scale(0, m_vecTextureModelScale.Get().y, m_vecTextureModelScale.Get().x);
+						r.RenderTextureModel(GetTextureModelID());
+					}
 				}
 			}
 
@@ -1683,6 +1707,21 @@ TVector UnserializeString_TVector(const tstring& sData, const tstring& sName, co
 	return Vector(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
 }
 
+TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	TAssert(asTokens.size() == 2);
+	if (asTokens.size() != 2)
+	{
+		TError("Entity '" + sName + "' (" + sClass + ":" + sHandle + ") wrong number of arguments for a 2D vector (Format: \"x y\")\n");
+		return TVector();
+	}
+
+	return Vector2D(stof(asTokens[0]), stof(asTokens[1]));
+}
+
 EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
 	eastl::vector<tstring> asTokens;
@@ -1867,6 +1906,35 @@ void UnserializeString_Vector(const tstring& sData, CSaveData* pSaveData, CBaseE
 	UnserializeString_TVector(sData, pSaveData, pEntity);
 }
 
+void UnserializeString_Vector2D(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+	Vector2D vecData = UnserializeString_Vector2D(sData, pEntity->GetName(), pEntity->GetClassName(), pSaveData->m_pszHandle);
+
+	Vector2D* pData = (Vector2D*)((char*)pEntity + pSaveData->m_iOffset);
+	switch(pSaveData->m_eType)
+	{
+	case CSaveData::DATA_COPYTYPE:
+		TAssert(false);
+		*pData = vecData;
+		break;
+
+	case CSaveData::DATA_NETVAR:
+	{
+		CNetworkedVariable<Vector2D>* pVariable = (CNetworkedVariable<Vector2D>*)pData;
+		(*pVariable) = vecData;
+		break;
+	}
+
+	case CSaveData::DATA_COPYARRAY:
+	case CSaveData::DATA_COPYVECTOR:
+	case CSaveData::DATA_STRING:
+	case CSaveData::DATA_STRING16:
+	case CSaveData::DATA_OUTPUT:
+		TAssert(false);
+		break;
+	}
+}
+
 void UnserializeString_EAngle(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
 	TAssert(false);
@@ -1954,7 +2022,15 @@ void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 
 void UnserializeString_ModelID(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	size_t iID = CModelLibrary::AddModel(sData);
+	size_t iID = CTextureLibrary::AddTextureID(sData);
+
+	if (iID != 0)
+	{
+		pEntity->SetTextureModel(iID);
+		return;
+	}
+
+	iID = CModelLibrary::AddModel(sData);
 
 	TAssert(iID != ~0);
 	if (iID == ~0)

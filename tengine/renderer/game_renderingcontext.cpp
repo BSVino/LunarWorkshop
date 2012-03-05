@@ -117,6 +117,27 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	EndRenderVertexArray(pModel->m_aiVertexBufferSizes[iMaterial]);
 }
 
+void CGameRenderingContext::RenderTextureModel(size_t iTexture)
+{
+	if (!m_pShader)
+		UseProgram("model");
+
+	Vector vecUp(0, 0.5f, 0);
+	Vector vecRight(0, 0, 0.5f);
+
+	BindTexture(iTexture);
+	BeginRenderTriFan();
+		TexCoord(0.0f, 1.0f);
+		Vertex(-vecRight + vecUp);
+		TexCoord(0.0f, 0.0f);
+		Vertex(-vecRight - vecUp);
+		TexCoord(1.0f, 0.0f);
+		Vertex(vecRight - vecUp);
+		TexCoord(1.0f, 1.0f);
+		Vertex(vecRight + vecUp);
+	EndRender();
+}
+
 void CGameRenderingContext::RenderBillboard(const tstring& sTexture, float flRadius)
 {
 	Vector vecUp, vecRight;

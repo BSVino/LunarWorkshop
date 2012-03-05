@@ -242,6 +242,8 @@ void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
 	{
 		if (m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i)
 			r.SetColor(Color(255, 0, 0));
+		else
+			r.SetColor(Color(255, 255, 255));
 
 		if (r.GetBlend() == BLEND_NONE && !bTransparent)
 		{
@@ -252,6 +254,23 @@ void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
 		{
 			TPROF("CLevelEditor::RenderEntity(Transparent)");
 			r.RenderModel(pEntity->GetModelID(), nullptr);
+		}
+	}
+	else if (pEntity->GetTextureModelID() != (size_t)0)
+	{
+		r.UseProgram("model");
+		r.SetUniform("bDiffuse", true);
+		if (m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i)
+			r.SetUniform("vecColor", Color(255, 0, 0));
+		else
+			r.SetUniform("vecColor", Color(255, 255, 255));
+
+		if (bTransparent)
+		{
+			TPROF("CLevelEditor::RenderModel(Texture)");
+			r.SetBlend(BLEND_ALPHA);
+			r.Scale(0, pEntity->m_vecTextureModelScale.Get().y, pEntity->m_vecTextureModelScale.Get().x);
+			r.RenderTextureModel(pEntity->GetTextureModelID());
 		}
 	}
 	else

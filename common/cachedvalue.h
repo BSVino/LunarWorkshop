@@ -43,6 +43,13 @@ public:
 		m_bDirty = false;
 	}
 
+	const C&	Get()
+	{
+		Calculate();
+
+		return m_oData;
+	}
+
 	const C& operator=(const C& c);
 	const C& operator=(const CCachedValue<C, E>& c);
 
@@ -205,7 +212,7 @@ public:
 		return m_oData;
 	}
 
-public:
+private:
 	bool				m_bDirty;
 	C					m_oData;
 	CalculateCallback	m_pfnCalculate;

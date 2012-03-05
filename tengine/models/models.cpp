@@ -35,7 +35,7 @@ CModelLibrary::~CModelLibrary()
 size_t CModelLibrary::AddModel(const tstring& sModel)
 {
 	if (!sModel.length())
-		return 0;
+		return ~0;
 
 	size_t iModel = FindModel(sModel);
 	if (iModel != ~0)
