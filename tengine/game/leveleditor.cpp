@@ -322,6 +322,7 @@ void CLevelEditor::Activate()
 	LevelEditor()->m_pLevel = GameServer()->GetLevel(CVar::GetCVarValue("game_level"));
 
 	LevelEditor()->m_pEditorPanel->SetVisible(true);
+	LevelEditor()->m_pCreateEntityButton->SetVisible(true);
 
 	LevelEditor()->m_bWasMouseActive = Application()->IsMouseCursorEnabled();
 	Application()->SetMouseCursorEnabled(true);
@@ -335,6 +336,8 @@ void CLevelEditor::Deactivate()
 	LevelEditor()->m_bActive = false;
 
 	LevelEditor()->m_pEditorPanel->SetVisible(false);
+	LevelEditor()->m_pCreateEntityButton->SetVisible(false);
+	LevelEditor()->m_pCreateEntityPanel->SetVisible(false);
 
 	Application()->SetMouseCursorEnabled(LevelEditor()->m_bWasMouseActive);
 
