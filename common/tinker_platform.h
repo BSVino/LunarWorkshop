@@ -16,13 +16,13 @@ void CreateMinidump(void* pInfo, tchar* pszDirectory);
 eastl::string GetClipboard();
 void SetClipboard(const eastl::string& sBuf);
 tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile = "");
-eastl::vector<tstring> ListDirectory(tstring sDirectory, bool bDirectories = true);
-bool IsFile(tstring sPath);
-bool IsDirectory(tstring sPath);
+eastl::vector<tstring> ListDirectory(const tstring& sDirectory, bool bDirectories = true);
+bool IsFile(const tstring& sPath);
+bool IsDirectory(const tstring& sPath);
 tstring FindAbsolutePath(const tstring& sPath);
 time_t GetFileModificationTime(const char* pszFile);
-void DebugPrint(tstring sText);
-void Exec(eastl::string sLine);
+void DebugPrint(const tstring& sText);
+void Exec(const eastl::string& sLine);
 int TranslateKeyToQwerty(int iKey);
 int TranslateKeyFromQwerty(int iKey);
 

@@ -207,7 +207,7 @@ tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile)
 	return sReturn;
 }
 
-eastl::vector<tstring> ListDirectory(tstring sDirectory, bool bDirectories)
+eastl::vector<tstring> ListDirectory(const tstring& sDirectory, bool bDirectories)
 {
 	eastl::vector<tstring> asResult;
 
@@ -238,7 +238,7 @@ eastl::vector<tstring> ListDirectory(tstring sDirectory, bool bDirectories)
 	return asResult;
 }
 
-bool IsFile(tstring sPath)
+bool IsFile(const tstring& sPath)
 {
 	WIN32_FIND_DATA fd;
 	HANDLE hFind = FindFirstFile(convertstring<tchar, wchar_t>(sPath).c_str(), &fd);
@@ -252,13 +252,15 @@ bool IsFile(tstring sPath)
 	return true;
 }
 
-bool IsDirectory(tstring sPath)
+bool IsDirectory(const tstring& sPath)
 {
-	while (sPath.substr(sPath.length()-1) == DIR_SEP)
-		sPath = sPath.substr(0, sPath.length()-1);
+	tstring sPathNoSep = sPath;
+
+	while (sPathNoSep.substr(sPathNoSep.length()-1) == DIR_SEP)
+		sPathNoSep = sPathNoSep.substr(0, sPathNoSep.length()-1);
 
 	WIN32_FIND_DATA fd;
-	HANDLE hFind = FindFirstFile(convertstring<tchar, wchar_t>(sPath).c_str(), &fd);
+	HANDLE hFind = FindFirstFile(convertstring<tchar, wchar_t>(sPathNoSep).c_str(), &fd);
 
 	if (hFind == INVALID_HANDLE_VALUE)
 		return false;
@@ -293,12 +295,12 @@ time_t GetFileModificationTime(const char* pszFile)
 	return s.st_mtime;
 }
 
-void DebugPrint(tstring sText)
+void DebugPrint(const tstring& sText)
 {
 	OutputDebugString(convertstring<tchar, wchar_t>(sText).c_str());
 }
 
-void Exec(eastl::string sLine)
+void Exec(const eastl::string& sLine)
 {
 	system(sLine.c_str());
 }

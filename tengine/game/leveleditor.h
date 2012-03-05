@@ -16,6 +16,7 @@ public:
 	void					Layout();
 
 	EVENT_CALLBACK(CCreateEntityPanel, ChooseClass);
+	EVENT_CALLBACK(CCreateEntityPanel, ModelChanged);
 
 public:
 	bool					m_bReadyToCreate;

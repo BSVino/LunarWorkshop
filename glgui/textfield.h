@@ -7,6 +7,8 @@ namespace glgui
 {
 	class CTextField : public CBaseControl
 	{
+		DECLARE_CLASS(CTextField, CBaseControl);
+
 		friend class CRootPanel;
 
 	public:
@@ -37,6 +39,8 @@ namespace glgui
 		virtual void	AppendText(const tchar* pszText);
 		virtual tstring	GetText();
 
+		void			SetAutoCompleteCommands(const eastl::vector<tstring>& asCommands);
+
 		virtual void	SetCursorPosition(size_t iPosition);
 
 		virtual void	SetFontFaceSize(int iSize);
@@ -52,7 +56,7 @@ namespace glgui
 
 	protected:
 		bool			m_bEnabled;
-		tstring	m_sText;
+		tstring			m_sText;
 		Color			m_FGColor;
 
 		float			m_flBlinkTime;
@@ -63,8 +67,11 @@ namespace glgui
 
 		float			m_flRenderOffset;
 
-		IEventListener::Callback m_pfnContentsChangedCallback;
-		IEventListener*	m_pContentsChangedListener;
+		IEventListener::Callback	m_pfnContentsChangedCallback;
+		IEventListener*				m_pContentsChangedListener;
+
+		eastl::vector<tstring>		m_asAutoCompleteCommands;
+		int							m_iAutoComplete;
 	};
 };
 

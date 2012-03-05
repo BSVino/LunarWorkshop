@@ -1,5 +1,8 @@
 #include "leveleditor.h"
 
+#include <tinker_platform.h>
+#include <files.h>
+
 #include <tinker/cvar.h>
 #include <glgui/rootpanel.h>
 #include <glgui/tree.h>
@@ -42,6 +45,7 @@ CCreateEntityPanel::CCreateEntityPanel()
 	m_pModelLabel->SetAlign(glgui::CLabel::TA_LEFTCENTER);
 	AddControl(m_pModelLabel);
 	m_pModelText = new glgui::CTextField();
+	m_pModelText->SetContentsChangedListener(this, ModelChanged);
 	AddControl(m_pModelText);
 
 	m_bReadyToCreate = false;
@@ -80,6 +84,35 @@ void CCreateEntityPanel::ChooseClassCallback(const tstring& sArgs)
 	m_pClass->Pop(true, true);
 
 	m_bReadyToCreate = true;
+}
+
+void CCreateEntityPanel::ModelChangedCallback(const tstring& sArgs)
+{
+	if (!m_pModelText->GetText().length())
+		return;
+
+	tstring sGameFolder = FindAbsolutePath(".");
+	tstring sInputFolder = FindAbsolutePath(m_pModelText->GetText());
+
+	if (sInputFolder.compare(0, sGameFolder.length(), sGameFolder) != 0)
+		return;
+
+	tstring sSearchDirectory = GetDirectory(sInputFolder);
+
+	tstring sPrefix = ToForwardSlashes(sSearchDirectory.substr(sGameFolder.length()));
+	while (sPrefix[0] == '/')
+		sPrefix = sPrefix.substr(1);
+	while (sPrefix.back() == '/')
+		sPrefix = sPrefix.substr(0, sPrefix.length()-2);
+	if (sPrefix.length())
+		sPrefix = sPrefix + '/';
+
+	eastl::vector<tstring> asFiles = ListDirectory(sSearchDirectory);
+
+	for (size_t i = 0; i < asFiles.size(); i++)
+		asFiles[i] = sPrefix + asFiles[i];
+
+	m_pModelText->SetAutoCompleteCommands(asFiles);
 }
 
 CEditorPanel::CEditorPanel()

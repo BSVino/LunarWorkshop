@@ -33,6 +33,8 @@ CTextField::CTextField()
 
 	m_pfnContentsChangedCallback = NULL;
 	m_pContentsChangedListener = NULL;
+
+	m_iAutoComplete = -1;
 }
 
 void CTextField::Paint(float x, float y, float w, float h)
@@ -58,6 +60,51 @@ void CTextField::Paint(float x, float y, float w, float h)
 	FTFont* pFont = CLabel::GetFont("sans-serif", m_iFontFaceSize);
 
 	DrawLine(m_sText.c_str(), (unsigned int)m_sText.length(), x+4, y, w-8, h);
+
+	tstring sInput = GetText();
+	if (sInput.length() && m_asAutoCompleteCommands.size() && HasFocus())
+	{
+		size_t iCommandsToShow = m_asAutoCompleteCommands.size();
+		bool bAbbreviated = false;
+
+		if (iCommandsToShow > 5)
+		{
+			iCommandsToShow = 5;
+			bAbbreviated = true;
+		}
+
+		if (bAbbreviated)
+			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)(iCommandsToShow+1)*13+3, Color(0, 0, 0, 200), 0, true);
+		else
+			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)iCommandsToShow*13+3, Color(0, 0, 0, 200), 0, true);
+
+		int iCommandsToSkip = 0;
+		if (m_iAutoComplete >= 0 && m_asAutoCompleteCommands.size())
+		{
+			int iAutoComplete = m_iAutoComplete % m_asAutoCompleteCommands.size();
+
+			if (iAutoComplete < 5)
+				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*iAutoComplete, w, 13+3, Color(100, 100, 100, 200), 2);
+			else
+			{
+				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*4, w, 13+3, Color(100, 100, 100, 200), 2);
+				iCommandsToSkip = iAutoComplete - 4;
+			}
+
+			if (iAutoComplete == m_asAutoCompleteCommands.size()-1)
+				bAbbreviated = false;
+		}
+
+		int iCommandsPainted = 0;
+		for (size_t i = iCommandsToSkip; i < iCommandsToShow+iCommandsToSkip; i++)
+			glgui::CLabel::PaintText(m_asAutoCompleteCommands[i], m_asAutoCompleteCommands[i].length(), "sans-serif", 13, (float)(x + 5), (float)(y + h + iCommandsPainted++*13));
+
+		if (bAbbreviated)
+		{
+			tstring sDotDotDot = "...";
+			glgui::CLabel::PaintText(sDotDotDot, sDotDotDot.length(), "sans-serif", 13, (float)(x + 5), (float)(y + h + iCommandsPainted++*13));
+		}
+	}
 }
 
 void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float y, float w, float h)
@@ -90,6 +137,8 @@ bool CTextField::SetFocus(bool bFocus)
 
 	if (!IsVisible())
 		return false;
+
+	m_iAutoComplete = -1;
 
 	if (bFocus)
 	{
@@ -142,7 +191,27 @@ bool CTextField::KeyPressed(int iKey, bool bCtrlDown)
 {
 	if (HasFocus())
 	{
-		if (iKey == TINKER_KEY_ESCAPE || iKey == TINKER_KEY_ENTER)
+		if (m_iAutoComplete >= 0 && m_asAutoCompleteCommands.size())
+		{
+			if (iKey == TINKER_KEY_TAB || iKey == TINKER_KEY_BACKSPACE || iKey == TINKER_KEY_LEFT || iKey == TINKER_KEY_RIGHT || iKey == TINKER_KEY_DEL || iKey == TINKER_KEY_HOME || iKey == TINKER_KEY_END)
+			{
+				// Let the text field handle it.
+				m_iAutoComplete = -1;
+			}
+			else if (iKey != TINKER_KEY_TAB)
+			{
+				tstring sInput = GetText();
+				if (sInput.length() && sInput.find(' ') == ~0)
+				{
+					SetText(m_asAutoCompleteCommands[m_iAutoComplete % m_asAutoCompleteCommands.size()]);
+					SetCursorPosition(-1);
+					UpdateContentsChangedListener();
+				}
+
+				m_iAutoComplete = -1;
+			}
+		}
+		else if (iKey == TINKER_KEY_ESCAPE || iKey == TINKER_KEY_ENTER)
 			CRootPanel::Get()->SetFocus(NULL);
 		else if (iKey == TINKER_KEY_LEFT)
 		{
@@ -185,6 +254,16 @@ bool CTextField::KeyPressed(int iKey, bool bCtrlDown)
 			m_sText.insert(m_sText.begin()+m_iCursor, sClipboard.begin(), sClipboard.end());
 			m_iCursor += sClipboard.length();
 			UpdateContentsChangedListener();
+		}
+		else if (iKey == TINKER_KEY_TAB || iKey == TINKER_KEY_DOWN)
+		{
+			m_iAutoComplete++;
+			return true;
+		}
+		else if (iKey == TINKER_KEY_UP)
+		{
+			m_iAutoComplete--;
+			return true;
 		}
 
 		m_flBlinkTime = CRootPanel::Get()->GetTime();
@@ -248,6 +327,22 @@ void CTextField::AppendText(const tchar* pszText)
 		return;
 
 	m_sText.append(pszText);
+}
+
+void CTextField::SetAutoCompleteCommands(const eastl::vector<tstring>& asCommands)
+{
+	m_asAutoCompleteCommands.clear();
+
+	for (size_t i = 0; i < asCommands.size(); i++)
+	{
+		if (asCommands[i] == m_sText)
+			continue;
+
+		if (asCommands[i].compare(0, m_sText.length(), m_sText) == 0)
+			m_asAutoCompleteCommands.push_back(asCommands[i]);
+	}
+
+	m_iAutoComplete = -1;
 }
 
 void CTextField::SetCursorPosition(size_t iPosition)
