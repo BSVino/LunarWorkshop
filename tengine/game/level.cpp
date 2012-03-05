@@ -140,7 +140,7 @@ Vector2D CLevelEntity::CalculateTextureModelScale(CLevelEntity* pThis)
 	if (sScale.length())
 		return UnserializeString_Vector2D(sScale);
 
-	return Vector2D(1, 1);
+	return *((Vector2D*)&CBaseEntity::GetSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "TextureScale")->m_oDefault);
 }
 
 AABB CLevelEntity::CalculateBoundingBox(CLevelEntity* pThis)

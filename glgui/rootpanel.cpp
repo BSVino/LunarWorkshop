@@ -285,15 +285,17 @@ bool CRootPanel::DropDraggable()
 	return false;
 }
 
-void CRootPanel::SetFocus(CBaseControl* pFocus)
+bool CRootPanel::SetFocus(CBaseControl* pFocus)
 {
 	if (m_pFocus)
 		m_pFocus->SetFocus(false);
 
-	if (pFocus)
-		pFocus->SetFocus(true);
-
 	m_pFocus = pFocus;
+
+	if (pFocus)
+		return pFocus->SetFocus(true);
+
+	return false;
 }
 
 void CRootPanel::Popup(IPopup* pPopup)

@@ -51,6 +51,14 @@ bool CConsole::IsVisible()
 	return BaseClass::IsVisible();
 }
 
+bool CConsole::IsChildVisible(IControl* pChild)
+{
+	if (!BaseClass::IsVisible() && pChild == m_pInput)
+		return false;
+
+	return true;
+}
+
 void CConsole::SetVisible(bool bVisible)
 {
 	BaseClass::SetVisible(bVisible);

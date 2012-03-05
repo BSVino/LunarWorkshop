@@ -84,9 +84,12 @@ void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float
 	c.RenderText(pszText, iLength, "sans-serif", m_iFontFaceSize);
 }
 
-void CTextField::SetFocus(bool bFocus)
+bool CTextField::SetFocus(bool bFocus)
 {
 	CBaseControl::SetFocus(bFocus);
+
+	if (!IsVisible())
+		return false;
 
 	if (bFocus)
 	{
@@ -103,12 +106,16 @@ void CTextField::SetFocus(bool bFocus)
 			if (flCursor < flText)
 			{
 				m_iCursor = i-1;
-				return;
+				return true;
 			}
 		}
 
 		m_iCursor = m_sText.length();
+
+		return true;
 	}
+
+	return false;
 }
 
 bool CTextField::CharPressed(int iKey)

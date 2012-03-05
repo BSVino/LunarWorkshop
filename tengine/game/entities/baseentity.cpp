@@ -1592,6 +1592,9 @@ CSaveData* CBaseEntity::GetSaveDataByHandle(const char* pszClassName, const char
 	{
 		pRegistration = CBaseEntity::GetRegisteredEntity(pszClassName);
 
+		if (!pRegistration)
+			return nullptr;
+
 		for (size_t i = 0; i < pRegistration->m_aSaveData.size(); i++)
 		{
 			CSaveData* pVarData = &pRegistration->m_aSaveData[i];

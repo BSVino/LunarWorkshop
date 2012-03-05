@@ -32,7 +32,7 @@ public:
 	virtual void				KeyRelease(int c);
 
 	virtual void				MouseMotion(int x, int y);
-	virtual void				MouseInput(int iButton, int iState);
+	virtual bool				MouseInput(int iButton, int iState);
 
 	class CGameServer*			GetGameServer() { return m_pGameServer; };
 	class CGameRenderer*		GetRenderer() { return m_pRenderer; };

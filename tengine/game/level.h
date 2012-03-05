@@ -25,6 +25,11 @@ public:
 		InitializeCallbacks();
 	}
 
+	CLevelEntity()
+	{
+		InitializeCallbacks();
+	}
+
 public:
 	void								InitializeCallbacks()
 	{

@@ -157,8 +157,7 @@ bool CBaseControl::IsVisible()
 
 bool CBaseControl::MousePressed(int iButton, int mx, int my)
 {
-	CRootPanel::Get()->SetFocus(this);
-	return false;
+	return CRootPanel::Get()->SetFocus(this);
 }
 
 void CBaseControl::Paint()

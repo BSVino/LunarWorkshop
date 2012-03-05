@@ -48,7 +48,7 @@ public:
 	virtual void				MouseMotion(int x, int y);
 
 	static void					MouseInputCallback(void*, int iButton, int iState);
-	virtual void				MouseInput(int iButton, int iState);
+	virtual bool				MouseInput(int iButton, int iState);
 
 	static void					MouseWheelCallback(void*, int x, int y) { Get()->MouseWheel(x, y); };
 	virtual void				MouseWheel(int x, int y) {};

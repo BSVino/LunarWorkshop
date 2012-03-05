@@ -289,6 +289,16 @@ CTreeNode* CTree::GetNode(size_t i)
 	return m_apNodes[i];
 }
 
+void CTree::SetSelectedNode(size_t iNode)
+{
+	TAssert(iNode < m_apControls.size() || iNode == ~0);
+
+	if (iNode >= m_apControls.size())
+		return;
+
+	m_iSelected = iNode;
+}
+
 void CTree::SetSelectedListener(IEventListener* pListener, IEventListener::Callback pfnCallback)
 {
 	TAssert(pListener && pfnCallback || !pListener && !pfnCallback);

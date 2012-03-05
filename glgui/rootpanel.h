@@ -32,7 +32,7 @@ namespace glgui
 		virtual IDraggable*			GetCurrentDraggable() { return m_pDragging?m_pDragging->GetCurrentDraggable():NULL; };
 		virtual IDroppable*			GetCurrentDroppable() { return m_pDragging; };
 
-		void						SetFocus(CBaseControl* pControl);
+		bool						SetFocus(CBaseControl* pControl);
 
 		virtual void				Popup(IPopup* pControl);
 

@@ -18,6 +18,8 @@ public:
 	EVENT_CALLBACK(CCreateEntityPanel, ChooseClass);
 
 public:
+	bool					m_bReadyToCreate;
+
 	glgui::CMenu*			m_pClass;
 
 	glgui::CLabel*			m_pNameLabel;
@@ -70,9 +72,18 @@ public:
 
 public:
 	void					RenderEntity(size_t i, bool bTransparent);
+	void					RenderEntity(class CLevelEntity* pEntity, bool bTransparent, bool bSelected=false);
+	void					RenderCreateEntityPreview();
+
+	Vector					PositionFromMouse();
+	void					EntitySelected();
+
 	class CLevel*			GetLevel() { return m_pLevel; }
 
 	EVENT_CALLBACK(CLevelEditor, CreateEntity);
+
+	bool					KeyPress(int c);
+	bool					MouseInput(int iButton, int iState);
 
 public:
 	static void				Toggle();
@@ -98,6 +109,8 @@ protected:
 	CCreateEntityPanel*		m_pCreateEntityPanel;
 
 	CEditorCamera*			m_pCamera;
+
+	float					m_flCreateObjectDistance;
 };
 
 CLevelEditor* LevelEditor(bool bCreate=true);

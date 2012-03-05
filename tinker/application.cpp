@@ -371,7 +371,7 @@ void CApplication::MouseMotion(int x, int y)
 	glgui::CRootPanel::Get()->CursorMoved(x, y);
 }
 
-void CApplication::MouseInput(int iButton, int iState)
+bool CApplication::MouseInput(int iButton, int iState)
 {
 	int mx, my;
 	GetMousePosition(mx, my);
@@ -380,7 +380,7 @@ void CApplication::MouseInput(int iButton, int iState)
 		if (glgui::CRootPanel::Get()->MousePressed(iButton, mx, my))
 		{
 			m_bMouseDownInGUI = true;
-			return;
+			return true;
 		}
 		else
 			m_bMouseDownInGUI = false;
@@ -388,14 +388,16 @@ void CApplication::MouseInput(int iButton, int iState)
 	else
 	{
 		if (glgui::CRootPanel::Get()->MouseReleased(iButton, mx, my))
-			return;
+			return true;
 
 		if (m_bMouseDownInGUI)
 		{
 			m_bMouseDownInGUI = false;
-			return;
+			return true;
 		}
 	}
+
+	return false;
 }
 
 tinker_keys_t MapKey(int c)

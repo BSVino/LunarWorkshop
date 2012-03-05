@@ -304,6 +304,12 @@ bool CGameWindow::KeyPress(int c)
 	if (BaseClass::KeyPress(c))
 		return true;
 
+	if (CLevelEditor::IsActive())
+	{
+		if (LevelEditor()->KeyPress(c))
+			return true;
+	}
+
 	if (GameServer() && GameServer()->GetCamera())
 	{
 		if (GameServer()->GetCamera()->KeyDown(c))
@@ -378,14 +384,21 @@ void CGameWindow::MouseMotion(int x, int y)
 	m_iLastMouseY = y;
 }
 
-void CGameWindow::MouseInput(int iButton, int iState)
+bool CGameWindow::MouseInput(int iButton, int iState)
 {
-	BaseClass::MouseInput(iButton, iState);
+	if (BaseClass::MouseInput(iButton, iState))
+		return true;
+
+	if (CLevelEditor::IsActive())
+	{
+		if (LevelEditor()->MouseInput(iButton, iState))
+			return true;
+	}
 
 	if (GameServer() && GameServer()->GetCamera())
 	{
 		if (GameServer()->GetCamera()->MouseButton(iButton, iState))
-			return;
+			return true;
 	}
 
 	if (Game())
@@ -396,4 +409,6 @@ void CGameWindow::MouseInput(int iButton, int iState)
 			pPlayer->MouseInput(iButton, iState);
 		}
 	}
+
+	return false;
 }

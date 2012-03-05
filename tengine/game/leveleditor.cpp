@@ -10,6 +10,7 @@
 #include <renderer/game_renderer.h>
 #include <tinker/profiler.h>
 #include <textures/texturelibrary.h>
+#include <tinker/keys.h>
 
 #include "level.h"
 #include "gameserver.h"
@@ -42,6 +43,8 @@ CCreateEntityPanel::CCreateEntityPanel()
 	AddControl(m_pModelLabel);
 	m_pModelText = new glgui::CTextField();
 	AddControl(m_pModelText);
+
+	m_bReadyToCreate = false;
 }
 
 void CCreateEntityPanel::Layout()
@@ -75,6 +78,8 @@ void CCreateEntityPanel::ChooseClassCallback(const tstring& sArgs)
 
 	m_pClass->SetText(asTokens[1]);
 	m_pClass->Pop(true, true);
+
+	m_bReadyToCreate = true;
 }
 
 CEditorPanel::CEditorPanel()
@@ -153,6 +158,8 @@ void CEditorPanel::LayoutEntities()
 void CEditorPanel::EntitySelectedCallback(const tstring& sArgs)
 {
 	LayoutEntities();
+
+	LevelEditor()->EntitySelected();
 }
 
 void CEditorCamera::Think()
@@ -206,6 +213,8 @@ CLevelEditor::CLevelEditor()
 	m_pCreateEntityPanel->SetVisible(false);
 
 	m_pCamera = new CEditorCamera();
+
+	m_flCreateObjectDistance = 10;
 }
 
 CLevelEditor::~CLevelEditor()
@@ -223,7 +232,11 @@ CLevelEditor::~CLevelEditor()
 void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
 {
 	CLevelEntity* pEntity = &m_pLevel->GetEntityData()[i];
+	RenderEntity(pEntity, bTransparent, m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i);
+}
 
+void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool bSelected)
+{
 	CGameRenderingContext r(GameServer()->GetRenderer(), true);
 
 	// If another context already set this, don't clobber it.
@@ -240,7 +253,7 @@ void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
 
 	if (pEntity->GetModelID() != ~0)
 	{
-		if (m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i)
+		if (bSelected)
 			r.SetColor(Color(255, 0, 0));
 		else
 			r.SetColor(Color(255, 255, 255));
@@ -258,16 +271,16 @@ void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
 	}
 	else if (pEntity->GetTextureModelID() != (size_t)0)
 	{
-		r.UseProgram("model");
-		r.SetUniform("bDiffuse", true);
-		if (m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i)
-			r.SetUniform("vecColor", Color(255, 0, 0));
-		else
-			r.SetUniform("vecColor", Color(255, 255, 255));
-
 		if (bTransparent)
 		{
 			TPROF("CLevelEditor::RenderModel(Texture)");
+			r.UseProgram("model");
+			r.SetUniform("bDiffuse", true);
+			if (bSelected)
+				r.SetUniform("vecColor", Color(255, 0, 0));
+			else
+				r.SetUniform("vecColor", Color(255, 255, 255));
+
 			r.SetBlend(BLEND_ALPHA);
 			r.Scale(0, pEntity->m_vecTextureModelScale.Get().y, pEntity->m_vecTextureModelScale.Get().x);
 			r.RenderTextureModel(pEntity->GetTextureModelID());
@@ -276,7 +289,7 @@ void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
 	else
 	{
 		r.UseProgram("model");
-		if (m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i)
+		if (bSelected)
 			r.SetUniform("vecColor", Color(255, 0, 0));
 		else
 			r.SetUniform("vecColor", Color(255, 255, 255));
@@ -285,10 +298,88 @@ void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
 	}
 }
 
+void CLevelEditor::RenderCreateEntityPreview()
+{
+	CLevelEntity oRenderEntity;
+	oRenderEntity.m_sClass = m_pCreateEntityPanel->m_pClass->GetText();
+	oRenderEntity.m_sName = m_pCreateEntityPanel->m_pNameText->GetText();
+	oRenderEntity.m_asParameters["Model"] = m_pCreateEntityPanel->m_pModelText->GetText();
+
+	oRenderEntity.m_mGlobalTransform = Matrix4x4(EAngle(0, 0, 0), PositionFromMouse());
+	RenderEntity(&oRenderEntity, true);
+}
+
+Vector CLevelEditor::PositionFromMouse()
+{
+	int x, y;
+	Application()->GetMousePosition(x, y);
+	Vector vecPosition = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 1));
+	Vector vecCamera = GameServer()->GetRenderer()->GetCameraPosition();
+
+	Vector vecCameraDirection = GameServer()->GetRenderer()->GetCameraDirection();
+	if (vecCameraDirection.Dot(vecPosition-vecCamera) < 0)
+		vecPosition = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, -1));
+
+	return vecCamera + (vecPosition - vecCamera).Normalized() * m_flCreateObjectDistance;
+}
+
+void CLevelEditor::EntitySelected()
+{
+	size_t iSelected = m_pEditorPanel->m_pEntities->GetSelectedNodeId();
+	auto& aEntities = m_pLevel->GetEntityData();
+
+	if (iSelected >= aEntities.size())
+		return;
+
+	Vector vecCamera = GameServer()->GetRenderer()->GetCameraPosition();
+	m_flCreateObjectDistance = (vecCamera - aEntities[iSelected].GetGlobalTransform().GetTranslation()).Length();
+}
+
 void CLevelEditor::CreateEntityCallback(const tstring& sArgs)
 {
 	m_pCreateEntityPanel->SetPos(glgui::CRootPanel::Get()->GetWidth()/2-m_pCreateEntityPanel->GetWidth()/2, 72);
 	m_pCreateEntityPanel->SetVisible(true);
+}
+
+bool CLevelEditor::KeyPress(int c)
+{
+	if (c == TINKER_KEY_DEL)
+	{
+		size_t iSelected = m_pEditorPanel->m_pEntities->GetSelectedNodeId();
+		auto& aEntities = m_pLevel->GetEntityData();
+
+		m_pEditorPanel->m_pEntities->Unselect();
+		if (iSelected < aEntities.size())
+		{
+			aEntities.erase(aEntities.begin()+iSelected);
+			m_pEditorPanel->Layout();
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool CLevelEditor::MouseInput(int iButton, int iState)
+{
+	if (iState == 1 && m_pCreateEntityPanel->IsVisible() && m_pCreateEntityPanel->m_bReadyToCreate)
+	{
+		auto& aEntityData = m_pLevel->GetEntityData();
+		auto& oNewEntity = aEntityData.push_back();
+		oNewEntity.m_sClass = m_pCreateEntityPanel->m_pClass->GetText();
+		oNewEntity.m_sName = m_pCreateEntityPanel->m_pNameText->GetText();
+
+		oNewEntity.m_asParameters["Model"] = m_pCreateEntityPanel->m_pModelText->GetText();
+
+		Vector vecOrigin = PositionFromMouse();
+		oNewEntity.m_asParameters["LocalOrigin"] = sprintf("%f %f %f", vecOrigin.x, vecOrigin.y, vecOrigin.z);
+
+		m_pEditorPanel->Layout();
+		m_pEditorPanel->m_pEntities->SetSelectedNode(aEntityData.size()-1);
+		return true;
+	}
+
+	return false;
 }
 
 void CLevelEditor::Toggle()
@@ -367,6 +458,11 @@ void CLevelEditor::RenderEntities()
 	for (size_t i = 0; i < aEntityData.size(); i++)
 	{
 		LevelEditor()->RenderEntity(i, true);
+	}
+
+	if (LevelEditor()->m_pCreateEntityPanel->IsVisible() && LevelEditor()->m_pCreateEntityPanel->m_bReadyToCreate)
+	{
+		LevelEditor()->RenderCreateEntityPreview();
 	}
 }
 
