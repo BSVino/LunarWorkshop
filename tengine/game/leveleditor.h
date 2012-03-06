@@ -28,6 +28,11 @@ public:
 
 	glgui::CLabel*			m_pModelLabel;
 	glgui::CTextField*		m_pModelText;
+
+	glgui::CPanel*			m_pPropertiesPanel;
+
+	eastl::vector<glgui::CLabel*>		m_apPropertyLabels;
+	eastl::vector<glgui::CBaseControl*>	m_apPropertyOptions;
 };
 
 class CEditorPanel : public glgui::CPanel, public glgui::IEventListener

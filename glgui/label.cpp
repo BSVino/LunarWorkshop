@@ -199,7 +199,7 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 		if (m_bScissor)
 		{
 			TAssert(false);	// Untested
-			if (x < 0)
+			if (r.x < 0)
 			{
 				GetAbsPos(r.x, r.y);
 				r.w = GetWidth();
@@ -267,7 +267,6 @@ void CLabel::GetAlignmentOffset(float flLineWidth, float flLineHeight, const tst
 
 	default:
 	case TA_TOPLEFT:
-		TAssert(false);
 		x = 0;
 		y = 0;
 		break;
@@ -312,7 +311,7 @@ void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sF
 		c.SetUniform("bScissor", true);
 
 		Vector4D vecStencil(&rStencil.x);
-		vecStencil.y = CRootPanel::Get()->GetBottom()-vecStencil.y-vecStencil.z;
+		vecStencil.y = CRootPanel::Get()->GetBottom()-vecStencil.y-vecStencil.w;
 		c.SetUniform("vecScissor", vecStencil);
 	}
 	else

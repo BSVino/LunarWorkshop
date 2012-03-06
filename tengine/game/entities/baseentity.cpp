@@ -101,7 +101,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, TVector, m_vecLocalOrigin, "LocalOrigin", UnserializeString_LocalOrigin);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TVector, m_vecLastLocalOrigin);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, EAngle, m_angLocalAngles, "LocalAngles", UnserializeString_LocalAngles);
-	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, TVector, m_vecLocalVelocity, "LocalVelocity");
+	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, TVector, m_vecLocalVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iHandle);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, bool, m_bTakeDamage, "TakeDamage", false);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, float, m_flTotalHealth, "TotalHealth");
@@ -114,7 +114,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bInPhysics);
 	SAVEDATA_DEFINE(CSaveData::DATA_OMIT, bool, m_bDeleted);	// Deleted entities are not saved.
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bClientSpawn);
-	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup, "CollisionGroup");
+	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", ~0, UnserializeString_ModelID);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, size_t, m_iTexture);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, Vector2D, m_vecTextureModelScale, "TextureScale", Vector2D(1, 1));

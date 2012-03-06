@@ -87,6 +87,7 @@ public:
 
 	datatype_t				m_eType;
 	const char*				m_pszVariableName;
+	const char*				m_pszType;
 	const char*				m_pszHandle;
 	size_t					m_iOffset;
 	size_t					m_iSizeOfVariable;
@@ -292,6 +293,7 @@ void entity::RegisterSaveData() \
 #define SAVEDATA_DEFINE_COMMON(copy, type, name) \
 	pSaveData = &pRegistration->m_aSaveData.push_back(); \
 	pSaveData->m_eType = copy; \
+	pSaveData->m_pszType = #type; \
 	pSaveData->m_pszVariableName = #name; \
 	if (copy == CSaveData::DATA_NETVAR) \
 		pSaveData->m_iOffset = (((size_t)((void*)((CNetworkedVariableBase*)&name)))) - ((size_t)((void*)this)); \

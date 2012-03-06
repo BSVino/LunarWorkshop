@@ -109,6 +109,9 @@ void CTextField::Paint(float x, float y, float w, float h)
 
 void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float y, float w, float h)
 {
+	if (!iLength)
+		return;
+
 	FTFont* pFont = CLabel::GetFont("sans-serif", m_iFontFaceSize);
 
 	float flMargin = (h-pFont->LineHeight())/2;
@@ -119,11 +122,48 @@ void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float
 	float cx, cy;
 	GetAbsPos(cx, cy);
 
+	FRect r(-1, -1, -1, -1);
+	CPanel* pParent = dynamic_cast<CPanel*>(GetParent());
+	while (pParent)
+	{
+		if (pParent && pParent->IsScissoring())
+		{
+			pParent->GetAbsPos(r.x, r.y);
+			r.w = pParent->GetWidth();
+			r.h = pParent->GetHeight();
+			break;
+		}
+		pParent = dynamic_cast<CPanel*>(pParent->GetParent());
+	}
+
+	FRect r2;
+	GetAbsPos(r2.x, r2.y);
+	r2.w = GetWidth();
+	r2.h = GetHeight();
+
+	r2.x += 4;
+	r2.y += 4;
+	r2.w -= 8;
+	r2.h -= 8;
+
+	if (r.x < 0)
+	{
+		r = r2;
+	}
+	else
+	{
+		if (!r.Union(r2))
+			r = FRect(-1, -1, -1, -1);
+	}
+
+	Vector4D vecStencil(&r.x);
+	vecStencil.y = CRootPanel::Get()->GetBottom()-vecStencil.y-vecStencil.w;
+
 	::CRenderingContext c(nullptr, true);
 	c.SetBlend(BLEND_ALPHA);
 	c.UseProgram("text");
 	c.SetUniform("bScissor", true);
-	c.SetUniform("vecScissor", Vector4D(cx+4, 0, GetWidth()-8, 1000));
+	c.SetUniform("vecScissor", vecStencil);
 	c.SetUniform("vecColor", m_FGColor);
 	c.SetProjection(mFontProjection);
 	c.Translate(vecPosition);

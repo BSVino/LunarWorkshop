@@ -292,4 +292,18 @@ inline tstring toupper(tstring s)
 	return s;
 }
 
+inline tstring pretty_float(float f)
+{
+	tstring s = sprintf("%.8f", f);
+
+	size_t i = s.length();
+	while (s[i-1] == '0')
+		i--;
+
+	if (s[i-1] == '.')
+		i--;
+
+	return s.substr(0, i);
+}
+
 #endif

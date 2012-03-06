@@ -8,6 +8,7 @@
 #include <glgui/tree.h>
 #include <glgui/menu.h>
 #include <glgui/textfield.h>
+#include <glgui/checkbox.h>
 #include <tinker/application.h>
 #include <renderer/game_renderingcontext.h>
 #include <renderer/game_renderer.h>
@@ -36,17 +37,21 @@ CCreateEntityPanel::CCreateEntityPanel()
 	AddControl(m_pClass);
 
 	m_pNameLabel = new glgui::CLabel("Name:", "sans-serif", 10);
-	m_pNameLabel->SetAlign(glgui::CLabel::TA_LEFTCENTER);
+	m_pNameLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
 	AddControl(m_pNameLabel);
 	m_pNameText = new glgui::CTextField();
 	AddControl(m_pNameText);
 
 	m_pModelLabel = new glgui::CLabel("Model:", "sans-serif", 10);
-	m_pModelLabel->SetAlign(glgui::CLabel::TA_LEFTCENTER);
+	m_pModelLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
 	AddControl(m_pModelLabel);
 	m_pModelText = new glgui::CTextField();
 	m_pModelText->SetContentsChangedListener(this, ModelChanged);
 	AddControl(m_pModelText);
+
+	m_pPropertiesPanel = new glgui::CPanel();
+	m_pPropertiesPanel->SetVisible(false);
+	AddControl(m_pPropertiesPanel);
 
 	m_bReadyToCreate = false;
 }
@@ -58,19 +63,178 @@ void CCreateEntityPanel::Layout()
 	m_pClass->CenterX();
 	m_pClass->SetTop(30);
 
+	float flTop = 70;
 	m_pNameLabel->SetLeft(15);
-	m_pNameLabel->SetTop(70);
+	m_pNameLabel->SetTop(flTop);
 	m_pNameText->SetWidth(GetWidth()-30);
 	m_pNameText->CenterX();
-	m_pNameText->SetTop(85);
+	m_pNameText->SetTop(flTop+12);
+
+	flTop += 43;
 
 	m_pModelLabel->SetLeft(15);
-	m_pModelLabel->SetTop(110);
+	m_pModelLabel->SetTop(flTop);
 	m_pModelText->SetWidth(GetWidth()-30);
 	m_pModelText->CenterX();
-	m_pModelText->SetTop(125);
+	m_pModelText->SetTop(flTop+12);
 
-	SetHeight(170);
+	flTop += 43;
+
+	m_pPropertiesPanel->SetTop(flTop);
+	m_pPropertiesPanel->SetLeft(10);
+	m_pPropertiesPanel->SetWidth(GetWidth()-20);
+	m_pPropertiesPanel->SetBackgroundColor(Color(10, 10, 10));
+	m_pPropertiesPanel->SetVerticalScrollBarEnabled(true);
+	m_pPropertiesPanel->SetScissoring(true);
+
+	flTop = 0;
+
+	TAssert(m_apPropertyLabels.size() == m_apPropertyOptions.size());
+	for (size_t i = 0; i < m_apPropertyLabels.size(); i++)
+	{
+		m_pPropertiesPanel->RemoveControl(m_apPropertyLabels[i]);
+		m_pPropertiesPanel->RemoveControl(m_apPropertyOptions[i]);
+
+		delete m_apPropertyLabels[i];
+		delete m_apPropertyOptions[i];
+	}
+	m_apPropertyLabels.clear();
+	m_apPropertyOptions.clear();
+
+	if (m_bReadyToCreate)
+	{
+		m_pPropertiesPanel->SetVisible(true);
+
+		// If we're ready to create then a class has been chosen.
+		tstring sClassName = "C" + m_pClass->GetText();
+		const tchar* pszClassName = sClassName.c_str();
+		CEntityRegistration* pRegistration = NULL;
+
+		do
+		{
+			pRegistration = CBaseEntity::GetRegisteredEntity(pszClassName);
+
+			for (size_t i = 0; i < pRegistration->m_aSaveData.size(); i++)
+			{
+				auto pSaveData = &pRegistration->m_aSaveData[i];
+
+				if (!pSaveData->m_pszHandle || !pSaveData->m_pszHandle[0])
+					continue;
+
+				if (pSaveData->m_eType == CSaveData::DATA_OUTPUT)
+					continue;
+
+				if (pSaveData->m_bOverride)
+					continue;
+
+				if (strcmp(pSaveData->m_pszHandle, "Name") == 0)
+					continue;
+
+				if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
+					continue;
+
+				if (strcmp(pSaveData->m_pszHandle, "LocalOrigin") == 0)
+					continue;
+
+				if (strcmp(pSaveData->m_pszHandle, "LocalAngles") == 0)
+					continue;
+
+				m_apPropertyLabels.push_back(new glgui::CLabel(tstring(pSaveData->m_pszHandle) + ": ", "sans-serif", 10));
+				m_apPropertyLabels.back()->SetAlign(glgui::CLabel::TA_TOPLEFT);
+				m_pPropertiesPanel->AddControl(m_apPropertyLabels.back());
+				m_apPropertyLabels.back()->SetLeft(15);
+				m_apPropertyLabels.back()->SetTop(flTop);
+				m_apPropertyLabels.back()->SetWidth(10);
+				m_apPropertyLabels.back()->EnsureTextFits();
+
+				if (strcmp(pSaveData->m_pszType, "bool") == 0)
+				{
+					glgui::CCheckBox* pCheckbox = new glgui::CCheckBox();
+					m_apPropertyOptions.push_back(pCheckbox);
+					m_pPropertiesPanel->AddControl(pCheckbox);
+					pCheckbox->SetLeft(m_apPropertyLabels.back()->GetRight() + 10);
+					pCheckbox->SetTop(flTop);
+					pCheckbox->SetSize(12, 12);
+
+					if (pSaveData->m_bDefault)
+						pCheckbox->SetState(!!pSaveData->m_oDefault[0], false);
+
+					flTop += 17;
+				}
+				else
+				{
+					if (strcmp(pSaveData->m_pszType, "Vector") == 0)
+						m_apPropertyLabels.back()->AppendText(" (x y z)");
+					else if (strcmp(pSaveData->m_pszType, "Vector2D") == 0)
+						m_apPropertyLabels.back()->AppendText(" (x y)");
+					else if (strcmp(pSaveData->m_pszType, "QAngle") == 0)
+						m_apPropertyLabels.back()->AppendText(" (p y r)");
+					else if (strcmp(pSaveData->m_pszType, "Matrix4x4") == 0)
+						m_apPropertyLabels.back()->AppendText(" (p y r x y z)");
+					m_apPropertyLabels.back()->SetWidth(200);
+
+					glgui::CTextField* pTextField = new glgui::CTextField();
+					m_apPropertyOptions.push_back(pTextField);
+					m_pPropertiesPanel->AddControl(pTextField);
+					pTextField->SetWidth(GetWidth()-30);
+					pTextField->CenterX();
+					pTextField->SetTop(flTop+12);
+
+					if (pSaveData->m_bDefault)
+					{
+						if (strcmp(pSaveData->m_pszType, "float") == 0)
+						{
+							float v = *((float*)&pSaveData->m_oDefault[0]);
+							pTextField->SetText(pretty_float(v));
+						}
+						else if (strcmp(pSaveData->m_pszType, "Vector") == 0)
+						{
+							Vector v = *((Vector*)&pSaveData->m_oDefault[0]);
+							pTextField->SetText(pretty_float(v.x) + " " + pretty_float(v.y) + " " + pretty_float(v.z));
+						}
+						else if (strcmp(pSaveData->m_pszType, "Vector2D") == 0)
+						{
+							Vector2D v = *((Vector2D*)&pSaveData->m_oDefault[0]);
+							pTextField->SetText(pretty_float(v.x) + " " + pretty_float(v.y));
+						}
+						else if (strcmp(pSaveData->m_pszType, "EAngle") == 0)
+						{
+							EAngle v = *((EAngle*)&pSaveData->m_oDefault[0]);
+							pTextField->SetText(pretty_float(v.p) + " " + pretty_float(v.y) + " " + pretty_float(v.r));
+						}
+						else if (strcmp(pSaveData->m_pszType, "Matrix4x4") == 0)
+						{
+							Matrix4x4 m = *((Matrix4x4*)&pSaveData->m_oDefault[0]);
+							EAngle e = m.GetAngles();
+							Vector v = m.GetTranslation();
+							pTextField->SetText(pretty_float(e.p) + " " + pretty_float(v.y) + " " + pretty_float(e.r) + " " + pretty_float(v.x) + " " + pretty_float(v.y) + " " + pretty_float(v.z));
+						}
+						else if (strcmp(pSaveData->m_pszType, "AABB") == 0)
+						{
+							AABB b = *((AABB*)&pSaveData->m_oDefault[0]);
+							Vector v1 = b.m_vecMins;
+							Vector v2 = b.m_vecMaxs;
+							pTextField->SetText(pretty_float(v1.x) + " " + pretty_float(v1.y) + " " + pretty_float(v1.z) + " " + pretty_float(v2.x) + " " + pretty_float(v2.y) + " " + pretty_float(v2.z));
+						}
+						else
+						{
+							TAssert(false);
+						}
+					}
+
+					flTop += 43;
+				}
+			}
+
+			pszClassName = pRegistration->m_pszParentClass;
+		} while (pRegistration->m_pszParentClass);
+	}
+
+	if (flTop > 300)
+		flTop = 300;
+
+	m_pPropertiesPanel->SetHeight(flTop);
+	SetHeight(m_pPropertiesPanel->GetBottom()+15);
 
 	BaseClass::Layout();
 }
@@ -84,6 +248,8 @@ void CCreateEntityPanel::ChooseClassCallback(const tstring& sArgs)
 	m_pClass->Pop(true, true);
 
 	m_bReadyToCreate = true;
+
+	Layout();
 }
 
 void CCreateEntityPanel::ModelChangedCallback(const tstring& sArgs)

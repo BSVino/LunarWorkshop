@@ -64,7 +64,7 @@ public:
 	void										ReadLevelInfo(tstring sFile);
 
 	size_t										GetNumLevels() { return m_apLevels.size(); }
-	class CLevel*								GetLevel(size_t i) { return m_apLevels[i]; }
+	class CLevel*								GetLevel(size_t i) { if (i >= m_apLevels.size()) return nullptr; return m_apLevels[i]; }
 	class CLevel*								GetLevel(tstring sFile);
 
 	void										Halt();

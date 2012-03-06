@@ -92,10 +92,10 @@ bool TRect<T>::Union(const TRect<T>& r)
 		SetBottom(bottom);
 	}
 
-	if (Right() < r.Right())
+	if (Right() > r.Right())
 		SetRight(r.Right());
 
-	if (Bottom() < r.Bottom())
+	if (Bottom() > r.Bottom())
 		SetBottom(r.Bottom());
 
 	return true;
