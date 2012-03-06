@@ -1,9 +1,5 @@
 #include "application.h"
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
-
 #include <time.h>
 #include <GL3/gl3w.h>
 #include <GL/glfw3.h>

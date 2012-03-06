@@ -1,5 +1,9 @@
 #include "shell.h"
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 #include <time.h>
 
 #include <strutils.h>
