@@ -101,6 +101,8 @@ public:
 	void					ReadInfoFromData(const class CData* pData);
 	virtual void			OnReadInfo(const class CData* pData);
 
+	void					SaveToFile();
+
 	const tstring&			GetName() { return m_sName; }
 	const tstring&			GetFile() { return m_sFile; }
 

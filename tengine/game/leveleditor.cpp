@@ -465,6 +465,9 @@ void CLevelEditor::Deactivate()
 
 	Application()->SetMouseCursorEnabled(LevelEditor()->m_bWasMouseActive);
 
+	if (LevelEditor()->m_pLevel)
+		LevelEditor()->m_pLevel->SaveToFile();
+
 	if (LevelEditor()->m_pLevel && LevelEditor()->m_pLevel->GetEntityData().size())
 		GameServer()->RestartLevel();
 }

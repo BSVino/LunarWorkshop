@@ -13,7 +13,7 @@
 #include <sstream>
 
 template <class F, class T>
-inline eastl::basic_string<T> convertstring(eastl::basic_string<F> s);
+inline eastl::basic_string<T> convertstring(const eastl::basic_string<F>& s);
 
 #include "tstring.h"
 
@@ -160,8 +160,11 @@ inline tstring readtstring(std::istream& i)
 }
 
 template <class F, class T>
-inline eastl::basic_string<T> convertstring(eastl::basic_string<F> s)
+inline eastl::basic_string<T> convertstring(const eastl::basic_string<F>& s)
 {
+	if (sizeof(F) == sizeof(T))
+		return (T*)s.c_str();
+
 	eastl::basic_string<T> t;
 	size_t iSize = s.size();
 	t.resize(iSize);
