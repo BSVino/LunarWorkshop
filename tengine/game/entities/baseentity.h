@@ -93,6 +93,7 @@ public:
 	size_t					m_iSizeOfType;
 	UnserializeString		m_pfnUnserializeString;
 	ResizeVector			m_pfnResizeVector;
+	bool					m_bDefault;
 	char					m_oDefault[24];
 	bool					m_bOverride;
 };
@@ -300,6 +301,7 @@ void entity::RegisterSaveData() \
 	pSaveData->m_iSizeOfType = sizeof(type); \
 	pSaveData->m_pfnResizeVector = &ResizeVectorTmpl<type>; \
 	pSaveData->m_bOverride = false; \
+	pSaveData->m_bDefault = false; \
 	pGameServer->GenerateSaveCRC(pSaveData->m_eType); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iOffset); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfVariable); \
@@ -318,6 +320,7 @@ void entity::RegisterSaveData() \
 	{ \
 		type iDefault = def; \
 		memcpy(pSaveData->m_oDefault, &iDefault, sizeof(def)); \
+		pSaveData->m_bDefault = true; \
 	} \
 
 #define SAVEDATA_DEFINE(copy, type, name) \
@@ -338,6 +341,7 @@ void entity::RegisterSaveData() \
 	{ \
 		type iDefault = def; \
 		memcpy(pSaveData->m_oDefault, &iDefault, sizeof(def)); \
+		pSaveData->m_bDefault = true; \
 	} \
 
 #define SAVEDATA_DEFINE_HANDLE_ENTITY(copy, type, name, handle) \
@@ -356,6 +360,7 @@ void entity::RegisterSaveData() \
 	pSaveData->m_iSizeOfType = 0; \
 	pSaveData->m_pfnResizeVector = NULL; \
 	pSaveData->m_bOverride = false; \
+	pSaveData->m_bDefault = false; \
 	pGameServer->GenerateSaveCRC(pSaveData->m_eType); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iOffset); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfVariable); \
@@ -371,6 +376,7 @@ void entity::RegisterSaveData() \
 	pSaveData->m_iSizeOfType = sizeof(CEntityOutput); \
 	pSaveData->m_pfnResizeVector = NULL; \
 	pSaveData->m_bOverride = false; \
+	pSaveData->m_bDefault = false; \
 	pGameServer->GenerateSaveCRC(pSaveData->m_eType); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iOffset); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfVariable); \
@@ -385,6 +391,7 @@ void entity::RegisterSaveData() \
 	{ \
 		type iDefault = def; \
 		memcpy(pSaveData->m_oDefault, &iDefault, sizeof(def)); \
+		pSaveData->m_bDefault = true; \
 	} \
 
 #define SAVEDATA_TABLE_END() \
@@ -418,6 +425,7 @@ public:
 
 public:
 	virtual void							Precache() {};
+	virtual void							SetSaveDataDefaults();
 	virtual void							Spawn();
 	DECLARE_ENTITY_OUTPUT(OnSpawn);
 

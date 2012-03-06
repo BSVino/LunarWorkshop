@@ -58,6 +58,7 @@ public:
 
 	virtual void*		Serialize(size_t& iSize) { return NULL; }
 	virtual void		Unserialize(size_t iDataSize, void* pValue) {}
+	virtual void		Set(size_t iDataSize, void* pValue) {}
 
 public:
 	bool				m_bDirty;
@@ -204,6 +205,7 @@ public:
 
 	virtual void*		Serialize(size_t& iSize);
 	virtual void		Unserialize(size_t iDataSize, void* pValue);
+	virtual void		Set(size_t iDataSize, void* pValue);
 
 	void				SetEpsilon(float flEpsilon) { m_flEpsilon = flEpsilon; }
 	float				GetEpsilon() { return m_flEpsilon; }
@@ -281,6 +283,15 @@ inline void CNetworkedVariable<C>::Unserialize(size_t iDataSize, void* pValue)
 {
 	TAssert(iDataSize == sizeof(m_oVariable) + sizeof(m_flEpsilon) + sizeof(m_bInitialized));
 	memcpy(&m_oVariable, pValue, iDataSize);
+	m_bInitialized = true;
+}
+
+template <class C>
+inline void CNetworkedVariable<C>::Set(size_t iDataSize, void* pValue)
+{
+	TAssert(iDataSize == sizeof(m_oVariable));
+	C* pTValue = (C*)pValue;
+	m_oVariable = *pTValue;
 	m_bInitialized = true;
 }
 

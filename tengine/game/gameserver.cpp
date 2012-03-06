@@ -890,6 +890,8 @@ size_t CGameServer::CreateEntity(const tstring& sClassName, size_t iHandle, size
 	CEntityHandle<CBaseEntity> hEntity(iHandle);
 	hEntity->m_sClassName = sClassName;
 
+	hEntity->SetSaveDataDefaults();
+
 	size_t iPostSeed = mtrand();
 
 	if (iSpawnSeed)

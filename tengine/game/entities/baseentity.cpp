@@ -89,7 +89,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_OUTPUT(OnDeactivated);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sName, "Name");
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sClassName);
-	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, float, m_flMass, "Mass", 10);
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, float, m_flMass, "Mass", 50);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hMoveParent, "MoveParent", UnserializeString_MoveParent);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_ahMoveChildren);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, AABB, m_aabbBoundingBox, "BoundingBox", AABB(Vector(-0.5f, -0.5f, -0.5f), Vector(0.5f, 0.5f, 0.5f)));
@@ -103,7 +103,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, EAngle, m_angLocalAngles, "LocalAngles", UnserializeString_LocalAngles);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, TVector, m_vecLocalVelocity, "LocalVelocity");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iHandle);
-	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, bool, m_bTakeDamage, "TakeDamage", true);
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, bool, m_bTakeDamage, "TakeDamage", false);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, float, m_flTotalHealth, "TotalHealth");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, float, m_flHealth, "Health");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flTimeKilled);
@@ -156,20 +156,15 @@ CBaseEntity::CBaseEntity()
 
 	m_iCollisionGroup = 0;
 
-	m_flMass = 50.0f;
-	m_bTakeDamage = false;
 	m_flTotalHealth = 1;
 	m_flHealth = 1;
 	m_flTimeKilled = 0;
 	m_flLastTakeDamage = -1;
 
 	m_bDeleted = false;
-	m_bActive = true;
-	m_bVisible = true;
 	m_bInPhysics = false;
 
-	m_iModel = ~0;
-	m_iTexture = ~0;
+	m_iTexture = 0;
 
 	m_iSpawnSeed = 0;
 
@@ -190,6 +185,56 @@ CBaseEntity::~CBaseEntity()
 
 	TAssert(s_iEntities > 0);
 	s_iEntities--;
+}
+
+void CBaseEntity::SetSaveDataDefaults()
+{
+	const char* pszClassName = m_sClassName.c_str();
+
+	// Set all defaults.
+	CEntityRegistration* pRegistration;
+	do
+	{
+		pRegistration = CBaseEntity::GetRegisteredEntity(pszClassName);
+
+		for (size_t i = 0; i < pRegistration->m_aSaveData.size(); i++)
+		{
+			CSaveData* pSaveData = &pRegistration->m_aSaveData[i];
+
+			if (!pSaveData->m_bDefault)
+				continue;
+
+			if (!pSaveData->m_pszHandle || pSaveData->m_pszHandle[0] == '\0')
+				continue;
+
+			char* pData = (char*)this + pSaveData->m_iOffset;
+			switch(pSaveData->m_eType)
+			{
+			case CSaveData::DATA_COPYTYPE:
+				memcpy(pData, &pSaveData->m_oDefault[0], pSaveData->m_iSizeOfType);
+				break;
+
+			case CSaveData::DATA_NETVAR:
+			{
+				CNetworkedVariableBase* pVariable = (CNetworkedVariableBase*)pData;
+				pVariable->Set(pSaveData->m_iSizeOfType, &pSaveData->m_oDefault[0]);
+				break;
+			}
+
+			case CSaveData::DATA_COPYARRAY:
+			case CSaveData::DATA_COPYVECTOR:
+				TAssert(false);
+				break;
+
+			case CSaveData::DATA_STRING:
+			case CSaveData::DATA_STRING16:
+			case CSaveData::DATA_OUTPUT:
+				break;
+			}
+		}
+
+		pszClassName = pRegistration->m_pszParentClass;
+	} while (pRegistration->m_pszParentClass);
 }
 
 void CBaseEntity::Spawn()
@@ -826,7 +871,7 @@ void CBaseEntity::Render(bool bTransparent) const
 					}
 				}
 
-				if (m_iTexture != (size_t)~0)
+				if (m_iTexture != (size_t)0)
 				{
 					if (bTransparent)
 					{
