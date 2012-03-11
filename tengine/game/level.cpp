@@ -102,6 +102,8 @@ void CLevel::SaveToFile()
 		tstring sClose = "}\n\n";
 		f.write(sClose.data(), sClose.length());
 	}
+
+	TMsg("Wrote level file '" + m_sFile + "'\n");
 }
 
 void CLevel::CreateEntitiesFromData(const CData* pData)
