@@ -88,6 +88,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_OUTPUT(OnActivated);
 	SAVEDATA_DEFINE_OUTPUT(OnDeactivated);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sName, "Name");
+	SAVEDATA_EDITOR_VARIABLE("Name");
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sClassName);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, float, m_flMass, "Mass", 50);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hMoveParent, "MoveParent", UnserializeString_MoveParent);
@@ -99,8 +100,10 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TMatrix, m_mLocalTransform);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Quaternion, m_qLocalRotation);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, TVector, m_vecLocalOrigin, "LocalOrigin", UnserializeString_LocalOrigin);
+	SAVEDATA_EDITOR_VARIABLE("LocalOrigin");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TVector, m_vecLastLocalOrigin);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, EAngle, m_angLocalAngles, "LocalAngles", UnserializeString_LocalAngles);
+	SAVEDATA_EDITOR_VARIABLE("LocalAngles");
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, TVector, m_vecLocalVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iHandle);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, bool, m_bTakeDamage, "TakeDamage", false);
@@ -202,6 +205,9 @@ void CBaseEntity::SetSaveDataDefaults()
 			CSaveData* pSaveData = &pRegistration->m_aSaveData[i];
 
 			if (!pSaveData->m_bDefault)
+				continue;
+
+			if (pSaveData->m_bShowInEditor)
 				continue;
 
 			if (!pSaveData->m_pszHandle || pSaveData->m_pszHandle[0] == '\0')
@@ -922,7 +928,7 @@ void CBaseEntity::Delete(const eastl::vector<tstring>& sArgs)
 
 void CBaseEntity::CallInput(const eastl::string& sName, const tstring& sArgs)
 {
-	CEntityInput* pInput = GetInput(sName.c_str());
+	CEntityInput* pInput = FindInput(sName.c_str());
 
 	if (!pInput)
 	{
@@ -938,7 +944,7 @@ void CBaseEntity::CallInput(const eastl::string& sName, const tstring& sArgs)
 
 void CBaseEntity::CallOutput(const eastl::string& sName)
 {
-	CSaveData* pData = GetSaveData((eastl::string("m_Output_") + sName).c_str());
+	CSaveData* pData = FindSaveData((eastl::string("m_Output_") + sName).c_str());
 
 	if (!pData)
 	{
@@ -955,7 +961,7 @@ void CBaseEntity::CallOutput(const eastl::string& sName)
 
 void CBaseEntity::AddOutputTarget(const eastl::string& sName, const eastl::string& sTargetName, const eastl::string& sInput, const eastl::string& sArgs, bool bKill)
 {
-	CSaveData* pData = GetSaveData((eastl::string("m_Output_") + sName).c_str());
+	CSaveData* pData = FindSaveData((eastl::string("m_Output_") + sName).c_str());
 
 	if (!pData)
 	{
@@ -970,7 +976,7 @@ void CBaseEntity::AddOutputTarget(const eastl::string& sName, const eastl::strin
 
 void CBaseEntity::RemoveOutputs(const eastl::string& sName)
 {
-	CSaveData* pData = GetSaveData((eastl::string("m_Output_") + sName).c_str());
+	CSaveData* pData = FindSaveData((eastl::string("m_Output_") + sName).c_str());
 
 	if (!pData)
 	{
@@ -1169,17 +1175,17 @@ void CBaseEntity::ClientSpawn()
 	CallOutput("OnSpawn");
 }
 
-CSaveData* CBaseEntity::GetSaveData(const char* pszName)
+CSaveData* CBaseEntity::FindSaveData(const char* pszName, bool bThisClassOnly)
 {
-	return GetSaveData(GetClassName(), pszName);
+	return FindSaveData(GetClassName(), pszName, bThisClassOnly);
 }
 
-CSaveData* CBaseEntity::GetSaveDataByHandle(const char* pszHandle)
+CSaveData* CBaseEntity::FindSaveDataByHandle(const char* pszHandle, bool bThisClassOnly)
 {
-	return GetSaveDataByHandle(GetClassName(), pszHandle);
+	return FindSaveDataByHandle(GetClassName(), pszHandle, bThisClassOnly);
 }
 
-CNetworkedVariableData* CBaseEntity::GetNetworkVariable(const char* pszName)
+CNetworkedVariableData* CBaseEntity::FindNetworkVariable(const char* pszName, bool bThisClassOnly)
 {
 	const tchar* pszClassName = GetClassName();
 	CEntityRegistration* pRegistration = NULL;
@@ -1196,13 +1202,16 @@ CNetworkedVariableData* CBaseEntity::GetNetworkVariable(const char* pszName)
 				return pVarData;
 		}
 
+		if (bThisClassOnly)
+			return nullptr;
+
 		pszClassName = pRegistration->m_pszParentClass;
 	} while (pRegistration->m_pszParentClass);
 
 	return NULL;
 }
 
-CEntityInput* CBaseEntity::GetInput(const char* pszName)
+CEntityInput* CBaseEntity::FindInput(const char* pszName, bool bThisClassOnly)
 {
 	const tchar* pszClassName = GetClassName();
 	CEntityRegistration* pRegistration = NULL;
@@ -1215,6 +1224,9 @@ CEntityInput* CBaseEntity::GetInput(const char* pszName)
 
 		if (it != pRegistration->m_aInputs.end())
 			return &it->second;
+
+		if (bThisClassOnly)
+			return nullptr;
 
 		pszClassName = pRegistration->m_pszParentClass;
 	} while (pRegistration->m_pszParentClass);
@@ -1280,7 +1292,7 @@ void CBaseEntity::CheckTables(const char* pszEntity)
 	for (size_t i = 0; i < aSaveData.size(); i++)
 	{
 		CSaveData* pSaveData = &aSaveData[i];
-		CNetworkedVariableData* pVariable = GetNetworkVariable(pSaveData->m_pszVariableName);
+		CNetworkedVariableData* pVariable = FindNetworkVariable(pSaveData->m_pszVariableName);
 		if (pSaveData->m_eType == CSaveData::DATA_NETVAR)
 			// I better be finding this in the network tables or yer gon have some 'splainin to do!
 			TAssert(pVariable)
@@ -1609,12 +1621,15 @@ CEntityRegistration* CBaseEntity::GetEntityRegistration(size_t iEntity)
 	return nullptr;
 }
 
-CSaveData* CBaseEntity::GetSaveData(const char* pszClassName, const char* pszName)
+CSaveData* CBaseEntity::FindSaveData(const char* pszClassName, const char* pszName, bool bThisClassOnly)
 {
 	CEntityRegistration* pRegistration;
 	do
 	{
 		pRegistration = CBaseEntity::GetRegisteredEntity(pszClassName);
+
+		if (!pRegistration)
+			return nullptr;
 
 		for (size_t i = 0; i < pRegistration->m_aSaveData.size(); i++)
 		{
@@ -1624,13 +1639,16 @@ CSaveData* CBaseEntity::GetSaveData(const char* pszClassName, const char* pszNam
 				return pVarData;
 		}
 
+		if (bThisClassOnly)
+			return nullptr;
+
 		pszClassName = pRegistration->m_pszParentClass;
 	} while (pRegistration->m_pszParentClass);
 
 	return NULL;
 }
 
-CSaveData* CBaseEntity::GetSaveDataByHandle(const char* pszClassName, const char* pszHandle)
+CSaveData* CBaseEntity::FindSaveDataByHandle(const char* pszClassName, const char* pszHandle, bool bThisClassOnly)
 {
 	CEntityRegistration* pRegistration;
 	do
@@ -1651,15 +1669,71 @@ CSaveData* CBaseEntity::GetSaveDataByHandle(const char* pszClassName, const char
 				return pVarData;
 		}
 
+		if (bThisClassOnly)
+			return nullptr;
+
 		pszClassName = pRegistration->m_pszParentClass;
 	} while (pRegistration->m_pszParentClass);
 
 	return NULL;
 }
 
-CSaveData* CBaseEntity::GetOutput(const char* pszClassName, const tstring& sOutput)
+CSaveData* CBaseEntity::FindSaveDataValuesByHandle(const char* pszClassName, const char* pszHandle, CSaveData* pSaveData)
 {
-	return GetSaveData(pszClassName, ("m_Output_" + sOutput).c_str());
+	eastl::vector<tstring> asParents;
+	CEntityRegistration* pRegistration;
+
+	while (pszClassName)
+	{
+		pRegistration = CBaseEntity::GetRegisteredEntity(pszClassName);
+
+		if (!pRegistration)
+			return nullptr;
+
+		asParents.push_back(pszClassName);
+		pszClassName = pRegistration->m_pszParentClass;
+	}
+
+	pSaveData->m_pszHandle = nullptr;
+
+	for (size_t i = asParents.size()-1; i < asParents.size(); i--)
+	{
+		pRegistration = CBaseEntity::GetRegisteredEntity(asParents[i]);
+
+		for (size_t j = 0; j < pRegistration->m_aSaveData.size(); j++)
+		{
+			CSaveData* pVarData = &pRegistration->m_aSaveData[j];
+
+			if (!pVarData->m_pszHandle)
+				continue;
+
+			if (strcmp(pVarData->m_pszHandle, pszHandle) == 0)
+			{
+				if (!pSaveData->m_pszHandle)
+					memcpy(pSaveData, pVarData, sizeof(*pSaveData));
+				else
+				{
+					TAssert(pVarData->m_bOverride || pVarData->m_bShowInEditor);
+					if (pVarData->m_bShowInEditor)
+						pSaveData->m_bShowInEditor = true;
+					if (pVarData->m_bDefault)
+					{
+						pSaveData->m_bDefault = true;
+						memcpy(pSaveData->m_oDefault, pVarData->m_oDefault, sizeof(pSaveData->m_oDefault));
+					}
+				}
+
+				break;
+			}
+		}
+	}
+
+	return pSaveData;
+}
+
+CSaveData* CBaseEntity::FindOutput(const char* pszClassName, const tstring& sOutput, bool bThisClassOnly)
+{
+	return FindSaveData(pszClassName, ("m_Output_" + sOutput).c_str(), bThisClassOnly);
 }
 
 CEntityRegistration* CBaseEntity::GetRegisteredEntity(tstring sClassName)
@@ -1730,14 +1804,32 @@ void CBaseEntity::FindEntitiesByName(const eastl::string& sName, eastl::vector<C
 	}
 }
 
+bool CanUnserializeString_bool(const tstring& sData)
+{
+	return true;
+}
+
 bool UnserializeString_bool(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
 	return (sData.comparei("yes") == 0 || sData.comparei("true") == 0 || sData.comparei("on") == 0 || stoi(sData) != 0);
 }
 
+bool CanUnserializeString_size_t(const tstring& sData)
+{
+	return true;
+}
+
 size_t UnserializeString_size_t(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
 	return stoi(sData);
+}
+
+bool CanUnserializeString_TVector(const tstring& sData)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	return asTokens.size() == 3;
 }
 
 TVector UnserializeString_TVector(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
@@ -1755,6 +1847,14 @@ TVector UnserializeString_TVector(const tstring& sData, const tstring& sName, co
 	return Vector(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
 }
 
+bool CanUnserializeString_Vector2D(const tstring& sData)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	return asTokens.size() == 2;
+}
+
 TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
 	eastl::vector<tstring> asTokens;
@@ -1770,6 +1870,14 @@ TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName, c
 	return Vector2D(stof(asTokens[0]), stof(asTokens[1]));
 }
 
+bool CanUnserializeString_EAngle(const tstring& sData)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	return asTokens.size() == 3;
+}
+
 EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
 	eastl::vector<tstring> asTokens;
@@ -1783,6 +1891,14 @@ EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName, cons
 	}
 
 	return EAngle(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+}
+
+bool CanUnserializeString_AABB(const tstring& sData)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	return asTokens.size() == 6;
 }
 
 AABB UnserializeString_AABB(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)

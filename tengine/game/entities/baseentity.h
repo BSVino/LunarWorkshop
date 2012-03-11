@@ -45,6 +45,13 @@ void ResizeVectorTmpl(char* pData, size_t iVectorSize)
 	pVector->resize(iVectorSize);
 }
 
+bool CanUnserializeString_bool(const tstring& sData);
+bool CanUnserializeString_size_t(const tstring& sData);
+bool CanUnserializeString_TVector(const tstring& sData);
+bool CanUnserializeString_Vector2D(const tstring& sData);
+bool CanUnserializeString_EAngle(const tstring& sData);
+bool CanUnserializeString_AABB(const tstring& sData);
+
 // The last three arguments are for error reporting if the unserialization goes awry.
 bool UnserializeString_bool(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 size_t UnserializeString_size_t(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
@@ -94,9 +101,10 @@ public:
 	size_t					m_iSizeOfType;
 	UnserializeString		m_pfnUnserializeString;
 	ResizeVector			m_pfnResizeVector;
+	bool					m_bOverride;
+	bool					m_bShowInEditor;
 	bool					m_bDefault;
 	char					m_oDefault[24];
-	bool					m_bOverride;
 };
 
 typedef void (*EntityInputCallback)(const class CBaseEntity* pTarget, const eastl::vector<tstring>& sArgs);
@@ -304,6 +312,7 @@ void entity::RegisterSaveData() \
 	pSaveData->m_pfnResizeVector = &ResizeVectorTmpl<type>; \
 	pSaveData->m_bOverride = false; \
 	pSaveData->m_bDefault = false; \
+	pSaveData->m_bShowInEditor = false; \
 	pGameServer->GenerateSaveCRC(pSaveData->m_eType); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iOffset); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfVariable); \
@@ -363,6 +372,7 @@ void entity::RegisterSaveData() \
 	pSaveData->m_pfnResizeVector = NULL; \
 	pSaveData->m_bOverride = false; \
 	pSaveData->m_bDefault = false; \
+	pSaveData->m_bShowInEditor = false; \
 	pGameServer->GenerateSaveCRC(pSaveData->m_eType); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iOffset); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfVariable); \
@@ -379,6 +389,7 @@ void entity::RegisterSaveData() \
 	pSaveData->m_pfnResizeVector = NULL; \
 	pSaveData->m_bOverride = false; \
 	pSaveData->m_bDefault = false; \
+	pSaveData->m_bShowInEditor = false; \
 	pGameServer->GenerateSaveCRC(pSaveData->m_eType); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iOffset); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfVariable); \
@@ -390,10 +401,35 @@ void entity::RegisterSaveData() \
 	pSaveData->m_pszVariableName = #name; \
 	pSaveData->m_pszHandle = handle; \
 	pSaveData->m_bOverride = true; \
+	pSaveData->m_bShowInEditor = false; \
 	{ \
 		type iDefault = def; \
 		memcpy(pSaveData->m_oDefault, &iDefault, sizeof(def)); \
 		pSaveData->m_bDefault = true; \
+	} \
+
+#define SAVEDATA_EDITOR_VARIABLE(handle) \
+	pSaveData = FindSaveDataByHandle(handle, true); \
+	if (pSaveData) \
+	{ \
+		pSaveData->m_bShowInEditor = true; \
+	} \
+	else \
+	{ \
+		CSaveData* pHandleData = FindSaveDataByHandle(handle); \
+		TAssert(pHandleData); \
+		if (pHandleData) \
+		{ \
+			pSaveData = &pRegistration->m_aSaveData.push_back(); \
+			pSaveData->m_eType = pHandleData->m_eType; \
+			pSaveData->m_pszVariableName = pHandleData->m_pszVariableName; \
+			pSaveData->m_pszHandle = pHandleData->m_pszHandle; \
+			pSaveData->m_pszType = pHandleData->m_pszType; \
+			pSaveData->m_bShowInEditor = true; \
+			pSaveData->m_bOverride = false; \
+			pSaveData->m_bDefault = pHandleData->m_bDefault; \
+			memcpy(pSaveData->m_oDefault, pHandleData->m_oDefault, sizeof(pSaveData->m_oDefault)); \
+		} \
 	} \
 
 #define SAVEDATA_TABLE_END() \
@@ -608,10 +644,10 @@ public:
 	void									IssueClientSpawn();
 	virtual void							ClientSpawn();
 
-	CSaveData*								GetSaveData(const char* pszName);
-	CSaveData*								GetSaveDataByHandle(const char* pszHandle);
-	CNetworkedVariableData*					GetNetworkVariable(const char* pszName);
-	CEntityInput*							GetInput(const char* pszName);
+	CSaveData*								FindSaveData(const char* pszName, bool bThisClassOnly=false);
+	CSaveData*								FindSaveDataByHandle(const char* pszHandle, bool bThisClassOnly=false);
+	CNetworkedVariableData*					FindNetworkVariable(const char* pszName, bool bThisClassOnly=false);
+	CEntityInput*							FindInput(const char* pszName, bool bThisClassOnly=false);
 
 	virtual void							OnSerialize(std::ostream& o) {};
 	virtual bool							OnUnserialize(std::istream& i) { return true; };
@@ -646,9 +682,10 @@ public:
 	static size_t							GetNumEntitiesRegistered();
 	static CEntityRegistration*				GetEntityRegistration(size_t iEntity);
 
-	static CSaveData*						GetSaveData(const char* pszClassName, const char* pszName);
-	static CSaveData*						GetSaveDataByHandle(const char* pszClassName, const char* pszHandle);
-	static CSaveData*						GetOutput(const char* pszClassName, const tstring& sOutput);
+	static CSaveData*						FindSaveData(const char* pszClassName, const char* pszName, bool bThisClassOnly=false);
+	static CSaveData*						FindSaveDataByHandle(const char* pszClassName, const char* pszHandle, bool bThisClassOnly=false);
+	static CSaveData*						FindSaveDataValuesByHandle(const char* pszClassName, const char* pszHandle, CSaveData* pSaveData);
+	static CSaveData*						FindOutput(const char* pszClassName, const tstring& sOutput, bool bThisClassOnly=false);
 
 	static void								SerializeEntity(std::ostream& o, CBaseEntity* pEntity);
 	static bool								UnserializeEntity(std::istream& i);

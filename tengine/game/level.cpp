@@ -185,11 +185,11 @@ Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)
 		TAssert(false);
 
 	tstring sLocalOrigin = pThis->GetParameterValue("LocalOrigin");
-	if (sLocalOrigin.length())
+	if (sLocalOrigin.length() && CanUnserializeString_TVector(sLocalOrigin))
 		mLocal.SetTranslation(UnserializeString_TVector(sLocalOrigin));
 
 	tstring sLocalAngles = pThis->GetParameterValue("LocalAngles");
-	if (sLocalAngles.length())
+	if (sLocalAngles.length() && CanUnserializeString_EAngle(sLocalAngles))
 		mLocal.SetAngles(UnserializeString_EAngle(sLocalAngles));
 
 	return mLocal;
@@ -198,7 +198,7 @@ Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)
 bool CLevelEntity::CalculateVisible(CLevelEntity* pThis)
 {
 	tstring sVisible = pThis->GetParameterValue("Visible");
-	if (sVisible.length())
+	if (CanUnserializeString_bool(sVisible))
 		return UnserializeString_bool(sVisible);
 
 	return true;
@@ -220,10 +220,10 @@ Vector2D CLevelEntity::CalculateTextureModelScale(CLevelEntity* pThis)
 {
 	tstring sScale = pThis->GetParameterValue("TextureScale");
 
-	if (sScale.length())
+	if (CanUnserializeString_Vector2D(sScale))
 		return UnserializeString_Vector2D(sScale);
 
-	return *((Vector2D*)&CBaseEntity::GetSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "TextureScale")->m_oDefault);
+	return *((Vector2D*)&CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "TextureScale")->m_oDefault);
 }
 
 AABB CLevelEntity::CalculateBoundingBox(CLevelEntity* pThis)
@@ -236,10 +236,10 @@ AABB CLevelEntity::CalculateBoundingBox(CLevelEntity* pThis)
 
 	tstring sAABB = pThis->GetParameterValue("BoundingBox");
 
-	if (sAABB.length())
+	if (CanUnserializeString_AABB(sAABB))
 		return UnserializeString_AABB(sAABB, pThis->GetName(), pThis->m_sClass, "BoundingBox");
 
-	CSaveData* pSaveData = CBaseEntity::GetSaveDataByHandle(tstring("C"+pThis->m_sClass).c_str(), "BoundingBox");
+	CSaveData* pSaveData = CBaseEntity::FindSaveDataByHandle(tstring("C"+pThis->m_sClass).c_str(), "BoundingBox");
 	if (pSaveData)
 	{
 		AABB aabbBounds;

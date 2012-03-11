@@ -5,12 +5,34 @@
 #include <glgui/movablepanel.h>
 #include <game/camera.h>
 
+class CEntityPropertiesPanel : public glgui::CPanel
+{
+	DECLARE_CLASS(CEntityPropertiesPanel, glgui::CPanel);
+
+public:
+							CEntityPropertiesPanel();
+
+public:
+	void					Layout();
+
+	void					SetClass(const tstring& sClass) { m_sClass = sClass; }
+	void					SetMaxHeight(float flMaxHeight) { m_flMaxHeight = flMaxHeight; }
+
+public:
+	tstring								m_sClass;
+	float								m_flMaxHeight;
+
+	eastl::vector<glgui::CLabel*>		m_apPropertyLabels;
+	eastl::vector<glgui::CBaseControl*>	m_apPropertyOptions;
+	eastl::vector<tstring>				m_asPropertyHandle;
+};
+
 class CCreateEntityPanel : public glgui::CMovablePanel
 {
 	DECLARE_CLASS(CCreateEntityPanel, glgui::CMovablePanel);
 
 public:
-					CCreateEntityPanel();
+							CCreateEntityPanel();
 
 public:
 	void					Layout();
@@ -29,10 +51,7 @@ public:
 	glgui::CLabel*			m_pModelLabel;
 	glgui::CTextField*		m_pModelText;
 
-	glgui::CPanel*			m_pPropertiesPanel;
-
-	eastl::vector<glgui::CLabel*>		m_apPropertyLabels;
-	eastl::vector<glgui::CBaseControl*>	m_apPropertyOptions;
+	CEntityPropertiesPanel*	m_pPropertiesPanel;
 };
 
 class CEditorPanel : public glgui::CPanel, public glgui::IEventListener
@@ -83,6 +102,8 @@ public:
 
 	Vector					PositionFromMouse();
 	void					EntitySelected();
+	void					CreateEntityFromPanel(const Vector& vecPosition);
+	void					PopulateLevelEntityFromPanel(class CLevelEntity* pEntity, CEntityPropertiesPanel* pPanel);
 
 	class CLevel*			GetLevel() { return m_pLevel; }
 

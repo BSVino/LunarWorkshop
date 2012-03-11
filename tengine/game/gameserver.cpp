@@ -304,7 +304,7 @@ void CGameServer::LoadLevel(CLevel* pLevel)
 			auto pOutput = &pLevelEntity->m_aOutputs[i];
 			tstring sValue = pOutput->m_sOutput;
 
-			CSaveData* pSaveData = CBaseEntity::GetOutput(pEntity->GetClassName(), sValue);
+			CSaveData* pSaveData = CBaseEntity::FindOutput(pEntity->GetClassName(), sValue);
 			TAssert(pSaveData);
 			if (!pSaveData)
 			{
@@ -345,7 +345,8 @@ void CGameServer::LoadLevel(CLevel* pLevel)
 			tstring sHandle = it->first;
 			tstring sValue = it->second;
 
-			CSaveData* pSaveData = CBaseEntity::GetSaveDataByHandle(pEntity->GetClassName(), sHandle.c_str());
+			CSaveData oSaveDataValues;
+			CSaveData* pSaveData = CBaseEntity::FindSaveDataValuesByHandle(pEntity->GetClassName(), sHandle.c_str(), &oSaveDataValues);
 			TAssert(pSaveData);
 			if (!pSaveData)
 			{
@@ -353,7 +354,6 @@ void CGameServer::LoadLevel(CLevel* pLevel)
 				continue;
 			}
 
-			TAssert(pSaveData->m_pfnUnserializeString);
 			if (!pSaveData->m_pfnUnserializeString)
 				continue;
 
@@ -1014,7 +1014,7 @@ void CGameServer::UpdateValue(int iConnection, CNetworkParameters* p)
 	if (!hEntity)
 		return;
 
-	CNetworkedVariableData* pVarData = hEntity->GetNetworkVariable((char*)p->m_pExtraData);
+	CNetworkedVariableData* pVarData = hEntity->FindNetworkVariable((char*)p->m_pExtraData);
 
 	if (!pVarData)
 		return;
