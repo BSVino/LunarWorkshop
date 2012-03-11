@@ -50,7 +50,7 @@ void CLevel::SaveToFile()
 	{
 		auto pEntity = &m_aLevelEntities[i];
 
-		tstring sEntity = "Entity: " + pEntity->m_sClass + "\n{\n";
+		tstring sEntity = "Entity: " + pEntity->GetClass() + "\n{\n";
 		f.write(sEntity.data(), sEntity.length());
 
 		if (pEntity->GetName().length())
@@ -59,15 +59,15 @@ void CLevel::SaveToFile()
 			f.write(sName.data(), sName.length());
 		}
 
-		for (auto it = pEntity->m_asParameters.begin(); it != pEntity->m_asParameters.end(); it++)
+		for (auto it = pEntity->GetParameters().begin(); it != pEntity->GetParameters().end(); it++)
 		{
 			tstring sName = "\t" + it->first + ": " + it->second + "\n";
 			f.write(sName.data(), sName.length());
 		}
 
-		for (auto it = pEntity->m_aOutputs.begin(); it != pEntity->m_aOutputs.end(); it++)
+		for (auto it = pEntity->GetOutputs().begin(); it != pEntity->GetOutputs().end(); it++)
 		{
-			auto pOutput = &pEntity->m_aOutputs[i];
+			auto pOutput = &pEntity->GetOutputs()[i];
 			tstring sOutput = "\n\tOutput: " + pOutput->m_sOutput + "\n{\n";
 			f.write(sOutput.data(), sOutput.length());
 
@@ -149,7 +149,7 @@ void CLevel::CreateEntitiesFromData(const CData* pData)
 						bKill = pOutputData->GetValueBool();
 				}
 
-				CLevelEntity::CLevelEntityOutput& oOutput = pEntity->m_aOutputs.push_back();
+				CLevelEntity::CLevelEntityOutput& oOutput = pEntity->GetOutputs().push_back();
 				oOutput.m_sOutput = sValue;
 				oOutput.m_sTargetName = sTarget;
 				oOutput.m_sInput = sInput;
@@ -158,7 +158,7 @@ void CLevel::CreateEntitiesFromData(const CData* pData)
 			}
 			else
 			{
-				pEntity->m_asParameters[sHandle] = sValue;
+				pEntity->SetParameterValue(sHandle, sValue);
 			}
 		}
 	}
@@ -174,6 +174,125 @@ const tstring& CLevelEntity::GetParameterValue(const tstring& sKey) const
 	}
 
 	return it->second;
+}
+
+void CLevelEntity::SetParameterValue(const tstring& sKey, const tstring& sValue)
+{
+	auto it = m_asParameters.find(sKey);
+	if (it == m_asParameters.end())
+	{
+		if (!sValue.length())
+			return;
+
+		m_asParameters[sKey] = sValue;
+	}
+	else
+	{
+		if (!sValue.length())
+		{
+			m_asParameters.erase(sKey);
+			Dirtify();
+			return;
+		}
+
+		tstring& sCurrentValue = it->second;
+		if (sCurrentValue == sValue)
+			return;
+
+		sCurrentValue = sValue;
+	}
+
+	Dirtify();
+
+	CSaveData oSaveData;
+	CSaveData* pSaveData = CBaseEntity::FindSaveDataValuesByHandle(("C" + GetClass()).c_str(), sKey.c_str(), &oSaveData);
+
+	if (pSaveData->m_bDefault)
+	{
+		if (strcmp(pSaveData->m_pszType, "bool") == 0)
+		{
+			bool bValue = UnserializeString_bool(sValue);
+
+			bool b = *((bool*)&pSaveData->m_oDefault[0]);
+			if (bValue == b)
+				m_asParameters.erase(sKey);
+		}
+		else
+		{
+			if (strcmp(pSaveData->m_pszType, "size_t") == 0)
+			{
+				size_t i = *((size_t*)&pSaveData->m_oDefault[0]);
+				if (stoi(sValue) == i)
+					m_asParameters.erase(sKey);
+			}
+			else if (strcmp(pSaveData->m_pszType, "float") == 0)
+			{
+				float f = *((float*)&pSaveData->m_oDefault[0]);
+				if (stof(sValue) == f)
+					m_asParameters.erase(sKey);
+			}
+			else if (strcmp(pSaveData->m_pszType, "Vector") == 0)
+			{
+				if (CanUnserializeString_TVector(sValue))
+				{
+					Vector v = *((Vector*)&pSaveData->m_oDefault[0]);
+					if (UnserializeString_TVector(sValue) == v)
+						m_asParameters.erase(sKey);
+				}
+			}
+			else if (strcmp(pSaveData->m_pszType, "Vector2D") == 0)
+			{
+				if (CanUnserializeString_Vector2D(sValue))
+				{
+					Vector2D v = *((Vector2D*)&pSaveData->m_oDefault[0]);
+					if (UnserializeString_Vector2D(sValue) == v)
+						m_asParameters.erase(sKey);
+				}
+			}
+			else if (strcmp(pSaveData->m_pszType, "EAngle") == 0)
+			{
+				if (CanUnserializeString_EAngle(sValue))
+				{
+					EAngle v = *((EAngle*)&pSaveData->m_oDefault[0]);
+					if (UnserializeString_EAngle(sValue) == v)
+						m_asParameters.erase(sKey);
+				}
+			}
+			else if (strcmp(pSaveData->m_pszType, "Matrix4x4") == 0)
+			{
+				if (CanUnserializeString_Matrix4x4(sValue))
+				{
+					Matrix4x4 m = *((Matrix4x4*)&pSaveData->m_oDefault[0]);
+					if (UnserializeString_Matrix4x4(sValue) == m)
+						m_asParameters.erase(sKey);
+				}
+			}
+			else if (strcmp(pSaveData->m_pszType, "AABB") == 0)
+			{
+				if (CanUnserializeString_AABB(sValue))
+				{
+					AABB b = *((AABB*)&pSaveData->m_oDefault[0]);
+					if (UnserializeString_AABB(sValue) == b)
+						m_asParameters.erase(sKey);
+				}
+			}
+			else
+			{
+				TAssert(false);
+			}
+		}
+	}
+}
+
+void CLevelEntity::RemoveParameter(const tstring& sKey)
+{
+	m_asParameters.erase(sKey);
+	Dirtify();
+}
+
+bool CLevelEntity::HasParameterValue(const tstring& sKey) const
+{
+	return m_asParameters.find(sKey) != m_asParameters.end();
 }
 
 Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)
@@ -198,10 +317,10 @@ Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)
 bool CLevelEntity::CalculateVisible(CLevelEntity* pThis)
 {
 	tstring sVisible = pThis->GetParameterValue("Visible");
-	if (CanUnserializeString_bool(sVisible))
+	if (sVisible.length() && CanUnserializeString_bool(sVisible))
 		return UnserializeString_bool(sVisible);
 
-	return true;
+	return *((bool*)&CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "Visible")->m_oDefault);
 }
 
 size_t CLevelEntity::CalculateModelID(CLevelEntity* pThis)

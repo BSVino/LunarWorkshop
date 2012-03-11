@@ -19,10 +19,13 @@
 #include "level.h"
 #include "gameserver.h"
 
-CEntityPropertiesPanel::CEntityPropertiesPanel()
+CEntityPropertiesPanel::CEntityPropertiesPanel(bool bCommon)
 {
 	SetVerticalScrollBarEnabled(true);
 	SetScissoring(true);
+	m_bCommonProperties = bCommon;
+	m_pEntity = nullptr;
+	m_pPropertyChangedListener = nullptr;
 }
 
 void CEntityPropertiesPanel::Layout()
@@ -30,7 +33,7 @@ void CEntityPropertiesPanel::Layout()
 	if (!m_sClass.length())
 		return;
 
-	float flTop = 0;
+	float flTop = 5;
 
 	TAssert(m_apPropertyLabels.size() == m_apPropertyOptions.size());
 	for (size_t i = 0; i < m_apPropertyLabels.size(); i++)
@@ -64,17 +67,20 @@ void CEntityPropertiesPanel::Layout()
 			if (!pSaveData->m_bShowInEditor)
 				continue;
 
-			if (strcmp(pSaveData->m_pszHandle, "Name") == 0)
-				continue;
+			if (!m_bCommonProperties)
+			{
+				if (strcmp(pSaveData->m_pszHandle, "Name") == 0)
+					continue;
 
-			if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
-				continue;
+				if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
+					continue;
 
-			if (strcmp(pSaveData->m_pszHandle, "LocalOrigin") == 0)
-				continue;
+				if (strcmp(pSaveData->m_pszHandle, "LocalOrigin") == 0)
+					continue;
 
-			if (strcmp(pSaveData->m_pszHandle, "LocalAngles") == 0)
-				continue;
+				if (strcmp(pSaveData->m_pszHandle, "LocalAngles") == 0)
+					continue;
+			}
 
 			if (abHandlesSet.find(tstring(pSaveData->m_pszHandle)) != abHandlesSet.end())
 				continue;
@@ -100,8 +106,13 @@ void CEntityPropertiesPanel::Layout()
 				pCheckbox->SetTop(flTop);
 				pCheckbox->SetSize(12, 12);
 
-				if (pSaveData->m_bDefault)
+				if (m_pEntity && m_pEntity->HasParameterValue(pSaveData->m_pszHandle))
+					pCheckbox->SetState(UnserializeString_bool(m_pEntity->GetParameterValue(pSaveData->m_pszHandle)));
+				else if (pSaveData->m_bDefault)
 					pCheckbox->SetState(!!pSaveData->m_oDefault[0], false);
+
+				pCheckbox->SetClickedListener(this, PropertyChanged);
+				pCheckbox->SetUnclickedListener(this, PropertyChanged);
 
 				flTop += 17;
 			}
@@ -124,7 +135,11 @@ void CEntityPropertiesPanel::Layout()
 				pTextField->CenterX();
 				pTextField->SetTop(flTop+12);
 
-				if (pSaveData->m_bDefault)
+				pTextField->SetContentsChangedListener(this, PropertyChanged);
+
+				if (m_pEntity && m_pEntity->HasParameterValue(pSaveData->m_pszHandle))
+					pTextField->SetText(m_pEntity->GetParameterValue(pSaveData->m_pszHandle));
+				else if (pSaveData->m_bDefault)
 				{
 					if (strcmp(pSaveData->m_pszType, "size_t") == 0)
 					{
@@ -186,6 +201,18 @@ void CEntityPropertiesPanel::Layout()
 	BaseClass::Layout();
 }
 
+void CEntityPropertiesPanel::PropertyChangedCallback(const tstring& sArgs)
+{
+	if (m_pPropertyChangedListener)
+		m_pfnPropertyChangedCallback(m_pPropertyChangedListener, "");
+}
+
+void CEntityPropertiesPanel::SetPropertyChangedListener(glgui::IEventListener* pListener, glgui::IEventListener::Callback pfnCallback)
+{
+	m_pPropertyChangedListener = pListener;
+	m_pfnPropertyChangedCallback = pfnCallback;
+}
+
 CCreateEntityPanel::CCreateEntityPanel()
 	: glgui::CMovablePanel("Create Entity Tool")
 {
@@ -216,7 +243,7 @@ CCreateEntityPanel::CCreateEntityPanel()
 	m_pModelText->SetContentsChangedListener(this, ModelChanged);
 	AddControl(m_pModelText);
 
-	m_pPropertiesPanel = new CEntityPropertiesPanel();
+	m_pPropertiesPanel = new CEntityPropertiesPanel(false);
 	m_pPropertiesPanel->SetVisible(false);
 	AddControl(m_pPropertiesPanel);
 
@@ -315,6 +342,11 @@ CEditorPanel::CEditorPanel()
 
 	m_pObjectTitle = new glgui::CLabel("", "sans-serif", 20);
 	AddControl(m_pObjectTitle);
+
+	m_pPropertiesPanel = new CEntityPropertiesPanel(true);
+	m_pPropertiesPanel->SetBackgroundColor(Color(10, 10, 10, 50));
+	m_pPropertiesPanel->SetPropertyChangedListener(this, PropertyChanged);
+	AddControl(m_pPropertiesPanel);
 }
 
 void CEditorPanel::Layout()
@@ -336,17 +368,17 @@ void CEditorPanel::Layout()
 
 	if (pLevel)
 	{
-		auto aEntities = pLevel->GetEntityData();
+		auto& aEntities = pLevel->GetEntityData();
 		for (size_t i = 0; i < aEntities.size(); i++)
 		{
-			auto oEntity = aEntities[i];
+			auto& oEntity = aEntities[i];
 
 			tstring sName = oEntity.GetParameterValue("Name");
 
 			if (sName.length())
-				m_pEntities->AddNode(oEntity.m_sClass + ": " + oEntity.GetParameterValue("Name"));
+				m_pEntities->AddNode(oEntity.GetClass() + ": " + oEntity.GetParameterValue("Name"));
 			else
-				m_pEntities->AddNode(oEntity.m_sClass);
+				m_pEntities->AddNode(oEntity.GetClass());
 		}
 	}
 
@@ -355,27 +387,38 @@ void CEditorPanel::Layout()
 
 	LayoutEntities();
 
+	m_pPropertiesPanel->SetTop(m_pObjectTitle->GetBottom() + 5);
+	m_pPropertiesPanel->SetLeft(5);
+	m_pPropertiesPanel->SetRight(GetWidth()-5);
+	m_pPropertiesPanel->SetMaxHeight(GetBottom() - m_pObjectTitle->GetBottom() - 10);
+
 	BaseClass::Layout();
 }
 
 void CEditorPanel::LayoutEntities()
 {
 	m_pObjectTitle->SetText("(No Object Selected)");
+	m_pPropertiesPanel->SetVisible(false);
+	m_pPropertiesPanel->SetEntity(nullptr);
 
 	CLevel* pLevel = LevelEditor()->GetLevel();
 
 	if (!pLevel)
 		return;
 
-	auto aEntities = pLevel->GetEntityData();
+	auto& aEntities = pLevel->GetEntityData();
 
 	if (m_pEntities->GetSelectedNodeId() < aEntities.size())
 	{
 		CLevelEntity* pEntity = &aEntities[m_pEntities->GetSelectedNodeId()];
 		if (pEntity->GetName().length())
-			m_pObjectTitle->SetText(pEntity->m_sClass + ": " + pEntity->GetName());
+			m_pObjectTitle->SetText(pEntity->GetClass() + ": " + pEntity->GetName());
 		else
-			m_pObjectTitle->SetText(pEntity->m_sClass);
+			m_pObjectTitle->SetText(pEntity->GetClass());
+
+		m_pPropertiesPanel->SetClass("C" + pEntity->GetClass());
+		m_pPropertiesPanel->SetEntity(pEntity);
+		m_pPropertiesPanel->SetVisible(true);
 	}
 }
 
@@ -384,6 +427,22 @@ void CEditorPanel::EntitySelectedCallback(const tstring& sArgs)
 	LayoutEntities();
 
 	LevelEditor()->EntitySelected();
+}
+
+void CEditorPanel::PropertyChangedCallback(const tstring& sArgs)
+{
+	CLevel* pLevel = LevelEditor()->GetLevel();
+
+	if (!pLevel)
+		return;
+
+	auto& aEntities = pLevel->GetEntityData();
+
+	if (m_pEntities->GetSelectedNodeId() < aEntities.size())
+	{
+		CLevelEntity* pEntity = &aEntities[m_pEntities->GetSelectedNodeId()];
+		CLevelEditor::PopulateLevelEntityFromPanel(pEntity, m_pPropertiesPanel);
+	}
 }
 
 void CEditorCamera::Think()
@@ -507,7 +566,7 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool b
 				r.SetUniform("vecColor", Color(255, 255, 255, (char)(255*flAlpha)));
 
 			r.SetBlend(BLEND_ALPHA);
-			r.Scale(0, pEntity->m_vecTextureModelScale.Get().y, pEntity->m_vecTextureModelScale.Get().x);
+			r.Scale(0, pEntity->GetTextureModelScale().y, pEntity->GetTextureModelScale().x);
 			r.RenderTextureModel(pEntity->GetTextureModelID());
 		}
 	}
@@ -526,13 +585,13 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool b
 void CLevelEditor::RenderCreateEntityPreview()
 {
 	CLevelEntity oRenderEntity;
-	oRenderEntity.m_sClass = m_pCreateEntityPanel->m_pClass->GetText();
-	oRenderEntity.m_sName = m_pCreateEntityPanel->m_pNameText->GetText();
-	oRenderEntity.m_asParameters["Model"] = m_pCreateEntityPanel->m_pModelText->GetText();
-
-	oRenderEntity.m_mGlobalTransform = Matrix4x4(EAngle(0, 0, 0), PositionFromMouse());
+	oRenderEntity.SetClass(m_pCreateEntityPanel->m_pClass->GetText());
 
 	PopulateLevelEntityFromPanel(&oRenderEntity, m_pCreateEntityPanel->m_pPropertiesPanel);
+
+	oRenderEntity.SetParameterValue("Name", m_pCreateEntityPanel->m_pNameText->GetText());
+	oRenderEntity.SetParameterValue("Model", m_pCreateEntityPanel->m_pModelText->GetText());
+	oRenderEntity.SetGlobalTransform(Matrix4x4(EAngle(0, 0, 0), PositionFromMouse()));
 
 	RenderEntity(&oRenderEntity, true);
 }
@@ -567,11 +626,11 @@ void CLevelEditor::CreateEntityFromPanel(const Vector& vecPosition)
 {
 	auto& aEntityData = m_pLevel->GetEntityData();
 	auto& oNewEntity = aEntityData.push_back();
-	oNewEntity.m_sClass = m_pCreateEntityPanel->m_pClass->GetText();
-	oNewEntity.m_sName = m_pCreateEntityPanel->m_pNameText->GetText();
+	oNewEntity.SetClass(m_pCreateEntityPanel->m_pClass->GetText());
+	oNewEntity.SetParameterValue("Name", m_pCreateEntityPanel->m_pNameText->GetText());
 
-	oNewEntity.m_asParameters["Model"] = m_pCreateEntityPanel->m_pModelText->GetText();
-	oNewEntity.m_asParameters["LocalOrigin"] = sprintf("%f %f %f", vecPosition.x, vecPosition.y, vecPosition.z);
+	oNewEntity.SetParameterValue("Model", m_pCreateEntityPanel->m_pModelText->GetText());
+	oNewEntity.SetParameterValue("LocalOrigin", sprintf("%f %f %f", vecPosition.x, vecPosition.y, vecPosition.z));
 
 	PopulateLevelEntityFromPanel(&oNewEntity, m_pCreateEntityPanel->m_pPropertiesPanel);
 
@@ -583,16 +642,23 @@ void CLevelEditor::PopulateLevelEntityFromPanel(class CLevelEntity* pEntity, CEn
 {
 	for (size_t i = 0; i < pPanel->m_asPropertyHandle.size(); i++)
 	{
-		CSaveData* pSaveData = CBaseEntity::FindSaveDataByHandle(("C" + pEntity->m_sClass).c_str(), pPanel->m_asPropertyHandle[i].c_str());
+		CSaveData oSaveData;
+		CSaveData* pSaveData = CBaseEntity::FindSaveDataValuesByHandle(("C" + pEntity->GetClass()).c_str(), pPanel->m_asPropertyHandle[i].c_str(), &oSaveData);
 		if (strcmp(pSaveData->m_pszType, "bool") == 0)
 		{
-			if (static_cast<glgui::CCheckBox*>(pPanel->m_apPropertyOptions[i])->GetState())
-				pEntity->m_asParameters[pPanel->m_asPropertyHandle[i]] = "1";
+			bool bValue = static_cast<glgui::CCheckBox*>(pPanel->m_apPropertyOptions[i])->GetState();
+
+			if (bValue)
+				pEntity->SetParameterValue(pPanel->m_asPropertyHandle[i], "1");
 			else
-				pEntity->m_asParameters[pPanel->m_asPropertyHandle[i]] = "0";
+				pEntity->SetParameterValue(pPanel->m_asPropertyHandle[i], "0");
 		}
 		else
-			pEntity->m_asParameters[pPanel->m_asPropertyHandle[i]] = static_cast<glgui::CTextField*>(pPanel->m_apPropertyOptions[i])->GetText();
+		{
+			tstring sValue = static_cast<glgui::CTextField*>(pPanel->m_apPropertyOptions[i])->GetText();
+
+			pEntity->SetParameterValue(pPanel->m_asPropertyHandle[i], sValue);
+		}
 	}
 }
 
@@ -702,7 +768,7 @@ void CLevelEditor::RenderEntities()
 
 	TPROF("CLevelEditor::RenderEntities()");
 
-	auto aEntityData = LevelEditor()->m_pLevel->GetEntityData();
+	auto& aEntityData = LevelEditor()->m_pLevel->GetEntityData();
 	for (size_t i = 0; i < aEntityData.size(); i++)
 	{
 		LevelEditor()->RenderEntity(i, false);

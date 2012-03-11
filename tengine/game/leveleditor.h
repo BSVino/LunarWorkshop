@@ -5,26 +5,36 @@
 #include <glgui/movablepanel.h>
 #include <game/camera.h>
 
-class CEntityPropertiesPanel : public glgui::CPanel
+class CEntityPropertiesPanel : public glgui::CPanel, public glgui::IEventListener
 {
 	DECLARE_CLASS(CEntityPropertiesPanel, glgui::CPanel);
 
 public:
-							CEntityPropertiesPanel();
+							CEntityPropertiesPanel(bool bCommon);
 
 public:
 	void					Layout();
 
+	EVENT_CALLBACK(CEntityPropertiesPanel, PropertyChanged);
+
+	void					SetPropertyChangedListener(glgui::IEventListener* pListener, glgui::IEventListener::Callback pfnCallback);
+
 	void					SetClass(const tstring& sClass) { m_sClass = sClass; }
 	void					SetMaxHeight(float flMaxHeight) { m_flMaxHeight = flMaxHeight; }
+	void					SetEntity(class CLevelEntity* pEntity) { m_pEntity = pEntity; }
 
 public:
 	tstring								m_sClass;
 	float								m_flMaxHeight;
+	float								m_bCommonProperties;
+	class CLevelEntity*					m_pEntity;
 
 	eastl::vector<glgui::CLabel*>		m_apPropertyLabels;
 	eastl::vector<glgui::CBaseControl*>	m_apPropertyOptions;
 	eastl::vector<tstring>				m_asPropertyHandle;
+
+	glgui::IEventListener::Callback		m_pfnPropertyChangedCallback;
+	glgui::IEventListener*				m_pPropertyChangedListener;
 };
 
 class CCreateEntityPanel : public glgui::CMovablePanel
@@ -66,10 +76,13 @@ public:
 	void					LayoutEntities();
 
 	EVENT_CALLBACK(CEditorPanel, EntitySelected);
+	EVENT_CALLBACK(CEditorPanel, PropertyChanged);
 
 public:
 	glgui::CTree*			m_pEntities;
 	glgui::CLabel*			m_pObjectTitle;
+
+	CEntityPropertiesPanel*	m_pPropertiesPanel;
 };
 
 class CEditorCamera : public CCamera
@@ -103,7 +116,7 @@ public:
 	Vector					PositionFromMouse();
 	void					EntitySelected();
 	void					CreateEntityFromPanel(const Vector& vecPosition);
-	void					PopulateLevelEntityFromPanel(class CLevelEntity* pEntity, CEntityPropertiesPanel* pPanel);
+	static void				PopulateLevelEntityFromPanel(class CLevelEntity* pEntity, CEntityPropertiesPanel* pPanel);
 
 	class CLevel*			GetLevel() { return m_pLevel; }
 

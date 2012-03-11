@@ -31,6 +31,11 @@ public:
 		m_pCalculateEntity = p;
 	}
 
+	void		Dirtify()	// Strunk would cry
+	{
+		m_bDirty = true;
+	}
+
 	void		Calculate()
 	{
 		if (!m_bDirty)

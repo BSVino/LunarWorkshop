@@ -50,6 +50,7 @@ bool CanUnserializeString_size_t(const tstring& sData);
 bool CanUnserializeString_TVector(const tstring& sData);
 bool CanUnserializeString_Vector2D(const tstring& sData);
 bool CanUnserializeString_EAngle(const tstring& sData);
+bool CanUnserializeString_Matrix4x4(const tstring& sData);
 bool CanUnserializeString_AABB(const tstring& sData);
 
 // The last three arguments are for error reporting if the unserialization goes awry.
@@ -58,6 +59,7 @@ size_t UnserializeString_size_t(const tstring& sData, const tstring& sName="", c
 TVector UnserializeString_TVector(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+Matrix4x4 UnserializeString_Matrix4x4(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 AABB UnserializeString_AABB(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 
 void UnserializeString_bool(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);

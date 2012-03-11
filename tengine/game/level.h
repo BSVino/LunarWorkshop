@@ -12,6 +12,23 @@
 class CLevelEntity
 {
 public:
+	class CLevelEntityOutput
+	{
+	public:
+		CLevelEntityOutput()
+		{
+			m_bKill = false;
+		}
+
+	public:
+		eastl::string					m_sOutput;
+		eastl::string					m_sTargetName;
+		eastl::string					m_sInput;
+		eastl::string					m_sArgs;
+		bool							m_bKill;
+	};
+
+public:
 	CLevelEntity(const tstring& sClass)
 	{
 		InitializeCallbacks();
@@ -42,9 +59,30 @@ public:
 		m_sName.SetCallbacks(&CalculateName, this);
 	}
 
+	void								Dirtify()
+	{
+		m_mGlobalTransform.Dirtify();
+		m_bVisible.Dirtify();
+		m_iModel.Dirtify();
+		m_iTexture.Dirtify();
+		m_vecTextureModelScale.Dirtify();
+		m_aabbBounds.Dirtify();
+		m_sName.Dirtify();
+	}
+
+	tstring								GetClass() { return m_sClass; }
+	void								SetClass(const tstring& sClass) { m_sClass = sClass; }
+
+	eastl::vector<CLevelEntityOutput>&	GetOutputs() { return m_aOutputs; }
+
 	const tstring&						GetParameterValue(const tstring& sKey) const;
+	void								SetParameterValue(const tstring& sKey, const tstring& sValue);
+	void								RemoveParameter(const tstring& sKey);
+	bool								HasParameterValue(const tstring& sKey) const;
+	eastl::map<tstring, tstring>&		GetParameters() { return m_asParameters; }
 
 	Matrix4x4							GetGlobalTransform() { return m_mGlobalTransform; }
+	void								SetGlobalTransform(const Matrix4x4& m) { m_mGlobalTransform = m; }
 	bool								IsVisible() { return m_bVisible; }
 	size_t								GetModelID() { return m_iModel; }
 	size_t								GetTextureModelID() { return m_iTexture; }
@@ -61,7 +99,7 @@ public:
 	static AABB							CalculateBoundingBox(CLevelEntity* pThis);
 	static tstring						CalculateName(CLevelEntity* pThis);
 
-public:
+private:
 	tstring								m_sClass;
 	eastl::map<tstring, tstring>		m_asParameters;
 
@@ -72,22 +110,6 @@ public:
 	CCachedValue<Vector2D, CLevelEntity>	m_vecTextureModelScale;
 	CCachedValue<AABB, CLevelEntity>		m_aabbBounds;
 	CCachedValue<tstring, CLevelEntity>		m_sName;
-
-	class CLevelEntityOutput
-	{
-	public:
-		CLevelEntityOutput()
-		{
-			m_bKill = false;
-		}
-
-	public:
-		eastl::string					m_sOutput;
-		eastl::string					m_sTargetName;
-		eastl::string					m_sInput;
-		eastl::string					m_sArgs;
-		bool							m_bKill;
-	};
 
 	eastl::vector<CLevelEntityOutput>	m_aOutputs;
 };

@@ -280,7 +280,7 @@ void CGameServer::LoadLevel(CLevel* pLevel)
 	{
 		CLevelEntity* pLevelEntity = &aEntities[i];
 
-		tstring sClass = "C" + pLevelEntity->m_sClass;
+		tstring sClass = "C" + pLevelEntity->GetClass();
 
 		auto it = CBaseEntity::GetEntityRegistration().find(sClass);
 		TAssert(it != CBaseEntity::GetEntityRegistration().end());
@@ -299,9 +299,9 @@ void CGameServer::LoadLevel(CLevel* pLevel)
 		pEntity->SetName(pLevelEntity->GetName());
 
 		// Process outputs here so that they exist when handle callbacks run.
-		for (size_t k = 0; k < pLevelEntity->m_aOutputs.size(); k++)
+		for (size_t k = 0; k < pLevelEntity->GetOutputs().size(); k++)
 		{
-			auto pOutput = &pLevelEntity->m_aOutputs[i];
+			auto pOutput = &pLevelEntity->GetOutputs()[i];
 			tstring sValue = pOutput->m_sOutput;
 
 			CSaveData* pSaveData = CBaseEntity::FindOutput(pEntity->GetClassName(), sValue);
@@ -340,7 +340,7 @@ void CGameServer::LoadLevel(CLevel* pLevel)
 		auto pLevelEntity = &aEntities[it->first];
 		CBaseEntity* pEntity = it->second;
 
-		for (auto it = pLevelEntity->m_asParameters.begin(); it != pLevelEntity->m_asParameters.end(); it++)
+		for (auto it = pLevelEntity->GetParameters().begin(); it != pLevelEntity->GetParameters().end(); it++)
 		{
 			tstring sHandle = it->first;
 			tstring sValue = it->second;

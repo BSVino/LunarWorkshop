@@ -1916,6 +1916,32 @@ AABB UnserializeString_AABB(const tstring& sData, const tstring& sName, const ts
 	return AABB(Vector(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2])), Vector(stof(asTokens[3]), stof(asTokens[4]), stof(asTokens[5])));
 }
 
+bool CanUnserializeString_Matrix4x4(const tstring& sData)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	return asTokens.size() == 6;
+}
+
+Matrix4x4 UnserializeString_Matrix4x4(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sData, asTokens);
+
+	TAssert(asTokens.size() == 6);
+	if (asTokens.size() != 6)
+	{
+		TError("Entity '" + sName + "' (" + sClass + ":" + sHandle + ") wrong number of arguments for a matrix (Format: \"x y z p y r\")\n");
+		return Matrix4x4();
+	}
+
+	Vector vecData(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+	EAngle angData(stof(asTokens[3]), stof(asTokens[4]), stof(asTokens[5]));
+
+	return Matrix4x4(angData, vecData);
+}
+
 void UnserializeString_bool(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
 	bool bValue = UnserializeString_bool(sData);
@@ -2106,19 +2132,7 @@ void UnserializeString_EAngle(const tstring& sData, CSaveData* pSaveData, CBaseE
 
 void UnserializeString_Matrix4x4(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	eastl::vector<tstring> asTokens;
-	tstrtok(sData, asTokens);
-
-	TAssert(asTokens.size() == 6);
-	if (asTokens.size() != 6)
-	{
-		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") wrong number of arguments for a matrix (Format: \"x y z p y r\")\n");
-		return;
-	}
-
-	Vector vecData(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
-	EAngle angData(stof(asTokens[3]), stof(asTokens[4]), stof(asTokens[5]));
-	Matrix4x4 mData(angData, vecData);
+	Matrix4x4 mData = UnserializeString_Matrix4x4(sData, pEntity->GetName(), pEntity->GetClassName(), pSaveData->m_pszHandle);
 
 	Matrix4x4* pData = (Matrix4x4*)((char*)pEntity + pSaveData->m_iOffset);
 	switch(pSaveData->m_eType)
