@@ -357,6 +357,8 @@ void CApplication::WindowResize(int w, int h)
 	m_iWindowWidth = w;
 	m_iWindowHeight = h;
 
+	glgui::CRootPanel::Get()->Layout();
+
 	Render();
 
 	SwapBuffers();
