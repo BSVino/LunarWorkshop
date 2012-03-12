@@ -32,7 +32,6 @@ set (TENGINE_GAME_SOURCES
 	game/charactercamera.cpp
 	game/gameserver.cpp
 	game/level.cpp
-	game/leveleditor.cpp
 	game/networkedeffect.cpp
 )
 
@@ -101,8 +100,23 @@ set (TENGINE_TINKER_SOURCES
 	../tinker/lobby/lobby_server.cpp
 )
 
+set (TENGINE_TOOLS_SOURCES
+	tools/leveleditor.cpp
+	tools/tool.cpp
+	tools/workbench.cpp
+)
+
 set (TENGINE_SOURCES
-	${TENGINE_GAME_SOURCES} ${TENGINE_GAME_ENTITY_SOURCES} ${TENGINE_MODELS_SOURCES} ${TENGINE_NETWORK_SOURCES} ${TENGINE_PHYSICS_SOURCES} ${TENGINE_RENDERER_SOURCES} ${TENGINE_SOUND_SOURCES} ${TENGINE_UI_SOURCES} ${TENGINE_TINKER_SOURCES}
+	${TENGINE_GAME_SOURCES}
+	${TENGINE_GAME_ENTITY_SOURCES}
+	${TENGINE_MODELS_SOURCES}
+	${TENGINE_NETWORK_SOURCES}
+	${TENGINE_PHYSICS_SOURCES}
+	${TENGINE_RENDERER_SOURCES}
+	${TENGINE_SOUND_SOURCES}
+	${TENGINE_UI_SOURCES}
+	${TENGINE_TINKER_SOURCES}
+	${TENGINE_TOOLS_SOURCES}
 )
 
 source_group(Game FILES ${TENGINE_GAME_SOURCES})
@@ -114,6 +128,7 @@ source_group(Renderer FILES ${TENGINE_RENDERER_SOURCES})
 source_group(Sound FILES ${TENGINE_SOUND_SOURCES})
 source_group(UI FILES ${TENGINE_UI_SOURCES})
 source_group(Tinker FILES ${TENGINE_TINKER_SOURCES})
+source_group(Tools FILES ${TENGINE_TOOLS_SOURCES})
 
 add_library(tengine STATIC ${TENGINE_SOURCES})
 target_link_libraries (tengine tinker modelconverter toys)

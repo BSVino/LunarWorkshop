@@ -14,7 +14,7 @@
 #include <tengine/game/entities/game.h>
 #include <ui/hudviewport.h>
 #include <game/level.h>
-#include <game/leveleditor.h>
+#include <tools/workbench.h>
 #include <renderer/particles.h>
 #include <renderer/game_renderer.h>
 #include <tinker/keys.h>
@@ -266,7 +266,6 @@ void CGameWindow::Run()
 			PostFrame();
 		}
 
-		CLevelEditor::Render();
 		CProfiler::Render();
 		SwapBuffers();
 	}
@@ -304,9 +303,9 @@ bool CGameWindow::KeyPress(int c)
 	if (BaseClass::KeyPress(c))
 		return true;
 
-	if (CLevelEditor::IsActive())
+	if (CWorkbench::IsActive())
 	{
-		if (LevelEditor()->KeyPress(c))
+		if (Workbench()->KeyPress(c))
 			return true;
 	}
 
@@ -327,8 +326,8 @@ bool CGameWindow::KeyPress(int c)
 
 	if (c == TINKER_KEY_F2)
 	{
-		if (CLevelEditor::IsActive() || CVar::GetCVarBool("cheats"))
-			CLevelEditor::Toggle();
+		if (CWorkbench::IsActive() || CVar::GetCVarBool("cheats"))
+			CWorkbench::Toggle();
 	}
 
 	return false;
@@ -389,9 +388,9 @@ bool CGameWindow::MouseInput(int iButton, int iState)
 	if (BaseClass::MouseInput(iButton, iState))
 		return true;
 
-	if (CLevelEditor::IsActive())
+	if (CWorkbench::IsActive())
 	{
-		if (LevelEditor()->MouseInput(iButton, iState))
+		if (Workbench()->MouseInput(iButton, iState))
 			return true;
 	}
 

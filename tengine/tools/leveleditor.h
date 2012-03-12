@@ -5,6 +5,8 @@
 #include <glgui/movablepanel.h>
 #include <game/camera.h>
 
+#include "tool.h"
+
 class CEntityPropertiesPanel : public glgui::CPanel, public glgui::IEventListener
 {
 	DECLARE_CLASS(CEntityPropertiesPanel, glgui::CPanel);
@@ -85,24 +87,7 @@ public:
 	CEntityPropertiesPanel*	m_pPropertiesPanel;
 };
 
-class CEditorCamera : public CCamera
-{
-	DECLARE_CLASS(CEditorCamera, CCamera);
-
-public:
-	virtual void	Think();
-
-	virtual TVector	GetCameraPosition();
-	virtual TVector	GetCameraDirection();
-
-	virtual void	SetCameraOrientation(TVector vecPosition, Vector vecDirection);
-
-public:
-	TVector			m_vecEditCamera;
-	EAngle			m_angEditCamera;
-};
-
-class CLevelEditor : public glgui::IEventListener
+class CLevelEditor : public CWorkbenchTool, public glgui::IEventListener
 {
 public:
 							CLevelEditor();
@@ -125,22 +110,19 @@ public:
 	bool					KeyPress(int c);
 	bool					MouseInput(int iButton, int iState);
 
-public:
-	static void				Toggle();
-	static bool				IsActive();
+	virtual void			CameraThink();
+	virtual TVector			GetCameraPosition();
+	virtual TVector			GetCameraDirection();
+	virtual void			SetCameraOrientation(TVector vecPosition, Vector vecDirection);
 
-	static void				Activate();
-	static void				Deactivate();
+	virtual void			Activate();
+	virtual void			Deactivate();
 
-	static void				RenderEntities();
-	static void				Render();
+	virtual void			RenderScene();
 
-	static CCamera*			GetCamera();
+	static CLevelEditor*	Get() { return s_pLevelEditor; }
 
 protected:
-	bool					m_bActive;
-	bool					m_bWasMouseActive;
-
 	class CLevel*			m_pLevel;
 
 	CEditorPanel*			m_pEditorPanel;
@@ -148,9 +130,16 @@ protected:
 	glgui::CPictureButton*	m_pCreateEntityButton;
 	CCreateEntityPanel*		m_pCreateEntityPanel;
 
-	CEditorCamera*			m_pCamera;
-
 	float					m_flCreateObjectDistance;
+
+	TVector					m_vecEditCamera;
+	EAngle					m_angEditCamera;
+
+private:
+	static CLevelEditor*	s_pLevelEditor;
 };
 
-CLevelEditor* LevelEditor(bool bCreate=true);
+inline CLevelEditor* LevelEditor()
+{
+	return CLevelEditor::Get();
+}

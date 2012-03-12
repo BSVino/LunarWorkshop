@@ -26,10 +26,10 @@
 #include <tinker/cvar.h>
 #include <ui/gamewindow.h>
 #include <physics/physics.h>
+#include <tools/workbench.h>
 
 #include "camera.h"
 #include "level.h"
-#include "leveleditor.h"
 
 eastl::map<tstring, CPrecacheItem> CGameServer::s_aPrecacheClasses;
 CGameServer* CGameServer::s_pGameServer = NULL;
@@ -698,8 +698,8 @@ void CGameServer::Render()
 		pRenderer->SetupFrame(&c);
 		pRenderer->StartRendering(&c);
 
-		if (CLevelEditor::IsActive())
-			CLevelEditor::RenderEntities();
+		if (CWorkbench::IsActive())
+			CWorkbench::RenderScene();
 		else
 			RenderEverything();
 
@@ -1060,8 +1060,8 @@ CGameRenderer* CGameServer::GetRenderer()
 
 CCamera* CGameServer::GetCamera()
 {
-	if (CLevelEditor::IsActive())
-		return CLevelEditor::GetCamera();
+	if (CWorkbench::IsActive())
+		return CWorkbench::GetCamera();
 
 	return m_pCamera;
 }

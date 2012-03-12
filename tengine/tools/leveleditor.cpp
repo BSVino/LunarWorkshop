@@ -15,9 +15,10 @@
 #include <tinker/profiler.h>
 #include <textures/texturelibrary.h>
 #include <tinker/keys.h>
+#include <game/level.h>
+#include <game/gameserver.h>
 
-#include "level.h"
-#include "gameserver.h"
+#include "workbench.h"
 
 CEntityPropertiesPanel::CEntityPropertiesPanel(bool bCommon)
 {
@@ -445,38 +446,16 @@ void CEditorPanel::PropertyChangedCallback(const tstring& sArgs)
 	}
 }
 
-void CEditorCamera::Think()
-{
-	BaseClass::Think();
+REGISTER_WORKBENCH_TOOL(LevelEditor);
 
-	if (m_bFreeMode)
-	{
-		m_vecEditCamera = m_vecFreeCamera;
-		m_angEditCamera = m_angFreeCamera;
-	}
-}
-
-TVector CEditorCamera::GetCameraPosition()
-{
-	return m_vecEditCamera;
-}
-
-TVector CEditorCamera::GetCameraDirection()
-{
-	return AngleVector(m_angEditCamera);
-}
-
-void CEditorCamera::SetCameraOrientation(TVector vecPosition, Vector vecDirection)
-{
-	m_vecEditCamera = vecPosition;
-	m_angEditCamera = VectorAngles(vecDirection);
-}
-
+CLevelEditor* CLevelEditor::s_pLevelEditor = nullptr;
+	
 CLevelEditor::CLevelEditor()
 {
+	s_pLevelEditor = this;
+
 	m_pLevel = nullptr;
 
-	m_bActive = false;
 	m_pEditorPanel = new CEditorPanel();
 	m_pEditorPanel->SetVisible(false);
 	m_pEditorPanel->SetBackgroundColor(Color(0, 0, 0, 150));
@@ -495,8 +474,6 @@ CLevelEditor::CLevelEditor()
 	m_pCreateEntityPanel->SetBorder(glgui::CPanel::BT_SOME);
 	m_pCreateEntityPanel->SetVisible(false);
 
-	m_pCamera = new CEditorCamera();
-
 	m_flCreateObjectDistance = 10;
 }
 
@@ -504,8 +481,6 @@ CLevelEditor::~CLevelEditor()
 {
 	glgui::CRootPanel::Get()->RemoveControl(m_pEditorPanel);
 	delete m_pEditorPanel;
-
-	delete m_pCamera;
 
 	glgui::CRootPanel::Get()->RemoveControl(m_pCreateEntityButton);
 	delete m_pCreateEntityButton;
@@ -698,118 +673,68 @@ bool CLevelEditor::MouseInput(int iButton, int iState)
 	return false;
 }
 
-void CLevelEditor::Toggle()
-{
-	if (!LevelEditor())
-		return;
-
-	if (IsActive())
-		LevelEditor()->Deactivate();
-	else
-		LevelEditor()->Activate();
-}
-
-bool CLevelEditor::IsActive()
-{
-	if (!LevelEditor(false))
-		return false;
-
-	return LevelEditor()->m_bActive;
-}
-
 void CLevelEditor::Activate()
 {
-	if (!LevelEditor())
-		return;
+	SetCameraOrientation(GameServer()->GetCamera()->GetCameraPosition(), GameServer()->GetCamera()->GetCameraDirection());
 
-	LevelEditor()->m_pCamera->SetCameraOrientation(GameServer()->GetCamera()->GetCameraPosition(), GameServer()->GetCamera()->GetCameraDirection());
+	m_pLevel = GameServer()->GetLevel(CVar::GetCVarValue("game_level"));
 
-	LevelEditor()->m_bActive = true;
-
-	LevelEditor()->m_pLevel = GameServer()->GetLevel(CVar::GetCVarValue("game_level"));
-
-	LevelEditor()->m_pEditorPanel->SetVisible(true);
-	LevelEditor()->m_pCreateEntityButton->SetVisible(true);
-
-	LevelEditor()->m_bWasMouseActive = Application()->IsMouseCursorEnabled();
-	Application()->SetMouseCursorEnabled(true);
+	m_pEditorPanel->SetVisible(true);
+	m_pCreateEntityButton->SetVisible(true);
 }
 
 void CLevelEditor::Deactivate()
 {
-	if (!LevelEditor())
-		return;
+	m_pEditorPanel->SetVisible(false);
+	m_pCreateEntityButton->SetVisible(false);
+	m_pCreateEntityPanel->SetVisible(false);
 
-	LevelEditor()->m_bActive = false;
+	if (m_pLevel)
+		m_pLevel->SaveToFile();
 
-	LevelEditor()->m_pEditorPanel->SetVisible(false);
-	LevelEditor()->m_pCreateEntityButton->SetVisible(false);
-	LevelEditor()->m_pCreateEntityPanel->SetVisible(false);
-
-	Application()->SetMouseCursorEnabled(LevelEditor()->m_bWasMouseActive);
-
-	if (LevelEditor()->m_pLevel)
-		LevelEditor()->m_pLevel->SaveToFile();
-
-	if (LevelEditor()->m_pLevel && LevelEditor()->m_pLevel->GetEntityData().size())
+	if (m_pLevel && m_pLevel->GetEntityData().size())
 		GameServer()->RestartLevel();
 }
 
-void CLevelEditor::RenderEntities()
+void CLevelEditor::RenderScene()
 {
-	if (!LevelEditor())
-		return;
-
-	if (!IsActive())
-		return;
-
-	if (!LevelEditor()->m_pLevel)
+	if (!m_pLevel)
 		return;
 
 	TPROF("CLevelEditor::RenderEntities()");
 
-	auto& aEntityData = LevelEditor()->m_pLevel->GetEntityData();
+	auto& aEntityData = m_pLevel->GetEntityData();
 	for (size_t i = 0; i < aEntityData.size(); i++)
-	{
-		LevelEditor()->RenderEntity(i, false);
-	}
+		RenderEntity(i, false);
 
 	for (size_t i = 0; i < aEntityData.size(); i++)
+		RenderEntity(i, true);
+
+	if (m_pCreateEntityPanel->IsVisible() && m_pCreateEntityPanel->m_bReadyToCreate)
+		RenderCreateEntityPreview();
+}
+
+void CLevelEditor::CameraThink()
+{
+	if (Workbench()->GetCamera()->GetFreeMode())
 	{
-		LevelEditor()->RenderEntity(i, true);
-	}
-
-	if (LevelEditor()->m_pCreateEntityPanel->IsVisible() && LevelEditor()->m_pCreateEntityPanel->m_bReadyToCreate)
-	{
-		LevelEditor()->RenderCreateEntityPreview();
+		m_vecEditCamera = Workbench()->GetCamera()->GetFreeCameraPosition();
+		m_angEditCamera = Workbench()->GetCamera()->GetFreeCameraAngles();
 	}
 }
 
-void CLevelEditor::Render()
+TVector CLevelEditor::GetCameraPosition()
 {
-	if (!IsActive())
-		return;
+	return m_vecEditCamera;
 }
 
-CCamera* CLevelEditor::GetCamera()
+TVector CLevelEditor::GetCameraDirection()
 {
-	return LevelEditor()->m_pCamera;
+	return AngleVector(m_angEditCamera);
 }
 
-CLevelEditor* LevelEditor(bool bCreate)
+void CLevelEditor::SetCameraOrientation(TVector vecPosition, Vector vecDirection)
 {
-	// This function won't work unless we're in dev mode.
-	// I don't want memory wasted on the level editor for most players.
-	if (!CVar::GetCVarBool("developer"))
-		return nullptr;
-
-	static bool bCreated = false;
-
-	if (!bCreated && !bCreate)
-		return nullptr;
-
-	static CLevelEditor* pLevelEditor = new CLevelEditor();
-	bCreated = true;
-
-	return pLevelEditor;
+	m_vecEditCamera = vecPosition;
+	m_angEditCamera = VectorAngles(vecDirection);
 }

@@ -20,6 +20,8 @@ public:
 	virtual float	GetCameraFar() { return 10000.0f; };
 
 	bool			GetFreeMode() { return m_bFreeMode; };
+	TVector			GetFreeCameraPosition() const { return m_vecFreeCamera; };
+	EAngle			GetFreeCameraAngles() const { return m_angFreeCamera; };
 
 	virtual void	MouseInput(int x, int y);
 	virtual bool	MouseButton(int iButton, int iState) { return false; };
