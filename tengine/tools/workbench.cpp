@@ -17,6 +17,7 @@
 #include <tinker/keys.h>
 
 extern int g_iImportLevelEditor;
+extern int g_iImportMaterialEditor;
 // Use this to force import of required entities.
 // This shit totally defeats the purpose of having auto registrations.
 class CAutoToolsImport
@@ -25,6 +26,7 @@ public:
 	CAutoToolsImport()
 	{
 		g_iImportLevelEditor = 1;
+		g_iImportMaterialEditor = 1;
 	}
 } g_AutoToolsImport = CAutoToolsImport();
 
@@ -54,6 +56,10 @@ CWorkbench::CWorkbench()
 	m_iActiveTool = 0;
 
 	m_pCamera = new CWorkbenchCamera();
+
+	glgui::CMenu* pToolsMenu = glgui::CRootPanel::Get()->AddMenu("Tools");
+	for (size_t i = 0; i < m_apTools.size(); i++)
+		pToolsMenu->AddSubmenu(m_apTools[i]->GetToolName(), this, MenuSelected);
 }
 
 CWorkbench::~CWorkbench()
@@ -69,6 +75,33 @@ bool CWorkbench::KeyPress(int c)
 bool CWorkbench::MouseInput(int iButton, int iState)
 {
 	return GetActiveTool()->MouseInput(iButton, iState);
+}
+
+void CWorkbench::SetActiveTool(int iTool)
+{
+	if (GetActiveTool())
+		GetActiveTool()->Deactivate();
+
+	m_iActiveTool = iTool;
+
+	if (GetActiveTool())
+	{
+		GetActiveTool()->Activate();
+		Application()->SetMouseCursorEnabled(true);
+	}
+}
+
+void CWorkbench::MenuSelectedCallback(const tstring& sArgs)
+{
+	eastl::vector<tstring> asTokens;
+	strtok(sArgs, asTokens);
+
+	if (!asTokens.size())
+		return;
+
+	int iMenu = stoi(asTokens[0]);
+
+	SetActiveTool(iMenu);
 }
 
 void CWorkbench::Toggle()
@@ -98,7 +131,8 @@ void CWorkbench::Activate()
 	Workbench()->m_bWasMouseActive = Application()->IsMouseCursorEnabled();
 	Application()->SetMouseCursorEnabled(true);
 
-	Workbench()->GetActiveTool()->Activate();
+	if (Workbench()->GetActiveTool())
+		Workbench()->GetActiveTool()->Activate();
 
 	Workbench()->m_bActive = true;
 }
@@ -112,7 +146,8 @@ void CWorkbench::Deactivate()
 
 	Application()->SetMouseCursorEnabled(Workbench()->m_bWasMouseActive);
 
-	Workbench()->GetActiveTool()->Deactivate();
+	if (Workbench()->GetActiveTool())
+		Workbench()->GetActiveTool()->Deactivate();
 }
 
 void CWorkbench::RenderScene()

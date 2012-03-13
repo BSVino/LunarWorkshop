@@ -33,6 +33,10 @@ public:
 	bool					KeyPress(int c);
 	bool					MouseInput(int iButton, int iState);
 
+	void					SetActiveTool(int iTool);
+
+	EVENT_CALLBACK(CWorkbench, MenuSelected);
+
 public:
 	static void				Toggle();
 	static bool				IsActive();

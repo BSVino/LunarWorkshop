@@ -355,10 +355,12 @@ void CEditorPanel::Layout()
 	float flWidth = glgui::CRootPanel::Get()->GetWidth();
 	float flHeight = glgui::CRootPanel::Get()->GetHeight();
 
-	float flCurrLeft = 20;
-	float flCurrTop = 20;
+	float flMenuBarBottom = glgui::CRootPanel::Get()->GetMenuBar()->GetBottom();
 
-	SetDimensions(flCurrLeft, flCurrTop, 200, flHeight-40);
+	float flCurrLeft = 20;
+	float flCurrTop = flMenuBarBottom + 10;
+
+	SetDimensions(flCurrLeft, flCurrTop, 200, flHeight-30-flMenuBarBottom);
 
 	m_pEntities->SetPos(10, 10);
 	m_pEntities->SetSize(GetWidth() - 20, 200);

@@ -2,6 +2,7 @@
 
 #include <tengine_config.h>
 #include <vector.h>
+#include <tstring.h>
 
 class CWorkbenchTool
 {
@@ -21,4 +22,6 @@ public:
 	virtual void			CameraThink() {};
 	virtual TVector			GetCameraPosition() { return Vector(-10, 0, 0); }
 	virtual TVector			GetCameraDirection() { return Vector(1, 0, 0); }
+
+	virtual tstring			GetToolName() { return "Invalid Tool"; }
 };

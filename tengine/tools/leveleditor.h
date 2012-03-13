@@ -120,6 +120,8 @@ public:
 
 	virtual void			RenderScene();
 
+	virtual tstring			GetToolName() { return "Level Editor"; }
+
 	static CLevelEditor*	Get() { return s_pLevelEditor; }
 
 protected:

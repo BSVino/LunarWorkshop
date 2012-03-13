@@ -102,6 +102,7 @@ set (TENGINE_TINKER_SOURCES
 
 set (TENGINE_TOOLS_SOURCES
 	tools/leveleditor.cpp
+	tools/materialeditor.cpp
 	tools/tool.cpp
 	tools/workbench.cpp
 )
