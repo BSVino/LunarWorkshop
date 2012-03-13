@@ -4,6 +4,11 @@
 #include <vector.h>
 #include <tstring.h>
 
+namespace glgui
+{
+	class CMenu;
+};
+
 class CWorkbenchTool
 {
 public:
@@ -24,4 +29,6 @@ public:
 	virtual TVector			GetCameraDirection() { return Vector(1, 0, 0); }
 
 	virtual tstring			GetToolName() { return "Invalid Tool"; }
+
+	glgui::CMenu*			GetFileMenu();
 };

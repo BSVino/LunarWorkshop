@@ -645,6 +645,13 @@ void CLevelEditor::CreateEntityCallback(const tstring& sArgs)
 	m_pCreateEntityPanel->SetVisible(true);
 }
 
+void CLevelEditor::SaveLevelCallback(const tstring& sArgs)
+{
+	if (m_pLevel)
+		m_pLevel->SaveToFile();
+
+}
+
 bool CLevelEditor::KeyPress(int c)
 {
 	if (c == TINKER_KEY_DEL)
@@ -659,6 +666,13 @@ bool CLevelEditor::KeyPress(int c)
 			m_pEditorPanel->Layout();
 			return true;
 		}
+	}
+
+	// ; because my dvorak to qwerty key mapper works against me when the game is open, oh well.
+	if ((c == 'S' || c == ';') && Application()->IsCtrlDown())
+	{
+		if (m_pLevel)
+			m_pLevel->SaveToFile();
 	}
 
 	return false;
@@ -683,6 +697,8 @@ void CLevelEditor::Activate()
 
 	m_pEditorPanel->SetVisible(true);
 	m_pCreateEntityButton->SetVisible(true);
+
+	GetFileMenu()->AddSubmenu("Save", this, SaveLevel);
 }
 
 void CLevelEditor::Deactivate()
@@ -690,9 +706,6 @@ void CLevelEditor::Deactivate()
 	m_pEditorPanel->SetVisible(false);
 	m_pCreateEntityButton->SetVisible(false);
 	m_pCreateEntityPanel->SetVisible(false);
-
-	if (m_pLevel)
-		m_pLevel->SaveToFile();
 
 	if (m_pLevel && m_pLevel->GetEntityData().size())
 		GameServer()->RestartLevel();

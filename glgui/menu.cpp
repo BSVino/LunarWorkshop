@@ -268,6 +268,17 @@ void CMenu::AddSubmenu(const tstring& sTitle, IEventListener* pListener, IEventL
 	m_apEntries.push_back(pMenu);
 }
 
+void CMenu::ClearSubmenus()
+{
+	for (size_t i = 0; i < m_apEntries.size(); i++)
+	{
+		m_pMenu->RemoveControl(m_apEntries[i]);
+		delete m_apEntries[i];
+	}
+
+	m_apEntries.clear();
+}
+
 size_t CMenu::GetSelectedMenu()
 {
 	for (size_t i = 0; i < m_apEntries.size(); i++)

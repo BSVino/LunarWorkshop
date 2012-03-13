@@ -57,9 +57,13 @@ CWorkbench::CWorkbench()
 
 	m_pCamera = new CWorkbenchCamera();
 
+	m_pFileMenu = glgui::CRootPanel::Get()->AddMenu("File");
+
 	glgui::CMenu* pToolsMenu = glgui::CRootPanel::Get()->AddMenu("Tools");
 	for (size_t i = 0; i < m_apTools.size(); i++)
 		pToolsMenu->AddSubmenu(m_apTools[i]->GetToolName(), this, MenuSelected);
+
+	glgui::CRootPanel::Get()->Layout();
 }
 
 CWorkbench::~CWorkbench()
@@ -79,6 +83,8 @@ bool CWorkbench::MouseInput(int iButton, int iState)
 
 void CWorkbench::SetActiveTool(int iTool)
 {
+	m_pFileMenu->ClearSubmenus();
+
 	if (GetActiveTool())
 		GetActiveTool()->Deactivate();
 

@@ -106,6 +106,7 @@ public:
 	class CLevel*			GetLevel() { return m_pLevel; }
 
 	EVENT_CALLBACK(CLevelEditor, CreateEntity);
+	EVENT_CALLBACK(CLevelEditor, SaveLevel);
 
 	bool					KeyPress(int c);
 	bool					MouseInput(int iButton, int iState);

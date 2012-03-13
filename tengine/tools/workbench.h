@@ -21,6 +21,7 @@ public:
 class CWorkbench : public glgui::IEventListener
 {
 	friend class CWorkbenchCamera;
+	friend class CWorkbenchTool;
 
 public:
 	typedef CWorkbenchTool* (*ToolCreator)();
@@ -69,6 +70,8 @@ protected:
 
 	eastl::vector<CWorkbenchTool*>	m_apTools;
 	size_t					m_iActiveTool;
+
+	glgui::CMenu*			m_pFileMenu;
 };
 
 CWorkbench* Workbench(bool bCreate=true);
