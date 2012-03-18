@@ -60,7 +60,7 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 		m_pRenderer->m_pRendering = nullptr;
 	}
 
-	if (pModel->m_pToy->GetNumSceneAreas())
+	if (pModel->m_pToy && pModel->m_pToy->GetNumSceneAreas())
 	{
 		size_t iSceneArea = m_pRenderer->GetSceneAreaPosition(pModel);
 
@@ -101,19 +101,21 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	m_pRenderer->SetupShader(this, pModel, iMaterial);
 
 	TAssert(m_pShader);
-	if (!m_pShader)
-		return;
-
 	if (!pModel || !m_pShader)
 		return;
 
-	Vector vecCameraPosition = m_pRenderer->m_vecCameraPosition;
-	Vector vecCameraDirection = m_pRenderer->m_vecCameraDirection;
-	Vector vecCameraUp = m_pRenderer->m_vecCameraUp;
-
 	BeginRenderVertexArray(pModel->m_aiVertexBuffers[iMaterial]);
-	SetPositionBuffer(0u, pModel->m_pToy->GetVertexSize());
-	SetTexCoordBuffer(BUFFER_OFFSET(pModel->m_pToy->GetVertexUV()), pModel->m_pToy->GetVertexSize());
+	if (pModel->m_pToy)
+	{
+		SetPositionBuffer(0u, pModel->m_pToy->GetVertexSize());
+		SetTexCoordBuffer(BUFFER_OFFSET(pModel->m_pToy->GetVertexUV()), pModel->m_pToy->GetVertexSize());
+	}
+	else
+	{
+		// If there's no toy then we are using fixed size source models.
+		SetPositionBuffer(0u, 4*5);
+		SetTexCoordBuffer(BUFFER_OFFSET(4*3), 4*5);
+	}
 	EndRenderVertexArray(pModel->m_aiVertexBufferSizes[iMaterial]);
 }
 

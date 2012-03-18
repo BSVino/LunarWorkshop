@@ -4,6 +4,8 @@
 #include <FTGL/ftgl.h>
 
 #include <tinker_platform.h>
+#include <files.h>
+
 #include <tinker/keys.h>
 #include <renderer/shaders.h>
 #include <renderer/renderingcontext.h>
@@ -324,16 +326,17 @@ bool CTextField::KeyPressed(int iKey, bool bCtrlDown)
 	return CBaseControl::KeyPressed(iKey, bCtrlDown);
 }
 
-void CTextField::SetContentsChangedListener(IEventListener* pListener, IEventListener::Callback pfnCallback)
+void CTextField::SetContentsChangedListener(IEventListener* pListener, IEventListener::Callback pfnCallback, const tstring& sArgs)
 {
 	m_pfnContentsChangedCallback = pfnCallback;
 	m_pContentsChangedListener = pListener;
+	m_sContentsChangedArgs = sArgs;
 }
 
 void CTextField::UpdateContentsChangedListener()
 {
 	if (m_pfnContentsChangedCallback)
-		m_pfnContentsChangedCallback(m_pContentsChangedListener, "");
+		m_pfnContentsChangedCallback(m_pContentsChangedListener, m_sContentsChangedArgs);
 }
 
 void CTextField::FindRenderOffset()
@@ -391,6 +394,76 @@ void CTextField::SetAutoCompleteCommands(const eastl::vector<tstring>& asCommand
 	}
 
 	m_iAutoComplete = -1;
+}
+
+void CTextField::SetAutoCompleteFiles(const tstring& sBaseDirectory, const eastl::vector<tstring>& asExtensions, const eastl::vector<tstring>& asExtensionsExclude)
+{
+	tstring sSourceFolder = FindAbsolutePath(sBaseDirectory);
+	tstring sInputFolder = FindAbsolutePath(sBaseDirectory + "/" + GetText());
+
+	if (sInputFolder.compare(0, sSourceFolder.length(), sSourceFolder) != 0)
+		return;
+
+	tstring sSearchDirectory = GetDirectory(sInputFolder);
+
+	tstring sPrefix = ToForwardSlashes(sSearchDirectory.substr(sSourceFolder.length()));
+	while (sPrefix[0] == '/')
+		sPrefix = sPrefix.substr(1);
+	while (sPrefix.back() == '/')
+		sPrefix = sPrefix.substr(0, sPrefix.length()-2);
+	if (sPrefix.length())
+		sPrefix = sPrefix + '/';
+
+	eastl::vector<tstring> asFiles = ListDirectory(sSearchDirectory);
+	eastl::vector<tstring> asCompletions;
+
+	for (size_t i = 0; i < asFiles.size(); i++)
+	{
+		if (!IsDirectory(sSearchDirectory + '/' + asFiles[i]))
+		{
+			if (asExtensions.size())
+			{
+				bool bFound = false;
+				for (size_t j = 0; j < asExtensions.size(); j++)
+				{
+					if (asFiles[i].length() <= asExtensions[j].length())
+						continue;
+
+					if (asFiles[i].substr(asFiles[i].length()-asExtensions[j].length()) != asExtensions[j])
+						continue;
+
+					bFound = true;
+					break;
+				}
+
+				if (!bFound)
+					continue;
+			}
+
+			if (asExtensionsExclude.size())
+			{
+				bool bFound = false;
+				for (size_t j = 0; j < asExtensionsExclude.size(); j++)
+				{
+					if (asFiles[i].length() <= asExtensionsExclude[j].length())
+						continue;
+
+					if (asFiles[i].substr(asFiles[i].length()-asExtensionsExclude[j].length()) != asExtensionsExclude[j])
+						continue;
+
+					bFound = true;
+					break;
+				}
+
+				if (bFound)
+					continue;
+			}
+		}
+
+		asCompletions.push_back(sPrefix + asFiles[i]);
+	}
+
+	SetAutoCompleteCommands(asCompletions);
 }
 
 void CTextField::SetCursorPosition(size_t iPosition)

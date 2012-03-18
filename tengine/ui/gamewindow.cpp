@@ -363,6 +363,9 @@ void CGameWindow::MouseMotion(int x, int y)
 
 	BaseClass::MouseMotion(x, y);
 
+	if (CWorkbench::IsActive())
+		Workbench()->MouseMotion(x, y);
+
 	if (GameServer() && GameServer()->GetCamera())
 		GameServer()->GetCamera()->MouseInput(x, y);
 
@@ -410,4 +413,15 @@ bool CGameWindow::MouseInput(int iButton, int iState)
 	}
 
 	return false;
+}
+
+bool CGameWindow::GetLastMouse(int& x, int& y)
+{
+	if (!m_bHaveLastMouse)
+		return false;
+
+	x = m_iLastMouseX;
+	y = m_iLastMouseY;
+
+	return true;
 }

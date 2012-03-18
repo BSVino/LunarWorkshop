@@ -18,6 +18,7 @@ public:
 
 public:
 	bool					Load();
+	bool					LoadSourceFile();
 	size_t					LoadBufferIntoGL(size_t iMaterial);
 	void					UnloadBufferFromGL(size_t iBuffer);
 
@@ -48,6 +49,8 @@ public:
 	static size_t			FindModel(const tstring& sModel);
 	static CModel*			GetModel(size_t i);
 	static void				ReleaseModel(const tstring& sModel);
+	static void				ReleaseModel(size_t i);
+	static void				UnloadModel(size_t i);
 
 	static void				ResetReferenceCounts();
 	static void				ClearUnreferenced();

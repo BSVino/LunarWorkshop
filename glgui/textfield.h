@@ -27,7 +27,7 @@ namespace glgui
 		virtual bool	CharPressed(int iKey);
 		virtual bool	KeyPressed(int iKey, bool bCtrlDown = false);
 
-		virtual void	SetContentsChangedListener(IEventListener* pListener, IEventListener::Callback pfnCallback);
+		virtual void	SetContentsChangedListener(IEventListener* pListener, IEventListener::Callback pfnCallback, const tstring& sArgs="");
 		virtual void	UpdateContentsChangedListener();
 
 		virtual void	FindRenderOffset();
@@ -40,6 +40,7 @@ namespace glgui
 		virtual tstring	GetText();
 
 		void			SetAutoCompleteCommands(const eastl::vector<tstring>& asCommands);
+		void			SetAutoCompleteFiles(const tstring& sBaseDirectory=".", const eastl::vector<tstring>& asExtensions = eastl::vector<tstring>(), const eastl::vector<tstring>& asExtensionsExclude = eastl::vector<tstring>());
 
 		virtual void	SetCursorPosition(size_t iPosition);
 
@@ -69,6 +70,7 @@ namespace glgui
 
 		IEventListener::Callback	m_pfnContentsChangedCallback;
 		IEventListener*				m_pContentsChangedListener;
+		tstring						m_sContentsChangedArgs;
 
 		eastl::vector<tstring>		m_asAutoCompleteCommands;
 		int							m_iAutoComplete;

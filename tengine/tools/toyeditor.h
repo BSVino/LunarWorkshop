@@ -43,6 +43,37 @@ public:
 public:
 	tstring					m_sFilename;
 	tstring					m_sToyFile;
+
+	tstring					m_sMesh;
+	tstring					m_sPhys;
+};
+
+class CSourcePanel : public glgui::CPanel, public glgui::IEventListener
+{
+	DECLARE_CLASS(CSourcePanel, glgui::CPanel);
+
+public:
+							CSourcePanel();
+
+public:
+	virtual void			SetVisible(bool bVis);
+
+	void					Layout();
+	void					UpdateFields();
+
+	EVENT_CALLBACK(CSourcePanel, ModelChanged);
+
+public:
+	glgui::CLabel*			m_pFilename;
+
+	glgui::CLabel*			m_pToyFileLabel;
+	glgui::CTextField*		m_pToyFileText;
+
+	glgui::CLabel*			m_pMeshLabel;
+	glgui::CTextField*		m_pMeshText;
+
+	glgui::CLabel*			m_pPhysLabel;
+	glgui::CTextField*		m_pPhysText;
 };
 
 class CToyEditor : public CWorkbenchTool, public glgui::IEventListener
@@ -55,15 +86,27 @@ public:
 	virtual void			Activate();
 	virtual void			Deactivate();
 
+	void					Layout();
 	void					SetupMenu();
 
+	virtual void			RenderScene();
+
 	void					NewToy();
-	CToySource&				GetToy() { return m_oToySource; }
+	CToySource&				GetToyToModify();
+	const CToySource&		GetToy() { return m_oToySource; }
+	void					MarkUnsaved();
+	void					MarkSaved();
+	bool					IsSaved() { return m_bSaved; }
 
 	EVENT_CALLBACK(CToyEditor, NewToy);
 	EVENT_CALLBACK(CToyEditor, SaveToy);
 
 	bool					KeyPress(int c);
+	bool					MouseInput(int iButton, int iState);
+	void					MouseMotion(int x, int y);
+
+	virtual TVector			GetCameraPosition();
+	virtual TVector			GetCameraDirection();
 
 	virtual tstring			GetToolName() { return "Toy Editor"; }
 
@@ -73,7 +116,17 @@ public:
 protected:
 	CCreateToySourcePanel*	m_pCreateToySourcePanel;
 
+	CSourcePanel*			m_pSourcePanel;
+
 	CToySource				m_oToySource;
+
+	size_t					m_iMeshPreview;
+	size_t					m_iPhysPreview;
+
+	bool					m_bRotatingPreview;
+	EAngle					m_angPreview;
+
+	bool					m_bSaved;
 
 private:
 	static CToyEditor*		s_pToyEditor;

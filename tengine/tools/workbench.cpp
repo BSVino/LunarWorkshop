@@ -81,6 +81,11 @@ bool CWorkbench::MouseInput(int iButton, int iState)
 	return GetActiveTool()->MouseInput(iButton, iState);
 }
 
+void CWorkbench::MouseMotion(int x, int y)
+{
+	GetActiveTool()->MouseMotion(x, y);
+}
+
 void CWorkbench::SetActiveTool(int iTool)
 {
 	m_pFileMenu->ClearSubmenus();

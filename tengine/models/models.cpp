@@ -46,8 +46,11 @@ size_t CModelLibrary::AddModel(const tstring& sModel)
 		for (size_t i = 0; i < pModel->m_aiTextures.size(); i++)
 			CTextureLibrary::AddTexture(CTextureLibrary::FindTextureByID(pModel->m_aiTextures[i]));
 
-		for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
-			CModelLibrary::AddModel(pModel->m_pToy->GetSceneAreaFileName(i));
+		if (pModel->m_pToy)
+		{
+			for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
+				CModelLibrary::AddModel(pModel->m_pToy->GetSceneAreaFileName(i));
+		}
 
 		return iModel;
 	}
@@ -83,10 +86,13 @@ size_t CModelLibrary::AddModel(const tstring& sModel)
 
 	Get()->m_iModelsLoaded++;
 
-	for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
+	if (pModel->m_pToy)
 	{
-		if (CModelLibrary::AddModel(pModel->m_pToy->GetSceneAreaFileName(i)) == ~0)
-			TError(tstring("Area \"") + pModel->m_pToy->GetSceneAreaFileName(i) + "\" for model \"" + sModel + "\" could not be loaded.");
+		for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
+		{
+			if (CModelLibrary::AddModel(pModel->m_pToy->GetSceneAreaFileName(i)) == ~0)
+				TError(tstring("Area \"") + pModel->m_pToy->GetSceneAreaFileName(i) + "\" for model \"" + sModel + "\" could not be loaded.");
+		}
 	}
 
 	return iLocation;
@@ -116,13 +122,33 @@ size_t CModelLibrary::FindModel(const tstring& sModel)
 
 void CModelLibrary::ReleaseModel(const tstring& sModel)
 {
-	CModel* pModel = GetModel(FindModel(sModel));
+	ReleaseModel(FindModel(sModel));
+}
+
+void CModelLibrary::ReleaseModel(size_t i)
+{
+	CModel* pModel = GetModel(i);
 
 	if (!pModel)
 		return;
 
 	TAssert(pModel->m_iReferences > 0);
-	pModel->m_iReferences--;
+	if (pModel->m_iReferences)
+		pModel->m_iReferences--;
+}
+
+void CModelLibrary::UnloadModel(size_t i)
+{
+	CModel* pModel = GetModel(i);
+
+	if (!pModel)
+		return;
+
+	pModel->m_iReferences = 0;
+
+	delete pModel;
+	Get()->m_apModels[i] = nullptr;
+	Get()->m_iModelsLoaded--;
 }
 
 void CModelLibrary::ResetReferenceCounts()
@@ -161,8 +187,11 @@ void CModelLibrary::LoadAllIntoPhysics()
 		if (!pModel)
 			continue;
 
-		if (pModel->m_pToy->GetPhysicsNumTris())
-			GamePhysics()->LoadCollisionMesh(pModel->m_sFilename, pModel->m_pToy->GetPhysicsNumTris(), pModel->m_pToy->GetPhysicsTris(), pModel->m_pToy->GetPhysicsNumVerts(), pModel->m_pToy->GetPhysicsVerts());
+		if (pModel->m_pToy)
+		{
+			if (pModel->m_pToy->GetPhysicsNumTris())
+				GamePhysics()->LoadCollisionMesh(pModel->m_sFilename, pModel->m_pToy->GetPhysicsNumTris(), pModel->m_pToy->GetPhysicsTris(), pModel->m_pToy->GetPhysicsNumVerts(), pModel->m_pToy->GetPhysicsVerts());
+		}
 	}
 }
 
@@ -177,14 +206,12 @@ CModel::~CModel()
 {
 	TAssert(m_iReferences == 0);
 
-	if (m_pToy->GetPhysicsNumTris())
+	if (m_pToy && m_pToy->GetPhysicsNumTris())
 		GamePhysics()->UnloadCollisionMesh(m_sFilename);
 
-	size_t iMaterials = m_pToy->GetNumMaterials();
-
-	for (size_t i = 0; i < iMaterials; i++)
+	for (size_t i = 0; i < m_aiVertexBuffers.size(); i++)
 	{
-		if (m_pToy->GetMaterialNumVerts(i) == 0)
+		if (m_aiVertexBufferSizes[i] == 0)
 			continue;
 
 		UnloadBufferFromGL(m_aiVertexBuffers[i]);
@@ -199,8 +226,12 @@ bool CModel::Load()
 	m_pToy = new CToy();
 	CToyUtil t;
 	if (!t.Read(m_sFilename, m_pToy))
-		// Don't need to delete the toy, destructor will get it.
-		return false;
+	{
+		delete m_pToy;
+		m_pToy = nullptr;
+
+		return LoadSourceFile();
+	}
 
 	size_t iMaterials = m_pToy->GetNumMaterials();
 

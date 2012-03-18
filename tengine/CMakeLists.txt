@@ -54,6 +54,7 @@ set (TENGINE_GAME_ENTITY_SOURCES
 
 set (TENGINE_MODELS_SOURCES
 	models/models.cpp
+	models/loadsource.cpp
 )
 
 set (TENGINE_NETWORK_SOURCES

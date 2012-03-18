@@ -487,7 +487,8 @@ bool CToyUtil::Read(const tstring& sFilename, CToy* pToy)
 
 	fread(pBuffer, iToySize, 1, fp);
 
-	TAssert(memcmp(pBuffer, g_szBaseHeader, sizeof(g_szBaseHeader)) == 0);
+	if (memcmp(pBuffer, g_szBaseHeader, sizeof(g_szBaseHeader)) != 0)
+		return false;
 
 	fclose(fp);
 
