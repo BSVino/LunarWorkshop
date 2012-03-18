@@ -32,6 +32,8 @@ public:
 
 void CWorkbenchCamera::Think()
 {
+	BaseClass::Think();
+
 	Workbench()->GetActiveTool()->CameraThink();
 }
 
