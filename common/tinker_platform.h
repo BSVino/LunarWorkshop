@@ -19,6 +19,7 @@ tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile = ""
 eastl::vector<tstring> ListDirectory(const tstring& sDirectory, bool bDirectories = true);
 bool IsFile(const tstring& sPath);
 bool IsDirectory(const tstring& sPath);
+void CreateDirectoryNonRecursive(const tstring& sPath);
 tstring FindAbsolutePath(const tstring& sPath);
 time_t GetFileModificationTime(const char* pszFile);
 void DebugPrint(const tstring& sText);

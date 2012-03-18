@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tstring.h"
+#include "tinker_platform.h"
 
 // Takes a path + filename + extension and removes path and extension to return only the filename.
 inline tstring GetFilename(const tstring& sFilename)
@@ -67,3 +68,57 @@ inline tstring ToForwardSlashes(const tstring& sFilename)
 	return sResult;
 }
 
+inline tstring GetRelativePath(const tstring& sPath, const tstring& sFrom)
+{
+	tstring sAbsolutePath = FindAbsolutePath(sPath);
+	tstring sAbsoluteFrom = FindAbsolutePath(sFrom);
+
+	int iIdentical = 0;
+
+	while ((int)sAbsolutePath.length() >= iIdentical && (int)sAbsoluteFrom.length() >= iIdentical && sAbsolutePath[iIdentical] == sAbsoluteFrom[iIdentical])
+		iIdentical++;
+
+	tstring sBasePath = sAbsolutePath.substr(iIdentical);
+	tstring sBaseFrom = sAbsoluteFrom.substr(iIdentical);
+
+	size_t iDirectories = 1;
+	for (size_t i = 0; i < sBaseFrom.length(); i++)
+	{
+		if (sBaseFrom[i] == '/' || sBaseFrom[i] == '\\')
+			iDirectories++;
+	}
+
+	tstring sResult;
+	for (size_t i = 0; i < iDirectories; i++)
+		sResult += "../";
+
+	return sResult + sBasePath;
+}
+
+inline void CreateDirectory(const tstring& sPath)
+{
+	tstring sSubPath = sPath;
+
+	if (IsDirectory(sPath))
+		return;
+
+	eastl::vector<tstring> asPaths;
+	while (true)
+	{
+		sSubPath = GetDirectory(sSubPath);
+		if (sSubPath == ".")
+			break;
+
+		asPaths.push_back(sSubPath);
+	}
+
+	for (size_t i = 0; i < asPaths.size(); i++)
+	{
+		if (IsDirectory(asPaths[asPaths.size()-i-1]))
+			continue;
+
+		CreateDirectoryNonRecursive(asPaths[asPaths.size()-i-1]);
+	}
+
+	CreateDirectoryNonRecursive(sPath);
+}

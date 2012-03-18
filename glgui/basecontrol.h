@@ -50,7 +50,9 @@ namespace glgui
 		virtual float	GetTop() { return m_flY; };
 		virtual float	GetRight() { return m_flX + m_flW; };
 		virtual float	GetBottom() { return m_flY + m_flH; };
+		virtual void	Center();
 		virtual void	CenterX();
+		virtual void	CenterY();
 
 		virtual void	SetVisible(bool bVis);
 		virtual bool	IsVisible();

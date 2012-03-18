@@ -126,12 +126,26 @@ void CBaseControl::SetBottom(float b)
 	m_flH = b - m_flY;
 }
 
+void CBaseControl::Center()
+{
+	CenterX();
+	CenterY();
+}
+
 void CBaseControl::CenterX()
 {
 	if (!GetParent())
 		return;
 
 	SetLeft(GetParent()->GetWidth()/2-GetWidth()/2);
+}
+
+void CBaseControl::CenterY()
+{
+	if (!GetParent())
+		return;
+
+	SetTop(GetParent()->GetHeight()/2-GetHeight()/2);
 }
 
 void CBaseControl::SetVisible(bool bVis)

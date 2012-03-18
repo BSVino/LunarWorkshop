@@ -271,6 +271,11 @@ bool IsDirectory(const tstring& sPath)
 	return false;
 }
 
+void CreateDirectoryNonRecursive(const tstring& sPath)
+{
+	CreateDirectory(convertstring<tchar, wchar_t>(sPath).c_str(), NULL);
+}
+
 tstring FindAbsolutePath(const tstring& sPath)
 {
 	wchar_t szPath[MAX_PATH];

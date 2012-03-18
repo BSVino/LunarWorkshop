@@ -9,6 +9,8 @@
 #include <glgui/menu.h>
 #include <glgui/textfield.h>
 #include <glgui/checkbox.h>
+#include <glgui/panel.h>
+#include <glgui/movablepanel.h>
 #include <tinker/application.h>
 #include <renderer/game_renderingcontext.h>
 #include <renderer/game_renderer.h>
@@ -673,6 +675,8 @@ bool CLevelEditor::KeyPress(int c)
 	{
 		if (m_pLevel)
 			m_pLevel->SaveToFile();
+
+		return true;
 	}
 
 	return false;

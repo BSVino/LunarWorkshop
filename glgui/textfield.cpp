@@ -233,15 +233,23 @@ bool CTextField::KeyPressed(int iKey, bool bCtrlDown)
 	{
 		if (m_iAutoComplete >= 0 && m_asAutoCompleteCommands.size())
 		{
-			if (iKey == TINKER_KEY_TAB || iKey == TINKER_KEY_BACKSPACE || iKey == TINKER_KEY_LEFT || iKey == TINKER_KEY_RIGHT || iKey == TINKER_KEY_DEL || iKey == TINKER_KEY_HOME || iKey == TINKER_KEY_END)
+			if (iKey == TINKER_KEY_TAB || iKey == TINKER_KEY_DOWN)
+			{
+				m_iAutoComplete++;
+			}
+			else if (iKey == TINKER_KEY_UP)
+			{
+				m_iAutoComplete--;
+			}
+			else if (iKey == TINKER_KEY_BACKSPACE || iKey == TINKER_KEY_LEFT || iKey == TINKER_KEY_RIGHT || iKey == TINKER_KEY_DEL || iKey == TINKER_KEY_HOME || iKey == TINKER_KEY_END)
 			{
 				// Let the text field handle it.
 				m_iAutoComplete = -1;
 			}
-			else if (iKey != TINKER_KEY_TAB)
+			else
 			{
 				tstring sInput = GetText();
-				if (sInput.length() && sInput.find(' ') == ~0)
+				if (sInput.length())
 				{
 					SetText(m_asAutoCompleteCommands[m_iAutoComplete % m_asAutoCompleteCommands.size()]);
 					SetCursorPosition(-1);
