@@ -148,6 +148,8 @@ void CWorkbench::Activate()
 		Workbench()->GetActiveTool()->Activate();
 
 	Workbench()->m_bActive = true;
+
+	glgui::CRootPanel::Get()->GetMenuBar()->SetVisible(true);
 }
 
 void CWorkbench::Deactivate()
@@ -161,6 +163,8 @@ void CWorkbench::Deactivate()
 
 	if (Workbench()->GetActiveTool())
 		Workbench()->GetActiveTool()->Deactivate();
+
+	glgui::CRootPanel::Get()->GetMenuBar()->SetVisible(false);
 }
 
 void CWorkbench::RenderScene()
