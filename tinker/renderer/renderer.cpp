@@ -190,6 +190,8 @@ void CRenderer::PostFrame()
 
 void CRenderer::PreRender()
 {
+	m_iWidth = Application()->GetWindowWidth();
+	m_iHeight = Application()->GetWindowHeight();
 }
 
 void CRenderer::PostRender()
