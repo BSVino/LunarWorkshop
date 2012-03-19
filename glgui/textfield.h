@@ -42,6 +42,7 @@ namespace glgui
 		virtual void	AppendText(const tchar* pszText);
 		virtual tstring	GetText();
 
+		void			ClearAutoCompleteCommands();
 		void			SetAutoCompleteCommands(const eastl::vector<tstring>& asCommands);
 		void			SetAutoCompleteFiles(const tstring& sBaseDirectory=".", const eastl::vector<tstring>& asExtensions = eastl::vector<tstring>(), const eastl::vector<tstring>& asExtensionsExclude = eastl::vector<tstring>());
 

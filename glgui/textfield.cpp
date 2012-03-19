@@ -417,6 +417,11 @@ void CTextField::AppendText(const tchar* pszText)
 	m_sText.append(pszText);
 }
 
+void CTextField::ClearAutoCompleteCommands()
+{
+	m_asAutoCompleteCommands.clear();
+}
+
 void CTextField::SetAutoCompleteCommands(const eastl::vector<tstring>& asCommands)
 {
 	m_asAutoCompleteCommands.clear();

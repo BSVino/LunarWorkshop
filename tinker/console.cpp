@@ -30,11 +30,11 @@ CConsole::CConsole()
 	AddControl(m_pOutput);
 
 	m_pInput = new glgui::CTextField();
+	m_pInput->SetContentsChangedListener(this, CommandChanged);
 	AddControl(m_pInput);
 
 	m_bBackground = true;
 
-	m_iAutoComplete = -1;
 	m_iHistory = -1;
 }
 
@@ -114,53 +114,6 @@ void CConsole::Paint(float x, float y, float w, float h)
 	glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 200), 1, true);
 
 	BaseClass::Paint(x, y, w, h);
-
-	tstring sInput = m_pInput->GetText();
-	if (sInput.length() && sInput.find(' ') == ~0)
-	{
-		eastl::vector<tstring> asCommands = CCommand::GetCommandsBeginningWith(sInput);
-
-		size_t iCommandsToShow = asCommands.size();
-		bool bAbbreviated = false;
-
-		if (iCommandsToShow > 5)
-		{
-			iCommandsToShow = 5;
-			bAbbreviated = true;
-		}
-
-		if (bAbbreviated)
-			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)(iCommandsToShow+1)*13+3, Color(0, 0, 0, 200), 0, true);
-		else
-			glgui::CRootPanel::PaintRect(x+5, y+h+2, w, (float)iCommandsToShow*13+3, Color(0, 0, 0, 200), 0, true);
-
-		int iCommandsToSkip = 0;
-		if (m_iAutoComplete >= 0 && asCommands.size())
-		{
-			int iAutoComplete = m_iAutoComplete % asCommands.size();
-
-			if (iAutoComplete < 5)
-				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*iAutoComplete, w, 13+3, Color(100, 100, 100, 200), 2);
-			else
-			{
-				glgui::CRootPanel::PaintRect(x+5, y+h+2 + 13*4, w, 13+3, Color(100, 100, 100, 200), 2);
-				iCommandsToSkip = iAutoComplete - 4;
-			}
-
-			if (iAutoComplete == asCommands.size()-1)
-				bAbbreviated = false;
-		}
-
-		int iCommandsPainted = 0;
-		for (size_t i = iCommandsToSkip; i < iCommandsToShow+iCommandsToSkip; i++)
-			glgui::CLabel::PaintText(asCommands[i], asCommands[i].length(), "sans-serif", 13, (float)(x + 5), (float)(y + h + iCommandsPainted++*13));
-
-		if (bAbbreviated)
-		{
-			tstring sDotDotDot = "...";
-			glgui::CLabel::PaintText(sDotDotDot, sDotDotDot.length(), "sans-serif", 13, (float)(x + 5), (float)(y + h + iCommandsPainted++*13));
-		}
-	}
 }
 
 void CConsole::PrintConsole(const tstring& sText)
@@ -190,36 +143,7 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 		return true;
 	}
 
-	if (m_iAutoComplete >= 0)
-	{
-		if (code == TINKER_KEY_BACKSPACE || code == TINKER_KEY_LEFT || code == TINKER_KEY_RIGHT || code == TINKER_KEY_DEL || code == TINKER_KEY_HOME || code == TINKER_KEY_END)
-		{
-			// Let the text field handle it.
-			m_iAutoComplete = -1;
-			return BaseClass::KeyPressed(code, bCtrlDown);
-		}
-		else if (code != TINKER_KEY_TAB)
-		{
-			tstring sInput = m_pInput->GetText();
-			if (sInput.length() && sInput.find(' ') == ~0)
-			{
-				eastl::vector<tstring> asCommands = CCommand::GetCommandsBeginningWith(sInput);
-
-				if (asCommands.size())
-				{
-					m_pInput->SetText(asCommands[m_iAutoComplete % asCommands.size()] + (code == ' '?"":" "));
-					m_pInput->SetCursorPosition(-1);
-				}
-			}
-
-			m_iAutoComplete = -1;
-
-			// If it's enter, fall through to below so it runs the command.
-			if (!(code == TINKER_KEY_ENTER || code == TINKER_KEY_KP_ENTER))
-				return true;
-		}
-	}
-	else if (m_asHistory.size())
+	if (m_asHistory.size())
 	{
 		if (code == TINKER_KEY_DOWN)
 		{
@@ -250,6 +174,11 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 			m_iHistory = -1;
 	}
 
+	bool bReturn = BaseClass::KeyPressed(code, bCtrlDown);
+
+	if (bReturn && !(code == TINKER_KEY_ENTER || code == TINKER_KEY_KP_ENTER))
+		return true;
+
 	if (code == TINKER_KEY_ENTER || code == TINKER_KEY_KP_ENTER)
 	{
 		tstring sText = m_pInput->GetText();
@@ -266,17 +195,6 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 		return true;
 	}
 
-	if (code == TINKER_KEY_TAB)
-	{
-		m_iAutoComplete++;
-		return true;
-	}
-
-	bool bReturn = BaseClass::KeyPressed(code, bCtrlDown);
-
-	if (bReturn)
-		return true;
-
 	return false;
 }
 
@@ -291,12 +209,19 @@ bool CConsole::CharPressed(int iKey)
 		return true;
 	}
 
-	if (m_iAutoComplete >= 0)
+	return BaseClass::CharPressed(iKey);
+}
+
+void CConsole::CommandChangedCallback(const tstring& sArgs)
+{
+	tstring sInput = m_pInput->GetText();
+	if (sInput.find(' ') != ~0)
 	{
-		m_iAutoComplete = -1;
+		m_pInput->ClearAutoCompleteCommands();
+		return;
 	}
 
-	return BaseClass::CharPressed(iKey);
+	m_pInput->SetAutoCompleteCommands(CCommand::GetCommandsBeginningWith(sInput));
 }
 
 void CApplication::OpenConsole()

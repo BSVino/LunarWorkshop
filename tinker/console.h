@@ -3,7 +3,7 @@
 
 #include <glgui/panel.h>
 
-class CConsole : public glgui::CPanel
+class CConsole : public glgui::CPanel, public glgui::IEventListener
 {
 	DECLARE_CLASS(CConsole, glgui::CPanel);
 
@@ -28,6 +28,8 @@ public:
 	virtual bool			KeyPressed(int code, bool bCtrlDown = false);
 	virtual bool			CharPressed(int iKey);
 
+	EVENT_CALLBACK(CConsole, CommandChanged);
+
 	virtual void			SetRenderBackground(bool bBackground) { m_bBackground = bBackground; }
 
 protected:
@@ -35,8 +37,6 @@ protected:
 	glgui::CTextField*		m_pInput;
 
 	bool					m_bBackground;
-
-	int						m_iAutoComplete;
 
 	eastl::vector<tstring>	m_asHistory;
 	int						m_iHistory;

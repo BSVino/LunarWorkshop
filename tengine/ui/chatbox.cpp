@@ -66,6 +66,9 @@ CLIENT_COMMAND(CONNECTION_UNDEFINED, ClientChatSay)
 
 void ChatSay(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
 {
+	if (sCommand.find(' ') == ~0)
+		return;
+
 	if (LobbyNetwork()->IsConnected())
 		ClientChatSay.RunCommand(CONNECTION_LOBBY, sCommand.substr(sCommand.find(' ')));
 	else
