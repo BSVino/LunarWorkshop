@@ -77,6 +77,7 @@ namespace glgui
 		virtual void		Paint(float x, float y)=0;
 		virtual void		Paint(float x, float y, float w, float h)=0;
 		virtual void		PaintBackground(float x, float y, float w, float h)=0;
+		virtual void		PostPaint()=0;
 		virtual void		Layout()=0;
 		virtual void		Think()=0;
 		virtual void		UpdateScene()=0;

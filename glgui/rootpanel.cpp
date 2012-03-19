@@ -93,6 +93,7 @@ void CRootPanel::Paint(float x, float y, float w, float h)
 	c.UseFrameBuffer(NULL);
 
 	CPanel::Paint(x, y, w, h);
+	CPanel::PostPaint();
 
 	if (m_pDragging)
 	{

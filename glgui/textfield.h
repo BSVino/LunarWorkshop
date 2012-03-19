@@ -18,6 +18,7 @@ namespace glgui
 		virtual void	Paint() { float x = 0, y = 0; GetAbsPos(x, y); Paint(x, y); };
 		virtual void	Paint(float x, float y) { Paint(x, y, m_flW, m_flH); };
 		virtual void	Paint(float x, float y, float w, float h);
+		virtual void	PostPaint();
 		virtual void	DrawLine(const tchar* pszText, unsigned iLength, float x, float y, float w, float h);
 
 		virtual bool	IsCursorListener() {return true;};
@@ -25,6 +26,7 @@ namespace glgui
 		virtual bool	TakesFocus();
 		virtual bool	SetFocus(bool bFocus);
 
+		virtual bool	MousePressed(int iButton, int mx, int my);
 		virtual bool	CharPressed(int iKey);
 		virtual bool	KeyPressed(int iKey, bool bCtrlDown = false);
 

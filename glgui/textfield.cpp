@@ -63,9 +63,33 @@ void CTextField::Paint(float x, float y, float w, float h)
 
 	DrawLine(m_sText.c_str(), (unsigned int)m_sText.length(), x+4, y, w-8, h);
 
+	if (m_sText.length() && m_iAutoComplete >= 0 && m_asAutoCompleteCommands.size() && HasFocus())
+	{
+		int iAutoComplete = m_iAutoComplete % m_asAutoCompleteCommands.size();
+		tstring sCommand = m_asAutoCompleteCommands[iAutoComplete];
+
+		TAssertNoMsg(sCommand.compare(0, m_sText.length(), m_sText) == 0);
+
+		sCommand = sCommand.substr(m_sText.length());
+
+		Color clrOld = m_FGColor;
+		m_FGColor /= 2;
+
+		float flOriginalTextWidth = CLabel::GetTextWidth(m_sText, m_sText.length(), "sans-serif", m_iFontFaceSize);
+		DrawLine(sCommand.c_str(), sCommand.length(), x+4+flOriginalTextWidth, y, w-8-flOriginalTextWidth, h);
+
+		m_FGColor = clrOld;
+	}
+}
+
+void CTextField::PostPaint()
+{
 	tstring sInput = GetText();
 	if (sInput.length() && m_asAutoCompleteCommands.size() && HasFocus())
 	{
+		float x, y, w, h;
+		GetAbsDimensions(x, y, w, h);
+
 		size_t iCommandsToShow = m_asAutoCompleteCommands.size();
 		bool bAbbreviated = false;
 
@@ -189,31 +213,40 @@ bool CTextField::SetFocus(bool bFocus)
 
 	if (bFocus)
 	{
-		int mx, my;
-		CRootPanel::GetFullscreenMousePos(mx, my);
-
-		float cx, cy;
-		GetAbsPos(cx, cy);
-
-		float flCursor = (float)(mx-cx);
-		for (size_t i = 1; i < m_sText.length(); i++)
-		{
-			float flText = CLabel::GetFont("sans-serif", m_iFontFaceSize)->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str(), i);
-			if (flCursor < flText)
-			{
-				m_iCursor = i-1;
-				return true;
-			}
-		}
+		m_flBlinkTime = CRootPanel::Get()->GetTime();
 
 		m_iCursor = m_sText.length();
-
-		m_flBlinkTime = CRootPanel::Get()->GetTime();
 
 		return true;
 	}
 
 	return false;
+}
+
+bool CTextField::MousePressed(int iButton, int mx, int my)
+{
+	if (!TakesFocus())
+		return false;
+
+	CRootPanel::Get()->SetFocus(this);
+
+	float cx, cy;
+	GetAbsPos(cx, cy);
+
+	float flCursor = (float)(mx-cx);
+	for (size_t i = 1; i < m_sText.length(); i++)
+	{
+		float flText = CLabel::GetFont("sans-serif", m_iFontFaceSize)->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str(), i);
+		if (flCursor < flText)
+		{
+			m_iCursor = i-1;
+			return true;
+		}
+	}
+
+	m_iCursor = m_sText.length();
+
+	return true;
 }
 
 bool CTextField::CharPressed(int iKey)
@@ -238,7 +271,7 @@ bool CTextField::CharPressed(int iKey)
 
 bool CTextField::KeyPressed(int iKey, bool bCtrlDown)
 {
-	if (m_iAutoComplete >= 0 && m_asAutoCompleteCommands.size())
+	if (m_sText.length() && m_iAutoComplete >= 0 && m_asAutoCompleteCommands.size())
 	{
 		if (iKey == TINKER_KEY_TAB || iKey == TINKER_KEY_DOWN)
 		{
@@ -312,7 +345,7 @@ bool CTextField::KeyPressed(int iKey, bool bCtrlDown)
 		m_iCursor += sClipboard.length();
 		UpdateContentsChangedListener();
 	}
-	else if (m_asAutoCompleteCommands.size() && (iKey == TINKER_KEY_TAB || iKey == TINKER_KEY_DOWN))
+	else if (m_sText.length() && m_asAutoCompleteCommands.size() && (iKey == TINKER_KEY_TAB || iKey == TINKER_KEY_DOWN))
 	{
 		m_iAutoComplete++;
 		return true;

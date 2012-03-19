@@ -438,6 +438,45 @@ void CPanel::Paint(float x, float y, float w, float h)
 	BaseClass::Paint(x, y, w, h);
 }
 
+void CPanel::PostPaint()
+{
+	if (!IsVisible())
+		return;
+
+	bool bScissor = m_bScissoring;
+	float sx, sy;
+	if (bScissor)
+	{
+		GetAbsPos(sx, sy);
+
+		//CRootPanel::PaintRect(sx, sy, GetWidth(), GetHeight(), Color(0, 0, 100, 50));
+
+		CRootPanel::GetContext()->SetUniform("bScissor", true);
+		CRootPanel::GetContext()->SetUniform("vecScissor", Vector4D(sx, sy, GetWidth(), GetHeight()));
+	}
+
+	size_t iCount = m_apControls.size();
+	for (size_t i = 0; i < iCount; i++)
+	{
+		IControl* pControl = m_apControls[i];
+		if (!pControl->IsVisible())
+			continue;
+
+		if (bScissor)
+		{
+			CRootPanel::GetContext()->SetUniform("bScissor", true);
+			CRootPanel::GetContext()->SetUniform("vecScissor", Vector4D(sx, sy, GetWidth(), GetHeight()));
+		}
+
+		pControl->PostPaint();
+	}
+
+	if (bScissor)
+		CRootPanel::GetContext()->SetUniform("bScissor", false);
+
+	BaseClass::PostPaint();
+}
+
 bool CPanel::ShouldControlOffset(IControl* pControl) const
 {
 	if (pControl == m_pVerticalScrollBar || pControl == m_pHorizontalScrollBar)
