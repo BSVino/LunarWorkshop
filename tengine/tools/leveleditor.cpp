@@ -138,7 +138,10 @@ void CEntityPropertiesPanel::Layout()
 				pTextField->CenterX();
 				pTextField->SetTop(flTop+12);
 
-				pTextField->SetContentsChangedListener(this, PropertyChanged);
+				if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
+					pTextField->SetContentsChangedListener(this, ModelChanged, sprintf("%d", i));
+				else
+					pTextField->SetContentsChangedListener(this, PropertyChanged);
 
 				if (m_pEntity && m_pEntity->HasParameterValue(pSaveData->m_pszHandle))
 					pTextField->SetText(m_pEntity->GetParameterValue(pSaveData->m_pszHandle));
@@ -202,6 +205,20 @@ void CEntityPropertiesPanel::Layout()
 	SetHeight(flTop);
 
 	BaseClass::Layout();
+}
+
+void CEntityPropertiesPanel::ModelChangedCallback(const tstring& sArgs)
+{
+	eastl::vector<tstring> asExtensions;
+	eastl::vector<tstring> asExtensionsExclude;
+
+	asExtensions.push_back(".toy");
+	asExtensions.push_back(".png");
+	asExtensionsExclude.push_back(".mesh.toy");
+	asExtensionsExclude.push_back(".phys.toy");
+	asExtensionsExclude.push_back(".area.toy");
+
+	static_cast<glgui::CTextField*>(m_apPropertyOptions[stoi(sArgs)])->SetAutoCompleteFiles(".", asExtensions, asExtensionsExclude);
 }
 
 void CEntityPropertiesPanel::PropertyChangedCallback(const tstring& sArgs)
@@ -312,28 +329,16 @@ void CCreateEntityPanel::ModelChangedCallback(const tstring& sArgs)
 	if (!m_pModelText->GetText().length())
 		return;
 
-	tstring sGameFolder = FindAbsolutePath(".");
-	tstring sInputFolder = FindAbsolutePath(m_pModelText->GetText());
+	eastl::vector<tstring> asExtensions;
+	eastl::vector<tstring> asExtensionsExclude;
 
-	if (sInputFolder.compare(0, sGameFolder.length(), sGameFolder) != 0)
-		return;
+	asExtensions.push_back(".toy");
+	asExtensions.push_back(".png");
+	asExtensionsExclude.push_back(".mesh.toy");
+	asExtensionsExclude.push_back(".phys.toy");
+	asExtensionsExclude.push_back(".area.toy");
 
-	tstring sSearchDirectory = GetDirectory(sInputFolder);
-
-	tstring sPrefix = ToForwardSlashes(sSearchDirectory.substr(sGameFolder.length()));
-	while (sPrefix[0] == '/')
-		sPrefix = sPrefix.substr(1);
-	while (sPrefix.back() == '/')
-		sPrefix = sPrefix.substr(0, sPrefix.length()-2);
-	if (sPrefix.length())
-		sPrefix = sPrefix + '/';
-
-	eastl::vector<tstring> asFiles = ListDirectory(sSearchDirectory);
-
-	for (size_t i = 0; i < asFiles.size(); i++)
-		asFiles[i] = sPrefix + asFiles[i];
-
-	m_pModelText->SetAutoCompleteCommands(asFiles);
+	m_pModelText->SetAutoCompleteFiles(".", asExtensions, asExtensionsExclude);
 }
 
 CEditorPanel::CEditorPanel()
