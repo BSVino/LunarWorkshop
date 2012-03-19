@@ -187,7 +187,7 @@ CSourcePanel::CSourcePanel()
 	AddControl(m_pToyFileLabel);
 
 	m_pToyFileText = new glgui::CTextField();
-	AddControl(m_pToyFileText);
+	AddControl(m_pToyFileText, true);
 
 	m_pMeshLabel = new glgui::CLabel("Mesh: ", "sans-serif", 10);
 	m_pMeshLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
@@ -195,7 +195,7 @@ CSourcePanel::CSourcePanel()
 
 	m_pMeshText = new glgui::CTextField();
 	m_pMeshText->SetContentsChangedListener(this, ModelChanged, "mesh");
-	AddControl(m_pMeshText);
+	AddControl(m_pMeshText, true);
 
 	m_pPhysLabel = new glgui::CLabel("Physics: ", "sans-serif", 10);
 	m_pPhysLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
@@ -203,7 +203,7 @@ CSourcePanel::CSourcePanel()
 
 	m_pPhysText = new glgui::CTextField();
 	m_pPhysText->SetContentsChangedListener(this, ModelChanged, "phys");
-	AddControl(m_pPhysText);
+	AddControl(m_pPhysText, true);
 }
 
 void CSourcePanel::SetVisible(bool bVis)

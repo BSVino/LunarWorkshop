@@ -173,11 +173,16 @@ void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float
 	c.RenderText(pszText, iLength, "sans-serif", m_iFontFaceSize);
 }
 
+bool CTextField::TakesFocus()
+{
+	return IsVisible();
+}
+
 bool CTextField::SetFocus(bool bFocus)
 {
 	CBaseControl::SetFocus(bFocus);
 
-	if (!IsVisible())
+	if (!TakesFocus())
 		return false;
 
 	m_iAutoComplete = -1;
@@ -202,6 +207,8 @@ bool CTextField::SetFocus(bool bFocus)
 		}
 
 		m_iCursor = m_sText.length();
+
+		m_flBlinkTime = CRootPanel::Get()->GetTime();
 
 		return true;
 	}
@@ -231,99 +238,96 @@ bool CTextField::CharPressed(int iKey)
 
 bool CTextField::KeyPressed(int iKey, bool bCtrlDown)
 {
-	if (HasFocus())
+	if (m_iAutoComplete >= 0 && m_asAutoCompleteCommands.size())
 	{
-		if (m_iAutoComplete >= 0 && m_asAutoCompleteCommands.size())
-		{
-			if (iKey == TINKER_KEY_TAB || iKey == TINKER_KEY_DOWN)
-			{
-				m_iAutoComplete++;
-			}
-			else if (iKey == TINKER_KEY_UP)
-			{
-				m_iAutoComplete--;
-			}
-			else if (iKey == TINKER_KEY_BACKSPACE || iKey == TINKER_KEY_LEFT || iKey == TINKER_KEY_RIGHT || iKey == TINKER_KEY_DEL || iKey == TINKER_KEY_HOME || iKey == TINKER_KEY_END)
-			{
-				// Let the text field handle it.
-				m_iAutoComplete = -1;
-			}
-			else
-			{
-				tstring sInput = GetText();
-				if (sInput.length())
-				{
-					SetText(m_asAutoCompleteCommands[m_iAutoComplete % m_asAutoCompleteCommands.size()]);
-					SetCursorPosition(-1);
-					UpdateContentsChangedListener();
-				}
-
-				m_iAutoComplete = -1;
-			}
-		}
-		else if (iKey == TINKER_KEY_ESCAPE || iKey == TINKER_KEY_ENTER)
-			CRootPanel::Get()->SetFocus(NULL);
-		else if (iKey == TINKER_KEY_LEFT)
-		{
-			if (m_iCursor > 0)
-				m_iCursor--;
-		}
-		else if (iKey == TINKER_KEY_RIGHT)
-		{
-			if (m_iCursor < m_sText.length())
-				m_iCursor++;
-		}
-		else if (iKey == TINKER_KEY_BACKSPACE)
-		{
-			if (m_iCursor > 0)
-			{
-				m_sText.erase(m_iCursor-1, 1);
-				m_iCursor--;
-				UpdateContentsChangedListener();
-			}
-		}
-		else if (iKey == TINKER_KEY_DEL)
-		{
-			if (m_iCursor < m_sText.length())
-			{
-				m_sText.erase(m_iCursor, 1);
-				UpdateContentsChangedListener();
-			}
-		}
-		else if (iKey == TINKER_KEY_HOME)
-		{
-			m_iCursor = 0;
-		}
-		else if (iKey == TINKER_KEY_END)
-		{
-			m_iCursor = m_sText.length();
-		}
-		else if ((iKey == 'v' || iKey == 'V') && bCtrlDown)
-		{
-			tstring sClipboard = convertstring<char, tchar>(GetClipboard());
-			m_sText.insert(m_sText.begin()+m_iCursor, sClipboard.begin(), sClipboard.end());
-			m_iCursor += sClipboard.length();
-			UpdateContentsChangedListener();
-		}
-		else if (iKey == TINKER_KEY_TAB || iKey == TINKER_KEY_DOWN)
+		if (iKey == TINKER_KEY_TAB || iKey == TINKER_KEY_DOWN)
 		{
 			m_iAutoComplete++;
-			return true;
 		}
 		else if (iKey == TINKER_KEY_UP)
 		{
 			m_iAutoComplete--;
-			return true;
 		}
+		else if (iKey == TINKER_KEY_BACKSPACE || iKey == TINKER_KEY_LEFT || iKey == TINKER_KEY_RIGHT || iKey == TINKER_KEY_DEL || iKey == TINKER_KEY_HOME || iKey == TINKER_KEY_END)
+		{
+			// Let the text field handle it.
+			m_iAutoComplete = -1;
+		}
+		else
+		{
+			tstring sInput = GetText();
+			if (sInput.length())
+			{
+				SetText(m_asAutoCompleteCommands[m_iAutoComplete % m_asAutoCompleteCommands.size()]);
+				SetCursorPosition(-1);
+				UpdateContentsChangedListener();
+			}
 
-		m_flBlinkTime = CRootPanel::Get()->GetTime();
-
-		FindRenderOffset();
+			m_iAutoComplete = -1;
+		}
 
 		return true;
 	}
+	else if (iKey == TINKER_KEY_ESCAPE || iKey == TINKER_KEY_ENTER)
+		CRootPanel::Get()->SetFocus(NULL);
+	else if (iKey == TINKER_KEY_LEFT)
+	{
+		if (m_iCursor > 0)
+			m_iCursor--;
+	}
+	else if (iKey == TINKER_KEY_RIGHT)
+	{
+		if (m_iCursor < m_sText.length())
+			m_iCursor++;
+	}
+	else if (iKey == TINKER_KEY_BACKSPACE)
+	{
+		if (m_iCursor > 0)
+		{
+			m_sText.erase(m_iCursor-1, 1);
+			m_iCursor--;
+			UpdateContentsChangedListener();
+		}
+	}
+	else if (iKey == TINKER_KEY_DEL)
+	{
+		if (m_iCursor < m_sText.length())
+		{
+			m_sText.erase(m_iCursor, 1);
+			UpdateContentsChangedListener();
+		}
+	}
+	else if (iKey == TINKER_KEY_HOME)
+	{
+		m_iCursor = 0;
+	}
+	else if (iKey == TINKER_KEY_END)
+	{
+		m_iCursor = m_sText.length();
+	}
+	else if ((iKey == 'v' || iKey == 'V') && bCtrlDown)
+	{
+		tstring sClipboard = convertstring<char, tchar>(GetClipboard());
+		m_sText.insert(m_sText.begin()+m_iCursor, sClipboard.begin(), sClipboard.end());
+		m_iCursor += sClipboard.length();
+		UpdateContentsChangedListener();
+	}
+	else if (m_asAutoCompleteCommands.size() && (iKey == TINKER_KEY_TAB || iKey == TINKER_KEY_DOWN))
+	{
+		m_iAutoComplete++;
+		return true;
+	}
+	else if (iKey == TINKER_KEY_UP)
+	{
+		m_iAutoComplete--;
+		return true;
+	}
 
-	return CBaseControl::KeyPressed(iKey, bCtrlDown);
+	m_flBlinkTime = CRootPanel::Get()->GetTime();
+
+	FindRenderOffset();
+
+	return iKey != TINKER_KEY_TAB;	// Let the panel handle tab.
 }
 
 void CTextField::SetContentsChangedListener(IEventListener* pListener, IEventListener::Callback pfnCallback, const tstring& sArgs)

@@ -41,6 +41,8 @@ namespace glgui
 
 		virtual IControl*		GetHasCursor();
 
+		void					NextTabStop();
+
 		virtual size_t			AddControl(IControl* pControl, bool bToTail = false);
 		virtual void			RemoveControl(IControl* pControl);
 		virtual eastl::vector<IControl*>&	GetControls() { return m_apControls; };

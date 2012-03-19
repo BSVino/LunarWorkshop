@@ -71,7 +71,8 @@ namespace glgui
 
 		virtual IControl*	GetHasCursor();
 
-		virtual bool	SetFocus(bool bFocus) { m_bFocus = bFocus; return false; };
+		virtual bool	TakesFocus() { return false; }
+		virtual bool	SetFocus(bool bFocus) { m_bFocus = bFocus; return TakesFocus(); };
 		virtual bool	HasFocus() { return m_bFocus; };
 
 		virtual void	SetCursorInListener(IEventListener* pListener, IEventListener::Callback pfnCallback);

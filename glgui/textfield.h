@@ -22,6 +22,7 @@ namespace glgui
 
 		virtual bool	IsCursorListener() {return true;};
 
+		virtual bool	TakesFocus();
 		virtual bool	SetFocus(bool bFocus);
 
 		virtual bool	CharPressed(int iKey);

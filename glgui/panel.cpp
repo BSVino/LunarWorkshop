@@ -2,6 +2,7 @@
 
 #include <tinker/shell.h>
 #include <renderer/renderingcontext.h>
+#include <tinker/keys.h>
 
 #include "rootpanel.h"
 #include "scrollbar.h"
@@ -61,8 +62,17 @@ bool CPanel::KeyPressed(int code, bool bCtrlDown)
 		if (!pControl->IsVisible())
 			continue;
 
+		if (pControl->TakesFocus() && !pControl->HasFocus())
+			continue;
+
 		if (pControl->KeyPressed(code, bCtrlDown))
 			return true;
+
+		if (pControl->HasFocus() && code == TINKER_KEY_TAB)
+		{
+			NextTabStop();
+			return true;
+		}
 	}
 	return false;
 }
@@ -228,6 +238,44 @@ IControl* CPanel::GetHasCursor()
 		return this;
 
 	return m_pHasCursor->GetHasCursor();
+}
+
+void CPanel::NextTabStop()
+{
+	size_t iOriginalFocus = 0;
+
+	for (size_t i = 0; i < m_apControls.size(); i++)
+	{
+		IControl* pControl = m_apControls[i];
+
+		if (!pControl->IsVisible())
+			continue;
+
+		if (pControl->HasFocus())
+		{
+			iOriginalFocus = i;
+			break;
+		}
+	}
+
+	for (size_t i = 0; i < m_apControls.size()-1; i++)
+	{
+		size_t iControl = (iOriginalFocus + i + 1)%m_apControls.size();
+		IControl* pControl = m_apControls[iControl];
+
+		if (!pControl->IsVisible())
+			continue;
+
+		if (pControl->TakesFocus())
+		{
+			CBaseControl* pBaseControl = dynamic_cast<CBaseControl*>(pControl);
+			if (!pBaseControl)
+				continue;
+
+			CRootPanel::Get()->SetFocus(pBaseControl);
+			return;
+		}
+	}
 }
 
 size_t CPanel::AddControl(IControl* pControl, bool bToTail)

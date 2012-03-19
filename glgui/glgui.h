@@ -93,6 +93,9 @@ namespace glgui
 
 		virtual IControl*	GetHasCursor()=0;
 
+		virtual bool		TakesFocus()=0;
+		virtual bool		HasFocus()=0;
+
 		virtual tstring		GetTooltip()=0;
 	};
 
