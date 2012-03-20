@@ -43,7 +43,7 @@ namespace glgui
 		virtual tstring	GetText();
 
 		void			ClearAutoCompleteCommands();
-		void			SetAutoCompleteCommands(const eastl::vector<tstring>& asCommands);
+		void			SetAutoCompleteCommands(const eastl::vector<tstring>& asCommands, bool bSlashInsensitive=false);
 		void			SetAutoCompleteFiles(const tstring& sBaseDirectory=".", const eastl::vector<tstring>& asExtensions = eastl::vector<tstring>(), const eastl::vector<tstring>& asExtensionsExclude = eastl::vector<tstring>());
 
 		virtual void	SetCursorPosition(size_t iPosition);
@@ -78,6 +78,7 @@ namespace glgui
 
 		eastl::vector<tstring>		m_asAutoCompleteCommands;
 		int							m_iAutoComplete;
+		bool						m_bSlashInsensitive;
 	};
 };
 

@@ -68,7 +68,10 @@ void CTextField::Paint(float x, float y, float w, float h)
 		int iAutoComplete = m_iAutoComplete % m_asAutoCompleteCommands.size();
 		tstring sCommand = m_asAutoCompleteCommands[iAutoComplete];
 
-		TAssertNoMsg(sCommand.compare(0, m_sText.length(), m_sText) == 0);
+		if (m_bSlashInsensitive)
+			TAssertNoMsg(ToForwardSlashes(sCommand).compare(0, m_sText.length(), ToForwardSlashes(m_sText)) == 0)	// By an amazing oddity of preproccesor magic the semicolon is not welcome here.
+		else
+			TAssertNoMsg(sCommand.compare(0, m_sText.length(), m_sText) == 0);
 
 		sCommand = sCommand.substr(m_sText.length());
 
@@ -422,8 +425,10 @@ void CTextField::ClearAutoCompleteCommands()
 	m_asAutoCompleteCommands.clear();
 }
 
-void CTextField::SetAutoCompleteCommands(const eastl::vector<tstring>& asCommands)
+void CTextField::SetAutoCompleteCommands(const eastl::vector<tstring>& asCommands, bool bSlashInsensitive)
 {
+	m_bSlashInsensitive = bSlashInsensitive;
+
 	m_asAutoCompleteCommands.clear();
 
 	for (size_t i = 0; i < asCommands.size(); i++)
@@ -431,8 +436,16 @@ void CTextField::SetAutoCompleteCommands(const eastl::vector<tstring>& asCommand
 		if (asCommands[i] == m_sText)
 			continue;
 
-		if (asCommands[i].compare(0, m_sText.length(), m_sText) == 0)
-			m_asAutoCompleteCommands.push_back(asCommands[i]);
+		if (m_bSlashInsensitive)
+		{
+			if (ToForwardSlashes(asCommands[i]).compare(0, m_sText.length(), ToForwardSlashes(m_sText)) == 0)
+				m_asAutoCompleteCommands.push_back(asCommands[i]);
+		}
+		else
+		{
+			if (asCommands[i].compare(0, m_sText.length(), m_sText) == 0)
+				m_asAutoCompleteCommands.push_back(asCommands[i]);
+		}
 	}
 
 	m_iAutoComplete = -1;
@@ -505,7 +518,7 @@ void CTextField::SetAutoCompleteFiles(const tstring& sBaseDirectory, const eastl
 		asCompletions.push_back(sPrefix + asFiles[i]);
 	}
 
-	SetAutoCompleteCommands(asCompletions);
+	SetAutoCompleteCommands(asCompletions, true);
 }
 
 void CTextField::SetCursorPosition(size_t iPosition)
