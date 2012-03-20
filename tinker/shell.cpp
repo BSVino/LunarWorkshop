@@ -23,6 +23,8 @@ CShell::CShell(int argc, char** argv)
 	for (int i = 0; i < argc; i++)
 		m_apszCommandLine.push_back(argv[i]);
 
+	m_sBinaryName = argv[0];
+
 	for (int i = 1; i < argc; i++)
 	{
 		if (m_apszCommandLine[i][0] == '+')

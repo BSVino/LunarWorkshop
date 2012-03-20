@@ -8,7 +8,7 @@
 #include <string>
 
 // Silo ascii
-void CModelConverter::ReadSIA(const tstring& sFilename)
+bool CModelConverter::ReadSIA(const tstring& sFilename)
 {
 	if (m_pWorkListener)
 		m_pWorkListener->BeginProgress();
@@ -23,7 +23,7 @@ void CModelConverter::ReadSIA(const tstring& sFilename)
 	if (!fp)
 	{
 		printf("No input file. Sorry!\n");
-		return;
+		return false;
 	}
 
 	fseek(fp, 0L, SEEK_END);
@@ -126,6 +126,8 @@ void CModelConverter::ReadSIA(const tstring& sFilename)
 
 	if (m_pWorkListener)
 		m_pWorkListener->EndProgress();
+
+	return true;
 }
 
 const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszEnd, CConversionSceneNode* pScene, const tstring& sFilename)

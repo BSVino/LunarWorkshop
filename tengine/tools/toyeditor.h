@@ -38,7 +38,8 @@ public:
 class CToySource
 {
 public:
-	void					Save();
+	void					Save() const;
+	void					Build() const;
 
 public:
 	tstring					m_sFilename;
@@ -62,6 +63,8 @@ public:
 	void					UpdateFields();
 
 	EVENT_CALLBACK(CSourcePanel, ModelChanged);
+	EVENT_CALLBACK(CSourcePanel, Save);
+	EVENT_CALLBACK(CSourcePanel, Build);
 
 public:
 	glgui::CLabel*			m_pFilename;
@@ -74,6 +77,9 @@ public:
 
 	glgui::CLabel*			m_pPhysLabel;
 	glgui::CTextField*		m_pPhysText;
+
+	glgui::CButton*			m_pSave;
+	glgui::CButton*			m_pBuild;
 };
 
 class CToyEditor : public CWorkbenchTool, public glgui::IEventListener

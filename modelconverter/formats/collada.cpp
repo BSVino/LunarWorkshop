@@ -2,8 +2,9 @@
 
 #include "../modelconverter.h"
 
-void CModelConverter::ReadDAE(const tstring& sFilename)
+bool CModelConverter::ReadDAE(const tstring& sFilename)
 {
+	return false;
 }
 
 void CModelConverter::ReadDAESceneTree(FCDSceneNode* pNode, CConversionSceneNode* pScene)
@@ -44,7 +45,7 @@ void CModelConverter::SaveDAE(const tstring& sFilename)
 
 #include "../modelconverter.h"
 
-void CModelConverter::ReadDAE(const tstring& sFilename)
+bool CModelConverter::ReadDAE(const tstring& sFilename)
 {
 	if (m_pWorkListener)
 		m_pWorkListener->BeginProgress();
@@ -264,7 +265,10 @@ void CModelConverter::ReadDAE(const tstring& sFilename)
 		}
 	}
 	else
+	{
 		printf("Oops! Some kind of error happened!\n");
+		return false;
+	}
 
 	m_pScene->SetWorkListener(m_pWorkListener);
 

@@ -6,7 +6,7 @@
 #include "../modelconverter.h"
 #include "strutils.h"
 
-void CModelConverter::ReadOBJ(const tstring& sFilename)
+bool CModelConverter::ReadOBJ(const tstring& sFilename)
 {
 	if (m_pWorkListener)
 		m_pWorkListener->BeginProgress();
@@ -16,7 +16,7 @@ void CModelConverter::ReadOBJ(const tstring& sFilename)
 	if (!fp)
 	{
 		printf("No input file. Sorry!\n");
-		return;
+		return false;
 	}
 
 	CConversionSceneNode* pScene = m_pScene->GetScene(m_pScene->AddScene(GetFilename(sFilename).append(".obj")));
@@ -365,6 +365,8 @@ void CModelConverter::ReadOBJ(const tstring& sFilename)
 
 	if (m_pWorkListener)
 		m_pWorkListener->EndProgress();
+
+	return true;
 }
 
 void CModelConverter::ReadMTL(const tstring& sFilename)

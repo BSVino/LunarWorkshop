@@ -21,15 +21,13 @@ bool CModelConverter::ReadModel(const tstring& sFilename)
 	sExtension.make_lower();
 
 	if (sExtension == ".obj")
-		ReadOBJ(sFilename);
+		return ReadOBJ(sFilename);
 	else if (sExtension == ".sia")
-		ReadSIA(sFilename);
+		return ReadSIA(sFilename);
 	else if (sExtension == ".dae")
-		ReadDAE(sFilename);
+		return ReadDAE(sFilename);
 	else
 		return false;
-
-	return true;
 }
 
 bool CModelConverter::SaveModel(const tstring& sFilename)

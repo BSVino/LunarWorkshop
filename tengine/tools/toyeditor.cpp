@@ -18,6 +18,7 @@
 #include <game/gameserver.h>
 #include <tinker/keys.h>
 #include <ui/gamewindow.h>
+#include <tools/toybuilder/geppetto.h>
 
 #include "workbench.h"
 
@@ -204,6 +205,14 @@ CSourcePanel::CSourcePanel()
 	m_pPhysText = new glgui::CTextField();
 	m_pPhysText->SetContentsChangedListener(this, ModelChanged, "phys");
 	AddControl(m_pPhysText, true);
+
+	m_pSave = new glgui::CButton("Save");
+	m_pSave->SetClickedListener(this, Save);
+	AddControl(m_pSave);
+
+	m_pBuild = new glgui::CButton("Build");
+	m_pBuild->SetClickedListener(this, Build);
+	AddControl(m_pBuild);
 }
 
 void CSourcePanel::SetVisible(bool bVis)
@@ -280,6 +289,13 @@ void CSourcePanel::Layout()
 	m_pPhysText->SetTop(flTop+12);
 
 	flTop += 43;
+
+	m_pSave->SetLeft(15);
+	m_pSave->SetRight(GetWidth()/2-15/2);
+	m_pSave->SetTop(GetHeight()-m_pSave->GetHeight() - 15);
+	m_pBuild->SetLeft(GetWidth()/2+15/2);
+	m_pBuild->SetRight(GetWidth()-15);
+	m_pBuild->SetTop(GetHeight()-m_pBuild->GetHeight() - 15);
 }
 
 void CSourcePanel::UpdateFields()
@@ -311,6 +327,16 @@ void CSourcePanel::ModelChangedCallback(const tstring& sArgs)
 	pField->SetAutoCompleteFiles(GetDirectory(ToyEditor()->GetToy().m_sFilename), asExtensions);
 
 	ToyEditor()->Layout();
+}
+
+void CSourcePanel::SaveCallback(const tstring& sArgs)
+{
+	ToyEditor()->GetToy().Save();
+}
+
+void CSourcePanel::BuildCallback(const tstring& sArgs)
+{
+	ToyEditor()->GetToy().Build();
 }
 
 CToyEditor* CToyEditor::s_pToyEditor = nullptr;
@@ -559,7 +585,7 @@ TVector CToyEditor::GetCameraDirection()
 	return AngleVector(m_angPreview);
 }
 
-void CToySource::Save()
+void CToySource::Save() const
 {
 	if (!m_sFilename.length())
 		return;
@@ -590,4 +616,13 @@ void CToySource::Save()
 	}
 
 	ToyEditor()->MarkSaved();
+}
+
+void CToySource::Build() const
+{
+	Save();
+
+	CGeppetto g(true, FindAbsolutePath(GetDirectory(m_sFilename)));
+
+	g.BuildFromInputScript(FindAbsolutePath(m_sFilename));
 }

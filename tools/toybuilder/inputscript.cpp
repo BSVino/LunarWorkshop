@@ -1,3 +1,5 @@
+#include "geppetto.h"
+
 #include <tinker_platform.h>
 #include <files.h>
 
@@ -6,12 +8,7 @@
 #include <modelconverter/modelconverter.h>
 #include <toys/toy_util.h>
 
-void LoadSceneIntoToy(CConversionScene* pScene, CToyUtil* pToy);
-void LoadSceneIntoToyPhysics(CConversionScene* pScene, CToyUtil* pToy);
-void LoadSceneNodeIntoToy(CConversionScene* pScene, CConversionSceneNode* pNode, const Matrix4x4& mParentTransformations, CToyUtil* pToy);
-void LoadSceneNodeIntoToyPhysics(CConversionScene* pScene, CConversionSceneNode* pNode, const Matrix4x4& mParentTransformations, CToyUtil* pToy);
-
-void LoadSceneAreas(CToyUtil& t, CData* pData)
+bool CGeppetto::LoadSceneAreas(CData* pData)
 {
 	eastl::map<tstring, std::shared_ptr<CConversionScene> > asScenes;
 	eastl::map<tstring, size_t> aiSceneIDs;
@@ -60,11 +57,15 @@ void LoadSceneAreas(CToyUtil& t, CData* pData)
 		auto it = asScenes.find(sFile);
 		if (it == asScenes.end())
 		{
-			TMsg("Reading model '" + sFile + "' ...");
+			TMsg("Reading model '" + GetPath(sFile) + "' ...");
 			std::shared_ptr<CConversionScene> pScene(new CConversionScene());
 			CModelConverter c(pScene.get());
 
-			c.ReadModel(sFile);
+			if (!c.ReadModel(GetPath(sFile)))
+			{
+				TError("Couldn't read '" + GetPath(sFile) + "'.\n");
+				return false;
+			}
 			TMsg(" Done.\n");
 
 			asScenes[sFile] = pScene;
@@ -156,40 +157,43 @@ void LoadSceneAreas(CToyUtil& t, CData* pData)
 			}
 		}
 	}
+
+	return true;
 }
 
-extern time_t g_iBinaryModificationTime;
-
-bool LoadFromInputScript(CToyUtil& t, const tstring& sScript, tstring& sOutput)
+bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 {
-	std::basic_ifstream<tchar> f(sScript.c_str());
+	std::basic_ifstream<tchar> f((GetPath(sScript)).c_str());
 	if (!f.is_open())
+	{
+		TError("Could not read input script '" + sScript + "'\n");
 		return false;
+	}
 
-	CData* pData = new CData();
-	CDataSerializer::Read(f, pData);
+	std::shared_ptr<CData> pData(new CData());
+	CDataSerializer::Read(f, pData.get());
 
 	CData* pOutput = pData->FindChild("Output");
 	if (!pOutput)
 	{
-		delete pData;
+		TError("Could not find Output section in input script '" + sScript + "'\n");
 		return false;
 	}
 
 	CData* pGame = pData->FindChild("Game");
 	if (!pGame)
 	{
-		delete pData;
+		TError("Could not find Game section in input script '" + sScript + "'\n");
 		return false;
 	}
 
-	t.SetGameDirectory(FindAbsolutePath(pGame->GetValueTString()));
+	t.SetGameDirectory(FindAbsolutePath(GetPath(pGame->GetValueTString())));
 
-	tstring sOutputDir = str_replace(pOutput->GetValueTString(), "\\", "/");
+	tstring sOutputDir = ToForwardSlashes(pOutput->GetValueTString());
 	t.SetOutputDirectory(GetDirectory(sOutputDir));
 	t.SetOutputFile(GetFilename(sOutputDir));
 
-	sOutput = FindAbsolutePath(t.GetGameDirectory() + DIR_SEP + pOutput->GetValueTString());
+	m_sOutput = FindAbsolutePath(t.GetGameDirectory() + DIR_SEP + pOutput->GetValueTString());
 
 	CData* pSceneAreas = pData->FindChild("SceneAreas");
 	CData* pMesh = pData->FindChild("Mesh");
@@ -197,7 +201,7 @@ bool LoadFromInputScript(CToyUtil& t, const tstring& sScript, tstring& sOutput)
 
 	// Find all file modification times.
 	time_t iScriptModificationTime = GetFileModificationTime(sScript.c_str());
-	time_t iOutputModificationTime = GetFileModificationTime(sOutput.c_str());
+	time_t iOutputModificationTime = GetFileModificationTime(m_sOutput.c_str());
 
 	eastl::map<tstring, time_t> aiSceneModificationTimes;
 
@@ -235,7 +239,7 @@ bool LoadFromInputScript(CToyUtil& t, const tstring& sScript, tstring& sOutput)
 		bRecompile = true;
 	else if (iPhysicsModificationTime > iOutputModificationTime)
 		bRecompile = true;
-	else if (g_iBinaryModificationTime > iOutputModificationTime)
+	else if (m_iBinaryModificationTime > iOutputModificationTime)
 		bRecompile = true;
 	else
 	{
@@ -251,53 +255,55 @@ bool LoadFromInputScript(CToyUtil& t, const tstring& sScript, tstring& sOutput)
 
 	if (!bRecompile)
 	{
-		if (Shell()->HasCommandLineSwitch("--force"))
+		if (m_bForceCompile)
 		{
 			TMsg("Forcing rebuild even though no changes detected.\n");
 		}
 		else
 		{
-			TMsg("No changes detected. Skipping '" + sOutput + "'.\n\n");
-			exit(0);
+			TMsg("No changes detected. Skipping '" + m_sOutput + "'.\n\n");
+			return true;
 		}
 	}
 
 	if (pMesh)
 	{
-		TMsg("Reading model '" + pMesh->GetValueTString() + "' ...");
-		CConversionScene* pScene = new CConversionScene();
-		CModelConverter c(pScene);
+		TMsg("Reading model '" + GetPath(pMesh->GetValueTString()) + "' ...");
+		std::shared_ptr<CConversionScene> pScene(new CConversionScene());
+		CModelConverter c(pScene.get());
 
-		c.ReadModel(pMesh->GetValueTString());
+		if (!c.ReadModel(GetPath(pMesh->GetValueTString())))
+		{
+			TError("Couldn't read '" + GetPath(pMesh->GetValueTString()) + "'.\n");
+			return false;
+		}
 		TMsg(" Done.\n");
 
 		TMsg("Building toy mesh ...");
-		LoadSceneIntoToy(pScene, &t);
+		LoadSceneIntoToy(pScene.get(), &t);
 		TMsg(" Done.\n");
-
-		delete pScene;
 	}
 
 	if (pPhysics)
 	{
-		TMsg("Reading physics model '" + pPhysics->GetValueTString() + "' ...");
-		CConversionScene* pScene = new CConversionScene();
-		CModelConverter c(pScene);
+		TMsg("Reading physics model '" + GetPath(pPhysics->GetValueTString()) + "' ...");
+		std::shared_ptr<CConversionScene> pScene(new CConversionScene());
+		CModelConverter c(pScene.get());
 
-		c.ReadModel(pPhysics->GetValueTString());
+		if (!c.ReadModel(GetPath(pPhysics->GetValueTString())))
+		{
+			TError("Couldn't read '" + GetPath(pPhysics->GetValueTString()) + "'.\n");
+			return false;
+		}
 		TMsg(" Done.\n");
 
 		TMsg("Building toy physics model ...");
-		LoadSceneIntoToyPhysics(pScene, &t);
+		LoadSceneIntoToyPhysics(pScene.get(), &t);
 		TMsg(" Done.\n");
-
-		delete pScene;
 	}
 
 	if (pSceneAreas)
-		LoadSceneAreas(t, pSceneAreas);
+		LoadSceneAreas(pSceneAreas);
 
-	delete pData;
-
-	return true;
+	return Compile();
 }

@@ -20,12 +20,15 @@ public:
 	bool						HasCommandLineSwitch(const char* pszSwitch);
 	const char*					GetCommandLineSwitchValue(const char* pszSwitch);
 
+	const tstring&				GetBinaryName() { return m_sBinaryName; }
+
 	virtual void				PrintConsole(const tstring& sText);
 	virtual void				PrintError(const tstring& sText);
 
 	static inline CShell*		Get() { return s_pShell; };
 
 protected:
+	tstring						m_sBinaryName;
 	eastl::vector<const char*>	m_apszCommandLine;
 
 	static CShell*				s_pShell;

@@ -7,11 +7,16 @@ include_directories (
 	${CMAKE_SOURCE_DIR}/models
 )
 
-set (TOYBUILDER_SOURCES
-	main.cpp
+set (GEPPETTO_SOURCES
+	geppetto.cpp
 	inputscript.cpp
 	toy_physics.cpp
 )
 
+set (TOYBUILDER_SOURCES
+	main.cpp
+)
+
+add_library(geppetto STATIC ${GEPPETTO_SOURCES})
 add_executable (toybuilder ${TOYBUILDER_SOURCES})
-target_link_libraries (toybuilder lwbase tinker modelconverter toys)
+target_link_libraries (toybuilder lwbase tinker modelconverter toys geppetto)

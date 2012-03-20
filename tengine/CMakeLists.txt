@@ -133,7 +133,7 @@ source_group(Tinker FILES ${TENGINE_TINKER_SOURCES})
 source_group(Tools FILES ${TENGINE_TOOLS_SOURCES})
 
 add_library(tengine STATIC ${TENGINE_SOURCES})
-target_link_libraries (tengine tinker modelconverter toys)
+target_link_libraries (tengine tinker modelconverter toys geppetto)
 
 if (WIN32)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/devil-1.7.8/msvc10/Debug/DevIL.lib)

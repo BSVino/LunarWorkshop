@@ -17,15 +17,15 @@ public:
 public:
 	bool				ReadModel(const tstring& sFilename);
 
-	void				ReadOBJ(const tstring& sFilename);
+	bool				ReadOBJ(const tstring& sFilename);
 	void				ReadMTL(const tstring& sFilename);
 
 	// SIA and its utility functions.
-	void				ReadSIA(const tstring& sFilename);
+	bool				ReadSIA(const tstring& sFilename);
 	const tchar*		ReadSIAMat(const tchar* pszLine, const tchar* pszEnd, CConversionSceneNode* pScene, const tstring& sFilename);
 	const tchar*		ReadSIAShape(const tchar* pszLine, const tchar* pszEnd, CConversionSceneNode* pScene, bool bCare = true);
 
-	void				ReadDAE(const tstring& sFilename);
+	bool				ReadDAE(const tstring& sFilename);
 	void				ReadDAESceneTree(class FCDSceneNode* pNode, CConversionSceneNode* pScene);
 
 	bool				SaveModel(const tstring& sFilename);

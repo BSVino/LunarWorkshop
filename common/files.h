@@ -122,3 +122,29 @@ inline void CreateDirectory(const tstring& sPath)
 
 	CreateDirectoryNonRecursive(sPath);
 }
+
+inline bool IsAbsolutePath(const tstring& sPath)
+{
+	tstring sTrimmedPath = trim(sPath);
+
+	tchar cFirst = sTrimmedPath[0];
+	if (cFirst > 'A' && cFirst < 'Z' || cFirst > 'a' && cFirst < 'z')
+	{
+		if (sTrimmedPath[1] == ':')
+		{
+			if (sTrimmedPath[2] == '\\' || sTrimmedPath[2] == '/')
+				return true;
+		}
+	}
+
+	if (cFirst == '/')
+		return true;
+
+	if (cFirst == '\\')
+		return true;
+
+	if (cFirst == '~')
+		return true;
+
+	return false;
+}

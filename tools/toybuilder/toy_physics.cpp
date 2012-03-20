@@ -1,7 +1,9 @@
+#include "geppetto.h"
+
 #include <modelconverter/modelconverter.h>
 #include <toys/toy_util.h>
 
-void LoadMeshInstanceIntoToyPhysics(CConversionScene* pScene, CConversionMeshInstance* pMeshInstance, const Matrix4x4& mParentTransformations, CToyUtil* pToy)
+void CGeppetto::LoadMeshInstanceIntoToyPhysics(CConversionScene* pScene, CConversionMeshInstance* pMeshInstance, const Matrix4x4& mParentTransformations, CToyUtil* pToy)
 {
 	if (!pMeshInstance->IsVisible())
 		return;
@@ -30,7 +32,7 @@ void LoadMeshInstanceIntoToyPhysics(CConversionScene* pScene, CConversionMeshIns
 	}
 }
 
-void LoadSceneNodeIntoToyPhysics(CConversionScene* pScene, CConversionSceneNode* pNode, const Matrix4x4& mParentTransformations, CToyUtil* pToy)
+void CGeppetto::LoadSceneNodeIntoToyPhysics(CConversionScene* pScene, CConversionSceneNode* pNode, const Matrix4x4& mParentTransformations, CToyUtil* pToy)
 {
 	if (!pNode)
 		return;
@@ -50,7 +52,7 @@ void LoadSceneNodeIntoToyPhysics(CConversionScene* pScene, CConversionSceneNode*
 		LoadMeshInstanceIntoToyPhysics(pScene, pNode->GetMeshInstance(m), mTransformations, pToy);
 }
 
-void LoadSceneIntoToyPhysics(CConversionScene* pScene, CToyUtil* pToy)
+void CGeppetto::LoadSceneIntoToyPhysics(CConversionScene* pScene, CToyUtil* pToy)
 {
 	for (size_t i = 0; i < pScene->GetNumScenes(); i++)
 		LoadSceneNodeIntoToyPhysics(pScene, pScene->GetScene(i), Matrix4x4(), pToy);
