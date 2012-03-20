@@ -46,7 +46,9 @@
 		TMsg("Assert failed: " #x "\n"); \
 } \
 
-#define TAssertNoMsg(x)
+#define TAssertNoMsg(x) \
+{ \
+} \
 
 #endif
 
