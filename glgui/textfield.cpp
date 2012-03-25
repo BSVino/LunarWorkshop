@@ -461,7 +461,11 @@ void CTextField::SetAutoCompleteFiles(const tstring& sBaseDirectory, const eastl
 
 	tstring sSearchDirectory = GetDirectory(sInputFolder);
 
-	tstring sPrefix = ToForwardSlashes(sSearchDirectory.substr(sSourceFolder.length()));
+	tstring sPrefix;
+	if (sSourceFolder == sInputFolder)
+		sPrefix = "";
+	else if (sSourceFolder.length() <= sSearchDirectory.length())
+		sPrefix = ToForwardSlashes(sSearchDirectory.substr(sSourceFolder.length()));
 	while (sPrefix[0] == '/')
 		sPrefix = sPrefix.substr(1);
 	while (sPrefix.back() == '/')
