@@ -19,6 +19,7 @@
 #include <tinker/keys.h>
 #include <game/level.h>
 #include <game/gameserver.h>
+#include <models/models.h>
 
 #include "workbench.h"
 
@@ -219,6 +220,9 @@ void CEntityPropertiesPanel::ModelChangedCallback(const tstring& sArgs)
 	asExtensionsExclude.push_back(".area.toy");
 
 	static_cast<glgui::CTextField*>(m_apPropertyOptions[stoi(sArgs)])->SetAutoCompleteFiles(".", asExtensions, asExtensionsExclude);
+
+	if (m_pPropertyChangedListener)
+		m_pfnPropertyChangedCallback(m_pPropertyChangedListener, "");
 }
 
 void CEntityPropertiesPanel::PropertyChangedCallback(const tstring& sArgs)
@@ -526,6 +530,7 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool b
 		else
 			r.SetColor(Color(255, 255, 255));
 
+		r.SetBlend(BLEND_ALPHA);
 		if (r.GetBlend() == BLEND_NONE && !bTransparent)
 		{
 			TPROF("CLevelEditor::RenderEntity(Opaque)");
@@ -624,6 +629,8 @@ void CLevelEditor::CreateEntityFromPanel(const Vector& vecPosition)
 
 void CLevelEditor::PopulateLevelEntityFromPanel(class CLevelEntity* pEntity, CEntityPropertiesPanel* pPanel)
 {
+	tstring sModel;
+
 	for (size_t i = 0; i < pPanel->m_asPropertyHandle.size(); i++)
 	{
 		CSaveData oSaveData;
@@ -640,6 +647,9 @@ void CLevelEditor::PopulateLevelEntityFromPanel(class CLevelEntity* pEntity, CEn
 		else
 		{
 			tstring sValue = static_cast<glgui::CTextField*>(pPanel->m_apPropertyOptions[i])->GetText();
+
+			if (pPanel->m_asPropertyHandle[i] == "Model")
+				CModelLibrary::AddModel(sValue);
 
 			pEntity->SetParameterValue(pPanel->m_asPropertyHandle[i], sValue);
 		}

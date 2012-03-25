@@ -513,7 +513,6 @@ bool CToyUtil::Read(const tstring& sFilename, CToy* pToy)
 {
 	FILE* fp = tfopen(sFilename, "r");
 
-	TAssert(fp);
 	if (!fp)
 		return false;
 
