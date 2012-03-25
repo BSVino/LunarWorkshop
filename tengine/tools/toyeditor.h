@@ -40,6 +40,7 @@ class CToySource
 public:
 	void					Save() const;
 	void					Build() const;
+	void					Open(const tstring& sFile);
 
 public:
 	tstring					m_sFilename;
@@ -106,6 +107,9 @@ public:
 
 	EVENT_CALLBACK(CToyEditor, NewToy);
 	EVENT_CALLBACK(CToyEditor, SaveToy);
+	EVENT_CALLBACK(CToyEditor, ChooseToy);
+	EVENT_CALLBACK(CToyEditor, OpenToy);
+	EVENT_CALLBACK(CToyEditor, BuildToy);
 
 	bool					KeyPress(int c);
 	bool					MouseInput(int iButton, int iState);

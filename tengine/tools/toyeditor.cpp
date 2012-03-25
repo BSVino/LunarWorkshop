@@ -11,6 +11,7 @@
 #include <glgui/textfield.h>
 #include <glgui/button.h>
 #include <glgui/menu.h>
+#include <glgui/filedialog.h>
 #include <tinker/application.h>
 #include <models/models.h>
 #include <renderer/game_renderingcontext.h>
@@ -19,6 +20,7 @@
 #include <tinker/keys.h>
 #include <ui/gamewindow.h>
 #include <tools/toybuilder/geppetto.h>
+#include <datamanager/dataserializer.h>
 
 #include "workbench.h"
 
@@ -449,9 +451,13 @@ void CToyEditor::SetupMenu()
 	GetFileMenu()->ClearSubmenus();
 
 	GetFileMenu()->AddSubmenu("New", this, NewToy);
+	GetFileMenu()->AddSubmenu("Open", this, ChooseToy);
 
 	if (GetToy().m_sFilename.length())
+	{
 		GetFileMenu()->AddSubmenu("Save", this, SaveToy);
+		GetFileMenu()->AddSubmenu("Build", this, BuildToy);
+	}
 }
 
 void CToyEditor::RenderScene()
@@ -525,6 +531,25 @@ void CToyEditor::NewToyCallback(const tstring& sArgs)
 void CToyEditor::SaveToyCallback(const tstring& sArgs)
 {
 	m_oToySource.Save();
+}
+
+void CToyEditor::ChooseToyCallback(const tstring& sArgs)
+{
+	glgui::CFileDialog::ShowOpenDialog("../sources", ".txt", this, OpenToy);
+}
+
+void CToyEditor::OpenToyCallback(const tstring& sArgs)
+{
+	m_oToySource.Open(sArgs);
+
+	m_pSourcePanel->Layout();
+	m_pSourcePanel->UpdateFields();
+	Layout();
+}
+
+void CToyEditor::BuildToyCallback(const tstring& sArgs)
+{
+	m_oToySource.Build();
 }
 
 bool CToyEditor::KeyPress(int c)
@@ -625,4 +650,41 @@ void CToySource::Build() const
 	CGeppetto g(true, FindAbsolutePath(GetDirectory(m_sFilename)));
 
 	g.BuildFromInputScript(FindAbsolutePath(m_sFilename));
+}
+
+void CToySource::Open(const tstring& sFile)
+{
+	std::basic_ifstream<tchar> f((sFile).c_str());
+	if (!f.is_open())
+	{
+		TError("Could not read input script '" + sFile + "'\n");
+		return;
+	}
+
+	m_sFilename = sFile;
+
+	std::shared_ptr<CData> pData(new CData());
+	CDataSerializer::Read(f, pData.get());
+
+	CData* pOutput = pData->FindChild("Output");
+	CData* pSceneAreas = pData->FindChild("SceneAreas");
+	CData* pMesh = pData->FindChild("Mesh");
+	CData* pPhysics = pData->FindChild("Physics");
+
+	TAssert(!pSceneAreas);	// This is unimplemented.
+
+	if (pOutput)
+		m_sToyFile = pOutput->GetValueTString();
+	else
+		m_sToyFile = "";
+
+	if (pMesh)
+		m_sMesh = pMesh->GetValueTString();
+	else
+		m_sMesh = "";
+
+	if (pPhysics)
+		m_sPhys = pPhysics->GetValueTString();
+	else
+		m_sPhys = "";
 }
