@@ -146,6 +146,8 @@ void CWorkbench::Activate()
 	Workbench()->m_bWasMouseActive = Application()->IsMouseCursorEnabled();
 	Application()->SetMouseCursorEnabled(true);
 
+	Workbench()->m_pFileMenu->ClearSubmenus();
+
 	if (Workbench()->GetActiveTool())
 		Workbench()->GetActiveTool()->Activate();
 
