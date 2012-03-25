@@ -30,10 +30,17 @@ tstring CToyUtil::GetScriptDirectoryFile(const tstring& sFile) const
 	return FindAbsolutePath(m_sScriptDirectory + DIR_SEP + sFile);
 }
 
-void CToyUtil::AddMaterial(const tstring& sTexture)
+void CToyUtil::AddMaterial(const tstring& sTexture, const tstring& sOriginalFile)
 {
+	tstring sOriginal = sOriginalFile;
+	if (!sOriginal.length())
+		sOriginal = sTexture;
+
 	if (!sTexture.length())
+	{
 		m_asTextures.push_back(sTexture);
+		m_asCopyTextures.push_back(sOriginal);
+	}
 	else
 	{
 		tstring sDirectoryPath = FindAbsolutePath(m_sGameDirectory);
@@ -48,7 +55,21 @@ void CToyUtil::AddMaterial(const tstring& sTexture)
 			m_asTextures.push_back(ToForwardSlashes(sTexturePath.substr(iLength)));
 		}
 		else
-			m_asTextures.push_back(GetFilenameAndExtension(sTexture));
+		{
+			tstring sScriptPath = FindAbsolutePath(m_sScriptDirectory);
+			if (m_sScriptDirectory.length() && sTexturePath.find(sScriptPath) == 0)
+			{
+				size_t iLength = sScriptPath.length()+1;
+				if (sScriptPath.back() == '\\' || sScriptPath.back() == '/')
+					iLength = sScriptPath.length();
+
+				m_asTextures.push_back(GetFilenameAndExtension(ToForwardSlashes(sTexturePath.substr(iLength))));
+			}
+			else
+				m_asTextures.push_back(GetFilenameAndExtension(sTexture));
+		}
+
+		m_asCopyTextures.push_back(sOriginal);
 	}
 
 	m_aaflData.push_back();
@@ -341,6 +362,23 @@ bool CToyUtil::Write(const tstring& sFilename)
 		{
 			m_aaflData.erase(m_aaflData.begin()+i);
 			m_asTextures.erase(m_asTextures.begin()+i);
+			m_asCopyTextures.erase(m_asCopyTextures.begin()+i);
+		}
+	}
+
+	// Copy textures to the destination folders.
+	for (size_t i = 0; i < m_asTextures.size(); i++)
+	{
+		if (!m_asCopyTextures[i].length())
+			continue;
+
+		if (!m_asTextures[i].length())
+			continue;
+
+		if (!CopyFileTo(m_asCopyTextures[i], m_asTextures[i]))
+		{
+			TError("Couldn't copy texture '" + m_asCopyTextures[i] + "' to '" + m_asTextures[i] + "'.\n");
+			return false;
 		}
 	}
 

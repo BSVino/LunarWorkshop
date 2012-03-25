@@ -192,6 +192,7 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 	tstring sOutputDir = ToForwardSlashes(pOutput->GetValueTString());
 	t.SetOutputDirectory(GetDirectory(sOutputDir));
 	t.SetOutputFile(GetFilename(sOutputDir));
+	t.SetScriptDirectory(GetDirectory((GetPath(sScript))));
 
 	m_sOutput = FindAbsolutePath(t.GetGameDirectory() + DIR_SEP + pOutput->GetValueTString());
 
@@ -268,20 +269,49 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 
 	if (pMesh)
 	{
-		TMsg("Reading model '" + GetPath(pMesh->GetValueTString()) + "' ...");
-		std::shared_ptr<CConversionScene> pScene(new CConversionScene());
-		CModelConverter c(pScene.get());
-
-		if (!c.ReadModel(GetPath(pMesh->GetValueTString())))
+		tstring sExtension = pMesh->GetValueTString().substr(pMesh->GetValueTString().length()-4);
+		if (sExtension == ".png")
 		{
-			TError("Couldn't read '" + GetPath(pMesh->GetValueTString()) + "'.\n");
-			return false;
-		}
-		TMsg(" Done.\n");
+			std::basic_ifstream<tchar> f((GetPath(sScript)).c_str());
 
-		TMsg("Building toy mesh ...");
-		LoadSceneIntoToy(pScene.get(), &t);
-		TMsg(" Done.\n");
+			if (!f.is_open())
+			{
+				TError("Input image  '" + pMesh->GetValueTString() + "' does not exist.\n");
+				return false;
+			}
+
+			Vector vecUp(0, 0.5f, 0);
+			Vector vecRight(0, 0, 0.5f);
+
+			if (IsAbsolutePath(pMesh->GetValueTString()))
+				t.AddMaterial(GetPath(pMesh->GetValueTString()));
+			else
+				t.AddMaterial(t.GetOutputDirectory() + "/" + pMesh->GetValueTString(), GetPath(pMesh->GetValueTString()));
+			t.AddVertex(0, -vecRight + vecUp, Vector2D(0.0f, 1.0f));
+			t.AddVertex(0, -vecRight - vecUp, Vector2D(0.0f, 0.0f));
+			t.AddVertex(0, vecRight - vecUp, Vector2D(1.0f, 0.0f));
+
+			t.AddVertex(0, -vecRight + vecUp, Vector2D(0.0f, 1.0f));
+			t.AddVertex(0, vecRight - vecUp, Vector2D(1.0f, 0.0f));
+			t.AddVertex(0, vecRight + vecUp, Vector2D(1.0f, 1.0f));
+		}
+		else
+		{
+			TMsg("Reading model '" + GetPath(pMesh->GetValueTString()) + "' ...");
+			std::shared_ptr<CConversionScene> pScene(new CConversionScene());
+			CModelConverter c(pScene.get());
+
+			if (!c.ReadModel(GetPath(pMesh->GetValueTString())))
+			{
+				TError("Couldn't read '" + GetPath(pMesh->GetValueTString()) + "'.\n");
+				return false;
+			}
+			TMsg(" Done.\n");
+
+			TMsg("Building toy mesh ...");
+			LoadSceneIntoToy(pScene.get(), &t);
+			TMsg(" Done.\n");
+		}
 	}
 
 	if (pPhysics)

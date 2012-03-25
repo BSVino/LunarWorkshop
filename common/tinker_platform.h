@@ -20,6 +20,7 @@ eastl::vector<tstring> ListDirectory(const tstring& sDirectory, bool bDirectorie
 bool IsFile(const tstring& sPath);
 bool IsDirectory(const tstring& sPath);
 void CreateDirectoryNonRecursive(const tstring& sPath);
+bool CopyFileTo(const tstring& sFrom, const tstring& sTo, bool bOverride = true);
 tstring FindAbsolutePath(const tstring& sPath);
 time_t GetFileModificationTime(const char* pszFile);
 void DebugPrint(const tstring& sText);

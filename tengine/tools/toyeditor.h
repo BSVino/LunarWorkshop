@@ -63,6 +63,7 @@ public:
 	void					Layout();
 	void					UpdateFields();
 
+	EVENT_CALLBACK(CSourcePanel, ToyFileChanged);
 	EVENT_CALLBACK(CSourcePanel, ModelChanged);
 	EVENT_CALLBACK(CSourcePanel, Save);
 	EVENT_CALLBACK(CSourcePanel, Build);

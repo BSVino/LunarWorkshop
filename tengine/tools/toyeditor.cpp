@@ -190,6 +190,7 @@ CSourcePanel::CSourcePanel()
 	AddControl(m_pToyFileLabel);
 
 	m_pToyFileText = new glgui::CTextField();
+	m_pToyFileText->SetContentsChangedListener(this, ToyFileChanged);
 	AddControl(m_pToyFileText, true);
 
 	m_pMeshLabel = new glgui::CLabel("Mesh: ", "sans-serif", 10);
@@ -307,6 +308,24 @@ void CSourcePanel::UpdateFields()
 	m_pPhysText->SetText(ToyEditor()->GetToy().m_sPhys);
 }
 
+void CSourcePanel::ToyFileChangedCallback(const tstring& sArgs)
+{
+	ToyEditor()->GetToyToModify().m_sToyFile = m_pToyFileText->GetText();
+
+	if (!m_pToyFileText->GetText().length())
+		return;
+
+	eastl::vector<tstring> asExtensions;
+	eastl::vector<tstring> asExtensionsExclude;
+
+	asExtensions.push_back(".toy");
+	asExtensionsExclude.push_back(".mesh.toy");
+	asExtensionsExclude.push_back(".phys.toy");
+	asExtensionsExclude.push_back(".area.toy");
+
+	m_pToyFileText->SetAutoCompleteFiles(".", asExtensions, asExtensionsExclude);
+}
+
 void CSourcePanel::ModelChangedCallback(const tstring& sArgs)
 {
 	glgui::CTextField* pField;
@@ -325,6 +344,7 @@ void CSourcePanel::ModelChangedCallback(const tstring& sArgs)
 	asExtensions.push_back(".obj");
 	asExtensions.push_back(".sia");
 	asExtensions.push_back(".dae");
+	asExtensions.push_back(".png");
 
 	pField->SetAutoCompleteFiles(GetDirectory(ToyEditor()->GetToy().m_sFilename), asExtensions);
 
