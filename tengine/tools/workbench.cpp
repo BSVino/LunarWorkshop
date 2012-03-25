@@ -18,6 +18,7 @@
 
 extern int g_iImportLevelEditor;
 extern int g_iImportToyEditor;
+extern int g_iImportToyViewer;
 // Use this to force import of required entities.
 // This shit totally defeats the purpose of having auto registrations.
 class CAutoToolsImport
@@ -27,6 +28,7 @@ public:
 	{
 		g_iImportLevelEditor = 1;
 		g_iImportToyEditor = 1;
+		g_iImportToyViewer = 1;
 	}
 } g_AutoToolsImport = CAutoToolsImport();
 

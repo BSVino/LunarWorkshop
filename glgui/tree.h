@@ -127,7 +127,7 @@ namespace glgui
 		void								RemoveNode(CTreeNode* pNode);
 		CTreeNode*							GetNode(size_t i);
 
-		virtual CTreeNode*					GetSelectedNode() { if (m_iSelected == ~0) return NULL; return dynamic_cast<CTreeNode*>(m_apControls[m_iSelected]); };
+		virtual CTreeNode*					GetSelectedNode() { if (m_iSelected == ~0) return NULL; return dynamic_cast<CTreeNode*>(m_apAllNodes[m_iSelected]); };
 		virtual size_t						GetSelectedNodeId() { return m_iSelected; };
 		virtual void						Unselect() { m_iSelected = ~0; }
 		virtual void						SetSelectedNode(size_t iNode);

@@ -104,6 +104,7 @@ set (TENGINE_TINKER_SOURCES
 set (TENGINE_TOOLS_SOURCES
 	tools/leveleditor.cpp
 	tools/toyeditor.cpp
+	tools/toyviewer.cpp
 	tools/tool.cpp
 	tools/workbench.cpp
 )
