@@ -133,6 +133,7 @@ protected:
 
 	size_t					m_iMeshPreview;
 	size_t					m_iPhysPreview;
+	size_t					m_iTexturePreview;
 
 	bool					m_bRotatingPreview;
 	EAngle					m_angPreview;

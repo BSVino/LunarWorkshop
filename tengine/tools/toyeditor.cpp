@@ -21,6 +21,7 @@
 #include <ui/gamewindow.h>
 #include <tools/toybuilder/geppetto.h>
 #include <datamanager/dataserializer.h>
+#include <textures/texturelibrary.h>
 
 #include "workbench.h"
 
@@ -378,6 +379,7 @@ CToyEditor::CToyEditor()
 
 	m_iMeshPreview = ~0;
 	m_iPhysPreview = ~0;
+	m_iTexturePreview = 0;
 
 	m_bRotatingPreview = false;
 	m_angPreview = EAngle(-20, 20, 0);
@@ -439,6 +441,13 @@ void CToyEditor::Layout()
 		}
 	}
 
+	tstring sTexture = FindAbsolutePath(GetDirectory(GetToy().m_sFilename) + "/" + GetToy().m_sMesh);
+	if (IsFile(sTexture))
+		// Don't bother with clearing old ones, they'll get flushed eventually.
+		m_iTexturePreview = CTextureLibrary::AddTextureID(sTexture);
+	else
+		m_iTexturePreview = ~0;
+
 	tstring sPhys = FindAbsolutePath(GetDirectory(GetToy().m_sFilename) + "/" + GetToy().m_sPhys);
 	if (IsFile(sPhys))
 	{
@@ -497,6 +506,18 @@ void CToyEditor::RenderScene()
 		c.RenderModel(m_iMeshPreview);
 	}
 
+	if (m_iTexturePreview != 0)
+	{
+		CGameRenderingContext c(GameServer()->GetRenderer(), true);
+
+		if (!c.GetActiveFrameBuffer())
+			c.UseFrameBuffer(GameServer()->GetRenderer()->GetSceneBuffer());
+
+		c.SetColor(Color(255, 255, 255));
+
+		c.RenderTextureModel(m_iTexturePreview);
+	}
+
 	if (m_iPhysPreview != ~0 && CModelLibrary::GetModel(m_iPhysPreview))
 	{
 		CGameRenderingContext c(GameServer()->GetRenderer(), true);
@@ -507,7 +528,7 @@ void CToyEditor::RenderScene()
 		c.ClearDepth();
 
 		float flAlpha = 0.3f;
-		if (m_iMeshPreview == ~0)
+		if (m_iMeshPreview == ~0 && m_iTexturePreview == 0)
 			flAlpha = 1.0f;
 
 		c.SetColor(Color(0, 100, 155, (int)(255*flAlpha)));
@@ -613,16 +634,17 @@ TVector CToyEditor::GetCameraPosition()
 {
 	CModel* pMesh = CModelLibrary::GetModel(m_iMeshPreview);
 
+	Vector vecPreviewAngle = AngleVector(m_angPreview)*10;
 	if (!pMesh)
 	{
 		CModel* pPhys = CModelLibrary::GetModel(m_iPhysPreview);
 		if (!pPhys)
-			return TVector(-10, 0, 0);
+			return TVector(0, 0, 0) - vecPreviewAngle;
 
-		return pPhys->m_aabbBoundingBox.Center() - AngleVector(m_angPreview)*10;
+		return pPhys->m_aabbBoundingBox.Center() - vecPreviewAngle;
 	}
 
-	return pMesh->m_aabbBoundingBox.Center() - AngleVector(m_angPreview)*10;
+	return pMesh->m_aabbBoundingBox.Center() - vecPreviewAngle;
 }
 
 TVector CToyEditor::GetCameraDirection()
