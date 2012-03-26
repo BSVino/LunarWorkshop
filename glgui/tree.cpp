@@ -396,6 +396,7 @@ void CTreeNode::LayoutNode()
 	SetSize(w, h);
 
 	m_pLabel->SetHeight(h);
+	m_pLabel->SetWidth(w);
 	if (m_iIconTexture)
 		m_pLabel->SetPos(h+12, 0);
 	else

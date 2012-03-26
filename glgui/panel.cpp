@@ -12,6 +12,8 @@ using namespace glgui;
 CPanel::CPanel()
 	: CBaseControl(0, 0, 100, 100)
 {
+	m_flMargin = 15;
+
 	m_pHasCursor = NULL;
 	m_bHighlight = false;
 	m_bDestructing = false;
@@ -24,6 +26,8 @@ CPanel::CPanel()
 CPanel::CPanel(float x, float y, float w, float h)
 	: CBaseControl(x, y, w, h)
 {
+	m_flMargin = 15;
+
 	SetBorder(BT_NONE);
 	SetBackgroundColor(Color(0, 0, 0, 0));
 	m_pHasCursor = NULL;

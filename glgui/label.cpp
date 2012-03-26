@@ -332,6 +332,20 @@ void CLabel::PaintText3D(const tstring& sText, unsigned iLength, const tstring& 
 	c.RenderText(sText, iLength, sFontName, iFontFaceSize);
 }
 
+void CLabel::SetWidth(float w)
+{
+	m_bNeedsCompute |= (GetWidth() != w);
+
+	CBaseControl::SetWidth(w);
+}
+
+void CLabel::SetHeight(float h)
+{
+	m_bNeedsCompute |= (GetHeight() != h);
+
+	CBaseControl::SetHeight(h);
+}
+
 void CLabel::SetSize(float w, float h)
 {
 	m_bNeedsCompute |= (GetWidth() != w) || (GetHeight() != h);
@@ -447,9 +461,6 @@ void CLabel::SetFont(const tstring& sFontName, int iSize)
 
 float CLabel::GetTextWidth()
 {
-	if (m_bNeedsCompute)
-		ComputeLines();
-
 	return s_apFonts[m_sFontName][m_iFontFaceSize]->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str());
 }
 
@@ -465,13 +476,14 @@ float CLabel::GetTextHeight()
 void CLabel::EnsureTextFits()
 {
 	float w = GetTextWidth()+4;
+
+	if (m_flW < w)
+		SetSize(w, m_flH);
+
 	float h = GetTextHeight()+4;
 
 	if (m_flH < h)
 		SetSize(m_flW, h);
-
-	if (m_flW < w)
-		SetSize(w, m_flH);
 }
 
 void CLabel::ComputeLines(float w, float h)

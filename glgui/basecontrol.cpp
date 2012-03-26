@@ -148,6 +148,72 @@ void CBaseControl::CenterY()
 	SetTop(GetParent()->GetHeight()/2-GetHeight()/2);
 }
 
+float CBaseControl::Layout_GetMargin(float flMargin)
+{
+	if (flMargin == g_flLayoutDefault)
+	{
+		TAssert(GetParent());
+		if (!GetParent())
+			return 0;
+
+		return GetParent()->GetDefaultMargin();
+	}
+
+	return flMargin;
+}
+
+void CBaseControl::Layout_FullWidth(float flMargin)
+{
+	float flParentMargin = Layout_GetMargin(flMargin);
+
+	TAssert(GetParent());
+	if (!GetParent())
+		return;
+
+	SetLeft(flParentMargin);
+	SetRight(GetParent()->GetWidth()-flParentMargin/2);
+}
+
+void CBaseControl::Layout_AlignTop(CBaseControl* pOther, float flMargin)
+{
+	float flParentMargin = Layout_GetMargin(flMargin);
+
+	if (pOther)
+		SetTop(pOther->GetBottom() + flParentMargin);
+	else
+		SetTop(flParentMargin);
+}
+
+void CBaseControl::Layout_AlignBottom(CBaseControl* pOther, float flMargin)
+{
+	float flParentMargin = Layout_GetMargin(flMargin);
+
+	if (pOther)
+		SetTop(pOther->GetTop() - GetHeight() - flParentMargin);
+	else
+	{
+		TAssert(GetParent());
+		if (!GetParent())
+			return;
+
+		SetTop(GetParent()->GetHeight() - GetHeight() - flParentMargin);
+	}
+}
+
+void CBaseControl::Layout_Column(int iTotalColumns, int iColumn, float flMargin)
+{
+	float flParentMargin = Layout_GetMargin(flMargin);
+
+	TAssert(GetParent());
+	if (!GetParent())
+		return;
+
+	float flAllControlsWidth = GetParent()->GetWidth() - flParentMargin*(iTotalColumns+1);
+	float flControlWidth = flAllControlsWidth/iTotalColumns;
+	SetLeft(flParentMargin + (flControlWidth+flParentMargin)*iColumn);
+	SetWidth(flControlWidth);
+}
+
 void CBaseControl::SetVisible(bool bVis)
 {
 	if (bVis && !m_bVisible)

@@ -31,6 +31,9 @@ namespace glgui
 		virtual void			Think();
 		virtual void			UpdateScene();
 
+		virtual void			SetDefaultMargin(float flMargin) { m_flMargin = flMargin; }
+		virtual float			GetDefaultMargin() { return m_flMargin; }
+
 		virtual bool			KeyPressed(int code, bool bCtrlDown = false);
 		virtual bool			KeyReleased(int code);
 		virtual bool			CharPressed(int iKey);
@@ -65,6 +68,8 @@ namespace glgui
 
 	protected:
 		eastl::vector<IControl*>	m_apControls;
+
+		float					m_flMargin;
 
 		// If two controls in the same panel are never layered, a single
 		// pointer should suffice. Otherwise a list must be created.

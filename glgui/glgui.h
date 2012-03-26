@@ -36,6 +36,8 @@ namespace glgui
 	extern Color g_clrBox;
 	extern Color g_clrBoxHi;
 
+	extern float g_flLayoutDefault;
+
 	class IPopup
 	{
 	public:
@@ -67,6 +69,7 @@ namespace glgui
 		virtual void		GetBR(float &x, float &y)=0;
 		virtual float		GetWidth()=0;
 		virtual float		GetHeight()=0;
+		virtual float		GetDefaultMargin()=0;
 		virtual void		SetAlpha(int a)=0;
 		virtual int			GetAlpha()=0;
 

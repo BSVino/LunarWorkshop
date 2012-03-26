@@ -55,6 +55,13 @@ namespace glgui
 		virtual void	CenterX();
 		virtual void	CenterY();
 
+		virtual float	GetDefaultMargin() { return 0; }
+		virtual float	Layout_GetMargin(float flMargin);
+		virtual void	Layout_FullWidth(float flMargin=g_flLayoutDefault);
+		virtual void	Layout_AlignTop(CBaseControl* pOther=NULL, float flMargin=g_flLayoutDefault);
+		virtual void	Layout_AlignBottom(CBaseControl* pOther=NULL, float flMargin=g_flLayoutDefault);
+		virtual void	Layout_Column(int iTotalColumns, int iColumn, float flMargin=g_flLayoutDefault);
+
 		virtual void	SetVisible(bool bVis);
 		virtual bool	IsVisible();
 		virtual bool	IsChildVisible(IControl* pChild) { return true; }

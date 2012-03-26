@@ -58,6 +58,8 @@ namespace glgui
 
 		virtual void	GetAlignmentOffset(float flLineWidth, float flLineHeight, const tstring& sFont, size_t iFontSize, float flAreaWidth, float flAreaHeight, float& x, float& y) const;
 
+		virtual void	SetWidth(float w);
+		virtual void	SetHeight(float h);
 		virtual void	SetSize(float w, float h);
 
 		void			GetRealMousePosition(float& x, float& y);
