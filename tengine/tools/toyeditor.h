@@ -1,10 +1,11 @@
 #pragma once
 
-#include <matrix.h>
+#include <trs.h>
 
 #include <glgui/movablepanel.h>
 
 #include "tool.h"
+#include "manipulator.h"
 
 class CCreateToySourcePanel : public glgui::CMovablePanel
 {
@@ -55,7 +56,7 @@ public:
 	{
 	public:
 		AABB				m_aabbBounds;
-		Matrix4x4			m_mTransform;
+		TRS					m_trsTransform;
 	};
 
 	eastl::vector<CPhysicsShape>	m_aShapes;
@@ -103,7 +104,7 @@ public:
 	glgui::CButton*			m_pBuild;
 };
 
-class CToyEditor : public CWorkbenchTool, public glgui::IEventListener
+class CToyEditor : public CWorkbenchTool, public glgui::IEventListener, public IManipulatorListener
 {
 public:
 							CToyEditor();
@@ -137,6 +138,8 @@ public:
 
 	virtual TVector			GetCameraPosition();
 	virtual TVector			GetCameraDirection();
+
+	virtual void			ManipulatorUpdated();
 
 	virtual tstring			GetToolName() { return "Toy Editor"; }
 

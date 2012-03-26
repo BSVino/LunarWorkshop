@@ -15,6 +15,9 @@
 #include <tinker/profiler.h>
 #include <textures/texturelibrary.h>
 #include <tinker/keys.h>
+#include <game/gameserver.h>
+
+#include "manipulator.h"
 
 extern int g_iImportLevelEditor;
 extern int g_iImportToyEditor;
@@ -82,6 +85,9 @@ bool CWorkbench::KeyPress(int c)
 
 bool CWorkbench::MouseInput(int iButton, int iState)
 {
+	if (Manipulator()->MouseInput(iButton, iState))
+		return true;
+
 	return GetActiveTool()->MouseInput(iButton, iState);
 }
 
@@ -180,6 +186,45 @@ void CWorkbench::RenderScene()
 		return;
 
 	Workbench()->GetActiveTool()->RenderScene();
+
+	if (Manipulator()->IsActive())
+	{
+		CGameRenderingContext c(GameServer()->GetRenderer(), true);
+
+		c.UseProgram("model");
+		c.SetUniform("vecColor", Color(255, 255, 255, 255));
+		c.SetUniform("bDiffuse", false);
+
+		Matrix4x4 mTransform = Manipulator()->GetTransform(false);
+		c.Transform(mTransform);
+		Vector vecBox(0.1f, 0.1f, 0.1f);
+		c.RenderWireBox(AABB(-vecBox, vecBox));
+
+		c.BeginRenderDebugLines();
+			c.Vertex(Vector());
+			c.Vertex(Vector(1, 0, 0));
+			c.Vertex(Vector());
+			c.Vertex(Vector(0, 1, 0));
+			c.Vertex(Vector());
+			c.Vertex(Vector(0, 0, 1));
+		c.EndRender();
+
+		Vector vecHandle(0.05f, 0.05f, 0.05f);
+		c.Translate(Vector(1, 0, 0));
+		c.SetUniform("vecColor", Color(255, 0, 0, 255));
+		c.RenderWireBox(AABB(-vecHandle, vecHandle));
+
+		c.Translate(Vector(-1, 1, 0));
+		c.SetUniform("vecColor", Color(0, 255, 0, 255));
+		c.RenderWireBox(AABB(-vecHandle, vecHandle));
+
+		c.Translate(Vector(0, -1, 1));
+		c.SetUniform("vecColor", Color(0, 0, 255, 255));
+		c.RenderWireBox(AABB(-vecHandle, vecHandle));
+
+		c.SetUniform("vecColor", Color(255, 255, 255, 255));
+		c.SetUniform("bDiffuse", true);
+	}
 }
 
 CCamera* CWorkbench::GetCamera()

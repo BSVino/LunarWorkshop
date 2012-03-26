@@ -25,6 +25,7 @@
 #include <textures/texturelibrary.h>
 
 #include "workbench.h"
+#include "manipulator.h"
 
 REGISTER_WORKBENCH_TOOL(ToyEditor);
 
@@ -388,10 +389,16 @@ void CSourcePanel::ModelChangedCallback(const tstring& sArgs)
 
 void CSourcePanel::PhysicsAreaSelectedCallback(const tstring& sArgs)
 {
-	if (m_pPhysicsShapes->GetSelectedNodeId() == ~0)
-		m_pDeletePhysicsShape->SetEnabled(false);
-	else
+	if (m_pPhysicsShapes->GetSelectedNodeId() < ToyEditor()->GetToy().m_aShapes.size())
+	{
+		Manipulator()->Activate(ToyEditor(), ToyEditor()->GetToy().m_aShapes[m_pPhysicsShapes->GetSelectedNodeId()].m_trsTransform);
 		m_pDeletePhysicsShape->SetEnabled(true);
+	}
+	else
+	{
+		Manipulator()->Deactivate();
+		m_pDeletePhysicsShape->SetEnabled(false);
+	}
 }
 
 void CSourcePanel::NewPhysicsShapeCallback(const tstring& sArgs)
@@ -626,7 +633,7 @@ void CToyEditor::RenderScene()
 		else
 			c.SetUniform("vecColor", Color(0, 100, 200, (char)(255*flAlpha)));
 
-		c.Transform(GetToy().m_aShapes[i].m_mTransform);
+		c.Transform(GetToy().m_aShapes[i].m_trsTransform.GetMatrix4x4());
 		c.RenderWireBox(GetToy().m_aShapes[i].m_aabbBounds);
 
 		// Reset the uniforms so other stuff doesn't get this ugly color.
@@ -745,6 +752,10 @@ TVector CToyEditor::GetCameraPosition()
 TVector CToyEditor::GetCameraDirection()
 {
 	return AngleVector(m_angPreview);
+}
+
+void CToyEditor::ManipulatorUpdated()
+{
 }
 
 void CToySource::Save() const

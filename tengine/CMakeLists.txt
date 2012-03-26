@@ -103,6 +103,7 @@ set (TENGINE_TINKER_SOURCES
 
 set (TENGINE_TOOLS_SOURCES
 	tools/leveleditor.cpp
+	tools/manipulator.cpp
 	tools/toyeditor.cpp
 	tools/toyviewer.cpp
 	tools/tool.cpp
