@@ -12,6 +12,7 @@
 #include <glgui/button.h>
 #include <glgui/menu.h>
 #include <glgui/filedialog.h>
+#include <glgui/tree.h>
 #include <tinker/application.h>
 #include <models/models.h>
 #include <renderer/game_renderingcontext.h>
@@ -210,6 +211,23 @@ CSourcePanel::CSourcePanel()
 	m_pPhysText->SetContentsChangedListener(this, ModelChanged, "phys");
 	AddControl(m_pPhysText, true);
 
+	m_pPhysShapesLabel = new glgui::CLabel("Physics Shapes: ", "sans-serif", 10);
+	m_pPhysShapesLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
+	AddControl(m_pPhysShapesLabel);
+
+	m_pPhysicsShapes = new glgui::CTree(0, 0, 0);
+	m_pPhysicsShapes->SetBackgroundColor(Color(0, 0, 0, 100));
+	m_pPhysicsShapes->SetSelectedListener(this, PhysicsAreaSelected);
+	AddControl(m_pPhysicsShapes);
+
+	m_pNewPhysicsShape = new glgui::CButton("New Shape", false, "sans-serif", 10);
+	m_pNewPhysicsShape->SetClickedListener(this, NewPhysicsShape);
+	AddControl(m_pNewPhysicsShape);
+
+	m_pDeletePhysicsShape = new glgui::CButton("Delete Shape", false, "sans-serif", 10);
+	m_pDeletePhysicsShape->SetClickedListener(this, DeletePhysicsShape);
+	AddControl(m_pDeletePhysicsShape);
+
 	m_pSave = new glgui::CButton("Save");
 	m_pSave->SetClickedListener(this, Save);
 	AddControl(m_pSave);
@@ -239,8 +257,8 @@ void CSourcePanel::Layout()
 
 	SetDimensions(flCurrLeft, flCurrTop, 200, flHeight-30-flMenuBarBottom);
 
-	m_pFilename->SetPos(0, 15);
-	m_pFilename->SetSize(GetWidth(), 25);
+	m_pFilename->Layout_AlignTop();
+	m_pFilename->Layout_FullWidth(0);
 
 	BaseClass::Layout();
 
@@ -250,56 +268,72 @@ void CSourcePanel::Layout()
 		return;
 
 	tstring sFilename = pToySource->m_sFilename;
-	if (sFilename.compare(0, 11, "../sources/") == 0)
-		sFilename = sFilename.substr(11);
+	tstring sAbsoluteSourcePath = FindAbsolutePath("../sources/");
+	tstring sAbsoluteFilename = FindAbsolutePath(sFilename);
+	if (sAbsoluteFilename.find(sAbsoluteSourcePath) == 0)
+		sFilename = ToForwardSlashes(sAbsoluteFilename.substr(sAbsoluteSourcePath.length()));
 	m_pFilename->SetText(sFilename);
 	if (!ToyEditor()->IsSaved())
 		m_pFilename->AppendText(" *");
 
-	float flTop = m_pFilename->GetBottom() + 20;
-
-	m_pToyFileLabel->SetLeft(15);
-	m_pToyFileLabel->SetTop(flTop);
+	m_pToyFileLabel->Layout_AlignTop(m_pFilename);
 	m_pToyFileLabel->SetWidth(10);
+	m_pToyFileLabel->SetHeight(1);
 	m_pToyFileLabel->EnsureTextFits();
-	m_pToyFileLabel->SetWidth(GetWidth()-30);
+	m_pToyFileLabel->Layout_FullWidth();
 
-	m_pToyFileText->SetWidth(GetWidth()-30);
-	m_pToyFileText->CenterX();
-	m_pToyFileText->SetTop(flTop+12);
+	m_pToyFileText->Layout_FullWidth();
+	m_pToyFileText->SetTop(m_pToyFileLabel->GetTop()+12);
 
-	flTop += 43;
+	float flControlMargin = 12;
 
-	m_pMeshLabel->SetLeft(15);
-	m_pMeshLabel->SetTop(flTop);
+	m_pMeshLabel->Layout_AlignTop(m_pToyFileText, flControlMargin);
 	m_pMeshLabel->SetWidth(10);
+	m_pMeshLabel->SetHeight(1);
 	m_pMeshLabel->EnsureTextFits();
-	m_pMeshLabel->SetWidth(GetWidth()-30);
+	m_pMeshLabel->Layout_FullWidth();
 
-	m_pMeshText->SetWidth(GetWidth()-30);
-	m_pMeshText->CenterX();
-	m_pMeshText->SetTop(flTop+12);
+	m_pMeshText->Layout_FullWidth();
+	m_pMeshText->SetTop(m_pMeshLabel->GetTop()+12);
 
-	flTop += 43;
-
-	m_pPhysLabel->SetLeft(15);
-	m_pPhysLabel->SetTop(flTop);
+	m_pPhysLabel->Layout_AlignTop(m_pMeshText, flControlMargin);
 	m_pPhysLabel->SetWidth(10);
+	m_pPhysLabel->SetHeight(1);
 	m_pPhysLabel->EnsureTextFits();
-	m_pPhysLabel->SetWidth(GetWidth()-30);
+	m_pPhysLabel->Layout_FullWidth();
 
-	m_pPhysText->SetWidth(GetWidth()-30);
-	m_pPhysText->CenterX();
-	m_pPhysText->SetTop(flTop+12);
+	m_pPhysText->Layout_FullWidth();
+	m_pPhysText->SetTop(m_pPhysLabel->GetTop()+12);
 
-	flTop += 43;
+	m_pPhysShapesLabel->Layout_AlignTop(m_pPhysText, flControlMargin);
+	m_pPhysShapesLabel->SetWidth(10);
+	m_pPhysShapesLabel->SetHeight(1);
+	m_pPhysShapesLabel->EnsureTextFits();
+	m_pPhysShapesLabel->Layout_FullWidth();
 
-	m_pSave->SetLeft(15);
-	m_pSave->SetRight(GetWidth()/2-15/2);
-	m_pSave->SetTop(GetHeight()-m_pSave->GetHeight() - 15);
-	m_pBuild->SetLeft(GetWidth()/2+15/2);
-	m_pBuild->SetRight(GetWidth()-15);
-	m_pBuild->SetTop(GetHeight()-m_pBuild->GetHeight() - 15);
+	m_pPhysicsShapes->Layout_FullWidth();
+	m_pPhysicsShapes->SetTop(m_pPhysShapesLabel->GetTop()+12);
+	m_pPhysicsShapes->SetHeight(100);
+
+	m_pPhysicsShapes->ClearTree();
+
+	for (size_t i = 0; i < pToySource->m_aShapes.size(); i++)
+		m_pPhysicsShapes->AddNode("Rectangle");
+
+	m_pNewPhysicsShape->SetHeight(20);
+	m_pNewPhysicsShape->Layout_Column(2, 0);
+	m_pNewPhysicsShape->Layout_AlignTop(m_pPhysicsShapes, 5);
+	m_pDeletePhysicsShape->SetHeight(20);
+	m_pDeletePhysicsShape->Layout_Column(2, 1);
+	m_pDeletePhysicsShape->Layout_AlignTop(m_pPhysicsShapes, 5);
+	m_pDeletePhysicsShape->SetEnabled(false);
+
+	m_pSave->Layout_Column(2, 0);
+	m_pSave->Layout_AlignBottom();
+	m_pBuild->Layout_Column(2, 1);
+	m_pBuild->Layout_AlignBottom();
+
+	BaseClass::Layout();
 }
 
 void CSourcePanel::UpdateFields()
@@ -350,6 +384,34 @@ void CSourcePanel::ModelChangedCallback(const tstring& sArgs)
 	pField->SetAutoCompleteFiles(GetDirectory(ToyEditor()->GetToy().m_sFilename), asExtensions);
 
 	ToyEditor()->Layout();
+}
+
+void CSourcePanel::PhysicsAreaSelectedCallback(const tstring& sArgs)
+{
+	if (m_pPhysicsShapes->GetSelectedNodeId() == ~0)
+		m_pDeletePhysicsShape->SetEnabled(false);
+	else
+		m_pDeletePhysicsShape->SetEnabled(true);
+}
+
+void CSourcePanel::NewPhysicsShapeCallback(const tstring& sArgs)
+{
+	auto& oPhysicsShape = ToyEditor()->GetToyToModify().m_aShapes.push_back();
+	oPhysicsShape.m_aabbBounds = AABB(-Vector(0.5f, 0.5f, 0.5f), Vector(0.5f, 0.5f, 0.5f));
+
+	Layout();
+}
+
+void CSourcePanel::DeletePhysicsShapeCallback(const tstring& sArgs)
+{
+	if (m_pPhysicsShapes->GetSelectedNodeId() >= ToyEditor()->GetToy().m_aShapes.size())
+		return;
+
+	size_t iSelected = m_pPhysicsShapes->GetSelectedNodeId();	// Grab before GetToyToModify() since a Layout() is called which resecs the shapes list.
+	auto pToy = &ToyEditor()->GetToyToModify();
+	pToy->m_aShapes.erase(pToy->m_aShapes.begin()+iSelected);
+
+	Layout();
 }
 
 void CSourcePanel::SaveCallback(const tstring& sArgs)
@@ -537,6 +599,39 @@ void CToyEditor::RenderScene()
 			c.SetBlend(BLEND_ALPHA);
 
 		c.RenderModel(m_iPhysPreview);
+	}
+
+	for (size_t i = 0; i < GetToy().m_aShapes.size(); i++)
+	{
+		CGameRenderingContext c(GameServer()->GetRenderer(), true);
+
+		if (!c.GetActiveFrameBuffer())
+			c.UseFrameBuffer(GameServer()->GetRenderer()->GetSceneBuffer());
+
+		c.ClearDepth();
+
+		c.UseProgram("model");
+		c.SetUniform("bDiffuse", false);
+
+		float flAlpha = 0.2f;
+		if (m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId() == i)
+			flAlpha = 0.8f;
+		if (m_iMeshPreview == ~0 && m_iTexturePreview == 0)
+			flAlpha = 1.0f;
+		if (flAlpha < 1)
+			c.SetBlend(BLEND_ALPHA);
+
+		if (m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId() == i)
+			c.SetUniform("vecColor", Color(255, 50, 100, (char)(255*flAlpha)));
+		else
+			c.SetUniform("vecColor", Color(0, 100, 200, (char)(255*flAlpha)));
+
+		c.Transform(GetToy().m_aShapes[i].m_mTransform);
+		c.RenderWireBox(GetToy().m_aShapes[i].m_aabbBounds);
+
+		// Reset the uniforms so other stuff doesn't get this ugly color.
+		c.SetUniform("bDiffuse", true);
+		c.SetUniform("vecColor", Color(255, 255, 255, 255));
 	}
 }
 
@@ -729,4 +824,6 @@ void CToySource::Open(const tstring& sFile)
 		m_sPhys = pPhysics->GetValueTString();
 	else
 		m_sPhys = "";
+
+	ToyEditor()->MarkSaved();
 }

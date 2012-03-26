@@ -1,5 +1,7 @@
 #pragma once
 
+#include <matrix.h>
+
 #include <glgui/movablepanel.h>
 
 #include "tool.h"
@@ -48,6 +50,15 @@ public:
 
 	tstring					m_sMesh;
 	tstring					m_sPhys;
+
+	class CPhysicsShape
+	{
+	public:
+		AABB				m_aabbBounds;
+		Matrix4x4			m_mTransform;
+	};
+
+	eastl::vector<CPhysicsShape>	m_aShapes;
 };
 
 class CSourcePanel : public glgui::CPanel, public glgui::IEventListener
@@ -65,6 +76,9 @@ public:
 
 	EVENT_CALLBACK(CSourcePanel, ToyFileChanged);
 	EVENT_CALLBACK(CSourcePanel, ModelChanged);
+	EVENT_CALLBACK(CSourcePanel, PhysicsAreaSelected);
+	EVENT_CALLBACK(CSourcePanel, NewPhysicsShape);
+	EVENT_CALLBACK(CSourcePanel, DeletePhysicsShape);
 	EVENT_CALLBACK(CSourcePanel, Save);
 	EVENT_CALLBACK(CSourcePanel, Build);
 
@@ -79,6 +93,11 @@ public:
 
 	glgui::CLabel*			m_pPhysLabel;
 	glgui::CTextField*		m_pPhysText;
+
+	glgui::CLabel*			m_pPhysShapesLabel;
+	glgui::CTree*			m_pPhysicsShapes;
+	glgui::CButton*			m_pNewPhysicsShape;
+	glgui::CButton*			m_pDeletePhysicsShape;
 
 	glgui::CButton*			m_pSave;
 	glgui::CButton*			m_pBuild;
