@@ -27,10 +27,13 @@ public:
 
 	Matrix4x4			GetTransform(bool bScale = true);
 
+	TRS					GetNewTRS();
+
 protected:
 	bool				m_bActive;
 	bool				m_bTransforming;
 
+	char				m_iLockedAxis;
 	float				m_flStartX;
 	float				m_flStartY;
 	float				m_flOriginalDistance;
