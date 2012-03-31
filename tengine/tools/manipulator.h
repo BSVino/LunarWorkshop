@@ -1,11 +1,12 @@
 #pragma once
 
 #include "trs.h"
+#include "tstring.h"
 
 class IManipulatorListener
 {
 public:
-	virtual void		ManipulatorUpdated()=0;
+	virtual void		ManipulatorUpdated(const tstring& sArguments)=0;
 };
 
 class CManipulatorTool
@@ -19,13 +20,14 @@ public:
 	}
 
 public:
-	void				Activate(IManipulatorListener* pListener, const TRS& trs=TRS());
+	void				Activate(IManipulatorListener* pListener, const TRS& trs=TRS(), const tstring& sArguments="");
 	void				Deactivate();
 	bool				IsActive() { return m_bActive; }
 
 	bool				MouseInput(int iButton, int iState);
 
 	Matrix4x4			GetTransform(bool bScale = true);
+	TRS					GetTRS() { return m_trsTransform; }
 
 	TRS					GetNewTRS();
 
@@ -41,6 +43,7 @@ protected:
 	TRS					m_trsTransform;
 
 	IManipulatorListener*	m_pListener;
+	tstring				m_sListenerArguments;
 
 public:
 	static CManipulatorTool*	Get();

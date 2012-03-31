@@ -6,11 +6,12 @@
 #include <game/gameserver.h>
 #include <renderer/game_renderer.h>
 
-void CManipulatorTool::Activate(IManipulatorListener* pListener, const TRS& trs)
+void CManipulatorTool::Activate(IManipulatorListener* pListener, const TRS& trs, const tstring& sArguments)
 {
 	m_bActive = true;
 	m_pListener = pListener;
 	m_trsTransform = trs;
+	m_sListenerArguments = sArguments;
 }
 
 void CManipulatorTool::Deactivate()
@@ -33,6 +34,8 @@ bool CManipulatorTool::MouseInput(int iButton, int iState)
 				m_trsTransform.m_vecTranslation.y = trsNewTransform.m_vecTranslation.y;
 			if (!(m_iLockedAxis & (1<<2)))
 				m_trsTransform.m_vecTranslation.z = trsNewTransform.m_vecTranslation.z;
+
+			m_pListener->ManipulatorUpdated(m_sListenerArguments);
 
 			return true;
 		}

@@ -268,14 +268,7 @@ void CSourcePanel::Layout()
 	if (!pToySource->m_sFilename.length())
 		return;
 
-	tstring sFilename = pToySource->m_sFilename;
-	tstring sAbsoluteSourcePath = FindAbsolutePath("../sources/");
-	tstring sAbsoluteFilename = FindAbsolutePath(sFilename);
-	if (sAbsoluteFilename.find(sAbsoluteSourcePath) == 0)
-		sFilename = ToForwardSlashes(sAbsoluteFilename.substr(sAbsoluteSourcePath.length()));
-	m_pFilename->SetText(sFilename);
-	if (!ToyEditor()->IsSaved())
-		m_pFilename->AppendText(" *");
+	LayoutFilename();
 
 	m_pToyFileLabel->Layout_AlignTop(m_pFilename);
 	m_pToyFileLabel->SetWidth(10);
@@ -337,6 +330,23 @@ void CSourcePanel::Layout()
 	BaseClass::Layout();
 }
 
+void CSourcePanel::LayoutFilename()
+{
+	const CToySource* pToySource = &ToyEditor()->GetToy();
+
+	if (!pToySource->m_sFilename.length())
+		return;
+
+	tstring sFilename = pToySource->m_sFilename;
+	tstring sAbsoluteSourcePath = FindAbsolutePath("../sources/");
+	tstring sAbsoluteFilename = FindAbsolutePath(sFilename);
+	if (sAbsoluteFilename.find(sAbsoluteSourcePath) == 0)
+		sFilename = ToForwardSlashes(sAbsoluteFilename.substr(sAbsoluteSourcePath.length()));
+	m_pFilename->SetText(sFilename);
+	if (!ToyEditor()->IsSaved())
+		m_pFilename->AppendText(" *");
+}
+
 void CSourcePanel::UpdateFields()
 {
 	m_pToyFileText->SetText(ToyEditor()->GetToy().m_sToyFile);
@@ -391,7 +401,7 @@ void CSourcePanel::PhysicsAreaSelectedCallback(const tstring& sArgs)
 {
 	if (m_pPhysicsShapes->GetSelectedNodeId() < ToyEditor()->GetToy().m_aShapes.size())
 	{
-		Manipulator()->Activate(ToyEditor(), ToyEditor()->GetToy().m_aShapes[m_pPhysicsShapes->GetSelectedNodeId()].m_trsTransform);
+		Manipulator()->Activate(ToyEditor(), ToyEditor()->GetToy().m_aShapes[m_pPhysicsShapes->GetSelectedNodeId()].m_trsTransform, "PhysicsShape " + sprintf("%d", m_pPhysicsShapes->GetSelectedNodeId()));
 		m_pDeletePhysicsShape->SetEnabled(true);
 	}
 	else
@@ -633,7 +643,11 @@ void CToyEditor::RenderScene()
 		else
 			c.SetUniform("vecColor", Color(0, 100, 200, (char)(255*flAlpha)));
 
-		c.Transform(GetToy().m_aShapes[i].m_trsTransform.GetMatrix4x4());
+		if (m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId() == i)
+			c.Transform(Manipulator()->GetTransform());
+		else
+			c.Transform(GetToy().m_aShapes[i].m_trsTransform.GetMatrix4x4());
+
 		c.RenderWireBox(GetToy().m_aShapes[i].m_aabbBounds);
 
 		// Reset the uniforms so other stuff doesn't get this ugly color.
@@ -657,7 +671,9 @@ CToySource& CToyEditor::GetToyToModify()
 void CToyEditor::MarkUnsaved()
 {
 	m_bSaved = false;
-	m_pSourcePanel->Layout();
+
+	// Don't call Layout, it will invalidate all sorts of important stuff.
+	m_pSourcePanel->LayoutFilename();
 }
 
 void CToyEditor::MarkSaved()
@@ -754,8 +770,18 @@ TVector CToyEditor::GetCameraDirection()
 	return AngleVector(m_angPreview);
 }
 
-void CToyEditor::ManipulatorUpdated()
+void CToyEditor::ManipulatorUpdated(const tstring& sArguments)
 {
+	// Grab this before GetToyToModify since that does a layout and clobbers the list.
+	size_t iSelected = m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId();
+
+	eastl::vector<tstring> asTokens;
+	strtok(sArguments, asTokens);
+	TAssert(asTokens.size() == 2);
+	TAssert(stoi(asTokens[1]) == iSelected);
+	TAssert(iSelected != ~0);
+
+	ToyEditor()->GetToyToModify().m_aShapes[iSelected].m_trsTransform = Manipulator()->GetTRS();
 }
 
 void CToySource::Save() const

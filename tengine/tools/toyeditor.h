@@ -73,6 +73,7 @@ public:
 	virtual void			SetVisible(bool bVis);
 
 	void					Layout();
+	void					LayoutFilename();
 	void					UpdateFields();
 
 	EVENT_CALLBACK(CSourcePanel, ToyFileChanged);
@@ -139,7 +140,7 @@ public:
 	virtual TVector			GetCameraPosition();
 	virtual TVector			GetCameraDirection();
 
-	virtual void			ManipulatorUpdated();
+	virtual void			ManipulatorUpdated(const tstring& sArguments);
 
 	virtual tstring			GetToolName() { return "Toy Editor"; }
 
