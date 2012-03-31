@@ -42,6 +42,7 @@ public:
 	void	operator/=(unit_t s);
 
 	TemplateVector<unit_t>	operator*(const TemplateVector<unit_t>& v) const;
+	TemplateVector<unit_t>	operator/(const TemplateVector<unit_t>& v) const;
 
 	friend TemplateVector<unit_t> operator*( unit_t f, const TemplateVector<unit_t>& v )
 	{
@@ -214,6 +215,12 @@ template <class unit_t>
 inline TemplateVector<unit_t> TemplateVector<unit_t>::operator*(const TemplateVector<unit_t>& v) const
 {
 	return TemplateVector(x*v.x, y*v.y, z*v.z);
+}
+
+template <class unit_t>
+inline TemplateVector<unit_t> TemplateVector<unit_t>::operator/(const TemplateVector<unit_t>& v) const
+{
+	return TemplateVector(x/v.x, y/v.y, z/v.z);
 }
 
 template <class unit_t>

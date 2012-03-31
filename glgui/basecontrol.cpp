@@ -214,6 +214,20 @@ void CBaseControl::Layout_Column(int iTotalColumns, int iColumn, float flMargin)
 	SetWidth(flControlWidth);
 }
 
+void CBaseControl::Layout_ColumnFixed(int iTotalColumns, int iColumn, float flWidth, float flMargin)
+{
+	float flParentMargin = Layout_GetMargin(flMargin);
+
+	TAssert(GetParent());
+	if (!GetParent())
+		return;
+
+	float flAllControlsWidth = flWidth*iTotalColumns + flParentMargin*(iTotalColumns-1);
+	float flLeftMargin = GetParent()->GetWidth()/2-flAllControlsWidth/2;
+	SetLeft(flLeftMargin + (flWidth+flParentMargin)*iColumn);
+	SetWidth(flWidth);
+}
+
 void CBaseControl::SetVisible(bool bVis)
 {
 	if (bVis && !m_bVisible)

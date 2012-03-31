@@ -46,6 +46,12 @@ inline double RemapVal(double flInput, double flInLo, double flInHi, double flOu
 	return (((flInput-flInLo) / (flInHi-flInLo)) * (flOutHi-flOutLo)) + flOutLo;
 }
 
+template <class T>
+inline T RemapVal(T flInput, T flInLo, T flInHi, T flOutLo, T flOutHi)
+{
+	return (((flInput-flInLo) / (flInHi-flInLo)) * (flOutHi-flOutLo)) + flOutLo;
+}
+
 inline float RemapValClamped(float flInput, float flInLo, float flInHi, float flOutLo, float flOutHi)
 {
 	if (flInput < flInLo)

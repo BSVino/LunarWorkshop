@@ -60,7 +60,8 @@ namespace glgui
 		virtual void	Layout_FullWidth(float flMargin=g_flLayoutDefault);
 		virtual void	Layout_AlignTop(CBaseControl* pOther=NULL, float flMargin=g_flLayoutDefault);
 		virtual void	Layout_AlignBottom(CBaseControl* pOther=NULL, float flMargin=g_flLayoutDefault);
-		virtual void	Layout_Column(int iTotalColumns, int iColumn, float flMargin=g_flLayoutDefault);
+		virtual void	Layout_Column(int iTotalColumns, int iColumn, float flMargin=g_flLayoutDefault);						// Take up all horizontal space, save for the margins
+		virtual void	Layout_ColumnFixed(int iTotalColumns, int iColumn, float flWidth, float flMargin=g_flLayoutDefault);	// Use a fixed width for each column and center columns
 
 		virtual void	SetVisible(bool bVis);
 		virtual bool	IsVisible();
