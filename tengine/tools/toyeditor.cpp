@@ -312,7 +312,7 @@ void CSourcePanel::Layout()
 	m_pPhysicsShapes->ClearTree();
 
 	for (size_t i = 0; i < pToySource->m_aShapes.size(); i++)
-		m_pPhysicsShapes->AddNode("Rectangle");
+		m_pPhysicsShapes->AddNode("Box");
 
 	m_pNewPhysicsShape->SetHeight(20);
 	m_pNewPhysicsShape->Layout_Column(2, 0);
@@ -328,6 +328,8 @@ void CSourcePanel::Layout()
 	m_pBuild->Layout_AlignBottom();
 
 	BaseClass::Layout();
+
+	Manipulator()->Deactivate();
 }
 
 void CSourcePanel::LayoutFilename()
@@ -414,7 +416,6 @@ void CSourcePanel::PhysicsAreaSelectedCallback(const tstring& sArgs)
 void CSourcePanel::NewPhysicsShapeCallback(const tstring& sArgs)
 {
 	auto& oPhysicsShape = ToyEditor()->GetToyToModify().m_aShapes.push_back();
-	oPhysicsShape.m_aabbBounds = AABB(-Vector(0.5f, 0.5f, 0.5f), Vector(0.5f, 0.5f, 0.5f));
 
 	Layout();
 }
@@ -648,7 +649,7 @@ void CToyEditor::RenderScene()
 		else
 			c.Transform(GetToy().m_aShapes[i].m_trsTransform.GetMatrix4x4());
 
-		c.RenderWireBox(GetToy().m_aShapes[i].m_aabbBounds);
+		c.RenderWireBox(CToySource::CPhysicsShape::s_aabbDimensions);
 
 		// Reset the uniforms so other stuff doesn't get this ugly color.
 		c.SetUniform("bDiffuse", true);
@@ -781,8 +782,13 @@ void CToyEditor::ManipulatorUpdated(const tstring& sArguments)
 	TAssert(stoi(asTokens[1]) == iSelected);
 	TAssert(iSelected != ~0);
 
+	if (iSelected >= ToyEditor()->GetToy().m_aShapes.size())
+		return;
+
 	ToyEditor()->GetToyToModify().m_aShapes[iSelected].m_trsTransform = Manipulator()->GetTRS();
 }
+
+AABB CToySource::CPhysicsShape::s_aabbDimensions = AABB(-Vector(0.5f, 0.5f, 0.5f), Vector(0.5f, 0.5f, 0.5f));
 
 void CToySource::Save() const
 {
@@ -812,6 +818,35 @@ void CToySource::Save() const
 	{
 		tstring sGame = "Physics: " + m_sPhys + "\n";
 		f.write(sGame.data(), sGame.length());
+	}
+
+	if (m_aShapes.size())
+	{
+		tstring sShapes = "PhysicsShapes:\n{\n";
+		f.write(sShapes.data(), sShapes.length());
+
+		tstring sFormat = "\t// Format is translation (x y z), rotation in euler (p y r), scaling (x y z): x y z p y r x y z\n";
+		f.write(sFormat.data(), sFormat.length());
+
+		for (size_t i = 0; i < m_aShapes.size(); i++)
+		{
+			tstring sDimensions =
+				pretty_float(m_aShapes[i].m_trsTransform.m_vecTranslation.x) + " " +
+				pretty_float(m_aShapes[i].m_trsTransform.m_vecTranslation.y) + " " + 
+				pretty_float(m_aShapes[i].m_trsTransform.m_vecTranslation.z) + " " +
+				pretty_float(m_aShapes[i].m_trsTransform.m_angRotation.p) + " " +
+				pretty_float(m_aShapes[i].m_trsTransform.m_angRotation.y) + " " +
+				pretty_float(m_aShapes[i].m_trsTransform.m_angRotation.r) + " " +
+				pretty_float(m_aShapes[i].m_trsTransform.m_vecScaling.x) + " " +
+				pretty_float(m_aShapes[i].m_trsTransform.m_vecScaling.y) + " " +
+				pretty_float(m_aShapes[i].m_trsTransform.m_vecScaling.z);
+
+			tstring sShape = "\tBox: " + sDimensions + "\n";
+			f.write(sShape.data(), sShape.length());
+		}
+
+		sShapes = "}\n";
+		f.write(sShapes.data(), sShapes.length());
 	}
 
 	ToyEditor()->MarkSaved();
@@ -844,6 +879,7 @@ void CToySource::Open(const tstring& sFile)
 	CData* pSceneAreas = pData->FindChild("SceneAreas");
 	CData* pMesh = pData->FindChild("Mesh");
 	CData* pPhysics = pData->FindChild("Physics");
+	CData* pPhysicsShapes = pData->FindChild("PhysicsShapes");
 
 	TAssert(!pSceneAreas);	// This is unimplemented.
 
@@ -861,6 +897,28 @@ void CToySource::Open(const tstring& sFile)
 		m_sPhys = pPhysics->GetValueTString();
 	else
 		m_sPhys = "";
+
+	if (pPhysicsShapes)
+	{
+		for (size_t i = 0; i < pPhysicsShapes->GetNumChildren(); i++)
+		{
+			CData* pChild = pPhysicsShapes->GetChild(i);
+
+			TAssert(pChild->GetKey() == "Box");
+			if (pChild->GetKey() != "Box")
+				continue;
+
+			eastl::vector<tstring> asTokens;
+			strtok(pChild->GetValueString(), asTokens);
+			TAssert(asTokens.size() == 9);
+			if (asTokens.size() != 9)
+				continue;
+
+			CPhysicsShape& oShape = m_aShapes.push_back();
+
+			oShape.m_trsTransform = pChild->GetValueTRS();
+		}
+	}
 
 	ToyEditor()->MarkSaved();
 }

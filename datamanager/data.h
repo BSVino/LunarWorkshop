@@ -5,6 +5,7 @@
 
 #include <vector.h>
 #include <tstring.h>
+#include <trs.h>
 
 class CData
 {
@@ -39,6 +40,7 @@ public:
 	float					GetValueFloat() const;
 	Vector2D				GetValueVector2D() const;
 	EAngle					GetValueEAngle() const;
+	TRS						GetValueTRS() const;
 
 	void					SetKey(tstring sKey) { m_sKey = sKey; }
 	void					SetValue(tstring sValue) { m_sValue = sValue; }

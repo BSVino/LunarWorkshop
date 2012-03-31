@@ -160,7 +160,7 @@ float CData::GetValueFloat() const
 Vector2D CData::GetValueVector2D() const
 {
 	eastl::vector<tstring> asTokens;
-	tstrtok(GetValueTString(), asTokens, ",");
+	tstrtok(GetValueTString(), asTokens);
 
 	Vector2D vecResult;
 	if (asTokens.size() > 0)
@@ -174,7 +174,7 @@ Vector2D CData::GetValueVector2D() const
 EAngle CData::GetValueEAngle() const
 {
 	eastl::vector<tstring> asTokens;
-	tstrtok(GetValueTString(), asTokens, ",");
+	tstrtok(GetValueTString(), asTokens);
 
 	EAngle vecResult;
 	if (asTokens.size() > 0)
@@ -185,6 +185,29 @@ EAngle CData::GetValueEAngle() const
 		vecResult.r = (float)stof(asTokens[2].c_str());
 
 	return vecResult;
+}
+
+TRS CData::GetValueTRS() const
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(GetValueTString(), asTokens);
+	TAssertNoMsg(asTokens.size() == 9);
+	if (asTokens.size() != 9)
+		return TRS();
+
+	TRS trsResult;
+
+	trsResult.m_vecTranslation.x = (float)stof(asTokens[0].c_str());
+	trsResult.m_vecTranslation.y = (float)stof(asTokens[1].c_str());
+	trsResult.m_vecTranslation.z = (float)stof(asTokens[2].c_str());
+	trsResult.m_angRotation.p = (float)stof(asTokens[3].c_str());
+	trsResult.m_angRotation.y = (float)stof(asTokens[4].c_str());
+	trsResult.m_angRotation.r = (float)stof(asTokens[5].c_str());
+	trsResult.m_vecScaling.x = (float)stof(asTokens[6].c_str());
+	trsResult.m_vecScaling.y = (float)stof(asTokens[7].c_str());
+	trsResult.m_vecScaling.z = (float)stof(asTokens[8].c_str());
+
+	return trsResult;
 }
 
 void CData::SetValue(bool bValue)

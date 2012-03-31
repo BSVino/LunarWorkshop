@@ -55,8 +55,9 @@ public:
 	class CPhysicsShape
 	{
 	public:
-		AABB				m_aabbBounds;
 		TRS					m_trsTransform;
+
+		static AABB			s_aabbDimensions;
 	};
 
 	eastl::vector<CPhysicsShape>	m_aShapes;
