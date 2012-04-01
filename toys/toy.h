@@ -134,4 +134,7 @@ protected:
 	char*		m_pMesh;
 	char*		m_pPhys;
 	char*		m_pArea;
+
+public:
+	static AABB	s_aabbBoxDimensions;
 };

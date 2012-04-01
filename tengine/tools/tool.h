@@ -19,6 +19,7 @@ public:
 	virtual bool			KeyPress(int c) { return false; }
 	virtual bool			MouseInput(int iButton, int iState) { return false; }
 	virtual void			MouseMotion(int x, int y) {};
+	virtual void			MouseWheel(int x, int y) {};
 
 	virtual void			Activate() {};
 	virtual void			Deactivate() {};

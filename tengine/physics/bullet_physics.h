@@ -48,6 +48,7 @@ public:
 public:
 	btRigidBody*						m_pRigidBody;
 	eastl::vector<btRigidBody*>			m_apAreaBodies;
+	eastl::vector<btRigidBody*>			m_apPhysicsShapes;
 	class btPairCachingGhostObject*		m_pGhostObject;
 	CCharacterController*				m_pCharacterController;
 	CTriggerController*					m_pTriggerController;
@@ -65,6 +66,7 @@ public:
 public:
 	virtual void			AddEntity(class CBaseEntity* pEnt, collision_type_t eCollisionType);
 	virtual void			AddModel(class CBaseEntity* pEnt, collision_type_t eCollisionType, size_t iModel);
+	virtual void			AddModelTris(class CBaseEntity* pEnt, collision_type_t eCollisionType, size_t iModel);
 	virtual void			RemoveEntity(class CBaseEntity* pEnt);
 	virtual void			RemoveEntity(CPhysicsEntity* pEntity);
 	virtual void			RemoveAllEntities();

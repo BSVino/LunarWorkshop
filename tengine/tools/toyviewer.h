@@ -16,6 +16,9 @@ public:
 
 public:
 	glgui::CLabel*			m_pInfo;
+
+	glgui::CLabel*			m_pShowPhysicsLabel;
+	glgui::CCheckBox*		m_pShowPhysics;
 };
 
 class CToyViewer : public CWorkbenchTool, public glgui::IEventListener
@@ -38,11 +41,14 @@ public:
 
 	bool					MouseInput(int iButton, int iState);
 	void					MouseMotion(int x, int y);
+	void					MouseWheel(int x, int y);
 
 	virtual TVector			GetCameraPosition();
 	virtual TVector			GetCameraDirection();
 
 	virtual tstring			GetToolName() { return "Toy Viewer"; }
+
+	virtual tstring			GetToyPreview() { return m_sToyPreview; }
 
 public:
 	static CToyViewer*		Get() { return s_pToyViewer; }
@@ -50,10 +56,12 @@ public:
 protected:
 	CToyPreviewPanel*		m_pToyPreviewPanel;
 
+	tstring					m_sToyPreview;
 	size_t					m_iToyPreview;
 
 	bool					m_bRotatingPreview;
 	EAngle					m_angPreview;
+	float					m_flPreviewDistance;
 
 private:
 	static CToyViewer*		s_pToyViewer;

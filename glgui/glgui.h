@@ -17,7 +17,7 @@ namespace glgui
 {
 	class CBaseControl;
 	class CButton;
-	class CCheckbox;
+	class CCheckBox;
 	class CDroppablePanel;
 	class CLabel;
 	class CMenu;

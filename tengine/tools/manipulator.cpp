@@ -64,6 +64,9 @@ void CManipulatorTool::Deactivate()
 
 bool CManipulatorTool::MouseInput(int iButton, int iState)
 {
+	if (!IsActive())
+		return false;
+
 	if (!iState)
 	{
 		if (m_bTransforming)

@@ -34,6 +34,7 @@ public:
 	virtual void				MouseMotion(int x, int y);
 	virtual bool				MouseInput(int iButton, int iState);
 	bool						GetLastMouse(int& x, int& y);
+	virtual void				MouseWheel(int x, int y);
 
 	class CGameServer*			GetGameServer() { return m_pGameServer; };
 	class CGameRenderer*		GetRenderer() { return m_pRenderer; };

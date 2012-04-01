@@ -56,8 +56,6 @@ public:
 	{
 	public:
 		TRS					m_trsTransform;
-
-		static AABB			s_aabbDimensions;
 	};
 
 	eastl::vector<CPhysicsShape>	m_aShapes;
@@ -137,6 +135,7 @@ public:
 	bool					KeyPress(int c);
 	bool					MouseInput(int iButton, int iState);
 	void					MouseMotion(int x, int y);
+	void					MouseWheel(int x, int y);
 
 	virtual TVector			GetCameraPosition();
 	virtual TVector			GetCameraDirection();
@@ -161,6 +160,7 @@ protected:
 
 	bool					m_bRotatingPreview;
 	EAngle					m_angPreview;
+	float					m_flPreviewDistance;
 
 	bool					m_bSaved;
 

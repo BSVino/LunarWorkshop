@@ -34,6 +34,7 @@ public:
 	bool					KeyPress(int c);
 	bool					MouseInput(int iButton, int iState);
 	void					MouseMotion(int x, int y);
+	void					MouseWheel(int x, int y);
 
 	void					SetActiveTool(int iTool);
 

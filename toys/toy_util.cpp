@@ -117,6 +117,18 @@ void CToyUtil::AddPhysVertex(Vector vecPosition)
 void CToyUtil::AddPhysBox(const TRS& trsBox)
 {
 	m_atrsPhysBoxes.push_back(trsBox);
+
+	AABB aabbBox = CToy::s_aabbBoxDimensions;
+	aabbBox.m_vecMaxs = trsBox.GetMatrix4x4()*aabbBox.m_vecMaxs;
+	aabbBox.m_vecMins = trsBox.GetMatrix4x4()*aabbBox.m_vecMins;
+
+	for (int i = 0; i < 3; i++)
+	{
+		if (aabbBox.m_vecMins[i] < m_aabbBounds.m_vecMins[i])
+			m_aabbBounds.m_vecMins[i] = aabbBox.m_vecMins[i];
+		if (aabbBox.m_vecMaxs[i] > m_aabbBounds.m_vecMaxs[i])
+			m_aabbBounds.m_vecMaxs[i] = aabbBox.m_vecMaxs[i];
+	}
 }
 
 size_t CToyUtil::AddSceneArea(const tstring& sFileName)

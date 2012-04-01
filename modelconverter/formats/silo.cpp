@@ -4,6 +4,7 @@
 #include "../modelconverter.h"
 #include "common.h"
 #include "strutils.h"
+#include "files.h"
 
 #include <string>
 
@@ -234,8 +235,13 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 			}
 			else
 			{
-				tstring sDirectory = GetDirectory(sFilename);
-				pMaterial->m_sDiffuseTexture = sprintf(tstring("%s/%s"), sDirectory.c_str(), aName[0].c_str());
+				if (IsAbsolutePath(aName[0]))
+					pMaterial->m_sDiffuseTexture = aName[0];
+				else
+				{
+					tstring sDirectory = GetDirectory(sFilename);
+					pMaterial->m_sDiffuseTexture = sprintf(tstring("%s/%s"), sDirectory.c_str(), aName[0].c_str());
+				}
 			}
 		}
 		else if (tstrncmp(pszToken, "-endMat", 7) == 0)

@@ -204,6 +204,52 @@ void CBulletPhysics::AddModel(class CBaseEntity* pEntity, collision_type_t eColl
 		AddModel(pEntity, eCollisionType, iArea);
 	}
 
+	AddModelTris(pEntity, eCollisionType, iModel);
+
+	CPhysicsEntity* pPhysicsEntity = &m_aEntityList[pEntity->GetHandle()];
+
+	for (size_t i = 0; i < pModel->m_pToy->GetPhysicsNumBoxes(); i++)
+	{
+		btCollisionShape* pCollisionShape;
+
+		pPhysicsEntity->m_bCenterMassOffset = true;
+
+		TRS trs = pModel->m_pToy->GetPhysicsBox(i);
+		Matrix4x4 mTRS = trs.GetMatrix4x4();
+		AABB aabbBox = CToy::s_aabbBoxDimensions;
+		aabbBox.m_vecMins = mTRS*aabbBox.m_vecMins;
+		aabbBox.m_vecMaxs = mTRS*aabbBox.m_vecMaxs;
+		Vector vecHalf = aabbBox.m_vecMaxs - aabbBox.Center();
+		pCollisionShape = new btBoxShape(btVector3(vecHalf.x, vecHalf.y, vecHalf.z));
+
+		btTransform mTransform;
+		mTransform.setIdentity();
+		mTransform.setFromOpenGLMatrix(pEntity->GetGlobalTransform()*trs.GetMatrix4x4(false));
+
+		btVector3 vecLocalInertia(0, 0, 0);
+
+		btRigidBody::btRigidBodyConstructionInfo rbInfo(0, &pPhysicsEntity->m_oMotionState, pCollisionShape, vecLocalInertia);
+
+		pPhysicsEntity->m_apPhysicsShapes.push_back(new btRigidBody(rbInfo));
+		pPhysicsEntity->m_apPhysicsShapes.back()->setUserPointer((void*)pEntity->GetHandle());
+		pPhysicsEntity->m_apPhysicsShapes.back()->setWorldTransform(mTransform);
+
+		if (eCollisionType == CT_KINEMATIC)
+		{
+			pPhysicsEntity->m_apPhysicsShapes.back()->setCollisionFlags(pPhysicsEntity->m_pRigidBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+			pPhysicsEntity->m_apPhysicsShapes.back()->setActivationState(DISABLE_DEACTIVATION);
+		}
+
+		m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_apPhysicsShapes.back());
+	}
+}
+
+void CBulletPhysics::AddModelTris(class CBaseEntity* pEntity, collision_type_t eCollisionType, size_t iModel)
+{
+	CModel* pModel = CModelLibrary::GetModel(iModel);
+	if (!pModel)
+		return;
+
 	if (!pModel->m_pToy->GetPhysicsNumTris())
 		return;
 
@@ -303,6 +349,13 @@ void CBulletPhysics::RemoveEntity(CPhysicsEntity* pPhysicsEntity)
 		delete pPhysicsEntity->m_apAreaBodies[i];
 	}
 	pPhysicsEntity->m_apAreaBodies.clear();
+
+	for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+	{
+		m_pDynamicsWorld->removeRigidBody(pPhysicsEntity->m_apPhysicsShapes[i]);
+		delete pPhysicsEntity->m_apPhysicsShapes[i];
+	}
+	pPhysicsEntity->m_apPhysicsShapes.clear();
 
 	if (pPhysicsEntity->m_pGhostObject)
 		m_pDynamicsWorld->removeCollisionObject(pPhysicsEntity->m_pGhostObject);

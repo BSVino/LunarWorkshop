@@ -10,6 +10,8 @@
 
 #include "toy_offsets.h"
 
+AABB CToy::s_aabbBoxDimensions = AABB(-Vector(0.5f, 0.5f, 0.5f), Vector(0.5f, 0.5f, 0.5f));
+
 CToy::CToy()
 {
 	m_pBase = nullptr;

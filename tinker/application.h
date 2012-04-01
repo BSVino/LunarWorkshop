@@ -50,7 +50,7 @@ public:
 	static void					MouseInputCallback(void*, int iButton, int iState);
 	virtual bool				MouseInput(int iButton, int iState);
 
-	static void					MouseWheelCallback(void*, int x, int y) { Get()->MouseWheel(x, y); };
+	static void					MouseWheelCallback(void*, int x, int y);
 	virtual void				MouseWheel(int x, int y) {};
 
 	static void					KeyEventCallback(void*, int c, int e) { Get()->KeyEvent(c, e); };

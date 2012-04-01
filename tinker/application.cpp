@@ -616,6 +616,11 @@ void CApplication::MouseInputCallback(void*, int iButton, int iState)
 	Get()->MouseInput(MapMouseKey(iButton), iState);
 }
 
+void CApplication::MouseWheelCallback(void*, int x, int y)
+{
+	Get()->MouseWheel(x, y);
+}
+
 void CApplication::KeyEvent(int c, int e)
 {
 	if (e == GLFW_PRESS)

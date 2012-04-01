@@ -23,6 +23,7 @@
 #include <tools/toybuilder/geppetto.h>
 #include <datamanager/dataserializer.h>
 #include <textures/texturelibrary.h>
+#include <toys/toy.h>
 
 #include "workbench.h"
 #include "manipulator.h"
@@ -495,6 +496,11 @@ void CToyEditor::Layout()
 
 	SetupMenu();
 
+	bool bGenPreviewDistance = false;
+
+	if (!CModelLibrary::GetModel(m_iMeshPreview))
+		m_iMeshPreview = ~0;
+
 	tstring sMesh = FindAbsolutePath(GetDirectory(GetToy().m_sFilename) + "/" + GetToy().m_sMesh);
 	if (IsFile(sMesh))
 	{
@@ -506,10 +512,14 @@ void CToyEditor::Layout()
 				CModelLibrary::ReleaseModel(m_iMeshPreview);
 				CModelLibrary::ClearUnreferenced();
 				m_iMeshPreview = CModelLibrary::AddModel(sMesh);
+				bGenPreviewDistance = true;
 			}
 		}
 		else
+		{
 			m_iMeshPreview = CModelLibrary::AddModel(sMesh);
+			bGenPreviewDistance = true;
+		}
 	}
 	else
 	{
@@ -521,10 +531,18 @@ void CToyEditor::Layout()
 		}
 	}
 
+	if (m_iMeshPreview != ~0 && bGenPreviewDistance)
+		m_flPreviewDistance = CModelLibrary::GetModel(m_iMeshPreview)->m_aabbBoundingBox.Size().Length()*2;
+
 	tstring sTexture = FindAbsolutePath(GetDirectory(GetToy().m_sFilename) + "/" + GetToy().m_sMesh);
 	if (IsFile(sTexture))
+	{
 		// Don't bother with clearing old ones, they'll get flushed eventually.
 		m_iTexturePreview = CTextureLibrary::AddTextureID(sTexture);
+
+		if (m_iTexturePreview != 0)
+			m_flPreviewDistance = 10;
+	}
 	else
 		m_iTexturePreview = ~0;
 
@@ -649,7 +667,7 @@ void CToyEditor::RenderScene()
 		else
 			c.Transform(GetToy().m_aShapes[i].m_trsTransform.GetMatrix4x4());
 
-		c.RenderWireBox(CToySource::CPhysicsShape::s_aabbDimensions);
+		c.RenderWireBox(CToy::s_aabbBoxDimensions);
 
 		// Reset the uniforms so other stuff doesn't get this ugly color.
 		c.SetUniform("bDiffuse", true);
@@ -749,11 +767,25 @@ void CToyEditor::MouseMotion(int x, int y)
 	}
 }
 
+void CToyEditor::MouseWheel(int x, int y)
+{
+	if (y > 0)
+	{
+		for (int i = 0; i < y; i++)
+			m_flPreviewDistance *= 0.9f;
+	}
+	else if (y < 0)
+	{
+		for (int i = 0; i < -y; i++)
+			m_flPreviewDistance *= 1.1f;
+	}
+}
+
 TVector CToyEditor::GetCameraPosition()
 {
 	CModel* pMesh = CModelLibrary::GetModel(m_iMeshPreview);
 
-	Vector vecPreviewAngle = AngleVector(m_angPreview)*10;
+	Vector vecPreviewAngle = AngleVector(m_angPreview)*m_flPreviewDistance;
 	if (!pMesh)
 	{
 		CModel* pPhys = CModelLibrary::GetModel(m_iPhysPreview);
@@ -787,8 +819,6 @@ void CToyEditor::ManipulatorUpdated(const tstring& sArguments)
 
 	ToyEditor()->GetToyToModify().m_aShapes[iSelected].m_trsTransform = Manipulator()->GetTRS();
 }
-
-AABB CToySource::CPhysicsShape::s_aabbDimensions = AABB(-Vector(0.5f, 0.5f, 0.5f), Vector(0.5f, 0.5f, 0.5f));
 
 void CToySource::Save() const
 {

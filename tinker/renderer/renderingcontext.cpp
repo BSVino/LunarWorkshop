@@ -668,6 +668,25 @@ void CRenderingContext::EndRenderVertexArray(size_t iVertices)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void CRenderingContext::EndRenderVertexArrayTriangles(size_t iTriangles, int* piIndices)
+{
+	SetUniform("mProjection", GetContext().m_mProjection);
+	SetUniform("mView", GetContext().m_mView);
+	SetUniform("mGlobal", GetContext().m_mTransformations);
+
+	glDrawElements(GL_TRIANGLES, iTriangles*3, GL_UNSIGNED_INT, piIndices);
+
+	glDisableVertexAttribArray(m_pShader->m_iPositionAttribute);
+	if (m_pShader->m_iTexCoordAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
+	if (m_pShader->m_iNormalAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iNormalAttribute);
+	if (m_pShader->m_iColorAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void CRenderingContext::RenderText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize)
 {
 	TAssert(m_pShader);

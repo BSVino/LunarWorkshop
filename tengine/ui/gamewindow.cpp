@@ -425,3 +425,11 @@ bool CGameWindow::GetLastMouse(int& x, int& y)
 
 	return true;
 }
+
+void CGameWindow::MouseWheel(int x, int y)
+{
+	BaseClass::MouseWheel(x, y);
+
+	if (CWorkbench::IsActive())
+		Workbench()->MouseWheel(x, y);
+}
