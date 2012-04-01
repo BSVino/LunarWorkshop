@@ -44,6 +44,7 @@
 
 	4 bytes, unsigned, number of verts
 	4 bytes, unsigned, number of triangles
+	4 bytes, unsigned, number of boxes
 	∀ vertex:
 		4 bytes, float, x position
 		4 bytes, float, y position
@@ -52,6 +53,16 @@
 		4 bytes, unsigned, vertex 1
 		4 bytes, unsigned, vertex 2
 		4 bytes, unsigned, vertex 3
+	∀ box:
+		4 bytes, float, x translation
+		4 bytes, float, y translation
+		4 bytes, float, z translation
+		4 bytes, float, p rotation
+		4 bytes, float, y rotation
+		4 bytes, float, r rotation
+		4 bytes, float, x scaling
+		4 bytes, float, y scaling
+		4 bytes, float, z scaling
 
 	Area data format - Scene areas used for scene management
 
@@ -70,6 +81,7 @@
 */
 
 #include <geometry.h>
+#include <trs.h>
 
 class CToy
 {
@@ -93,10 +105,13 @@ public:
 
 	size_t		GetPhysicsNumVerts();
 	size_t		GetPhysicsNumTris();
+	size_t		GetPhysicsNumBoxes();
 	float*		GetPhysicsVerts();
 	float*		GetPhysicsVert(size_t iVert);
 	int*		GetPhysicsTris();
 	int*		GetPhysicsTri(size_t iTri);
+	TRS*		GetPhysicsBoxes();
+	TRS&		GetPhysicsBox(size_t iBox);
 
 	const AABB&	GetSceneAreaAABB(size_t iSceneArea);
 	size_t		GetSceneAreaNumVisible(size_t iSceneArea);

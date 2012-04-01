@@ -121,12 +121,20 @@ size_t CToy::GetPhysicsNumTris()
 	return (size_t)*((uint32_t*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE));
 }
 
+size_t CToy::GetPhysicsNumBoxes()
+{
+	if (!m_pPhys)
+		return 0;
+
+	return (size_t)*((uint32_t*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE+PHYS_TRIS_LENGTH_SIZE));
+}
+
 float* CToy::GetPhysicsVerts()
 {
 	if (!m_pPhys)
 		return nullptr;
 
-	return (float*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE+PHYS_TRIS_LENGTH_SIZE);
+	return (float*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE+PHYS_TRIS_LENGTH_SIZE+PHYS_BOXES_LENGTH_SIZE);
 }
 
 float* CToy::GetPhysicsVert(size_t iVert)
@@ -143,7 +151,7 @@ int* CToy::GetPhysicsTris()
 		return nullptr;
 
 	size_t iVertsSize = GetPhysicsNumVerts()*PHYS_VERT_SIZE;
-	return (int*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE+PHYS_TRIS_LENGTH_SIZE+iVertsSize);
+	return (int*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE+PHYS_TRIS_LENGTH_SIZE+PHYS_BOXES_LENGTH_SIZE+iVertsSize);
 }
 
 int* CToy::GetPhysicsTri(size_t iTri)
@@ -152,6 +160,27 @@ int* CToy::GetPhysicsTri(size_t iTri)
 		return nullptr;
 
 	return GetPhysicsTris() + iTri*3;
+}
+
+TRS* CToy::GetPhysicsBoxes()
+{
+	if (!m_pPhys)
+		return nullptr;
+
+	size_t iVertsSize = GetPhysicsNumVerts()*PHYS_VERT_SIZE;
+	size_t iTrisSize = GetPhysicsNumTris()*PHYS_TRI_SIZE;
+	return (TRS*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE+PHYS_TRIS_LENGTH_SIZE+PHYS_BOXES_LENGTH_SIZE+iVertsSize+iTrisSize);
+}
+
+TRS& CToy::GetPhysicsBox(size_t iBox)
+{
+	if (!m_pPhys)
+	{
+		static TRS d;
+		return d;
+	}
+
+	return *(GetPhysicsBoxes() + iBox);
 }
 
 const AABB& CToy::GetSceneAreaAABB(size_t iSceneArea)

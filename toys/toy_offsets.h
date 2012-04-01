@@ -14,7 +14,9 @@
 
 #define PHYS_VERTS_LENGTH_SIZE 4
 #define PHYS_TRIS_LENGTH_SIZE 4
+#define PHYS_BOXES_LENGTH_SIZE 4
 #define PHYS_VERT_SIZE sizeof(Vector)
+#define PHYS_TRI_SIZE (4*3)
 
 #define AREA_AABB_SIZE (4*6)
 #define AREA_VISIBLE_AREAS_SIZE 4

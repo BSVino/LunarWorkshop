@@ -4,6 +4,7 @@
 #include <tstring.h>
 #include <vector.h>
 #include <geometry.h>
+#include <trs.h>
 
 class CToy;
 
@@ -47,6 +48,10 @@ public:
 	size_t			GetNumPhysIndices() { return m_aiPhysIndices.size(); }
 	size_t			GetNumPhysVerts() { return m_avecPhysVerts.size(); }
 
+	// Shapes
+	void			AddPhysBox(const TRS& trsBox);
+	size_t			GetNumPhysBoxes() { return m_atrsPhysBoxes.size(); }
+
 	size_t			AddSceneArea(const tstring& sFileName);
 	void			AddSceneAreaNeighbor(size_t iSceneArea, size_t iNeighbor);
 	void			AddSceneAreaVisible(size_t iSceneArea, size_t iVisible);
@@ -78,6 +83,7 @@ protected:
 	AABB									m_aabbBounds;
 	eastl::vector<uint32_t>					m_aiPhysIndices;
 	eastl::vector<Vector>					m_avecPhysVerts;
+	eastl::vector<TRS>						m_atrsPhysBoxes;
 	eastl::vector<CSceneArea>				m_asSceneAreas;
 
 	float					m_flNeighborDistance;	// How far can an area be considered a neighbor in the finding neighbors check?

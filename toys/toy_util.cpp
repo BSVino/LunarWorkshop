@@ -114,6 +114,11 @@ void CToyUtil::AddPhysVertex(Vector vecPosition)
 	m_avecPhysVerts.push_back(vecPosition);
 }
 
+void CToyUtil::AddPhysBox(const TRS& trsBox)
+{
+	m_atrsPhysBoxes.push_back(trsBox);
+}
+
 size_t CToyUtil::AddSceneArea(const tstring& sFileName)
 {
 	CToy* pArea = new CToy();
@@ -376,10 +381,7 @@ bool CToyUtil::Write(const tstring& sFilename)
 			continue;
 
 		if (!CopyFileTo(m_asCopyTextures[i], m_asTextures[i]))
-		{
 			TError("Couldn't copy texture '" + m_asCopyTextures[i] + "' to '" + m_asTextures[i] + "'.\n");
-			return false;
-		}
 	}
 
 	FILE* fp = tfopen(sFilename, "w");
@@ -458,7 +460,7 @@ bool CToyUtil::Write(const tstring& sFilename)
 		fclose(fp);
 	}
 
-	if (m_avecPhysVerts.size())
+	if (m_avecPhysVerts.size() || m_atrsPhysBoxes.size())
 	{
 		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".phys.toy", "w");
 
@@ -472,9 +474,12 @@ bool CToyUtil::Write(const tstring& sFilename)
 		fwrite(&iVerts, sizeof(iVerts), 1, fp);
 		uint32_t iTris = m_aiPhysIndices.size()/3;
 		fwrite(&iTris, sizeof(iTris), 1, fp);
+		uint32_t iBoxes = m_atrsPhysBoxes.size();
+		fwrite(&iBoxes, sizeof(iBoxes), 1, fp);
 
 		fwrite(m_avecPhysVerts.data(), m_avecPhysVerts.size()*sizeof(Vector), 1, fp);
 		fwrite(m_aiPhysIndices.data(), m_aiPhysIndices.size()*sizeof(uint32_t), 1, fp);
+		fwrite(m_atrsPhysBoxes.data(), m_atrsPhysBoxes.size()*sizeof(TRS), 1, fp);
 
 		fclose(fp);
 	}

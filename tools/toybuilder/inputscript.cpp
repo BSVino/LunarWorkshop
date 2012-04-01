@@ -199,6 +199,7 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 	CData* pSceneAreas = pData->FindChild("SceneAreas");
 	CData* pMesh = pData->FindChild("Mesh");
 	CData* pPhysics = pData->FindChild("Physics");
+	CData* pPhysicsShapes = pData->FindChild("PhysicsShapes");
 
 	// Find all file modification times.
 	time_t iScriptModificationTime = GetFileModificationTime(sScript.c_str());
@@ -330,6 +331,22 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 		TMsg("Building toy physics model ...");
 		LoadSceneIntoToyPhysics(pScene.get(), &t);
 		TMsg(" Done.\n");
+	}
+
+	if (pPhysicsShapes)
+	{
+		for (size_t i = 0; i < pPhysicsShapes->GetNumChildren(); i++)
+		{
+			CData* pShape = pPhysicsShapes->GetChild(i);
+
+			TAssert(pShape->GetKey() == "Box");
+			if (pShape->GetKey() != "Box")
+				continue;
+
+			TRS trs = pShape->GetValueTRS();
+
+			t.AddPhysBox(trs);
+		}
 	}
 
 	if (pSceneAreas)
