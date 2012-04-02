@@ -30,6 +30,7 @@ public:
 
 	void						GoIntoScreen();
 	void						GoOutOfScreen();
+	void						FlipScreen();
 
 protected:
 	CEntityHandle<CMirror>		m_hMirror;

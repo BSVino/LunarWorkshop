@@ -221,3 +221,9 @@ void CPlayerCharacter::GoOutOfScreen()
 	vecPosition.x = (float)(m_iDepthLevel * METERS_PER_DEPTH);
 	SetGlobalOrigin(vecPosition);
 }
+
+void CPlayerCharacter::FlipScreen()
+{
+	SetGlobalAngles(GetGlobalAngles() + EAngle(0, 180, 0));
+	SetViewAngles(GetViewAngles() + EAngle(0, 180, 0));
+}

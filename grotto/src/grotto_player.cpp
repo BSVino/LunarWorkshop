@@ -77,5 +77,11 @@ void CGrottoPlayer::KeyPress(int c)
 		return;
 	}
 
+	if (c == ' ')
+	{
+		GetPlayerCharacter()->FlipScreen();
+		return;
+	}
+
 	BaseClass::KeyPress(c);
 }
