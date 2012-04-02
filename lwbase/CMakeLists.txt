@@ -23,6 +23,7 @@ set (LWBASE_SOURCES
 	../common/eastl.cpp
 	../common/mempool.cpp
 	../common/mtrand.cpp
+	../common/stb_image.cpp
 	../common/parallelize.cpp
 	../common/sockets/sockets.cpp
 	../common/math/matrix.cpp

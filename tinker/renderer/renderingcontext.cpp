@@ -2,8 +2,6 @@
 
 #include <GL3/gl3w.h>
 #include <GL/glu.h>
-#include <IL/il.h>
-#include <IL/ilu.h>
 #include <FTGL/ftgl.h>
 
 #include <maths.h>

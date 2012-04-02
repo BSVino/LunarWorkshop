@@ -31,16 +31,18 @@ const CTexture* CTextureLibrary::AddTexture(const tstring& sTexture, int iClamp)
 		return pTexture;
 	}
 
-	size_t iILID = CRenderer::LoadTextureData(sTexture);
-	if (iILID == 0)
+	int w, h;
+	Color* pclrTexture = CRenderer::LoadTextureData(sTexture, w, h);
+	if (!pclrTexture)
 		return NULL;
 
 	CTexture oTex;
 	
-	oTex.m_iGLID = CRenderer::LoadTextureIntoGL(iILID, iClamp);
-	oTex.m_iWidth = CRenderer::GetTextureWidth(iILID);
-	oTex.m_iHeight = CRenderer::GetTextureHeight(iILID);
-	CRenderer::UnloadTextureData(iILID);
+	oTex.m_iGLID = CRenderer::LoadTextureIntoGL(pclrTexture, w, h, iClamp);
+	oTex.m_iWidth = w;
+	oTex.m_iHeight = h;
+
+	CRenderer::UnloadTextureData(pclrTexture);
 
 	Get()->m_aTextures[sTexture] = oTex;
 	Get()->m_aTextures[sTexture].m_iReferences++;

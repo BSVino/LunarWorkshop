@@ -3,8 +3,6 @@
 #include <time.h>
 #include <GL3/gl3w.h>
 #include <GL/glfw3.h>
-#include <IL/il.h>
-#include <IL/ilu.h>
 #include <iostream>
 #include <fstream>
 
@@ -23,8 +21,6 @@ CApplication* CApplication::s_pApplication = NULL;
 CApplication::CApplication(int argc, char** argv)
 	: CShell(argc, argv)
 {
-	ilInit();
-
 	TPortal_Startup();
 
 	s_pApplication = this;

@@ -1,8 +1,6 @@
 #include "grotto_window.h"
 
 #include <GL3/gl3w.h>
-#include <IL/il.h>
-#include <IL/ilu.h>
 
 #include <tinker/keys.h>
 #include <game/gameserver.h>

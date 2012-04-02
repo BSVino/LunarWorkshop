@@ -1,8 +1,5 @@
 #include "game_renderingcontext.h"
 
-#include <IL/il.h>
-#include <IL/ilu.h>
-
 #include <maths.h>
 #include <simplex.h>
 

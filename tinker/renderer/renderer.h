@@ -120,16 +120,12 @@ public:
 	static size_t	LoadVertexDataIntoGL(size_t iSizeInBytes, float* aflVertices);
 	static void		UnloadVertexDataFromGL(size_t iBuffer);
 	static size_t	LoadTextureIntoGL(tstring sFilename, int iClamp = 0);
-	static size_t	LoadTextureIntoGL(size_t iImageID, int iClamp = 0);
-	static size_t	LoadTextureIntoGL(Color* pclrData, int iClamp = 0);
+	static size_t	LoadTextureIntoGL(Color* pclrData, int w, int h, int iClamp = 0);
 	static void		UnloadTextureFromGL(unsigned int iGLID);
 	static size_t	GetNumTexturesLoaded() { return s_iTexturesLoaded; }
 
-	static size_t	LoadTextureData(tstring sFilename);
-	static Color*	GetTextureData(size_t iTexture);
-	static size_t	GetTextureWidth(size_t iTexture);
-	static size_t	GetTextureHeight(size_t iTexture);
-	static void		UnloadTextureData(unsigned int iTexture);
+	static Color*	LoadTextureData(tstring sFilename, int& w, int& h);
+	static void		UnloadTextureData(Color* pData);
 
 protected:
 	size_t			m_iWidth;

@@ -2,11 +2,10 @@
 
 #include <GL3/gl3w.h>
 #include <GL/glu.h>
-#include <IL/il.h>
-#include <IL/ilu.h>
 
 #include <maths.h>
 #include <tinker_platform.h>
+#include <stb_image.h>
 
 #include <common/worklistener.h>
 #include <renderer/shaders.h>
@@ -521,12 +520,12 @@ void CRenderer::SetSize(int w, int h)
 	m_iWidth = w;
 	m_iHeight = h;
 
-	m_vecFullscreenTexCoords[0] = Vector2D(0, 0);
-	m_vecFullscreenTexCoords[1] = Vector2D(1, 1);
-	m_vecFullscreenTexCoords[2] = Vector2D(0, 1);
-	m_vecFullscreenTexCoords[3] = Vector2D(0, 0);
-	m_vecFullscreenTexCoords[4] = Vector2D(1, 0);
-	m_vecFullscreenTexCoords[5] = Vector2D(1, 1);
+	m_vecFullscreenTexCoords[0] = Vector2D(0, 1);
+	m_vecFullscreenTexCoords[1] = Vector2D(1, 0);
+	m_vecFullscreenTexCoords[2] = Vector2D(0, 0);
+	m_vecFullscreenTexCoords[3] = Vector2D(0, 1);
+	m_vecFullscreenTexCoords[4] = Vector2D(1, 1);
+	m_vecFullscreenTexCoords[5] = Vector2D(1, 0);
 
 	m_vecFullscreenVertices[0] = Vector(-1, -1, 0);
 	m_vecFullscreenVertices[1] = Vector(1, 1, 0);
@@ -678,86 +677,34 @@ size_t CRenderer::LoadTextureIntoGL(tstring sFilename, int iClamp)
 	if (!sFilename.length())
 		return 0;
 
-	ILuint iDevILId;
-	ilGenImages(1, &iDevILId);
-	ilBindImage(iDevILId);
+	int x, y, n;
+    unsigned char *pData = stbi_load(convertstring<tchar, char>(sFilename).c_str(), &x, &y, &n, 4);
 
-	ILboolean bSuccess = ilLoadImage(convertstring<tchar, ILchar>(sFilename).c_str());
-
-	if (!bSuccess)
-		bSuccess = ilLoadImage(convertstring<tchar, ILchar>(sFilename).c_str());
-
-	ILenum iError = ilGetError();
-
-	if (!bSuccess)
+	if (!pData)
 		return 0;
 
-	bSuccess = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
-	if (!bSuccess)
-		return 0;
-
-	ILinfo ImageInfo;
-	iluGetImageInfo(&ImageInfo);
-
-	if (ImageInfo.Width & (ImageInfo.Width-1))
+	if (x & (x-1))
 	{
-		//TAssert(!"Image width is not power of 2.");
-		ilDeleteImages(1, &iDevILId);
+		TError("Image width is not power of 2.");
+		stbi_image_free(pData);
 		return 0;
 	}
 
-	if (ImageInfo.Height & (ImageInfo.Height-1))
+	if (y & (y-1))
 	{
-		//TAssert(!"Image height is not power of 2.");
-		ilDeleteImages(1, &iDevILId);
+		TError("Image height is not power of 2.");
+		stbi_image_free(pData);
 		return 0;
 	}
 
-	if (ImageInfo.Origin == IL_ORIGIN_UPPER_LEFT)
-		iluFlipImage();
+	size_t iGLId = LoadTextureIntoGL((Color*)pData, x, y, iClamp);
 
-	size_t iGLId = LoadTextureIntoGL(iDevILId, iClamp);
-
-	ilBindImage(0);
-	ilDeleteImages(1, &iDevILId);
+	stbi_image_free(pData);
 
 	return iGLId;
 }
 
-size_t CRenderer::LoadTextureIntoGL(size_t iImageID, int iClamp)
-{
-	GLuint iGLId;
-	glGenTextures(1, &iGLId);
-	glBindTexture(GL_TEXTURE_2D, iGLId);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-	if (iClamp == 1)
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	}
-
-	ilBindImage(iImageID);
-
-	gluBuild2DMipmaps(GL_TEXTURE_2D,
-		ilGetInteger(IL_IMAGE_BPP),
-		ilGetInteger(IL_IMAGE_WIDTH),
-		ilGetInteger(IL_IMAGE_HEIGHT),
-		ilGetInteger(IL_IMAGE_FORMAT),
-		GL_UNSIGNED_BYTE,
-		ilGetData());
-
-	ilBindImage(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	s_iTexturesLoaded++;
-
-	return iGLId;
-}
-
-size_t CRenderer::LoadTextureIntoGL(Color* pclrData, int iClamp)
+size_t CRenderer::LoadTextureIntoGL(Color* pclrData, int x, int y, int iClamp)
 {
 	GLuint iGLId;
 	glGenTextures(1, &iGLId);
@@ -774,8 +721,8 @@ size_t CRenderer::LoadTextureIntoGL(Color* pclrData, int iClamp)
 
 	gluBuild2DMipmaps(GL_TEXTURE_2D,
 		4,
-		256,
-		256,
+		x,
+		y,
 		GL_RGBA,
 		GL_UNSIGNED_BYTE,
 		pclrData);
@@ -795,77 +742,37 @@ void CRenderer::UnloadTextureFromGL(size_t iGLId)
 
 size_t CRenderer::s_iTexturesLoaded = 0;
 
-size_t CRenderer::LoadTextureData(tstring sFilename)
+Color* CRenderer::LoadTextureData(tstring sFilename, int& x, int& y)
 {
 	if (!sFilename.length())
+		return nullptr;
+
+	int n;
+    unsigned char *pData = stbi_load(convertstring<tchar, char>(sFilename).c_str(), &x, &y, &n, 4);
+
+	if (!pData)
 		return 0;
 
-	ILuint iDevILId;
-	ilGenImages(1, &iDevILId);
-	ilBindImage(iDevILId);
-
-	ILboolean bSuccess = ilLoadImage(convertstring<tchar, ILchar>(sFilename).c_str());
-
-	if (!bSuccess)
-		bSuccess = ilLoadImage(convertstring<tchar, ILchar>(sFilename).c_str());
-
-	ILenum iError = ilGetError();
-
-	if (!bSuccess)
+	if (x & (x-1))
+	{
+		TError("Image width is not power of 2.");
+		stbi_image_free(pData);
 		return 0;
+	}
 
-	bSuccess = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
-	if (!bSuccess)
+	if (y & (y-1))
+	{
+		TError("Image height is not power of 2.");
+		stbi_image_free(pData);
 		return 0;
+	}
 
-	ILinfo ImageInfo;
-	iluGetImageInfo(&ImageInfo);
-
-	if (ImageInfo.Origin == IL_ORIGIN_UPPER_LEFT)
-		iluFlipImage();
-
-	ilBindImage(0);
-
-	return iDevILId;
+	return (Color*)pData;
 }
 
-Color* CRenderer::GetTextureData(size_t iTexture)
+void CRenderer::UnloadTextureData(Color* pData)
 {
-	if (!iTexture)
-		return NULL;
-
-	ilBindImage(iTexture);
-	Color* pclr = (Color*)ilGetData();
-	ilBindImage(0);
-	return pclr;
-}
-
-size_t CRenderer::GetTextureWidth(size_t iTexture)
-{
-	if (!iTexture)
-		return 0;
-
-	ilBindImage(iTexture);
-	size_t iWidth = ilGetInteger(IL_IMAGE_WIDTH);
-	ilBindImage(0);
-	return iWidth;
-}
-
-size_t CRenderer::GetTextureHeight(size_t iTexture)
-{
-	if (!iTexture)
-		return 0;
-
-	ilBindImage(iTexture);
-	size_t iHeight = ilGetInteger(IL_IMAGE_HEIGHT);
-	ilBindImage(0);
-	return iHeight;
-}
-
-void CRenderer::UnloadTextureData(unsigned int iTexture)
-{
-	ilBindImage(0);
-	ilDeleteImages(1, &iTexture);
+	stbi_image_free((char*)pData);
 }
 
 void R_ReadPixels(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
@@ -886,21 +793,9 @@ void R_ReadPixels(class CCommand* pCommand, eastl::vector<tstring>& asTokens, co
 	glViewport(0, 0, (GLsizei)iWidth, (GLsizei)iHeight);
 	glReadPixels(0, 0, iWidth, iHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	ILuint iDevILId;
-	ilGenImages(1, &iDevILId);
-	ilBindImage(iDevILId);
-
-	ilTexImage((ILint)iWidth, (ILint)iHeight, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, pixels);
-
-	// Formats like PNG and VTF don't work unless it's in integer format.
-	ilConvertImage(IL_RGBA, IL_UNSIGNED_INT);
-
-	ilEnable(IL_FILE_OVERWRITE);
-
-	tstring sFilename = sprintf("readpixels-%d.png", iFBO);
-	ilSaveImage(convertstring<tchar, ILchar>(GetAppDataDirectory(Application()->AppDirectory(), sFilename)).c_str());
-
-	ilDeleteImages(1,&iDevILId);
+	TAssert(!"Unsupported.");
+	// I removed DevIL and the replacement doesn't save, but I'm okay with that for the time being.
+	// If I really need this in the future I'll build in libpng and save it that way.
 
 	delete pixels;
 }
