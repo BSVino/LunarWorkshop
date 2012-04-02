@@ -83,6 +83,7 @@ CToyViewer::CToyViewer()
 
 	m_bRotatingPreview = false;
 	m_angPreview = EAngle(-20, 20, 0);
+	m_flPreviewDistance = 10;
 }
 
 CToyViewer::~CToyViewer()

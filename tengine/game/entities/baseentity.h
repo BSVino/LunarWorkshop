@@ -488,8 +488,8 @@ public:
 	class CModel*							GetModel() const;
 	virtual void							OnSetModel() {};
 
-	void									SetTextureModel(size_t iTexture) { m_iTexture = iTexture; }
-	size_t									GetTextureModelID() const { return m_iTexture; };
+	void									SetTextureModel(const tstring& sTexture) { m_sTexture = sTexture; }
+	const tstring&							GetTextureModel() const { return m_sTexture; };
 
 	virtual Matrix4x4						GetRenderTransform() const { return Matrix4x4(GetGlobalTransform()); };
 	virtual Vector							GetRenderOrigin() const { return GetRenderTransform().GetTranslation(); };
@@ -595,7 +595,7 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnActivated);
 	DECLARE_ENTITY_OUTPUT(OnDeactivated);
 
-	virtual bool							ShouldRender() const { return (size_t)m_iModel != ~0 || (size_t)m_iTexture != 0; };
+	virtual bool							ShouldRender() const { return (size_t)m_iModel != ~0 || m_sTexture.Get().length(); };
 	virtual bool							ShouldRenderModel() const { return true; };
 	virtual void							PreRender(bool bTransparent) const;
 	virtual void							ModifyContext(class CRenderingContext* pContext, bool bTransparent) const {};
@@ -746,7 +746,7 @@ protected:
 	CNetworkedVariable<int>					m_iCollisionGroup;
 
 	CNetworkedVariable<size_t>				m_iModel;
-	CNetworkedVariable<size_t>				m_iTexture;
+	CNetworkedVariable<tstring>				m_sTexture;
 	CNetworkedVariable<Vector2D>			m_vecTextureModelScale;
 
 	size_t									m_iSpawnSeed;

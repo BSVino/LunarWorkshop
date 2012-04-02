@@ -72,7 +72,7 @@ NETVAR_TABLE_BEGIN(CBaseEntity);
 	NETVAR_DEFINE(CEntityHandle<CBaseEntity>, m_hTeam);
 	NETVAR_DEFINE(int, m_iCollisionGroup);
 	NETVAR_DEFINE(size_t, m_iModel);
-	NETVAR_DEFINE(size_t, m_iTexture);
+	NETVAR_DEFINE(tstring, m_sTexture);
 	NETVAR_DEFINE_INTERVAL(Vector2D, m_vecTextureModelScale, 0.15f);
 	NETVAR_DEFINE(float, m_flSpawnTime);
 NETVAR_TABLE_END();
@@ -119,7 +119,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bClientSpawn);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", ~0, UnserializeString_ModelID);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, size_t, m_iTexture);
+	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, tstring, m_sTexture);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, Vector2D, m_vecTextureModelScale, "TextureScale", Vector2D(1, 1));
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, float, m_flSpawnTime);
@@ -166,8 +166,6 @@ CBaseEntity::CBaseEntity()
 
 	m_bDeleted = false;
 	m_bInPhysics = false;
-
-	m_iTexture = 0;
 
 	m_iSpawnSeed = 0;
 
@@ -259,7 +257,7 @@ TVector CBaseEntity::GetGlobalCenter() const
 
 TFloat CBaseEntity::GetBoundingRadius() const
 {
-	if (m_iTexture.Get() != 0)
+	if (m_sTexture.Get().length())
 		return m_vecTextureModelScale.Get().Length()/2;
 
 	return m_aabbBoundingBox.Size().Length()/2;
@@ -877,14 +875,14 @@ void CBaseEntity::Render(bool bTransparent) const
 					}
 				}
 
-				if (m_iTexture != (size_t)0)
+				if (m_sTexture.Get().length())
 				{
 					if (bTransparent)
 					{
 						TPROF("CRenderingContext::RenderModel(Texture)");
 						r.SetBlend(BLEND_ALPHA);
 						r.Scale(0, m_vecTextureModelScale.Get().y, m_vecTextureModelScale.Get().x);
-						r.RenderTextureModel(GetTextureModelID());
+						r.RenderTextureModel(m_sTexture);
 					}
 				}
 			}
@@ -2204,7 +2202,7 @@ void UnserializeString_ModelID(const tstring& sData, CSaveData* pSaveData, CBase
 
 	if (iID != 0)
 	{
-		pEntity->SetTextureModel(iID);
+		pEntity->SetTextureModel(sData);
 		return;
 	}
 

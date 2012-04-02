@@ -10,6 +10,7 @@
 #include <textures/texturelibrary.h>
 #include <renderer/game_renderingcontext.h>
 #include <game/gameserver.h>
+#include <game/camera.h>
 
 CManipulatorTool::CManipulatorTool()
 {
@@ -94,15 +95,20 @@ bool CManipulatorTool::MouseInput(int iButton, int iState)
 
 	Matrix4x4 mTransform = m_trsTransform.GetMatrix4x4(false);
 
-	if (DistanceToLine(m_trsTransform.m_vecTranslation, vecPosition, vecCamera) < 0.2f)
+	float flScale = (GameServer()->GetCamera()->GetCameraPosition() - mTransform.GetTranslation()).Length()/10;
+	Vector vecX = (Vector(1, 0, 0)*flScale);
+	Vector vecY = (Vector(0, 1, 0)*flScale);
+	Vector vecZ = (Vector(0, 0, 1)*flScale);
+
+	if (DistanceToLine(m_trsTransform.m_vecTranslation, vecPosition, vecCamera) < 0.2f*flScale)
 	{
 		m_flOriginalDistance = (m_trsTransform.m_vecTranslation - vecCamera).Length();
 		m_iLockedAxis = 0;
 	}
 
-	if (DistanceToLine(mTransform*Vector(1, 0, 0), vecPosition, vecCamera) < 0.1f)
+	if (DistanceToLine(mTransform*vecX, vecPosition, vecCamera) < 0.1f*flScale)
 	{
-		float flDistance = (mTransform*Vector(1, 0, 0) - vecCamera).Length();
+		float flDistance = (mTransform*vecX - vecCamera).Length();
 		if (m_iLockedAxis < 0 || flDistance < m_flOriginalDistance)
 		{
 			m_flOriginalDistance = flDistance;
@@ -110,9 +116,9 @@ bool CManipulatorTool::MouseInput(int iButton, int iState)
 		}
 	}
 
-	if (DistanceToLine(mTransform*Vector(0, 1, 0), vecPosition, vecCamera) < 0.1f)
+	if (DistanceToLine(mTransform*vecY, vecPosition, vecCamera) < 0.1f*flScale)
 	{
-		float flDistance = (mTransform*Vector(0, 1, 0) - vecCamera).Length();
+		float flDistance = (mTransform*vecY - vecCamera).Length();
 		if (m_iLockedAxis < 0 || flDistance < m_flOriginalDistance)
 		{
 			m_flOriginalDistance = flDistance;
@@ -120,9 +126,9 @@ bool CManipulatorTool::MouseInput(int iButton, int iState)
 		}
 	}
 
-	if (DistanceToLine(mTransform*Vector(0, 0, 1), vecPosition, vecCamera) < 0.1f)
+	if (DistanceToLine(mTransform*vecZ, vecPosition, vecCamera) < 0.1f*flScale)
 	{
-		float flDistance = (mTransform*Vector(0, 0, 1) - vecCamera).Length();
+		float flDistance = (mTransform*vecZ - vecCamera).Length();
 		if (m_iLockedAxis < 0 || flDistance < m_flOriginalDistance)
 		{
 			m_flOriginalDistance = flDistance;
@@ -146,14 +152,22 @@ void CManipulatorTool::Render()
 	if (!IsActive())
 		return;
 
+	Matrix4x4 mTransform = GetTransform(false);
+
+	float flScale = (GameServer()->GetCamera()->GetCameraPosition() - mTransform.GetTranslation()).Length()/10;
+
+	if (flScale < 0.001f)
+		flScale = 0.001f;
+
 	CGameRenderingContext c(GameServer()->GetRenderer(), true);
 
 	c.UseProgram("model");
 	c.SetUniform("vecColor", Color(255, 255, 255, 255));
 	c.SetUniform("bDiffuse", false);
 
-	Matrix4x4 mTransform = GetTransform(false);
 	c.Transform(mTransform);
+	c.Scale(flScale, flScale, flScale);
+
 	Vector vecBox(0.1f, 0.1f, 0.1f);
 	c.RenderWireBox(AABB(-vecBox, vecBox));
 
@@ -247,8 +261,10 @@ TRS CManipulatorTool::GetNewTRS()
 	}
 	else if (GetTransfromType() == MT_SCALE)
 	{
+		float flScale = (GameServer()->GetCamera()->GetCameraPosition() - trs.m_vecTranslation).Length()/10;
+
 		Vector vecTranslation = vecNewTranslation - vecOldTranslation;
-		Vector vecScaling = RemapVal<Vector>(vecTranslation, Vector(0, 0, 0), Vector(1, 1, 1), Vector(1, 1, 1), Vector(2, 2, 2));
+		Vector vecScaling = RemapVal<Vector>(vecTranslation, Vector(0, 0, 0), Vector(1, 1, 1)*flScale, Vector(1, 1, 1), Vector(2, 2, 2));
 
 		if (!(m_iLockedAxis & (1<<0)))
 			trs.m_vecScaling.x *= vecScaling.x;

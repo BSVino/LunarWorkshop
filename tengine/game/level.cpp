@@ -209,6 +209,15 @@ void CLevelEntity::SetParameterValue(const tstring& sKey, const tstring& sValue)
 
 	if (pSaveData->m_bDefault)
 	{
+		// Special case.
+		if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
+		{
+			if (CTextureLibrary::FindTexture(sValue))
+				m_sTextureModel = sValue;
+			else if (CTextureLibrary::AddTexture(sValue))
+				m_sTextureModel = sValue;
+		}
+
 		if (strcmp(pSaveData->m_pszType, "bool") == 0)
 		{
 			bool bValue = UnserializeString_bool(sValue);
@@ -327,12 +336,6 @@ size_t CLevelEntity::CalculateModelID(CLevelEntity* pThis)
 {
 	tstring sModel = pThis->GetParameterValue("Model");
 	return CModelLibrary::FindModel(sModel);
-}
-
-size_t CLevelEntity::CalculateTextureID(CLevelEntity* pThis)
-{
-	tstring sTexture = pThis->GetParameterValue("Model");
-	return CTextureLibrary::FindTextureID(sTexture);
 }
 
 Vector2D CLevelEntity::CalculateTextureModelScale(CLevelEntity* pThis)

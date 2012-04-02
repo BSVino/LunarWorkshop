@@ -540,7 +540,7 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool b
 			r.RenderModel(pEntity->GetModelID(), nullptr);
 		}
 	}
-	else if (pEntity->GetTextureModelID() != (size_t)0)
+	else if (pEntity->GetTextureModel().length())
 	{
 		if (bTransparent)
 		{
@@ -554,7 +554,7 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool b
 
 			r.SetBlend(BLEND_ALPHA);
 			r.Scale(0, pEntity->GetTextureModelScale().y, pEntity->GetTextureModelScale().x);
-			r.RenderTextureModel(pEntity->GetTextureModelID());
+			r.RenderTextureModel(pEntity->GetTextureModel());
 		}
 	}
 	else

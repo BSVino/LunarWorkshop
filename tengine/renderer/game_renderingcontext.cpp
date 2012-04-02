@@ -119,15 +119,23 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	EndRenderVertexArray(pModel->m_aiVertexBufferSizes[iMaterial]);
 }
 
-void CGameRenderingContext::RenderTextureModel(size_t iTexture)
+void CGameRenderingContext::RenderTextureModel(const tstring& sTexture)
 {
+	const CTexture* pTexture = CTextureLibrary::FindTexture(sTexture);
+	TAssert(pTexture);
+	if (!pTexture)
+		return;
+
 	if (!m_pShader)
+	{
 		UseProgram("model");
+		SetUniform("bDiffuse", true);
+	}
 
-	Vector vecUp(0, 0.5f, 0);
-	Vector vecRight(0, 0, 0.5f);
+	Vector vecUp = Vector(0, 0.5f, 0) * (float)pTexture->m_iHeight/100;		// One texel is a centimeter.
+	Vector vecRight = Vector(0, 0, 0.5f) * (float)pTexture->m_iWidth/100;
 
-	BindTexture(iTexture);
+	BindTexture(pTexture->m_iGLID);
 	BeginRenderTriFan();
 		TexCoord(0.0f, 1.0f);
 		Vertex(-vecRight + vecUp);
