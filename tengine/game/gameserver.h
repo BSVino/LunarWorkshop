@@ -9,9 +9,13 @@
 
 #include <vector>
 
+#include <tinker_memory.h>
+
 #include <network/network.h>
 
 #include "team.h"
+
+class CLevel;
 
 typedef enum
 {
@@ -53,7 +57,7 @@ public:
 	void										Initialize();
 
 	void										LoadLevel(tstring sFile);
-	void										LoadLevel(class CLevel* pLevel);
+	void										LoadLevel(const CHandle<CLevel>& pLevel);
 	void										RestartLevel();
 
 	void										SetupFromLobby(bool bFromLobby) { m_bSetupFromLobby = bFromLobby; };
@@ -64,8 +68,8 @@ public:
 	void										ReadLevelInfo(tstring sFile);
 
 	size_t										GetNumLevels() { return m_apLevels.size(); }
-	class CLevel*								GetLevel(size_t i) { if (i >= m_apLevels.size()) return nullptr; return m_apLevels[i]; }
-	class CLevel*								GetLevel(tstring sFile);
+	class CHandle<CLevel>						GetLevel(size_t i) { if (i >= m_apLevels.size()) return CHandle<CLevel>(); return CHandle<CLevel>(m_apLevels[i]); }
+	class CHandle<CLevel>						GetLevel(tstring sFile);
 
 	void										Halt();
 	bool										IsHalting() { return m_bHalting; };
@@ -164,7 +168,7 @@ protected:
 
 	bool										m_bHalting;
 
-	eastl::vector<class CLevel*>				m_apLevels;
+	eastl::vector<CResource<CLevel>>			m_apLevels;
 
 	size_t										m_iMaxEnts;
 
@@ -182,7 +186,7 @@ inline class CGameServer* GameServer()
 extern class CGame* CreateGame();
 extern class CGameRenderer* CreateRenderer();
 extern class CCamera* CreateCamera();
-extern class CLevel* CreateLevel();
+extern CResource<CLevel> CreateLevel();
 extern class CHUDViewport* CreateHUD();
 extern tstring GetInitialGameMode();
 

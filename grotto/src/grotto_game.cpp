@@ -31,7 +31,7 @@ CCamera* CreateCamera()
 	return pCamera;
 }
 
-CLevel* CreateLevel()
+CResource<CLevel> CreateLevel()
 {
 	return new CLevel();
 }

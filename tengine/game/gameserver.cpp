@@ -117,7 +117,7 @@ CGameServer::~CGameServer()
 	GamePhysics()->RemoveAllEntities();
 
 	for (size_t i = 0; i < m_apLevels.size(); i++)
-		delete m_apLevels[i];
+		m_apLevels[i].reset();
 
 	if (m_pCamera)
 		delete m_pCamera;
@@ -250,7 +250,10 @@ void CGameServer::Initialize()
 
 void CGameServer::LoadLevel(tstring sFile)
 {
-	CLevel* pLevel = GetLevel(sFile);
+	CHandle<CLevel> pLevel = GetLevel(sFile);
+
+	if (pLevel.expired())
+		return;
 
 	if (m_bRestartLevel)
 		LoadLevel(pLevel);
@@ -269,7 +272,7 @@ void CGameServer::LoadLevel(tstring sFile)
 	}
 }
 
-void CGameServer::LoadLevel(CLevel* pLevel)
+void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 {
 	// Create and name the entities first and add them to this array. This way we avoid a problem where
 	// one entity needs to connect to another entity which has not yet been created.
@@ -376,7 +379,7 @@ void CGameServer::RestartLevel()
 void CGameServer::ReadLevels()
 {
 	for (size_t i = 0; i < m_apLevels.size(); i++)
-		delete m_apLevels[i];
+		m_apLevels[i].reset();
 
 	m_apLevels.clear();
 
@@ -411,7 +414,7 @@ void CGameServer::ReadLevelInfo(tstring sFile)
 	CData* pData = new CData();
 	CDataSerializer::Read(f, pData);
 
-	CLevel* pLevel = CreateLevel();
+	CResource<CLevel> pLevel = CreateLevel();
 	pLevel->SetFile(str_replace(sFile, "\\", "/"));
 	pLevel->ReadInfoFromData(pData);
 	m_apLevels.push_back(pLevel);
@@ -419,12 +422,12 @@ void CGameServer::ReadLevelInfo(tstring sFile)
 	delete pData;
 }
 
-CLevel* CGameServer::GetLevel(tstring sFile)
+CHandle<CLevel> CGameServer::GetLevel(tstring sFile)
 {
 	sFile = str_replace(sFile, "\\", "/");
 	for (size_t i = 0; i < m_apLevels.size(); i++)
 	{
-		CLevel* pLevel = m_apLevels[i];
+		CResource<CLevel>& pLevel = m_apLevels[i];
 		tstring sLevelFile = pLevel->GetFile();
 		if (sLevelFile == sFile)
 			return pLevel;
@@ -436,7 +439,7 @@ CLevel* CGameServer::GetLevel(tstring sFile)
 			return pLevel;
 	}
 
-	return NULL;
+	return CHandle<CLevel>();
 }
 
 void CGameServer::Halt()

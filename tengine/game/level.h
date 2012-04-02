@@ -134,6 +134,7 @@ public:
 
 	void					CreateEntitiesFromData(const CData* pData);
 	eastl::vector<CLevelEntity>& GetEntityData() { return m_aLevelEntities; }
+	const eastl::vector<CLevelEntity>& GetEntityData() const { return m_aLevelEntities; }
 
 protected:
 	tstring					m_sName;

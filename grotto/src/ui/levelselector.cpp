@@ -67,7 +67,7 @@ void CLevelSelector::SelectedCallback(const tstring& sArgs)
 {
 	size_t iLevel = m_pLevels->GetSelectedNodeId();
 
-	CLevel* pLevel = GameServer()->GetLevel(iLevel);
+	CHandle<CLevel> pLevel = GameServer()->GetLevel(iLevel);
 	if (!pLevel)
 		return;
 

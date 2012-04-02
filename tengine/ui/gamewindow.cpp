@@ -77,7 +77,7 @@ void LoadLevel(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const
 			return;
 		}
 
-		CLevel* pLevel = GameServer()->GetLevel(CVar::GetCVarValue("game_level"));
+		CHandle<class CLevel> pLevel = GameServer()->GetLevel(CVar::GetCVarValue("game_level"));
 
 		if (!pLevel)
 		{
@@ -95,7 +95,7 @@ void LoadLevel(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const
 		return;
 	}
 
-	CLevel* pLevel = GameServer()->GetLevel(asTokens[1]);
+	CHandle<class CLevel> pLevel = GameServer()->GetLevel(asTokens[1]);
 
 	if (!pLevel)
 	{

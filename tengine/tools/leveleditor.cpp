@@ -467,8 +467,6 @@ CLevelEditor::CLevelEditor()
 {
 	s_pLevelEditor = this;
 
-	m_pLevel = nullptr;
-
 	m_pEditorPanel = new CEditorPanel();
 	m_pEditorPanel->SetVisible(false);
 	m_pEditorPanel->SetBackgroundColor(Color(0, 0, 0, 150));

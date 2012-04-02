@@ -1,6 +1,8 @@
 #pragma once
 
 #include <tstring.h>
+#include <tinker_memory.h>
+
 #include <glgui/panel.h>
 #include <glgui/movablepanel.h>
 #include <game/camera.h>
@@ -127,7 +129,7 @@ public:
 	static CLevelEditor*	Get() { return s_pLevelEditor; }
 
 protected:
-	class CLevel*			m_pLevel;
+	CHandle<class CLevel>	m_pLevel;
 
 	CEditorPanel*			m_pEditorPanel;
 
