@@ -8,6 +8,7 @@
 #include <game/camera.h>
 
 #include "tool.h"
+#include "manipulator.h"
 
 class CEntityPropertiesPanel : public glgui::CPanel, public glgui::IEventListener
 {
@@ -26,7 +27,7 @@ public:
 
 	void					SetClass(const tstring& sClass) { m_sClass = sClass; }
 	void					SetMaxHeight(float flMaxHeight) { m_flMaxHeight = flMaxHeight; }
-	void					SetEntity(class CLevelEntity* pEntity) { m_pEntity = pEntity; }
+	void					SetEntity(class CLevelEntity* pEntity);
 
 public:
 	tstring								m_sClass;
@@ -90,7 +91,7 @@ public:
 	CEntityPropertiesPanel*	m_pPropertiesPanel;
 };
 
-class CLevelEditor : public CWorkbenchTool, public glgui::IEventListener
+class CLevelEditor : public CWorkbenchTool, public glgui::IEventListener, public IManipulatorListener
 {
 public:
 							CLevelEditor();
@@ -123,6 +124,8 @@ public:
 	virtual void			Deactivate();
 
 	virtual void			RenderScene();
+
+	virtual void			ManipulatorUpdated(const tstring& sArguments);
 
 	virtual tstring			GetToolName() { return "Level Editor"; }
 

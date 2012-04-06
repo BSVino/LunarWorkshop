@@ -22,6 +22,7 @@
 #include <models/models.h>
 
 #include "workbench.h"
+#include "manipulator.h"
 
 CEntityPropertiesPanel::CEntityPropertiesPanel(bool bCommon)
 {
@@ -237,6 +238,12 @@ void CEntityPropertiesPanel::SetPropertyChangedListener(glgui::IEventListener* p
 	m_pfnPropertyChangedCallback = pfnCallback;
 }
 
+void CEntityPropertiesPanel::SetEntity(class CLevelEntity* pEntity)
+{
+	m_pEntity = pEntity;
+	Layout();
+}
+
 CCreateEntityPanel::CCreateEntityPanel()
 	: glgui::CMovablePanel("Create Entity Tool")
 {
@@ -441,6 +448,22 @@ void CEditorPanel::EntitySelectedCallback(const tstring& sArgs)
 	LayoutEntities();
 
 	LevelEditor()->EntitySelected();
+
+	CLevel* pLevel = LevelEditor()->GetLevel();
+
+	if (!pLevel)
+		return;
+
+	auto& aEntities = pLevel->GetEntityData();
+
+	if (m_pEntities->GetSelectedNodeId() < aEntities.size())
+	{
+		Manipulator()->Activate(LevelEditor(), aEntities[m_pEntities->GetSelectedNodeId()].GetGlobalTRS(), "Entity " + sprintf("%d", m_pEntities->GetSelectedNodeId()));
+	}
+	else
+	{
+		Manipulator()->Deactivate();
+	}
 }
 
 void CEditorPanel::PropertyChangedCallback(const tstring& sArgs)
@@ -456,6 +479,9 @@ void CEditorPanel::PropertyChangedCallback(const tstring& sArgs)
 	{
 		CLevelEntity* pEntity = &aEntities[m_pEntities->GetSelectedNodeId()];
 		CLevelEditor::PopulateLevelEntityFromPanel(pEntity, m_pPropertiesPanel);
+
+		if (Manipulator()->IsActive())
+			Manipulator()->SetTRS(pEntity->GetGlobalTRS());
 	}
 }
 
@@ -501,7 +527,15 @@ CLevelEditor::~CLevelEditor()
 void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
 {
 	CLevelEntity* pEntity = &m_pLevel->GetEntityData()[i];
-	RenderEntity(pEntity, bTransparent, m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i);
+
+	if (m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i)
+	{
+		CLevelEntity oCopy = *pEntity;
+		oCopy.SetGlobalTransform(Manipulator()->GetTransform());
+		RenderEntity(&oCopy, bTransparent, true);
+	}
+	else
+		RenderEntity(pEntity, bTransparent, m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i);
 }
 
 void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool bSelected)
@@ -769,4 +803,29 @@ void CLevelEditor::SetCameraOrientation(TVector vecPosition, Vector vecDirection
 {
 	m_vecEditCamera = vecPosition;
 	m_angEditCamera = VectorAngles(vecDirection);
+}
+
+void CLevelEditor::ManipulatorUpdated(const tstring& sArguments)
+{
+	// Grab this before GetToyToModify since that does a layout and clobbers the list.
+	size_t iSelected = m_pEditorPanel->m_pEntities->GetSelectedNodeId();
+
+	eastl::vector<tstring> asTokens;
+	strtok(sArguments, asTokens);
+	TAssert(asTokens.size() == 2);
+	TAssert(stoi(asTokens[1]) == iSelected);
+	TAssert(iSelected != ~0);
+
+	if (!GetLevel())
+		return;
+
+	if (iSelected >= GetLevel()->GetEntityData().size())
+		return;
+
+	Vector vecTranslation = Manipulator()->GetTRS().m_vecTranslation;
+	EAngle angRotation = Manipulator()->GetTRS().m_angRotation;
+	GetLevel()->GetEntityData()[iSelected].SetParameterValue("LocalOrigin", pretty_float(vecTranslation.x) + " " + pretty_float(vecTranslation.y) + " " + pretty_float(vecTranslation.z));
+	GetLevel()->GetEntityData()[iSelected].SetParameterValue("LocalAngles", pretty_float(angRotation.p) + " " + pretty_float(angRotation.y) + " " + pretty_float(angRotation.r));
+
+	m_pEditorPanel->LayoutEntities();
 }

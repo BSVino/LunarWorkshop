@@ -7,6 +7,7 @@
 #include <cachedvalue.h>
 #include <matrix.h>
 #include <geometry.h>
+#include <trs.h>
 
 // A description of an entity for use in the level editor
 class CLevelEntity
@@ -51,6 +52,7 @@ public:
 	void								InitializeCallbacks()
 	{
 		m_mGlobalTransform.SetCallbacks(&CalculateGlobalTransform, this);
+		m_trsGlobalTRS.SetCallbacks(&CalculateGlobalTRS, this);
 		m_bVisible.SetCallbacks(&CalculateVisible, this);
 		m_iModel.SetCallbacks(&CalculateModelID, this);
 		m_vecTextureModelScale.SetCallbacks(&CalculateTextureModelScale, this);
@@ -61,6 +63,7 @@ public:
 	void								Dirtify()
 	{
 		m_mGlobalTransform.Dirtify();
+		m_trsGlobalTRS.Dirtify();
 		m_bVisible.Dirtify();
 		m_iModel.Dirtify();
 		m_vecTextureModelScale.Dirtify();
@@ -83,6 +86,7 @@ public:
 
 	Matrix4x4							GetGlobalTransform() { return m_mGlobalTransform; }
 	void								SetGlobalTransform(const Matrix4x4& m) { m_mGlobalTransform = m; }
+	TRS									GetGlobalTRS() { return m_trsGlobalTRS; }
 	bool								IsVisible() { return m_bVisible; }
 	size_t								GetModelID() { return m_iModel; }
 	Vector2D							GetTextureModelScale() { return m_vecTextureModelScale; }
@@ -91,6 +95,7 @@ public:
 
 public:
 	static Matrix4x4					CalculateGlobalTransform(CLevelEntity* pThis);
+	static TRS							CalculateGlobalTRS(CLevelEntity* pThis);
 	static bool							CalculateVisible(CLevelEntity* pThis);
 	static size_t						CalculateModelID(CLevelEntity* pThis);
 	static Vector2D						CalculateTextureModelScale(CLevelEntity* pThis);
@@ -103,6 +108,7 @@ private:
 	tstring								m_sTextureModel;
 
 	CCachedValue<Matrix4x4, CLevelEntity>	m_mGlobalTransform;
+	CCachedValue<TRS, CLevelEntity>			m_trsGlobalTRS;
 	CCachedValue<bool, CLevelEntity>		m_bVisible;
 	CCachedValue<size_t, CLevelEntity>		m_iModel;
 	CCachedValue<Vector2D, CLevelEntity>	m_vecTextureModelScale;

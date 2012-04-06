@@ -161,6 +161,8 @@ void CManipulatorTool::Render()
 
 	CGameRenderingContext c(GameServer()->GetRenderer(), true);
 
+	c.ClearDepth();
+
 	c.UseProgram("model");
 	c.SetUniform("vecColor", Color(255, 255, 255, 255));
 	c.SetUniform("bDiffuse", false);

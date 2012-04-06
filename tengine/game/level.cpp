@@ -323,6 +323,25 @@ Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)
 	return mLocal;
 }
 
+TRS CLevelEntity::CalculateGlobalTRS(CLevelEntity* pThis)
+{
+	TRS trsLocal;
+
+	tstring sMoveParent = pThis->GetParameterValue("MoveParent");
+	if (sMoveParent.length())
+		TAssert(false);
+
+	tstring sLocalOrigin = pThis->GetParameterValue("LocalOrigin");
+	if (sLocalOrigin.length() && CanUnserializeString_TVector(sLocalOrigin))
+		trsLocal.m_vecTranslation = UnserializeString_TVector(sLocalOrigin);
+
+	tstring sLocalAngles = pThis->GetParameterValue("LocalAngles");
+	if (sLocalAngles.length() && CanUnserializeString_EAngle(sLocalAngles))
+		trsLocal.m_angRotation = UnserializeString_EAngle(sLocalAngles);
+
+	return trsLocal;
+}
+
 bool CLevelEntity::CalculateVisible(CLevelEntity* pThis)
 {
 	tstring sVisible = pThis->GetParameterValue("Visible");
