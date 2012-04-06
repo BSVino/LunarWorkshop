@@ -28,7 +28,7 @@ public:
 	virtual tstring				AppDirectory() { return "Tinker"; }
 
 	void						SwapBuffers();
-	float						GetTime();
+	double						GetTime();
 
 	bool						IsOpen();
 	void						Close();

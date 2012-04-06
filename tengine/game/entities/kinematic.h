@@ -22,16 +22,16 @@ public:
 	DECLARE_ENTITY_INPUT(LerpAnglesTo);
 
 protected:
-	float				m_flLerpTime;
-	float				m_flLerpStart;
-	float				m_flLerpEnd;
+	double				m_flLerpTime;
+	double				m_flLerpStart;
+	double				m_flLerpEnd;
 
 	Vector				m_vecLerpStart;
 	Vector				m_vecLerpGoal;
 
-	float				m_flAngleLerpTime;
-	float				m_flAngleLerpStart;
-	float				m_flAngleLerpEnd;
+	double				m_flAngleLerpTime;
+	double				m_flAngleLerpStart;
+	double				m_flAngleLerpEnd;
 
 	EAngle				m_angLerpStart;
 	EAngle				m_angLerpGoal;

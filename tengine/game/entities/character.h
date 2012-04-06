@@ -80,13 +80,13 @@ protected:
 
 	CNetworkedHandle<CBaseEntity>	m_hGround;
 
+	bool							m_bNoClip;
+
 	bool							m_bTransformMoveByView;
 	Vector							m_vecGoalVelocity;
 	Vector							m_vecMoveVelocity;
 
-	bool							m_bNoClip;
-
-	float							m_flLastAttack;
+	double							m_flLastAttack;
 
 	TFloat							m_flMaxStepSize;
 };

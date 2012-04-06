@@ -117,7 +117,7 @@ namespace glgui
 
 		bool			m_bVisible;
 
-		float			m_flMouseInTime;
+		double			m_flMouseInTime;
 
 		IEventListener::Callback m_pfnCursorInCallback;
 		IEventListener*	m_pCursorInListener;

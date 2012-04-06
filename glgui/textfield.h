@@ -64,7 +64,7 @@ namespace glgui
 		tstring			m_sText;
 		Color			m_FGColor;
 
-		float			m_flBlinkTime;
+		double			m_flBlinkTime;
 
 		int				m_iFontFaceSize;
 

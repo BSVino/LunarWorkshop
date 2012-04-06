@@ -174,7 +174,7 @@ void CButton::SetToggleButton(bool bToggle)
 
 void CButton::Think()
 {
-	m_flHighlight = Approach(m_flHighlightGoal, m_flHighlight, CRootPanel::Get()->GetFrameTime()*3);
+	m_flHighlight = Approach(m_flHighlightGoal, m_flHighlight, (float)(CRootPanel::Get()->GetFrameTime()*3));
 
 	CLabel::Think();
 }

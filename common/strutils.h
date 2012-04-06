@@ -209,10 +209,10 @@ inline int stoi(const tstring& s)
 	return x;
 }
 
-inline float stof(const tstring& s)
+inline double stof(const tstring& s)
 {
 	std::istringstream i(convertstring<tchar, char>(s).c_str());
-	float x;
+	double x;
 	if (!(i >> x))
 		return 0;
 

@@ -575,7 +575,7 @@ void CGameServer::SetClientNickname(int iClient, const tstring& sNickname)
 	TMsg(sprintf(tstring("Can't find client %d to give nickname %s.\n"), iClient, sNickname.c_str()));
 }
 
-void CGameServer::Think(float flHostTime)
+void CGameServer::Think(double flHostTime)
 {
 	TPROF("CGameServer::Think");
 

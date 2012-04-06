@@ -37,15 +37,15 @@ public:
 	void						BlockEnded();
 
 	eastl::string				GetName() { return m_sName; };
-	float						GetTime() { return m_flTime; };
+	double						GetTime() { return m_flTime; };
 
 public:
 	CPerfBlock*					m_pParent;
 
 	eastl::string				m_sName;
-	float						m_flTime;
+	double						m_flTime;
 
-	float						m_flTimeBlockStarted;
+	double						m_flTimeBlockStarted;
 
 	eastl::map<eastl::string, CPerfBlock*>	m_apPerfBlocks;
 };

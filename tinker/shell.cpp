@@ -36,7 +36,7 @@ CShell::~CShell()
 {
 }
 
-float CShell::GetTime()
+double CShell::GetTime()
 {
 	TAssert(false);
 	return 0;

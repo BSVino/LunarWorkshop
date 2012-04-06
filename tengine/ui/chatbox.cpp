@@ -124,7 +124,7 @@ bool CChatBox::IsVisible()
 	if (!GameServer())
 		return false;
 
-	float flTimeSinceLastMessage = GameServer()->GetGameTime() - m_flLastMessage;
+	float flTimeSinceLastMessage = (float)(GameServer()->GetGameTime() - m_flLastMessage);
 	if (flTimeSinceLastMessage > 0 && flTimeSinceLastMessage < 6)
 		return true;
 
@@ -165,7 +165,7 @@ void CChatBox::Layout()
 void CChatBox::Paint(float x, float y, float w, float h)
 {
 	float flAlpha;
-	float flTimeSinceLastMessage = GameServer()->GetGameTime() - m_flLastMessage;
+	float flTimeSinceLastMessage = (float)(GameServer()->GetGameTime() - m_flLastMessage);
 	if (IsOpen() || flTimeSinceLastMessage < 1)
 		flAlpha = 1;
 	else if (!m_bFloating)

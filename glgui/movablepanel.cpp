@@ -108,7 +108,7 @@ void CMovablePanel::Think()
 	if (m_bMinimized)
 		flMinimizeTransitionGoal = 0;
 
-	m_flMinimizeTransitionLerp = Approach(flMinimizeTransitionGoal, m_flMinimizeTransitionLerp, CRootPanel::Get()->GetFrameTime()*3);
+	m_flMinimizeTransitionLerp = Approach(flMinimizeTransitionGoal, m_flMinimizeTransitionLerp, (float)CRootPanel::Get()->GetFrameTime()*3);
 
 	if (!m_bMinimized)
 		m_flNonMinimizedHeight = GetHeight();

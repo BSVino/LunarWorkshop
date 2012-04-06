@@ -30,7 +30,10 @@ CVar net_replication_debug("net_replication_debug", "off");
 
 void CGameServerNetwork::UpdateNetworkVariables(int iClient, bool bForceAll)
 {
-	float flTime = GameServer()->GetGameTime();
+	if (!GameNetwork()->IsConnected())
+		return;
+
+	double flTime = GameServer()->GetGameTime();
 
 	size_t iMaxEnts = GameServer()->GetMaxEntities();
 	for (size_t i = 0; i < iMaxEnts; i++)
@@ -64,6 +67,12 @@ void CGameServerNetwork::UpdateNetworkVariables(int iClient, bool bForceAll)
 					if (flTime - pVariable->m_flLastUpdate < pVarData->m_flUpdateInterval)
 						continue;
 				}
+
+				// For one, m_flLastUpdate needs to be a double
+				pVariable->m_flLastUpdate = (float)flTime;
+				// For two, it's shit.
+				TAssert(false);
+				// Try some testing or something.
 
 				CNetworkParameters p;
 				p.ui1 = pEntity->GetHandle();

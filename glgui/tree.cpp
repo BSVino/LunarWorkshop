@@ -542,7 +542,7 @@ CTreeNode::CExpandButton::CExpandButton(size_t iTexture)
 
 void CTreeNode::CExpandButton::Think()
 {
-	m_flExpandedCurrent = Approach(m_flExpandedGoal, m_flExpandedCurrent, CRootPanel::Get()->GetFrameTime()*10);
+	m_flExpandedCurrent = Approach(m_flExpandedGoal, m_flExpandedCurrent, (float)CRootPanel::Get()->GetFrameTime()*10);
 }
 
 void CTreeNode::CExpandButton::Paint(float x, float y, float w, float h)

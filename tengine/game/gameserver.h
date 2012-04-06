@@ -85,7 +85,7 @@ public:
 	void										ClientDisconnect(int iClient);
 	void										SetClientNickname(int iClient, const tstring& sNickname);
 
-	void										Think(float flHostTime);
+	void										Think(double flHostTime);
 	void										Simulate();
 	void										Render();
 	void										RenderEverything();
@@ -113,8 +113,8 @@ public:
 	NET_CALLBACK(CGameServer,					UpdateValue);
 	NET_CALLBACK(CGameServer,					ClientInfo);
 
-	float										GetFrameTime() { return m_flFrameTime; };
-	float										GetGameTime() { return m_flGameTime; };
+	double										GetFrameTime() { return m_flFrameTime; };
+	double										GetGameTime() { return m_flGameTime; };
 	size_t										GetFrame() { return m_iFrame; }
 
 	class CGameRenderer*						GetRenderer();
@@ -146,9 +146,9 @@ protected:
 
 	size_t										m_iSaveCRC;
 
-	float										m_flGameTime;		// This is how time passes for the game entities
-	float										m_flFrameTime;		// This is the delta of each frame of game time
-	float										m_flHostTime;		// This is the current time for the computer
+	double										m_flGameTime;		// This is how time passes for the game entities
+	double										m_flFrameTime;		// This is the delta of each frame of game time
+	double										m_flHostTime;		// This is the current time for the computer
 	size_t										m_iFrame;
 
 	eastl::vector<CBaseEntity*>					m_apRenderList;
@@ -172,7 +172,7 @@ protected:
 
 	size_t										m_iMaxEnts;
 
-	float										m_flNextClientInfoUpdate;
+	double										m_flNextClientInfoUpdate;
 
 	IWorkListener*								m_pWorkListener;
 };

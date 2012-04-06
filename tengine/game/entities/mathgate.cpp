@@ -36,7 +36,7 @@ void CMathGate::InputLeft(const eastl::vector<tstring>& sArgs)
 		return;
 	}
 
-	float flNewLeft = stof(sArgs[0]);
+	float flNewLeft = (float)stof(sArgs[0]);
 
 	m_flLeft = flNewLeft;
 
@@ -53,7 +53,7 @@ void CMathGate::InputRight(const eastl::vector<tstring>& sArgs)
 		return;
 	}
 
-	float flNewRight = stof(sArgs[0]);
+	float flNewRight = (float)stof(sArgs[0]);
 
 	m_flRight = flNewRight;
 

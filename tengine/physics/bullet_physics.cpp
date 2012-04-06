@@ -443,7 +443,7 @@ void CBulletPhysics::Simulate()
 {
 	TPROF("CBulletPhysics::Simulate");
 
-	m_pDynamicsWorld->stepSimulation(GameServer()->GetFrameTime(), 10);
+	m_pDynamicsWorld->stepSimulation((float)GameServer()->GetFrameTime(), 10);
 }
 
 void CBulletPhysics::DebugDraw(int iLevel)

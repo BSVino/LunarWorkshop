@@ -32,7 +32,7 @@ protected:
 	glgui::CLabel*			m_pOutput;
 	glgui::CTextField*		m_pInput;
 
-	float					m_flLastMessage;
+	double					m_flLastMessage;
 
 	bool					m_bFloating;
 };

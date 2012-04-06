@@ -74,7 +74,7 @@ NETVAR_TABLE_BEGIN(CBaseEntity);
 	NETVAR_DEFINE(size_t, m_iModel);
 	NETVAR_DEFINE(tstring, m_sTexture);
 	NETVAR_DEFINE_INTERVAL(Vector2D, m_vecTextureModelScale, 0.15f);
-	NETVAR_DEFINE(float, m_flSpawnTime);
+	NETVAR_DEFINE(double, m_flSpawnTime);
 NETVAR_TABLE_END();
 
 void UnserializeString_LocalOrigin(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity);
@@ -109,8 +109,8 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, bool, m_bTakeDamage, "TakeDamage", false);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, float, m_flTotalHealth, "TotalHealth");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, float, m_flHealth, "Health");
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flTimeKilled);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLastTakeDamage);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, double, m_flTimeKilled);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, double, m_flLastTakeDamage);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, bool, m_bActive, "Active", true);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CTeam>, m_hTeam);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bVisible, "Visible", true);
@@ -122,7 +122,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, tstring, m_sTexture);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, Vector2D, m_vecTextureModelScale, "TextureScale", Vector2D(1, 1));
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, float, m_flSpawnTime);
+	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, double, m_flSpawnTime);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CBaseEntity);
@@ -665,7 +665,7 @@ void CBaseEntity::SetLocalOrigin(const eastl::vector<tstring>& asArgs)
 		return;
 	}
 
-	SetLocalOrigin(Vector(stof(asArgs[0]), stof(asArgs[1]), stof(asArgs[2])));
+	SetLocalOrigin(Vector((float)stof(asArgs[0]), (float)stof(asArgs[1]), (float)stof(asArgs[2])));
 }
 
 void CBaseEntity::SetLocalAngles(const eastl::vector<tstring>& asArgs)
@@ -676,7 +676,7 @@ void CBaseEntity::SetLocalAngles(const eastl::vector<tstring>& asArgs)
 		return;
 	}
 
-	SetLocalAngles(EAngle(stof(asArgs[0]), stof(asArgs[1]), stof(asArgs[2])));
+	SetLocalAngles(EAngle((float)stof(asArgs[0]), (float)stof(asArgs[1]), (float)stof(asArgs[2])));
 }
 
 CBaseEntity* CBaseEntity::GetEntity(size_t iHandle)
@@ -1234,9 +1234,9 @@ CEntityInput* CBaseEntity::FindInput(const char* pszName, bool bThisClassOnly)
 
 void CBaseEntity::CheckSaveDataSize(CEntityRegistration* pRegistration)
 {
-#ifndef _DEBUG
+	// I don't give a fuck about this anymore. It never fucking works.
+	// It's supposed to check my back and tell me when I forget to add shit but fuck if it can do that properly.
 	return;
-#endif
 
 	size_t iSaveTableSize = 0;
 
@@ -1258,9 +1258,11 @@ void CBaseEntity::CheckSaveDataSize(CEntityRegistration* pRegistration)
 
 		// This can help you find where missing stuff is, if all of the save data is in order.
 		// On GCC there's also a problem where a boolean at the end of a parent class can make the beginning address of any child classes be not a multiple of 4, which can cause this to trip. Solution: Keep your booleans near the center of your class definitions. (Really should rewrite this function but meh.)
-//		TAssert(pData->m_iOffset - iFirstOffset == iSaveTableSize);
+		TAssert(pData->m_iOffset - iFirstOffset == iSaveTableSize);
 
 		iSaveTableSize += pData->m_iSizeOfVariable;
+
+	//	TMsg(sprintf(tstring("%s::%s %d\n"), pRegistration->m_pszEntityClass, pData->m_pszVariableName, iSaveTableSize));
 	}
 
 	// In case a bool is at the end.
@@ -1842,7 +1844,7 @@ TVector UnserializeString_TVector(const tstring& sData, const tstring& sName, co
 		return TVector();
 	}
 
-	return Vector(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+	return Vector((float)stof(asTokens[0]), (float)stof(asTokens[1]), (float)stof(asTokens[2]));
 }
 
 bool CanUnserializeString_Vector2D(const tstring& sData)
@@ -1865,7 +1867,7 @@ TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName, c
 		return TVector();
 	}
 
-	return Vector2D(stof(asTokens[0]), stof(asTokens[1]));
+	return Vector2D((float)stof(asTokens[0]), (float)stof(asTokens[1]));
 }
 
 bool CanUnserializeString_EAngle(const tstring& sData)
@@ -1888,7 +1890,7 @@ EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName, cons
 		return EAngle();
 	}
 
-	return EAngle(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+	return EAngle((float)stof(asTokens[0]), (float)stof(asTokens[1]), (float)stof(asTokens[2]));
 }
 
 bool CanUnserializeString_AABB(const tstring& sData)
@@ -1911,7 +1913,7 @@ AABB UnserializeString_AABB(const tstring& sData, const tstring& sName, const ts
 		return AABB();
 	}
 
-	return AABB(Vector(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2])), Vector(stof(asTokens[3]), stof(asTokens[4]), stof(asTokens[5])));
+	return AABB(Vector((float)stof(asTokens[0]), (float)stof(asTokens[1]), (float)stof(asTokens[2])), Vector((float)stof(asTokens[3]), (float)stof(asTokens[4]), (float)stof(asTokens[5])));
 }
 
 bool CanUnserializeString_Matrix4x4(const tstring& sData)
@@ -1934,8 +1936,8 @@ Matrix4x4 UnserializeString_Matrix4x4(const tstring& sData, const tstring& sName
 		return Matrix4x4();
 	}
 
-	Vector vecData(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
-	EAngle angData(stof(asTokens[3]), stof(asTokens[4]), stof(asTokens[5]));
+	Vector vecData((float)stof(asTokens[0]), (float)stof(asTokens[1]), (float)stof(asTokens[2]));
+	EAngle angData((float)stof(asTokens[3]), (float)stof(asTokens[4]), (float)stof(asTokens[5]));
 
 	return Matrix4x4(angData, vecData);
 }
@@ -2005,7 +2007,7 @@ void UnserializeString_size_t(const tstring& sData, CSaveData* pSaveData, CBaseE
 
 void UnserializeString_float(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	float f = stof(sData);
+	float f = (float)stof(sData);
 
 	float* pData = (float*)((char*)pEntity + pSaveData->m_iOffset);
 	switch(pSaveData->m_eType)
@@ -2018,6 +2020,35 @@ void UnserializeString_float(const tstring& sData, CSaveData* pSaveData, CBaseEn
 	{
 		TAssert(false);
 		CNetworkedVariable<float>* pVariable = (CNetworkedVariable<float>*)pData;
+		(*pVariable) = f;
+		break;
+	}
+
+	case CSaveData::DATA_COPYARRAY:
+	case CSaveData::DATA_COPYVECTOR:
+	case CSaveData::DATA_STRING:
+	case CSaveData::DATA_STRING16:
+	case CSaveData::DATA_OUTPUT:
+		TAssert(false);
+		break;
+	}
+}
+
+void UnserializeString_double(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
+{
+	double f = stof(sData);
+
+	double* pData = (double*)((char*)pEntity + pSaveData->m_iOffset);
+	switch(pSaveData->m_eType)
+	{
+	case CSaveData::DATA_COPYTYPE:
+		*pData = f;
+		break;
+
+	case CSaveData::DATA_NETVAR:
+	{
+		TAssert(false);
+		CNetworkedVariable<double>* pVariable = (CNetworkedVariable<double>*)pData;
 		(*pVariable) = f;
 		break;
 	}
@@ -2169,7 +2200,7 @@ void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 		return;
 	}
 
-	AABB aabbData(Vector(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2])), Vector(stof(asTokens[3]), stof(asTokens[4]), stof(asTokens[5])));
+	AABB aabbData(Vector((float)stof(asTokens[0]), (float)stof(asTokens[1]), (float)stof(asTokens[2])), Vector((float)stof(asTokens[3]), (float)stof(asTokens[4]), (float)stof(asTokens[5])));
 
 	AABB* pData = (AABB*)((char*)pEntity + pSaveData->m_iOffset);
 	switch(pSaveData->m_eType)
@@ -2274,7 +2305,7 @@ void UnserializeString_LocalAngles(const tstring& sData, CSaveData* pSaveData, C
 		return;
 	}
 
-	EAngle angData(stof(asTokens[0]), stof(asTokens[1]), stof(asTokens[2]));
+	EAngle angData((float)stof(asTokens[0]), (float)stof(asTokens[1]), (float)stof(asTokens[2]));
 	pEntity->SetLocalAngles(angData);
 }
 

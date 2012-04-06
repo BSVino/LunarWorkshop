@@ -26,7 +26,7 @@ public:
 	EAngle							m_angAngleVelocity;
 
 	float							m_flAlpha;
-	float							m_flSpawnTime;
+	double							m_flSpawnTime;
 	float							m_flRadius;
 	float							m_flBillboardYaw;
 };
@@ -71,7 +71,7 @@ protected:
 	eastl::vector<CParticle>		m_aParticles;
 	size_t							m_iNumParticlesAlive;
 
-	float							m_flLastEmission;
+	double							m_flLastEmission;
 	int								m_iTotalEmitted;
 
 	CEntityHandle<CBaseEntity>		m_hFollow;

@@ -390,8 +390,8 @@ CSystemInstance::~CSystemInstance()
 
 void CSystemInstance::Simulate()
 {
-	float flGameTime = GameServer()->GetGameTime();
-	float flFrameTime = GameServer()->GetFrameTime();
+	double flGameTime = GameServer()->GetGameTime();
+	double flFrameTime = GameServer()->GetFrameTime();
 
 	if (m_hFollow != NULL)
 	{
@@ -406,7 +406,7 @@ void CSystemInstance::Simulate()
 		if (!pParticle->m_bActive)
 			continue;
 
-		float flLifeTime = flGameTime - pParticle->m_flSpawnTime;
+		float flLifeTime = (float)(flGameTime - pParticle->m_flSpawnTime);
 		if (flLifeTime > m_pSystem->GetLifeTime())
 		{
 			pParticle->m_bActive = false;
@@ -414,12 +414,12 @@ void CSystemInstance::Simulate()
 			continue;
 		}
 
-		pParticle->m_vecOrigin += pParticle->m_vecVelocity * flFrameTime;
-		pParticle->m_vecVelocity += m_pSystem->GetGravity() * flFrameTime;
-		pParticle->m_vecVelocity *= (1-((1-m_pSystem->GetDrag()) * flFrameTime));
+		pParticle->m_vecOrigin += pParticle->m_vecVelocity * (float)flFrameTime;
+		pParticle->m_vecVelocity += m_pSystem->GetGravity() * (float)flFrameTime;
+		pParticle->m_vecVelocity *= (1-((1-m_pSystem->GetDrag()) * (float)flFrameTime));
 
 		if (m_pSystem->GetRandomAngleVelocity())
-			pParticle->m_angAngles = (pParticle->m_angAngles + pParticle->m_angAngleVelocity*GameServer()->GetFrameTime());
+			pParticle->m_angAngles = (pParticle->m_angAngles + pParticle->m_angAngleVelocity*(float)GameServer()->GetFrameTime());
 
 		float flLifeTimeRamp = flLifeTime / m_pSystem->GetLifeTime();
 

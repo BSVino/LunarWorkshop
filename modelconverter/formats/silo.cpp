@@ -173,9 +173,9 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 			tstrtok(pszLine, asTokens, " ");
 			if (asTokens.size() == 4)
 			{
-				pMaterial->m_vecDiffuse.x = stof(asTokens[1]);
-				pMaterial->m_vecDiffuse.y = stof(asTokens[2]);
-				pMaterial->m_vecDiffuse.z = stof(asTokens[3]);
+				pMaterial->m_vecDiffuse.x = (float)stof(asTokens[1]);
+				pMaterial->m_vecDiffuse.y = (float)stof(asTokens[2]);
+				pMaterial->m_vecDiffuse.z = (float)stof(asTokens[3]);
 			}
 		}
 		else if (tstrncmp(pszToken, "-amb", 4) == 0)
@@ -184,9 +184,9 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 			tstrtok(pszLine, asTokens, " ");
 			if (asTokens.size() == 4)
 			{
-				pMaterial->m_vecAmbient.x = stof(asTokens[1]);
-				pMaterial->m_vecAmbient.y = stof(asTokens[2]);
-				pMaterial->m_vecAmbient.z = stof(asTokens[3]);
+				pMaterial->m_vecAmbient.x = (float)stof(asTokens[1]);
+				pMaterial->m_vecAmbient.y = (float)stof(asTokens[2]);
+				pMaterial->m_vecAmbient.z = (float)stof(asTokens[3]);
 			}
 		}
 		else if (tstrncmp(pszToken, "-spec", 5) == 0)
@@ -195,9 +195,9 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 			tstrtok(pszLine, asTokens, " ");
 			if (asTokens.size() == 4)
 			{
-				pMaterial->m_vecSpecular.x = stof(asTokens[1]);
-				pMaterial->m_vecSpecular.y = stof(asTokens[2]);
-				pMaterial->m_vecSpecular.z = stof(asTokens[3]);
+				pMaterial->m_vecSpecular.x = (float)stof(asTokens[1]);
+				pMaterial->m_vecSpecular.y = (float)stof(asTokens[2]);
+				pMaterial->m_vecSpecular.z = (float)stof(asTokens[3]);
 			}
 		}
 		else if (tstrncmp(pszToken, "-emis", 5) == 0)
@@ -206,9 +206,9 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 			tstrtok(pszLine, asTokens, " ");
 			if (asTokens.size() == 4)
 			{
-				pMaterial->m_vecEmissive.x = stof(asTokens[1]);
-				pMaterial->m_vecEmissive.y = stof(asTokens[2]);
-				pMaterial->m_vecEmissive.z = stof(asTokens[3]);
+				pMaterial->m_vecEmissive.x = (float)stof(asTokens[1]);
+				pMaterial->m_vecEmissive.y = (float)stof(asTokens[2]);
+				pMaterial->m_vecEmissive.z = (float)stof(asTokens[3]);
 			}
 		}
 		else if (tstrncmp(pszToken, "-shin", 5) == 0)
@@ -216,7 +216,7 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 			eastl::vector<tstring> asTokens;
 			tstrtok(pszLine, asTokens, " ");
 			if (asTokens.size() == 2)
-				pMaterial->m_flShininess = stof(asTokens[1]);
+				pMaterial->m_flShininess = (float)stof(asTokens[1]);
 		}
 		else if (tstrncmp(pszToken, "-tex", 4) == 0)
 		{

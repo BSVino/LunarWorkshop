@@ -66,6 +66,7 @@ void UnserializeString_bool(const tstring& sData, class CSaveData* pData, class 
 void UnserializeString_int(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_size_t(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_float(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
+void UnserializeString_double(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_tstring(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_TVector(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_Vector(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
@@ -639,8 +640,8 @@ public:
 	size_t									GetSpawnSeed() const { return m_iSpawnSeed; }
 	void									SetSpawnSeed(size_t iSpawnSeed);
 
-	float									GetSpawnTime() const { return m_flSpawnTime; }
-	void									SetSpawnTime(float flSpawnTime) { m_flSpawnTime = flSpawnTime; };
+	double									GetSpawnTime() const { return m_flSpawnTime; }
+	void									SetSpawnTime(double flSpawnTime) { m_flSpawnTime = flSpawnTime; };
 
 	bool									HasIssuedClientSpawn() { return m_bClientSpawn; }
 	void									IssueClientSpawn();
@@ -731,8 +732,8 @@ protected:
 	CNetworkedVariable<bool>				m_bTakeDamage;
 	CNetworkedVariable<float>				m_flTotalHealth;
 	CNetworkedVariable<float>				m_flHealth;
-	float									m_flTimeKilled;
-	float									m_flLastTakeDamage;
+	double									m_flTimeKilled;
+	double									m_flLastTakeDamage;
 
 	CNetworkedVariable<bool>				m_bActive;
 
@@ -750,7 +751,7 @@ protected:
 	CNetworkedVariable<Vector2D>			m_vecTextureModelScale;
 
 	size_t									m_iSpawnSeed;
-	CNetworkedVariable<float>				m_flSpawnTime;
+	CNetworkedVariable<double>				m_flSpawnTime;
 
 private:
 	static eastl::vector<CBaseEntity*>		s_apEntityList;

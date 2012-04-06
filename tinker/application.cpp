@@ -312,9 +312,9 @@ void CApplication::SwapBuffers()
 	glfwPollEvents();
 }
 
-float CApplication::GetTime()
+double CApplication::GetTime()
 {
-	return (float)glfwGetTime();
+	return glfwGetTime();
 }
 
 bool CApplication::IsOpen()

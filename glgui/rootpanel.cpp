@@ -55,7 +55,7 @@ CRootPanel*	CRootPanel::Get()
 	return s_pRootPanel;
 }
 
-void CRootPanel::Think(float flNewTime)
+void CRootPanel::Think(double flNewTime)
 {
 	if (m_flTime == flNewTime)
 		return;

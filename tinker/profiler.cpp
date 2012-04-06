@@ -61,7 +61,7 @@ void CPerfBlock::BlockStarted()
 
 void CPerfBlock::BlockEnded()
 {
-	float flTimeBlockEnded = CApplication::Get()->GetTime();
+	double flTimeBlockEnded = CApplication::Get()->GetTime();
 
 	m_flTime += flTimeBlockEnded - m_flTimeBlockStarted;
 }
@@ -178,7 +178,7 @@ void CProfiler::Render(CPerfBlock* pBlock, float& flLeft, float& flTop)
 	if (pBlock->GetTime() < 0.005)
 		clrBlock = Color(255, 255, 255, 150);
 
-	glgui::CBaseControl::PaintRect(flLeft, flTop+1, pBlock->GetTime()*5000, 1, clrBlock);
+	glgui::CBaseControl::PaintRect(flLeft, flTop+1, (float)pBlock->GetTime()*5000, 1, clrBlock);
 
 	tstring sName = convertstring<char, tchar>(pBlock->GetName());
 	sName += sprintf(tstring(": %d ms"), (int)(pBlock->GetTime()*1000));

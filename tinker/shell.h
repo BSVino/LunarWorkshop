@@ -15,7 +15,7 @@ public:
 	virtual 					~CShell();
 
 public:
-	virtual float				GetTime();
+	virtual double				GetTime();
 
 	bool						HasCommandLineSwitch(const char* pszSwitch);
 	const char*					GetCommandLineSwitchValue(const char* pszSwitch);

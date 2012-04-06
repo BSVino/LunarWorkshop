@@ -241,7 +241,7 @@ void CGameWindow::Run()
 
 			PreFrame();
 
-			float flTime = GetTime();
+			double flTime = GetTime();
 			if (GameServer())
 			{
 				if (GameServer()->IsLoading())

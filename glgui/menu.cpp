@@ -98,9 +98,9 @@ void CMenu::Think()
 	if (!IsVisible())
 		CloseMenu();
 
-	m_flHighlight = Approach(flHightlightGoal, m_flHighlight, CRootPanel::Get()->GetFrameTime()*3);
-	m_flMenuHighlight = Approach(m_flMenuHighlightGoal, m_flMenuHighlight, CRootPanel::Get()->GetFrameTime()*3);
-	m_flMenuHeight = Approach(m_flMenuHeightGoal, m_flMenuHeight, CRootPanel::Get()->GetFrameTime()*3);
+	m_flHighlight = Approach(flHightlightGoal, m_flHighlight, (float)CRootPanel::Get()->GetFrameTime()*3);
+	m_flMenuHighlight = Approach(m_flMenuHighlightGoal, m_flMenuHighlight, (float)CRootPanel::Get()->GetFrameTime()*3);
+	m_flMenuHeight = Approach(m_flMenuHeightGoal, m_flMenuHeight, (float)CRootPanel::Get()->GetFrameTime()*3);
 	m_pMenu->SetFakeHeight(m_flMenuHeight);
 
 	m_pMenu->SetVisible(m_flMenuHighlight > 0 && m_flMenuHeight > 0);
@@ -128,13 +128,13 @@ void CMenu::Think()
 		m_MenuSelection = m_MenuSelectionGoal;
 	else
 	{
-		m_MenuSelection.x = Approach(m_MenuSelectionGoal.x, m_MenuSelection.x, CRootPanel::Get()->GetFrameTime()*800);
-		m_MenuSelection.y = Approach(m_MenuSelectionGoal.y, m_MenuSelection.y, CRootPanel::Get()->GetFrameTime()*800);
-		m_MenuSelection.w = Approach(m_MenuSelectionGoal.w, m_MenuSelection.w, CRootPanel::Get()->GetFrameTime()*800);
-		m_MenuSelection.h = Approach(m_MenuSelectionGoal.h, m_MenuSelection.h, CRootPanel::Get()->GetFrameTime()*800);
+		m_MenuSelection.x = Approach(m_MenuSelectionGoal.x, m_MenuSelection.x, (float)CRootPanel::Get()->GetFrameTime()*800);
+		m_MenuSelection.y = Approach(m_MenuSelectionGoal.y, m_MenuSelection.y, (float)CRootPanel::Get()->GetFrameTime()*800);
+		m_MenuSelection.w = Approach(m_MenuSelectionGoal.w, m_MenuSelection.w, (float)CRootPanel::Get()->GetFrameTime()*800);
+		m_MenuSelection.h = Approach(m_MenuSelectionGoal.h, m_MenuSelection.h, (float)CRootPanel::Get()->GetFrameTime()*800);
 	}
 
-	m_flMenuSelectionHighlight = Approach(m_flMenuSelectionHighlightGoal, m_flMenuSelectionHighlight, CRootPanel::Get()->GetFrameTime()*3);
+	m_flMenuSelectionHighlight = Approach(m_flMenuSelectionHighlightGoal, m_flMenuSelectionHighlight, (float)CRootPanel::Get()->GetFrameTime()*3);
 }
 
 void CMenu::Layout()
@@ -331,7 +331,7 @@ void CMenu::CSubmenuPanel::Think()
 		else
 			m_aflControlHighlightGoal[i] = 0.0f;
 
-		m_aflControlHighlight[i] = Approach(m_aflControlHighlightGoal[i], m_aflControlHighlight[i], CRootPanel::Get()->GetFrameTime()*3);
+		m_aflControlHighlight[i] = Approach(m_aflControlHighlightGoal[i], m_aflControlHighlight[i], (float)CRootPanel::Get()->GetFrameTime()*3);
 
 		pControl->SetAlpha((int)(m_aflControlHighlight[i] * 255));
 	}

@@ -108,7 +108,7 @@ void CScrollBar::Think()
 			m_flHandlePositionGoal = RemapValClamped((float)my, (float)y + m_flHandleGrabOffset, (float)(y + h) - m_flHandleSize + m_flHandleGrabOffset, 0.0f, 1.0f);
 	}
 
-	m_flHandlePosition = Approach(m_flHandlePositionGoal, m_flHandlePosition, CRootPanel::Get()->GetFrameTime()*10);
+	m_flHandlePosition = Approach(m_flHandlePositionGoal, m_flHandlePosition, (float)CRootPanel::Get()->GetFrameTime()*10);
 }
 
 bool CScrollBar::MousePressed(int code, int mx, int my)

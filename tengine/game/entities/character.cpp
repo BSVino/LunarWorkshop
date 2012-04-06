@@ -22,11 +22,11 @@ SAVEDATA_TABLE_BEGIN(CCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_hControllingPlayer);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, EAngle, m_angView, "ViewAngles");
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hGround);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bNoClip);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bTransformMoveByView);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecGoalVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecMoveVelocity);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bNoClip);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flLastAttack);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, double, m_flLastAttack);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TFloat, m_flMaxStepSize);
 SAVEDATA_TABLE_END();
 
@@ -108,9 +108,9 @@ void CCharacter::MoveThink()
 
 	TVector vecGoalVelocity = GetGoalVelocity();
 
-	m_vecMoveVelocity.x = Approach(vecGoalVelocity.x, m_vecMoveVelocity.x, GameServer()->GetFrameTime()*CharacterAcceleration());
+	m_vecMoveVelocity.x = Approach(vecGoalVelocity.x, m_vecMoveVelocity.x, (float)GameServer()->GetFrameTime()*CharacterAcceleration());
 	m_vecMoveVelocity.y = 0;
-	m_vecMoveVelocity.z = Approach(vecGoalVelocity.z, m_vecMoveVelocity.z, GameServer()->GetFrameTime()*CharacterAcceleration());
+	m_vecMoveVelocity.z = Approach(vecGoalVelocity.z, m_vecMoveVelocity.z, (float)GameServer()->GetFrameTime()*CharacterAcceleration());
 
 	if (m_vecMoveVelocity.LengthSqr() > 0)
 	{
@@ -154,9 +154,9 @@ void CCharacter::MoveThink_NoClip()
 
 	TVector vecGoalVelocity = GetGoalVelocity();
 
-	m_vecMoveVelocity.x = Approach(vecGoalVelocity.x, m_vecMoveVelocity.x, GameServer()->GetFrameTime()*CharacterAcceleration());
+	m_vecMoveVelocity.x = Approach(vecGoalVelocity.x, m_vecMoveVelocity.x, (float)GameServer()->GetFrameTime()*CharacterAcceleration());
 	m_vecMoveVelocity.y = 0;
-	m_vecMoveVelocity.z = Approach(vecGoalVelocity.z, m_vecMoveVelocity.z, GameServer()->GetFrameTime()*CharacterAcceleration());
+	m_vecMoveVelocity.z = Approach(vecGoalVelocity.z, m_vecMoveVelocity.z, (float)GameServer()->GetFrameTime()*CharacterAcceleration());
 
 	if (m_vecMoveVelocity.LengthSqr() > 0)
 	{
@@ -181,7 +181,7 @@ void CCharacter::MoveThink_NoClip()
 		else
 			vecLocalVelocity = vecMove;
 
-		SetGlobalOrigin(GetGlobalOrigin() + GameServer()->GetFrameTime()*vecLocalVelocity);
+		SetGlobalOrigin(GetGlobalOrigin() + (float)GameServer()->GetFrameTime()*vecLocalVelocity);
 	}
 }
 
@@ -357,7 +357,7 @@ void CCharacter::SetViewAngles(const eastl::vector<tstring>& asArgs)
 		return;
 	}
 
-	SetViewAngles(EAngle(stof(asArgs[0]), stof(asArgs[1]), stof(asArgs[2])));
+	SetViewAngles(EAngle((float)stof(asArgs[0]), (float)stof(asArgs[1]), (float)stof(asArgs[2])));
 }
 
 void CCharacter::SetGroundEntity(CBaseEntity* pEntity)

@@ -14,7 +14,7 @@ namespace glgui
 		virtual						~CRootPanel( );
 
 	public:
-		virtual void				Think(float flTime);
+		virtual void				Think(double flTime);
 		virtual void				UpdateScene();
 		virtual void				Paint(float x, float y, float w, float h);
 		virtual void				Layout();
@@ -44,8 +44,8 @@ namespace glgui
 
 		void						SetLighting(bool bLighting) { m_bUseLighting = bLighting; };
 
-		float						GetFrameTime() { return m_flFrameTime; };
-		float						GetTime() { return m_flTime; };
+		double						GetFrameTime() { return m_flFrameTime; };
+		double						GetTime() { return m_flTime; };
 
 		static CRootPanel*			Get();
 
@@ -68,8 +68,8 @@ namespace glgui
 
 		class CMenuBar*				m_pMenuBar;
 
-		float						m_flFrameTime;
-		float						m_flTime;
+		double						m_flFrameTime;
+		double						m_flTime;
 
 		int							m_iMX;
 		int							m_iMY;
