@@ -7,6 +7,8 @@
 #include <color.h>
 #include <geometry.h>
 
+#include <textures/texturehandle.h>
+
 #include "render_common.h"
 
 class CRenderingContext
@@ -19,7 +21,7 @@ protected:
 		Matrix4x4			m_mView;
 		Matrix4x4			m_mTransformations;
 
-		size_t				m_iTexture;
+		CTextureHandle		m_hTexture;
 		const class CFrameBuffer*	m_pFrameBuffer;
 		tstring				m_sProgram;
 
@@ -67,7 +69,7 @@ public:
 	void					RenderSphere();
 	void					RenderWireBox(const AABB& aabbBounds);
 
-	void					RenderBillboard(const tstring& sTexture, float flRadius, Vector vecUp, Vector vecRight);
+	void					RenderBillboard(const CTextureHandle& hTexture, float flRadius, Vector vecUp, Vector vecRight);
 
 	void					UseFrameBuffer(const class CFrameBuffer* pBuffer);
 	const class CFrameBuffer* GetActiveFrameBuffer() { return GetContext().m_pFrameBuffer; }
@@ -82,6 +84,7 @@ public:
 	void					SetUniform(const char* pszName, const Matrix4x4& mValue);
 	void					SetUniform(const char* pszName, size_t iSize, const float* aflValues);
 	void					BindTexture(const tstring& sName, int iChannel = 0);
+	void					BindTexture(const CTextureHandle& hTexture, int iChannel = 0);
 	void					BindTexture(size_t iTexture, int iChannel = 0);
 	void					BindBufferTexture(const CFrameBuffer& oBuffer, int iChannel = 0);
 	void					SetColor(const ::Color& c);	// Set the mesh's uniform color. Do this before BeginRender*

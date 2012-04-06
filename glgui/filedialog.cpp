@@ -37,7 +37,7 @@ CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, b
 
 	m_pFilesLabel = new CLabel(5, 5, 1, 1, "Files:");
 	AddControl(m_pFilesLabel);
-	m_pFileList = new CTree(~0, ~0, ~0);
+	m_pFileList = new CTree();
 	m_pFileList->SetSelectedListener(this, FileSelected);
 	m_pFileList->SetBackgroundColor(g_clrBox);
 	AddControl(m_pFileList);

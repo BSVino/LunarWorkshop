@@ -354,7 +354,7 @@ void CCreateEntityPanel::ModelChangedCallback(const tstring& sArgs)
 
 CEditorPanel::CEditorPanel()
 {
-	m_pEntities = new glgui::CTree(0, 0, 0);
+	m_pEntities = new glgui::CTree();
 	m_pEntities->SetBackgroundColor(Color(0, 0, 0, 100));
 	m_pEntities->SetSelectedListener(this, EntitySelected);
 	AddControl(m_pEntities);
@@ -499,7 +499,7 @@ CLevelEditor::CLevelEditor()
 	m_pEditorPanel->SetBorder(glgui::CPanel::BT_SOME);
 	glgui::CRootPanel::Get()->AddControl(m_pEditorPanel);
 
-	m_pCreateEntityButton = new glgui::CPictureButton("Create", CTextureLibrary::AddTextureID("editor/create-entity.png"));
+	m_pCreateEntityButton = new glgui::CPictureButton("Create", CTextureLibrary::AddTexture("editor/create-entity.png"));
 	m_pCreateEntityButton->SetPos(glgui::CRootPanel::Get()->GetWidth()/2-m_pCreateEntityButton->GetWidth()/2, 20);
 	m_pCreateEntityButton->SetClickedListener(this, CreateEntity);
 	m_pCreateEntityButton->SetTooltip("Create Entity Tool");
@@ -574,7 +574,7 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool b
 			r.RenderModel(pEntity->GetModelID(), nullptr);
 		}
 	}
-	else if (pEntity->GetTextureModel().length())
+	else if (pEntity->GetTextureModel().IsValid())
 	{
 		if (bTransparent)
 		{

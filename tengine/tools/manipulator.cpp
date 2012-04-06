@@ -19,7 +19,7 @@ CManipulatorTool::CManipulatorTool()
 	m_bTransforming = false;
 	m_eTransform = MT_TRANSLATE;
 
-	m_pTranslateButton = new glgui::CPictureButton("Translate", CTextureLibrary::AddTextureID("editor/translate.png"));
+	m_pTranslateButton = new glgui::CPictureButton("Translate", CTextureLibrary::AddTexture("editor/translate.png"));
 	glgui::CRootPanel::Get()->AddControl(m_pTranslateButton, true);
 	m_pTranslateButton->Layout_AlignBottom(nullptr, 20);
 	m_pTranslateButton->Layout_ColumnFixed(3, 0, m_pTranslateButton->GetWidth());
@@ -27,7 +27,7 @@ CManipulatorTool::CManipulatorTool()
 	m_pTranslateButton->SetTooltip("Translate");
 	m_pTranslateButton->SetVisible(false);
 
-	m_pRotateButton = new glgui::CPictureButton("Rotate", CTextureLibrary::AddTextureID("editor/rotate.png"));
+	m_pRotateButton = new glgui::CPictureButton("Rotate", CTextureLibrary::AddTexture("editor/rotate.png"));
 	glgui::CRootPanel::Get()->AddControl(m_pRotateButton, true);
 	m_pRotateButton->Layout_AlignBottom(nullptr, 20);
 	m_pRotateButton->Layout_ColumnFixed(3, 1, m_pRotateButton->GetWidth());
@@ -35,7 +35,7 @@ CManipulatorTool::CManipulatorTool()
 	m_pRotateButton->SetTooltip("Rotate");
 	m_pRotateButton->SetVisible(false);
 
-	m_pScaleButton = new glgui::CPictureButton("Scale", CTextureLibrary::AddTextureID("editor/scale.png"));
+	m_pScaleButton = new glgui::CPictureButton("Scale", CTextureLibrary::AddTexture("editor/scale.png"));
 	glgui::CRootPanel::Get()->AddControl(m_pScaleButton, true);
 	m_pScaleButton->Layout_AlignBottom(nullptr, 20);
 	m_pScaleButton->Layout_ColumnFixed(3, 2, m_pScaleButton->GetWidth());

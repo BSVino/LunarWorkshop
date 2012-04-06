@@ -48,7 +48,7 @@ void CGameRenderer::SetupFrame(class CRenderingContext* pContext)
 
 	BaseClass::SetupFrame(pContext);
 
-	if (m_iSkyboxFT != ~0)
+	if (m_hSkyboxFT.IsValid())
 		DrawSkybox(pContext);
 }
 
@@ -86,37 +86,37 @@ void CGameRenderer::DrawSkybox(class CRenderingContext* pContext)
 	c.BeginRenderVertexArray();
 	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
 	c.SetPositionBuffer(&m_avecSkyboxFT[0][0]);
-	c.BindTexture(m_iSkyboxFT);
+	c.BindTexture(m_hSkyboxFT);
 	c.EndRenderVertexArray(6);
 
 	c.BeginRenderVertexArray();
 	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
 	c.SetPositionBuffer(&m_avecSkyboxBK[0][0]);
-	c.BindTexture(m_iSkyboxBK);
+	c.BindTexture(m_hSkyboxBK);
 	c.EndRenderVertexArray(6);
 
 	c.BeginRenderVertexArray();
 	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
 	c.SetPositionBuffer(&m_avecSkyboxLF[0][0]);
-	c.BindTexture(m_iSkyboxLF);
+	c.BindTexture(m_hSkyboxLF);
 	c.EndRenderVertexArray(6);
 
 	c.BeginRenderVertexArray();
 	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
 	c.SetPositionBuffer(&m_avecSkyboxRT[0][0]);
-	c.BindTexture(m_iSkyboxRT);
+	c.BindTexture(m_hSkyboxRT);
 	c.EndRenderVertexArray(6);
 
 	c.BeginRenderVertexArray();
 	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
 	c.SetPositionBuffer(&m_avecSkyboxUP[0][0]);
-	c.BindTexture(m_iSkyboxUP);
+	c.BindTexture(m_hSkyboxUP);
 	c.EndRenderVertexArray(6);
 
 	c.BeginRenderVertexArray();
 	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
 	c.SetPositionBuffer(&m_avecSkyboxDN[0][0]);
-	c.BindTexture(m_iSkyboxDN);
+	c.BindTexture(m_hSkyboxDN);
 	c.EndRenderVertexArray(6);
 
 	c.ClearDepth();
@@ -134,16 +134,16 @@ void CGameRenderer::FinishRendering(class CRenderingContext* pContext)
 		GamePhysics()->DebugDraw(show_physics.GetInt());
 }
 
-void CGameRenderer::SetSkybox(size_t ft, size_t bk, size_t lf, size_t rt, size_t up, size_t dn)
+void CGameRenderer::SetSkybox(const CTextureHandle& ft, const CTextureHandle& bk, const CTextureHandle& lf, const CTextureHandle& rt, const CTextureHandle& up, const CTextureHandle& dn)
 {
 	TAssert(false); // Not ported to GL3. Needs to be converted from quads to tris.
 
-	m_iSkyboxFT = ft;
-	m_iSkyboxLF = lf;
-	m_iSkyboxBK = bk;
-	m_iSkyboxRT = rt;
-	m_iSkyboxDN = dn;
-	m_iSkyboxUP = up;
+	m_hSkyboxFT = ft;
+	m_hSkyboxLF = lf;
+	m_hSkyboxBK = bk;
+	m_hSkyboxRT = rt;
+	m_hSkyboxDN = dn;
+	m_hSkyboxUP = up;
 
 	m_avecSkyboxTexCoords[0] = Vector2D(0, 1);
 	m_avecSkyboxTexCoords[1] = Vector2D(0, 0);
@@ -183,7 +183,7 @@ void CGameRenderer::SetSkybox(size_t ft, size_t bk, size_t lf, size_t rt, size_t
 
 void CGameRenderer::DisableSkybox()
 {
-	m_iSkyboxFT = ~0;
+	m_hSkyboxFT.Reset();
 }
 
 void CGameRenderer::BeginBatching()
@@ -193,7 +193,7 @@ void CGameRenderer::BeginBatching()
 
 	m_bBatching = true;
 
-	for (eastl::map<size_t, eastl::vector<CRenderBatch> >::iterator it = m_aBatches.begin(); it != m_aBatches.end(); it++)
+	for (auto it = m_aBatches.begin(); it != m_aBatches.end(); it++)
 		it->second.clear();
 }
 
@@ -203,9 +203,9 @@ void CGameRenderer::AddToBatch(class CModel* pModel, const CBaseEntity* pEntity,
 	if (!pModel)
 		return;
 
-	for (size_t i = 0; i < pModel->m_aiTextures.size(); i++)
+	for (size_t i = 0; i < pModel->m_ahTextures.size(); i++)
 	{
-		CRenderBatch* pBatch = &m_aBatches[pModel->m_aiTextures[i]].push_back();
+		CRenderBatch* pBatch = &m_aBatches[pModel->m_ahTextures[i]].push_back();
 
 		pBatch->pEntity = pEntity;
 		pBatch->pModel = pModel;
@@ -228,7 +228,7 @@ void CGameRenderer::RenderBatches()
 	CGameRenderingContext c(this, true);
 	c.UseFrameBuffer(GetSceneBuffer());
 
-	for (eastl::map<size_t, eastl::vector<CRenderBatch> >::iterator it = m_aBatches.begin(); it != m_aBatches.end(); it++)
+	for (auto it = m_aBatches.begin(); it != m_aBatches.end(); it++)
 	{
 		c.BindTexture(it->first);
 

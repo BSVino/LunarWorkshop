@@ -72,7 +72,6 @@ NETVAR_TABLE_BEGIN(CBaseEntity);
 	NETVAR_DEFINE(CEntityHandle<CBaseEntity>, m_hTeam);
 	NETVAR_DEFINE(int, m_iCollisionGroup);
 	NETVAR_DEFINE(size_t, m_iModel);
-	NETVAR_DEFINE(tstring, m_sTexture);
 	NETVAR_DEFINE_INTERVAL(Vector2D, m_vecTextureModelScale, 0.15f);
 	NETVAR_DEFINE(double, m_flSpawnTime);
 NETVAR_TABLE_END();
@@ -119,7 +118,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bClientSpawn);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", ~0, UnserializeString_ModelID);
-	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, tstring, m_sTexture);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CTextureHandle, m_hTextureModel);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, Vector2D, m_vecTextureModelScale, "TextureScale", Vector2D(1, 1));
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, double, m_flSpawnTime);
@@ -257,7 +256,7 @@ TVector CBaseEntity::GetGlobalCenter() const
 
 TFloat CBaseEntity::GetBoundingRadius() const
 {
-	if (m_sTexture.Get().length())
+	if (m_hTextureModel.IsValid())
 		return m_vecTextureModelScale.Get().Length()/2;
 
 	return m_aabbBoundingBox.Size().Length()/2;
@@ -875,14 +874,14 @@ void CBaseEntity::Render(bool bTransparent) const
 					}
 				}
 
-				if (m_sTexture.Get().length())
+				if (m_hTextureModel.IsValid())
 				{
 					if (bTransparent)
 					{
 						TPROF("CRenderingContext::RenderModel(Texture)");
 						r.SetBlend(BLEND_ALPHA);
 						r.Scale(0, m_vecTextureModelScale.Get().y, m_vecTextureModelScale.Get().x);
-						r.RenderTextureModel(m_sTexture);
+						r.RenderTextureModel(m_hTextureModel);
 					}
 				}
 			}
@@ -1566,8 +1565,7 @@ void CBaseEntity::PrecacheTexture(const tstring& sTexture)
 			return;
 	}
 
-	CTextureLibrary::AddTexture(sTexture);
-
+	pReg->m_ahTexturePrecaches.push_back(CTextureLibrary::AddTexture(sTexture));
 	pReg->m_asPrecaches.push_back(sTexture);
 }
 
@@ -2229,15 +2227,15 @@ void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 
 void UnserializeString_ModelID(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	size_t iID = CTextureLibrary::AddTextureID(sData);
+	CTextureHandle hTexture = CTextureLibrary::AddTexture(sData);
 
-	if (iID != 0)
+	if (hTexture.IsValid())
 	{
-		pEntity->SetTextureModel(sData);
+		pEntity->SetTextureModel(hTexture);
 		return;
 	}
 
-	iID = CModelLibrary::AddModel(sData);
+	size_t iID = CModelLibrary::AddModel(sData);
 
 	TAssert(iID != ~0);
 	if (iID == ~0)

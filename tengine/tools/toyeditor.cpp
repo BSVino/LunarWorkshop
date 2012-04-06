@@ -217,7 +217,7 @@ CSourcePanel::CSourcePanel()
 	m_pPhysShapesLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
 	AddControl(m_pPhysShapesLabel);
 
-	m_pPhysicsShapes = new glgui::CTree(0, 0, 0);
+	m_pPhysicsShapes = new glgui::CTree();
 	m_pPhysicsShapes->SetBackgroundColor(Color(0, 0, 0, 100));
 	m_pPhysicsShapes->SetSelectedListener(this, PhysicsAreaSelected);
 	AddControl(m_pPhysicsShapes);
@@ -533,17 +533,17 @@ void CToyEditor::Layout()
 	if (m_iMeshPreview != ~0 && bGenPreviewDistance)
 		m_flPreviewDistance = CModelLibrary::GetModel(m_iMeshPreview)->m_aabbBoundingBox.Size().Length()*2;
 
-	m_sTexturePreview = "";
+	m_hTexturePreview.Reset();
 	tstring sTexture = FindAbsolutePath(GetDirectory(GetToy().m_sFilename) + "/" + GetToy().m_sMesh);
 	if (IsFile(sTexture))
 	{
 		// Don't bother with clearing old ones, they'll get flushed eventually.
-		int iTexturePreview = CTextureLibrary::AddTextureID(sTexture);
+		CTextureHandle hTexturePreview = CTextureLibrary::AddTexture(sTexture);
 
-		if (iTexturePreview != 0)
+		if (hTexturePreview.IsValid())
 		{
-			m_sTexturePreview = sTexture;
-			m_flPreviewDistance = (float)(CTextureLibrary::FindTexture(sTexture)->m_iHeight+CTextureLibrary::FindTexture(sTexture)->m_iWidth)/100;
+			m_hTexturePreview = hTexturePreview;
+			m_flPreviewDistance = (float)(hTexturePreview->m_iHeight+hTexturePreview->m_iWidth)/100;
 		}
 	}
 
@@ -605,7 +605,7 @@ void CToyEditor::RenderScene()
 		c.RenderModel(m_iMeshPreview);
 	}
 
-	if (m_sTexturePreview.length())
+	if (m_hTexturePreview.IsValid())
 	{
 		CGameRenderingContext c(GameServer()->GetRenderer(), true);
 
@@ -614,7 +614,7 @@ void CToyEditor::RenderScene()
 
 		c.SetColor(Color(255, 255, 255));
 
-		c.RenderTextureModel(m_sTexturePreview);
+		c.RenderTextureModel(m_hTexturePreview);
 	}
 
 	if (m_iPhysPreview != ~0 && CModelLibrary::GetModel(m_iPhysPreview))
@@ -627,7 +627,7 @@ void CToyEditor::RenderScene()
 		c.ClearDepth();
 
 		float flAlpha = 0.3f;
-		if (m_iMeshPreview == ~0 && m_sTexturePreview.length() == 0)
+		if (m_iMeshPreview == ~0 && m_hTexturePreview.IsValid() == 0)
 			flAlpha = 1.0f;
 
 		c.SetColor(Color(0, 100, 155, (int)(255*flAlpha)));
@@ -653,7 +653,7 @@ void CToyEditor::RenderScene()
 		float flAlpha = 0.2f;
 		if (m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId() == i)
 			flAlpha = 0.8f;
-		if (m_iMeshPreview == ~0 && m_sTexturePreview.length() == 0)
+		if (m_iMeshPreview == ~0 && m_hTexturePreview.IsValid() == 0)
 			flAlpha = 1.0f;
 		if (flAlpha < 1)
 			c.SetBlend(BLEND_ALPHA);

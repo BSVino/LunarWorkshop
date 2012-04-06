@@ -14,6 +14,7 @@
 
 #include <network/network.h>
 #include <game/entityhandle.h>
+#include <textures/texturehandle.h>
 
 extern enum collision_type_e;
 
@@ -167,6 +168,7 @@ public:
 	eastl::vector<CNetworkedVariableData>	m_aNetworkVariables;
 	eastl::map<eastl::string, CEntityInput>		m_aInputs;
 	eastl::vector<tstring>		m_asPrecaches;
+	eastl::vector<CTextureHandle>	m_ahTexturePrecaches;
 	bool						m_bCreatableInEditor;
 };
 
@@ -489,8 +491,8 @@ public:
 	class CModel*							GetModel() const;
 	virtual void							OnSetModel() {};
 
-	void									SetTextureModel(const tstring& sTexture) { m_sTexture = sTexture; }
-	const tstring&							GetTextureModel() const { return m_sTexture; };
+	void									SetTextureModel(const CTextureHandle& hTexture) { m_hTextureModel = hTexture; }
+	const CTextureHandle&					GetTextureModel() const { return m_hTextureModel; };
 
 	virtual Matrix4x4						GetRenderTransform() const { return Matrix4x4(GetGlobalTransform()); };
 	virtual Vector							GetRenderOrigin() const { return GetRenderTransform().GetTranslation(); };
@@ -596,7 +598,7 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnActivated);
 	DECLARE_ENTITY_OUTPUT(OnDeactivated);
 
-	virtual bool							ShouldRender() const { return (size_t)m_iModel != ~0 || m_sTexture.Get().length(); };
+	virtual bool							ShouldRender() const { return (size_t)m_iModel != ~0 || m_hTextureModel.IsValid(); };
 	virtual bool							ShouldRenderModel() const { return true; };
 	virtual void							PreRender(bool bTransparent) const;
 	virtual void							ModifyContext(class CRenderingContext* pContext, bool bTransparent) const {};
@@ -747,7 +749,7 @@ protected:
 	CNetworkedVariable<int>					m_iCollisionGroup;
 
 	CNetworkedVariable<size_t>				m_iModel;
-	CNetworkedVariable<tstring>				m_sTexture;
+	CTextureHandle							m_hTextureModel;
 	CNetworkedVariable<Vector2D>			m_vecTextureModelScale;
 
 	size_t									m_iSpawnSeed;

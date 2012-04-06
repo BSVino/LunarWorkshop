@@ -10,15 +10,15 @@
 
 using namespace glgui;
 
-CTree::CTree(size_t iArrowTexture, size_t iEditTexture, size_t iVisibilityTexture)
+CTree::CTree(const CTextureHandle& hArrowTexture, const CTextureHandle& hEditTexture, const CTextureHandle& hVisibilityTexture)
 	: CPanel(0, 0, 10, 10)
 {
 	m_iHilighted = ~0;
 	m_iSelected = ~0;
 
-	m_iArrowTexture = iArrowTexture;
-	m_iVisibilityTexture = iVisibilityTexture;
-	m_iEditTexture = iEditTexture;
+	m_hArrowTexture = hArrowTexture;
+	m_hVisibilityTexture = hVisibilityTexture;
+	m_hEditTexture = hEditTexture;
 
 	m_pfnSelectedCallback = NULL;
 	m_pSelectedListener = NULL;
@@ -336,12 +336,10 @@ CTreeNode::CTreeNode(CTreeNode* pParent, CTree* pTree, const tstring& sText, con
 	m_pLabel->SetFont(sFont, 11);
 	AddControl(m_pLabel);
 
-	m_pExpandButton = new CExpandButton(m_pTree->m_iArrowTexture);
+	m_pExpandButton = new CExpandButton(m_pTree->m_hArrowTexture);
 	m_pExpandButton->SetExpanded(false);
 	m_pExpandButton->SetClickedListener(this, Expand);
 	AddControl(m_pExpandButton);
-
-	m_iIconTexture = 0;
 
 	m_bDraggable = false;
 }
@@ -359,12 +357,12 @@ CTreeNode::CTreeNode(const CTreeNode& c)
 	m_pLabel->SetFont("sans-serif", c.m_pLabel->GetFontFaceSize());
 	AddControl(m_pLabel);
 
-	m_pExpandButton = new CExpandButton(m_pTree->m_iArrowTexture);
+	m_pExpandButton = new CExpandButton(m_pTree->m_hArrowTexture);
 	m_pExpandButton->SetExpanded(false);
 	m_pExpandButton->SetClickedListener(this, Expand);
 	AddControl(m_pExpandButton);
 
-	m_iIconTexture = c.m_iIconTexture;
+	m_hIconTexture = c.m_hIconTexture;
 	m_bDraggable = false;
 }
 
@@ -397,7 +395,7 @@ void CTreeNode::LayoutNode()
 
 	m_pLabel->SetHeight(h);
 	m_pLabel->SetWidth(w);
-	if (m_iIconTexture)
+	if (m_hIconTexture.IsValid())
 		m_pLabel->SetPos(h+12, 0);
 	else
 		m_pLabel->SetPos(h, 0);
@@ -427,17 +425,17 @@ void CTreeNode::Paint(float x, float y, float w, float h, bool bFloating)
 	if (!IsVisible())
 		return;
 
-	if (m_pTree->m_iArrowTexture && m_apNodes.size())
+	if (m_pTree->m_hArrowTexture.IsValid() && m_apNodes.size())
 		m_pExpandButton->Paint();
 
 //	CBaseControl::PaintRect(x+15, y, w-25, h);
 
 	float flIconSize = 0;
-	if (m_iIconTexture)
+	if (m_hIconTexture.IsValid())
 	{
 		flIconSize = 12;
 
-		PaintTexture(m_iIconTexture, x+12, y, flIconSize, flIconSize);
+		PaintTexture(m_hIconTexture, x+12, y, flIconSize, flIconSize);
 	}
 
 	m_pLabel->Paint();
@@ -533,8 +531,8 @@ void CTreeNode::ExpandCallback(const tstring& sArgs)
 	m_pTree->Layout();
 }
 
-CTreeNode::CExpandButton::CExpandButton(size_t iTexture)
-	: CPictureButton("*", iTexture, false)
+CTreeNode::CExpandButton::CExpandButton(const CTextureHandle& hTexture)
+	: CPictureButton("*", hTexture, false)
 {
 	m_bExpanded = false;
 	m_flExpandedGoal = m_flExpandedCurrent = 0;

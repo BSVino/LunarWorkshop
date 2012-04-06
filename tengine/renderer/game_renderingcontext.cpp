@@ -49,7 +49,7 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 			if (!pModel->m_aiVertexBufferSizes[m])
 				continue;
 
-			BindTexture(pModel->m_aiTextures[m]);
+			BindTexture(pModel->m_ahTextures[m]);
 
 			RenderModel(pModel, m);
 		}
@@ -116,11 +116,10 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	EndRenderVertexArray(pModel->m_aiVertexBufferSizes[iMaterial]);
 }
 
-void CGameRenderingContext::RenderTextureModel(const tstring& sTexture)
+void CGameRenderingContext::RenderTextureModel(const CTextureHandle& hTexture)
 {
-	const CTexture* pTexture = CTextureLibrary::FindTexture(sTexture);
-	TAssert(pTexture);
-	if (!pTexture)
+	TAssert(hTexture.IsValid());
+	if (!hTexture.IsValid())
 		return;
 
 	if (!m_pShader)
@@ -129,10 +128,10 @@ void CGameRenderingContext::RenderTextureModel(const tstring& sTexture)
 		SetUniform("bDiffuse", true);
 	}
 
-	Vector vecUp = Vector(0, 0.5f, 0) * (float)pTexture->m_iHeight/100;		// One texel is a centimeter.
-	Vector vecRight = Vector(0, 0, 0.5f) * (float)pTexture->m_iWidth/100;
+	Vector vecUp = Vector(0, 0.5f, 0) * (float)hTexture->m_iHeight/100;		// One texel is a centimeter.
+	Vector vecRight = Vector(0, 0, 0.5f) * (float)hTexture->m_iWidth/100;
 
-	BindTexture(pTexture->m_iGLID);
+	BindTexture(hTexture);
 	BeginRenderTriFan();
 		TexCoord(0.0f, 1.0f);
 		Vertex(-vecRight + vecUp);

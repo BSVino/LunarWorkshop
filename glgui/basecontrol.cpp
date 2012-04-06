@@ -317,7 +317,7 @@ void CBaseControl::PaintRect(float x, float y, float w, float h, const Color& c,
 	r.EndRenderVertexArray(6);
 }
 
-void CBaseControl::PaintTexture(size_t iTexture, float x, float y, float w, float h, const Color& c)
+void CBaseControl::PaintTexture(const CTextureHandle& hTexture, float x, float y, float w, float h, const Color& c)
 {
 	MakeQuad();
 
@@ -335,7 +335,7 @@ void CBaseControl::PaintTexture(size_t iTexture, float x, float y, float w, floa
 
 	r.SetUniform("vecDimensions", Vector4D(x, y, w, h));
 
-	r.BindTexture(iTexture);
+	r.BindTexture(hTexture);
 
 	r.BeginRenderVertexArray(s_iQuad);
 	r.SetPositionBuffer(0u, 24);
@@ -346,7 +346,7 @@ void CBaseControl::PaintTexture(size_t iTexture, float x, float y, float w, floa
 	r.SetBackCulling(true);
 }
 
-void CBaseControl::PaintSheet(size_t iTexture, float x, float y, float w, float h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c)
+void CBaseControl::PaintSheet(const CTextureHandle& hTexture, float x, float y, float w, float h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c)
 {
 	MakeQuad();
 
@@ -365,7 +365,7 @@ void CBaseControl::PaintSheet(size_t iTexture, float x, float y, float w, float 
 	r.SetUniform("vecDimensions", Vector4D(x, y, w, h));
 	r.SetUniform("vecTexCoords", Vector4D((float)sx/(float)tw, (float)sy/(float)th, (float)sw/(float)tw, (float)sh/(float)th));
 
-	r.BindTexture(iTexture);
+	r.BindTexture(hTexture);
 
 	r.BeginRenderVertexArray(s_iQuad);
 	r.SetPositionBuffer(0u, 24);
@@ -387,12 +387,12 @@ void CBaseControl::MakeQuad()
 		int iIndex;
 	} avecData[] =
 	{
-		{ Vector(0, 0, 0),		Vector2D(0, 1),		0 },
-		{ Vector(0, 1, 0),		Vector2D(0, 0),		1 },
-		{ Vector(1, 1, 0),		Vector2D(1, 0),		2 },
-		{ Vector(0, 0, 0),		Vector2D(0, 1),		0 },
-		{ Vector(1, 1, 0),		Vector2D(1, 0),		2 },
-		{ Vector(1, 0, 0),		Vector2D(1, 1),		3 },
+		{ Vector(0, 0, 0),		Vector2D(0, 0),		0 },
+		{ Vector(0, 1, 0),		Vector2D(0, 1),		1 },
+		{ Vector(1, 1, 0),		Vector2D(1, 1),		2 },
+		{ Vector(0, 0, 0),		Vector2D(0, 0),		0 },
+		{ Vector(1, 1, 0),		Vector2D(1, 1),		2 },
+		{ Vector(1, 0, 0),		Vector2D(1, 0),		3 },
 	};
 
 	s_iQuad = CRenderer::LoadVertexDataIntoGL(sizeof(avecData), (float*)&avecData[0]);

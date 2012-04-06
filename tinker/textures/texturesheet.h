@@ -6,13 +6,13 @@
 #include <tstring.h>
 #include <geometry.h>
 
+#include "texturehandle.h"
+
 class CTextureArea
 {
 public:
 	Rect					m_rRect;
-	size_t					m_iSheet;
-	size_t					m_iSheetWidth;
-	size_t					m_iSheetHeight;
+	CTextureHandle			m_hSheet;
 };
 
 class CTextureSheet
@@ -23,15 +23,13 @@ public:
 
 public:
 	const Rect&				GetArea(const tstring& sArea) const;
-	size_t					GetSheet(const tstring& sArea) const;
+	CTextureHandle			GetSheet(const tstring& sArea) const;
 	size_t					GetSheetWidth(const tstring& sArea) const;
 	size_t					GetSheetHeight(const tstring& sArea) const;
 
 protected:
 	eastl::map<tstring, CTextureArea>	m_aAreas;
-	size_t					m_iDefaultSheet;
-	size_t					m_iDefaultSheetWidth;
-	size_t					m_iDefaultSheetHeight;
+	CTextureHandle			m_hDefaultSheet;
 };
 
 #endif

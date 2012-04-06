@@ -211,12 +211,7 @@ void CLevelEntity::SetParameterValue(const tstring& sKey, const tstring& sValue)
 	{
 		// Special case.
 		if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
-		{
-			if (CTextureLibrary::FindTexture(sValue))
-				m_sTextureModel = sValue;
-			else if (CTextureLibrary::AddTexture(sValue))
-				m_sTextureModel = sValue;
-		}
+			m_hTextureModel = CTextureLibrary::AddTexture(sValue);
 
 		if (strcmp(pSaveData->m_pszType, "bool") == 0)
 		{

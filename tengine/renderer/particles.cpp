@@ -274,7 +274,6 @@ CParticleSystem::CParticleSystem(tstring sName)
 	m_bLoaded = false;
 	m_sName = sName;
 
-	m_iTexture = 0;
 	m_iModel = 0;
 
 	m_eBlend = BLEND_ADDITIVE;
@@ -310,7 +309,7 @@ void CParticleSystem::Load()
 	m_bLoaded = true;
 
 	if (GetTextureName().length() > 0)
-		SetTexture(CTextureLibrary::AddTextureID(GetTextureName()));
+		SetTexture(CTextureLibrary::AddTexture(GetTextureName()));
 
 	if (GetModelName().length() > 0)
 		SetModel(CModelLibrary::AddModel(GetModelName()));

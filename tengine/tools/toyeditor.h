@@ -156,7 +156,7 @@ protected:
 
 	size_t					m_iMeshPreview;
 	size_t					m_iPhysPreview;
-	tstring					m_sTexturePreview;
+	CTextureHandle			m_hTexturePreview;
 
 	bool					m_bRotatingPreview;
 	EAngle					m_angPreview;

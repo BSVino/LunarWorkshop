@@ -34,7 +34,7 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 		GetContext().m_mView = oLastContext.m_mView;
 		GetContext().m_mTransformations = oLastContext.m_mTransformations;
 
-		GetContext().m_iTexture = oLastContext.m_iTexture;
+		GetContext().m_hTexture = oLastContext.m_hTexture;
 		GetContext().m_pFrameBuffer = oLastContext.m_pFrameBuffer;
 		GetContext().m_sProgram = oLastContext.m_sProgram;
 
@@ -77,7 +77,7 @@ CRenderingContext::~CRenderingContext()
 
 	if (s_aContexts.size())
 	{
-		BindTexture(GetContext().m_iTexture);
+		BindTexture(GetContext().m_hTexture);
 		UseFrameBuffer(GetContext().m_pFrameBuffer);
 		UseProgram(GetContext().m_sProgram);
 
@@ -267,14 +267,16 @@ void CRenderingContext::RenderWireBox(const AABB& aabbBounds)
 	EndRender();
 }
 
-void CRenderingContext::RenderBillboard(const tstring& sTexture, float flRadius, Vector vecUp, Vector vecRight)
+void CRenderingContext::RenderBillboard(const CTextureHandle& hTexture, float flRadius, Vector vecUp, Vector vecRight)
 {
-	size_t iTexture = CTextureLibrary::FindTextureID(sTexture);
+	TAssert(hTexture.IsValid());
+	if (!hTexture.IsValid())
+		return;
 
 	vecUp *= flRadius;
 	vecRight *= flRadius;
 
-	BindTexture(iTexture);
+	BindTexture(hTexture);
 	BeginRenderTriFan();
 		TexCoord(0.0f, 1.0f);
 		Vertex(-vecRight + vecUp);
@@ -378,7 +380,19 @@ void CRenderingContext::SetUniform(const char* pszName, size_t iSize, const floa
 
 void CRenderingContext::BindTexture(const tstring& sName, int iChannel)
 {
-	BindTexture(CTextureLibrary::GetTextureGLID(sName), iChannel);
+	BindTexture(CTextureLibrary::FindTexture(sName), iChannel);
+}
+
+void CRenderingContext::BindTexture(const CTextureHandle& hTexture, int iChannel)
+{
+	// Not tested since the move to a stack
+	TAssert(iChannel == 0);
+
+	glActiveTexture(GL_TEXTURE0+iChannel);
+
+	glBindTexture(GL_TEXTURE_2D, (GLuint)hTexture.GetID());
+
+	GetContext().m_hTexture = hTexture;
 }
 
 void CRenderingContext::BindTexture(size_t iTexture, int iChannel)
@@ -389,8 +403,6 @@ void CRenderingContext::BindTexture(size_t iTexture, int iChannel)
 	glActiveTexture(GL_TEXTURE0+iChannel);
 
 	glBindTexture(GL_TEXTURE_2D, (GLuint)iTexture);
-
-	GetContext().m_iTexture = iTexture;
 }
 
 void CRenderingContext::BindBufferTexture(const CFrameBuffer& oBuffer, int iChannel)
@@ -405,7 +417,8 @@ void CRenderingContext::BindBufferTexture(const CFrameBuffer& oBuffer, int iChan
 	else
 		glBindTexture(GL_TEXTURE_2D, (GLuint)oBuffer.m_iMap);
 
-	GetContext().m_iTexture = oBuffer.m_iMap;
+	// Not ported to texture handle code.
+//	GetContext().m_hTexture = oBuffer.m_iMap;
 }
 
 void CRenderingContext::SetColor(const ::Color& c)

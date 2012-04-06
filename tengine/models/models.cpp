@@ -43,9 +43,6 @@ size_t CModelLibrary::AddModel(const tstring& sModel)
 		CModel* pModel = Get()->m_apModels[iModel];
 		pModel->m_iReferences++;
 
-		for (size_t i = 0; i < pModel->m_aiTextures.size(); i++)
-			CTextureLibrary::AddTexture(CTextureLibrary::FindTextureByID(pModel->m_aiTextures[i]));
-
 		if (pModel->m_pToy)
 		{
 			for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
@@ -235,7 +232,7 @@ bool CModel::Load()
 
 	size_t iMaterials = m_pToy->GetNumMaterials();
 
-	m_aiTextures.resize(iMaterials);
+	m_ahTextures.resize(iMaterials);
 	m_aiVertexBuffers.resize(iMaterials);
 	m_aiVertexBufferSizes.resize(iMaterials);
 
@@ -246,13 +243,13 @@ bool CModel::Load()
 
 		m_aiVertexBuffers[i] = LoadBufferIntoGL(i);
 		m_aiVertexBufferSizes[i] = m_pToy->GetMaterialNumVerts(i);
-		m_aiTextures[i] = CTextureLibrary::AddTextureID(m_pToy->GetMaterialTexture(i));
+		m_ahTextures[i] = CTextureLibrary::AddTexture(m_pToy->GetMaterialTexture(i));
 
-		if (!m_aiTextures[i])
-			m_aiTextures[i] = CTextureLibrary::AddTextureID(GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialTexture(i));
+		if (!m_ahTextures[i].IsValid())
+			m_ahTextures[i] = CTextureLibrary::AddTexture(GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialTexture(i));
 
 		//TAssert(m_aiTextures[i]);
-		if (!m_aiTextures[i])
+		if (!m_ahTextures[i].IsValid())
 			TError(tstring("Couldn't find texture \"") + m_pToy->GetMaterialTexture(i) + "\"\n");
 	}
 

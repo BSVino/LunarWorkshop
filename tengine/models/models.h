@@ -8,6 +8,8 @@
 #include <geometry.h>
 #include <tstring.h>
 
+#include <textures/texturehandle.h>
+
 class CToy;
 
 class CModel
@@ -29,7 +31,7 @@ public:
 	CToy*					m_pToy;
 
 	// Graphics library handles.
-	eastl::vector<size_t>	m_aiTextures;
+	eastl::vector<CTextureHandle>	m_ahTextures;
 	eastl::vector<size_t>	m_aiVertexBuffers;
 	eastl::vector<size_t>	m_aiVertexBufferSizes;	// How many vertices in this vertex buffer?
 

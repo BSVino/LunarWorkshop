@@ -19,22 +19,19 @@ CTextureLibrary::~CTextureLibrary()
 	s_pTextureLibrary = NULL;
 }
 
-const CTexture* CTextureLibrary::AddTexture(const tstring& sTexture, int iClamp)
+CTextureHandle CTextureLibrary::AddTexture(const tstring& sTexture, int iClamp)
 {
 	if (!sTexture.length())
-		return NULL;
+		return CTextureHandle();
 
-	const CTexture* pTexture = FindTexture(sTexture);
-	if (pTexture != NULL)
-	{
-		Get()->m_aTextures[sTexture].m_iReferences++;
-		return pTexture;
-	}
+	CTextureHandle hTexture = FindTexture(sTexture);
+	if (hTexture.IsValid())
+		return hTexture;
 
 	int w, h;
 	Color* pclrTexture = CRenderer::LoadTextureData(sTexture, w, h);
 	if (!pclrTexture)
-		return NULL;
+		return CTextureHandle();
 
 	CTexture oTex;
 	
@@ -45,49 +42,22 @@ const CTexture* CTextureLibrary::AddTexture(const tstring& sTexture, int iClamp)
 	CRenderer::UnloadTextureData(pclrTexture);
 
 	Get()->m_aTextures[sTexture] = oTex;
-	Get()->m_aTextures[sTexture].m_iReferences++;
 
-	return &Get()->m_aTextures[sTexture];
+	return CTextureHandle(sTexture, &Get()->m_aTextures[sTexture]);
 }
 
-size_t CTextureLibrary::AddTextureID(const tstring& sTexture, int iClamp)
-{
-	const CTexture* pTex = AddTexture(sTexture, iClamp);
-
-	if (!pTex)
-		return 0;
-
-	return pTex->m_iGLID;
-}
-
-const CTexture* CTextureLibrary::FindTexture(const tstring& sTexture)
+CTextureHandle CTextureLibrary::FindTexture(const tstring& sTexture)
 {
 	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
 	if (it == Get()->m_aTextures.end())
-		return NULL;
+		return CTextureHandle();
 
-	return &it->second;
+	return CTextureHandle(sTexture, &it->second);
 }
 
 size_t CTextureLibrary::FindTextureID(const tstring& sTexture)
 {
-	const CTexture* pTex = FindTexture(sTexture);
-
-	if (!pTex)
-		return 0;
-
-	return pTex->m_iGLID;
-}
-
-tstring CTextureLibrary::FindTextureByID(size_t iID)
-{
-	for (auto it = Get()->m_aTextures.begin(); it != Get()->m_aTextures.end(); it++)
-	{
-		if (it->second.m_iGLID == iID)
-			return it->first;
-	}
-
-	return "";
+	return FindTexture(sTexture).GetID();
 }
 
 void CTextureLibrary::ReleaseTexture(const tstring& sTexture)
@@ -98,6 +68,18 @@ void CTextureLibrary::ReleaseTexture(const tstring& sTexture)
 
 	TAssert(it->second.m_iReferences > 0);
 	it->second.m_iReferences--;
+}
+
+void CTextureLibrary::ReleaseTexture(const CTexture* pTexture)
+{
+	if (!pTexture)
+		return;
+
+	CTexture* pTextureNonConst = const_cast<CTexture*>(pTexture);
+
+	TAssert(pTextureNonConst->m_iReferences > 0);
+	if (pTextureNonConst->m_iReferences > 0)
+		pTextureNonConst->m_iReferences--;
 }
 
 size_t CTextureLibrary::GetTextureGLID(const tstring& sTexture)
@@ -127,6 +109,15 @@ size_t CTextureLibrary::GetTextureHeight(const tstring& sTexture)
 	return it->second.m_iHeight;
 }
 
+bool CTextureLibrary::IsTextureLoaded(const tstring& sTexture)
+{
+	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
+	if (it == Get()->m_aTextures.end())
+		return false;
+
+	return true;
+}
+
 void CTextureLibrary::UnloadTexture(const tstring& sTexture)
 {
 	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
@@ -136,12 +127,6 @@ void CTextureLibrary::UnloadTexture(const tstring& sTexture)
 	TAssert(it->second.m_iReferences == 0);
 
 	CRenderer::UnloadTextureFromGL(it->second.m_iGLID);
-}
-
-void CTextureLibrary::ResetReferenceCounts()
-{
-	for (auto it = Get()->m_aTextures.begin(); it != Get()->m_aTextures.end(); it++)
-		it->second.m_iReferences = 0;
 }
 
 void CTextureLibrary::ClearUnreferenced()
@@ -157,4 +142,3 @@ void CTextureLibrary::ClearUnreferenced()
 			it++;
 	}
 }
-

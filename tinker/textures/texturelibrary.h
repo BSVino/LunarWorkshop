@@ -5,6 +5,8 @@
 
 #include <tstring.h>
 
+#include "texturehandle.h"
+
 class CTexture
 {
 public:
@@ -33,22 +35,21 @@ public:
 public:
 	static size_t			GetNumTextures() { return Get()->m_aTextures.size(); }
 
-	static const CTexture*	AddTexture(const tstring& sTexture, int iClamp = 0);
-	static size_t			AddTextureID(const tstring& sTexture, int iClamp = 0);
-	static const CTexture*	FindTexture(const tstring& sTexture);
+	static CTextureHandle	AddTexture(const tstring& sTexture, int iClamp = 0);
+	static CTextureHandle	FindTexture(const tstring& sTexture);
 	static size_t			FindTextureID(const tstring& sTexture);
-	static tstring			FindTextureByID(size_t iID);
 	static void				ReleaseTexture(const tstring& sTexture);
+	static void				ReleaseTexture(const CTexture* pTexture);
 
 	static size_t			GetTextureGLID(const tstring& sTexture);
 	static size_t			GetTextureWidth(const tstring& sTexture);
 	static size_t			GetTextureHeight(const tstring& sTexture);
 
 	static size_t			GetNumTexturesLoaded() { return Get()->m_aTextures.size(); };
+	static bool				IsTextureLoaded(const tstring& sTexture);
 
 	static void				UnloadTexture(const tstring& sTexture);
 
-	static void				ResetReferenceCounts();
 	static void				ClearUnreferenced();
 
 public:

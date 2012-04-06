@@ -9,6 +9,8 @@
 #include <geometry.h>
 #include <trs.h>
 
+#include <textures/texturehandle.h>
+
 // A description of an entity for use in the level editor
 class CLevelEntity
 {
@@ -74,7 +76,7 @@ public:
 	tstring								GetClass() { return m_sClass; }
 	void								SetClass(const tstring& sClass) { m_sClass = sClass; }
 
-	const tstring&						GetTextureModel() { return m_sTextureModel; }
+	const CTextureHandle&				GetTextureModel() { return m_hTextureModel; }
 
 	eastl::vector<CLevelEntityOutput>&	GetOutputs() { return m_aOutputs; }
 
@@ -105,7 +107,7 @@ public:
 private:
 	tstring								m_sClass;
 	eastl::map<tstring, tstring>		m_asParameters;
-	tstring								m_sTextureModel;
+	CTextureHandle						m_hTextureModel;
 
 	CCachedValue<Matrix4x4, CLevelEntity>	m_mGlobalTransform;
 	CCachedValue<TRS, CLevelEntity>			m_trsGlobalTRS;

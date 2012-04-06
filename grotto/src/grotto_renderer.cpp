@@ -265,7 +265,7 @@ void CGrottoRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size_t i
 	if (bModel)
 		iBuffer = static_cast<const CMirror*>(m_pRendering)->GetBuffer();
 
-	if (bModel && pModel->m_aiTextures[iMaterial] == 0 && iBuffer != ~0)
+	if (bModel && !pModel->m_ahTextures[iMaterial].IsValid() && iBuffer != ~0)
 	{
 		c->BindBufferTexture(GetReflectionBuffer(iBuffer));
 

@@ -12,12 +12,12 @@
 #include <textures/texturelibrary.h>
 #include <renderer/renderer.h>
 
-CRopeRenderer::CRopeRenderer(CRenderer *pRenderer, size_t iTexture, Vector vecStart, float flWidth)
+CRopeRenderer::CRopeRenderer(CRenderer *pRenderer, const CTextureHandle& hTexture, Vector vecStart, float flWidth)
 	: m_oContext(pRenderer)
 {
 	m_pRenderer = pRenderer;
 
-	m_oContext.BindTexture(iTexture);
+	m_oContext.BindTexture(hTexture);
 	m_vecLastLink = vecStart;
 	m_bFirstLink = true;
 

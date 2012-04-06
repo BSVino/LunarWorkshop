@@ -22,10 +22,7 @@ CTextureSheet::CTextureSheet(tstring sFile)
 		if (pChild->GetKey() == "Texture")
 		{
 			tstring sTexture = pChild->GetValueTString();
-			const CTexture* pTex = CTextureLibrary::AddTexture(sTexture);
-			m_iDefaultSheet = pTex->m_iGLID;
-			m_iDefaultSheetWidth = pTex->m_iWidth;
-			m_iDefaultSheetHeight = pTex->m_iHeight;
+			m_hDefaultSheet = CTextureLibrary::AddTexture(sTexture);
 		}
 		else if (pChild->GetKey() == "Area")
 		{
@@ -52,15 +49,12 @@ CTextureSheet::CTextureSheet(tstring sFile)
 
 			m_aAreas[pChild->GetValueTString()].m_rRect = Rect(x, y, w, h);
 
-			m_aAreas[pChild->GetValueTString()].m_iSheet = ~0;
+			m_aAreas[pChild->GetValueTString()].m_hSheet.Reset();
 			pData = pChild->FindChild("Texture");
 			if (pData)
 			{
 				tstring sTexture = pData->GetValueTString();
-				const CTexture* pTex = CTextureLibrary::AddTexture(sTexture);
-				m_aAreas[pChild->GetValueTString()].m_iSheet = pTex->m_iGLID;
-				m_aAreas[pChild->GetValueTString()].m_iSheetWidth = pTex->m_iWidth;
-				m_aAreas[pChild->GetValueTString()].m_iSheetHeight = pTex->m_iHeight;
+				m_aAreas[pChild->GetValueTString()].m_hSheet = CTextureLibrary::AddTexture(sTexture);
 			}
 		}
 	}
@@ -85,18 +79,18 @@ const Rect& CTextureSheet::GetArea(const tstring& sArea) const
 	return it->second.m_rRect;
 }
 
-size_t CTextureSheet::GetSheet(const tstring& sArea) const
+CTextureHandle CTextureSheet::GetSheet(const tstring& sArea) const
 {
 	eastl::map<tstring, CTextureArea>::const_iterator it = m_aAreas.find(sArea);
 
 	if (it == m_aAreas.end())
-		return 0;
+		return CTextureHandle();
 
-	size_t iSheet = it->second.m_iSheet;
-	if (iSheet == ~0)
-		return m_iDefaultSheet;
+	const CTextureHandle& hSheet = it->second.m_hSheet;
+	if (!hSheet.IsValid())
+		return m_hDefaultSheet;
 
-	return iSheet;
+	return hSheet;
 }
 
 size_t CTextureSheet::GetSheetWidth(const tstring& sArea) const
@@ -106,11 +100,11 @@ size_t CTextureSheet::GetSheetWidth(const tstring& sArea) const
 	if (it == m_aAreas.end())
 		return 0;
 
-	size_t iSheet = it->second.m_iSheet;
-	if (iSheet == ~0)
-		return m_iDefaultSheetWidth;
+	const CTextureHandle& hSheet = it->second.m_hSheet;
+	if (!hSheet.IsValid())
+		return m_hDefaultSheet->m_iWidth;
 
-	return it->second.m_iSheetWidth;
+	return it->second.m_hSheet->m_iWidth;
 }
 
 size_t CTextureSheet::GetSheetHeight(const tstring& sArea) const
@@ -120,9 +114,9 @@ size_t CTextureSheet::GetSheetHeight(const tstring& sArea) const
 	if (it == m_aAreas.end())
 		return 0;
 
-	size_t iSheet = it->second.m_iSheet;
-	if (iSheet == ~0)
-		return m_iDefaultSheetHeight;
+	const CTextureHandle& hSheet = it->second.m_hSheet;
+	if (!hSheet.IsValid())
+		return m_hDefaultSheet->m_iHeight;
 
-	return it->second.m_iSheetHeight;
+	return it->second.m_hSheet->m_iHeight;
 }

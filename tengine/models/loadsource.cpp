@@ -125,7 +125,7 @@ bool CModel::LoadSourceFile()
 
 	size_t iMaterials = g_asTextures.size();
 
-	m_aiTextures.resize(iMaterials);
+	m_ahTextures.resize(iMaterials);
 	m_aiVertexBuffers.resize(iMaterials);
 	m_aiVertexBufferSizes.resize(iMaterials);
 
@@ -136,13 +136,13 @@ bool CModel::LoadSourceFile()
 
 		m_aiVertexBuffers[i] = CRenderer::LoadVertexDataIntoGL(g_aaflData[i].size()*4, &g_aaflData[i][0]);
 		m_aiVertexBufferSizes[i] = g_aaflData[i].size()/5;
-		m_aiTextures[i] = CTextureLibrary::AddTextureID(g_asTextures[i]);
+		m_ahTextures[i] = CTextureLibrary::AddTexture(g_asTextures[i]);
 
-		if (!m_aiTextures[i])
-			m_aiTextures[i] = CTextureLibrary::AddTextureID(GetDirectory(m_sFilename) + "/" + g_asTextures[i]);
+		if (!m_ahTextures[i].IsValid())
+			m_ahTextures[i] = CTextureLibrary::AddTexture(GetDirectory(m_sFilename) + "/" + g_asTextures[i]);
 
 		//TAssert(m_aiTextures[i]);
-		if (!m_aiTextures[i])
+		if (!m_ahTextures[i].IsValid())
 			TError(tstring("Couldn't find texture \"") + g_asTextures[i] + "\"\n");
 	}
 

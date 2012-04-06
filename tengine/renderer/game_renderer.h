@@ -2,6 +2,7 @@
 #define TENGINE_GAME_RENDERER_H
 
 #include <renderer/renderer.h>
+#include <textures/texturehandle.h>
 
 class CRenderBatch
 {
@@ -31,7 +32,7 @@ public:
 	virtual void	ModifySkyboxContext(class CRenderingContext* c) {};
 	virtual void	FinishRendering(class CRenderingContext* pContext);
 
-	void			SetSkybox(size_t ft, size_t bk, size_t lf, size_t rt, size_t up, size_t dn);
+	void			SetSkybox(const CTextureHandle& ft, const CTextureHandle& bk, const CTextureHandle& lf, const CTextureHandle& rt, const CTextureHandle& up, const CTextureHandle& dn);
 	void			DisableSkybox();
 
 	bool			ShouldBatchThisFrame() { return m_bBatchThisFrame; }
@@ -51,12 +52,12 @@ public:
 	virtual bool	ShouldRenderPhysicsDebug() const { return true; };
 
 protected:
-	size_t			m_iSkyboxFT;
-	size_t			m_iSkyboxLF;
-	size_t			m_iSkyboxBK;
-	size_t			m_iSkyboxRT;
-	size_t			m_iSkyboxDN;
-	size_t			m_iSkyboxUP;
+	CTextureHandle	m_hSkyboxFT;
+	CTextureHandle	m_hSkyboxLF;
+	CTextureHandle	m_hSkyboxBK;
+	CTextureHandle	m_hSkyboxRT;
+	CTextureHandle	m_hSkyboxDN;
+	CTextureHandle	m_hSkyboxUP;
 
 	Vector2D		m_avecSkyboxTexCoords[6];
 	Vector			m_avecSkyboxFT[6];
@@ -68,7 +69,7 @@ protected:
 
 	bool			m_bBatchThisFrame;
 	bool			m_bBatching;
-	eastl::map<size_t, eastl::vector<CRenderBatch> > m_aBatches;
+	eastl::map<CTextureHandle, eastl::vector<CRenderBatch> > m_aBatches;
 
 	const CBaseEntity*	m_pRendering;
 

@@ -39,7 +39,7 @@ namespace glgui
 		bool								IsExpanded() { return m_pExpandButton->IsExpanded(); };
 		void								SetExpanded(bool bExpanded) { m_pExpandButton->SetExpanded(bExpanded); };
 
-		void								SetIcon(size_t iTexture) { m_iIconTexture = iTexture; };
+		void								SetIcon(const CTextureHandle& hTexture) { m_hIconTexture = hTexture; };
 		virtual void						SetDraggable(bool bDraggable) { m_bDraggable = true; };
 
 		virtual bool						IsVisible();
@@ -66,7 +66,7 @@ namespace glgui
 		class CTree*						m_pTree;
 		class CLabel*						m_pLabel;
 
-		size_t								m_iIconTexture;
+		CTextureHandle						m_hIconTexture;
 
 		CPictureButton*						m_pVisibilityButton;
 		CPictureButton*						m_pEditButton;
@@ -76,7 +76,7 @@ namespace glgui
 		class CExpandButton : public CPictureButton
 		{
 		public:
-											CExpandButton(size_t iTexture);
+											CExpandButton(const CTextureHandle& hTexture);
 
 		public:
 			void							Think();
@@ -102,7 +102,7 @@ namespace glgui
 		friend class CTreeNode;
 
 	public:
-											CTree(size_t iArrowTexture, size_t iEditTexture, size_t iVisibilityTexture);
+											CTree(const CTextureHandle& hArrowTexture = CTextureHandle(), const CTextureHandle& hEditTexture = CTextureHandle(), const CTextureHandle& hVisibilityTexture = CTextureHandle());
 		virtual								~CTree();
 
 	public:
@@ -162,9 +162,9 @@ namespace glgui
 		size_t								m_iHilighted;
 		size_t								m_iSelected;
 
-		size_t								m_iArrowTexture;
-		size_t								m_iVisibilityTexture;
-		size_t								m_iEditTexture;
+		CTextureHandle						m_hArrowTexture;
+		CTextureHandle						m_hVisibilityTexture;
+		CTextureHandle						m_hEditTexture;
 
 		IEventListener::Callback			m_pfnSelectedCallback;
 		IEventListener*						m_pSelectedListener;
