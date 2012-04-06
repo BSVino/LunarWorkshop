@@ -278,7 +278,10 @@ void CreateDirectoryNonRecursive(const tstring& sPath)
 
 bool CopyFileTo(const tstring& sFrom, const tstring& sTo, bool bOverride)
 {
-	return !!CopyFile(convertstring<tchar, wchar_t>(sFrom).c_str(), convertstring<tchar, wchar_t>(sTo).c_str(), bOverride);
+	if (IsFile(sTo) && bOverride)
+		::DeleteFile(convertstring<tchar, wchar_t>(sTo).c_str());
+
+	return !!CopyFile(convertstring<tchar, wchar_t>(sFrom).c_str(), convertstring<tchar, wchar_t>(sTo).c_str(), true);
 }
 
 tstring FindAbsolutePath(const tstring& sPath)

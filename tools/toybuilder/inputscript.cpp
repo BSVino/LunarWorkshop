@@ -2,6 +2,7 @@
 
 #include <tinker_platform.h>
 #include <files.h>
+#include <stb_image.h>
 
 #include <tinker/shell.h>
 #include <datamanager/dataserializer.h>
@@ -273,16 +274,19 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 		tstring sExtension = pMesh->GetValueTString().substr(pMesh->GetValueTString().length()-4);
 		if (sExtension == ".png")
 		{
-			std::basic_ifstream<tchar> f((GetPath(sScript)).c_str());
+			int x, y, n;
+			unsigned char* pData = stbi_load((GetPath(pMesh->GetValueTString())).c_str(), &x, &y, &n, 0);
 
-			if (!f.is_open())
+			if (!pData)
 			{
 				TError("Input image  '" + pMesh->GetValueTString() + "' does not exist.\n");
 				return false;
 			}
 
-			Vector vecUp(0, 0.5f, 0);
-			Vector vecRight(0, 0, 0.5f);
+			stbi_image_free(pData); // Don't need it, just need the dimensions.
+
+			Vector vecUp = Vector(0, 0.5f, 0) * (float)y/100;
+			Vector vecRight = Vector(0, 0, 0.5f) * (float)x/100;
 
 			if (IsAbsolutePath(pMesh->GetValueTString()))
 				t.AddMaterial(GetPath(pMesh->GetValueTString()));

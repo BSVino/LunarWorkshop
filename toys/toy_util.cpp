@@ -392,7 +392,7 @@ bool CToyUtil::Write(const tstring& sFilename)
 		if (!m_asTextures[i].length())
 			continue;
 
-		if (!CopyFileTo(m_asCopyTextures[i], m_asTextures[i]))
+		if (!CopyFileTo(m_asCopyTextures[i], m_asTextures[i], true))
 			TError("Couldn't copy texture '" + m_asCopyTextures[i] + "' to '" + m_asTextures[i] + "'.\n");
 	}
 

@@ -543,7 +543,7 @@ void CToyEditor::Layout()
 		if (iTexturePreview != 0)
 		{
 			m_sTexturePreview = sTexture;
-			m_flPreviewDistance = (float)(CTextureLibrary::FindTexture(sTexture)->m_iHeight+CTextureLibrary::FindTexture(sTexture)->m_iWidth);
+			m_flPreviewDistance = (float)(CTextureLibrary::FindTexture(sTexture)->m_iHeight+CTextureLibrary::FindTexture(sTexture)->m_iWidth)/100;
 		}
 	}
 
@@ -719,6 +719,7 @@ void CToyEditor::ChooseToyCallback(const tstring& sArgs)
 
 void CToyEditor::OpenToyCallback(const tstring& sArgs)
 {
+	m_oToySource = CToySource();
 	m_oToySource.Open(sArgs);
 
 	m_pSourcePanel->Layout();
@@ -889,7 +890,19 @@ void CToySource::Build() const
 
 	CGeppetto g(true, FindAbsolutePath(GetDirectory(m_sFilename)));
 
-	g.BuildFromInputScript(FindAbsolutePath(m_sFilename));
+	bool bSuccess = g.BuildFromInputScript(FindAbsolutePath(m_sFilename));
+
+	if (bSuccess)
+	{
+		CModel* pModel = CModelLibrary::GetModel(CModelLibrary::FindModel(m_sToyFile));
+		TAssert(pModel);
+		if (pModel)
+		{
+			pModel->m_iReferences = 0;
+			CModelLibrary::ClearUnreferenced();
+			CModelLibrary::AddModel(m_sToyFile);
+		}
+	}
 }
 
 void CToySource::Open(const tstring& sFile)
