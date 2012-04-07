@@ -6,6 +6,7 @@
 #include <EASTL/map.h>
 
 #include <tstring.h>
+#include <vector.h>
 
 class CShader
 {
@@ -28,6 +29,35 @@ public:
 	size_t					m_iNormalAttribute;
 	size_t					m_iTexCoordAttribute;
 	size_t					m_iColorAttribute;
+
+	class CParameter
+	{
+	public:
+		tstring				m_sName;
+
+		class CUniform
+		{
+		public:
+			tstring			m_sName;
+			union
+			{
+				float		m_flValue;
+				int			m_iValue;
+				bool		m_bValue;
+			};
+			Vector2D		m_vec2Value;
+			Vector			m_vecValue;
+			Vector4D		m_vec4Value;
+			tstring			m_sValue;
+		};
+
+		eastl::vector<CUniform>	m_aActions;
+	};
+
+	eastl::map<tstring, CParameter>				m_aParameters;	// What the shader.txt has.
+	eastl::map<tstring, tstring>				m_asUniforms;	// What the hardware has. Values are types.
+	eastl::map<tstring, CParameter::CUniform>	m_aDefaults;	// Defaults for each uniform as specified by shader .txt (not GLSL)
+	eastl::vector<tstring>						m_asTextures;	// List of textures for purposes of assigning to channels and whatnot.
 };
 
 class CShaderLibrary
@@ -44,7 +74,7 @@ public:
 	static CShader*			GetShader(const tstring& sName);
 	static CShader*			GetShader(size_t i);
 
-	static void				AddShader(const tstring& sName, const tstring& sVertex, const tstring& sFragment);
+	static void				AddShader(const tstring& sFile);
 
 	static size_t			GetProgram(const tstring& sName);
 

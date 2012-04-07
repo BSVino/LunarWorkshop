@@ -38,7 +38,7 @@ void CGeppetto::LoadMeshInstanceIntoToy(CConversionScene* pScene, CConversionMes
 				continue;
 
 			while (pToy->GetNumMaterials() <= pConversionMaterialMap->m_iMaterial)
-				pToy->AddMaterial(pScene->GetMaterial(pConversionMaterialMap->m_iMaterial)->GetDiffuseTexture());
+				pToy->AddMaterial(pScene->GetMaterial(pConversionMaterialMap->m_iMaterial)->GetName());
 
 			size_t iMaterial = pConversionMaterialMap->m_iMaterial;
 

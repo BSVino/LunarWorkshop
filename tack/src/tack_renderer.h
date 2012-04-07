@@ -11,8 +11,6 @@ public:
 					CTackRenderer();
 
 public:
-	virtual void	LoadShaders();
-
 	virtual void	StartRendering();
 
 	float			BloomBrightnessCutoff() const { return 1.25f; }

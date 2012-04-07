@@ -54,12 +54,12 @@ size_t CToy::GetNumMaterials()
 	return (int)*((uint8_t*)(m_pBase+TOY_HEADER_SIZE+BASE_AABB_SIZE));
 }
 
-size_t CToy::GetMaterialTextureLength(size_t i)
+size_t CToy::GetMaterialNameLength(size_t i)
 {
 	return (int)*((uint16_t*)GetMaterial(i));
 }
 
-char* CToy::GetMaterialTexture(size_t i)
+char* CToy::GetMaterialName(size_t i)
 {
 	return GetMaterial(i)+MESH_MATERIAL_TEXNAME_LENGTH_SIZE;
 }
@@ -73,13 +73,13 @@ size_t CToy::GetMaterialNumVerts(size_t i)
 
 float* CToy::GetMaterialVerts(size_t iMaterial)
 {
-	char* pVerts = GetMaterial(iMaterial)+MESH_MATERIAL_TEXNAME_LENGTH_SIZE+GetMaterialTextureLength(iMaterial);
+	char* pVerts = GetMaterial(iMaterial)+MESH_MATERIAL_TEXNAME_LENGTH_SIZE+GetMaterialNameLength(iMaterial);
 	return (float*)pVerts;
 }
 
 float* CToy::GetMaterialVert(size_t iMaterial, size_t iVert)
 {
-	char* pVerts = GetMaterial(iMaterial)+MESH_MATERIAL_TEXNAME_LENGTH_SIZE+GetMaterialTextureLength(iMaterial);
+	char* pVerts = GetMaterial(iMaterial)+MESH_MATERIAL_TEXNAME_LENGTH_SIZE+GetMaterialNameLength(iMaterial);
 	return (float*)(pVerts + iVert*MESH_MATERIAL_VERTEX_SIZE);
 }
 

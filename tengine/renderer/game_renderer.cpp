@@ -13,6 +13,7 @@
 #include <game/camera.h>
 #include <physics/physics.h>
 #include <toys/toy.h>
+#include <textures/materiallibrary.h>
 
 #include "game_renderingcontext.h"
 
@@ -31,13 +32,6 @@ CGameRenderer::CGameRenderer(size_t iWidth, size_t iHeight)
 	DisableSkybox();
 
 	m_pRendering = nullptr;
-}
-
-void CGameRenderer::LoadShaders()
-{
-	BaseClass::LoadShaders();
-
-	CShaderLibrary::AddShader("skybox", "skybox", "skybox");
 }
 
 void CGameRenderer::SetupFrame(class CRenderingContext* pContext)
@@ -86,37 +80,37 @@ void CGameRenderer::DrawSkybox(class CRenderingContext* pContext)
 	c.BeginRenderVertexArray();
 	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
 	c.SetPositionBuffer(&m_avecSkyboxFT[0][0]);
-	c.BindTexture(m_hSkyboxFT);
+	c.BindTexture(m_hSkyboxFT->m_iGLID);
 	c.EndRenderVertexArray(6);
 
 	c.BeginRenderVertexArray();
 	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
 	c.SetPositionBuffer(&m_avecSkyboxBK[0][0]);
-	c.BindTexture(m_hSkyboxBK);
+	c.BindTexture(m_hSkyboxBK->m_iGLID);
 	c.EndRenderVertexArray(6);
 
 	c.BeginRenderVertexArray();
 	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
 	c.SetPositionBuffer(&m_avecSkyboxLF[0][0]);
-	c.BindTexture(m_hSkyboxLF);
+	c.BindTexture(m_hSkyboxLF->m_iGLID);
 	c.EndRenderVertexArray(6);
 
 	c.BeginRenderVertexArray();
 	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
 	c.SetPositionBuffer(&m_avecSkyboxRT[0][0]);
-	c.BindTexture(m_hSkyboxRT);
+	c.BindTexture(m_hSkyboxRT->m_iGLID);
 	c.EndRenderVertexArray(6);
 
 	c.BeginRenderVertexArray();
 	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
 	c.SetPositionBuffer(&m_avecSkyboxUP[0][0]);
-	c.BindTexture(m_hSkyboxUP);
+	c.BindTexture(m_hSkyboxUP->m_iGLID);
 	c.EndRenderVertexArray(6);
 
 	c.BeginRenderVertexArray();
 	c.SetTexCoordBuffer(&m_avecSkyboxTexCoords[0][0]);
 	c.SetPositionBuffer(&m_avecSkyboxDN[0][0]);
-	c.BindTexture(m_hSkyboxDN);
+	c.BindTexture(m_hSkyboxDN->m_iGLID);
 	c.EndRenderVertexArray(6);
 
 	c.ClearDepth();
@@ -203,9 +197,9 @@ void CGameRenderer::AddToBatch(class CModel* pModel, const CBaseEntity* pEntity,
 	if (!pModel)
 		return;
 
-	for (size_t i = 0; i < pModel->m_ahTextures.size(); i++)
+	for (size_t i = 0; i < pModel->m_ahMaterials.size(); i++)
 	{
-		CRenderBatch* pBatch = &m_aBatches[pModel->m_ahTextures[i]].push_back();
+		CRenderBatch* pBatch = &m_aBatches[pModel->m_ahMaterials[i]].push_back();
 
 		pBatch->pEntity = pEntity;
 		pBatch->pModel = pModel;
@@ -230,7 +224,7 @@ void CGameRenderer::RenderBatches()
 
 	for (auto it = m_aBatches.begin(); it != m_aBatches.end(); it++)
 	{
-		c.BindTexture(it->first);
+		c.UseMaterial(it->first);
 
 		for (size_t i = 0; i < it->second.size(); i++)
 		{
@@ -311,14 +305,4 @@ void CGameRenderer::FindSceneAreaPosition(CModel* pModel)
 	}
 
 	// Otherwise if we don't find one don't fuck with it. We'll consider ourselves to still be in the previous one.
-}
-
-void CGameRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial)
-{
-	c->UseProgram("model");
-	c->SetUniform("bDiffuse", true);
-	c->SetUniform("iDiffuse", 0);
-
-	c->SetUniform("vecColor", c->GetColor());
-	c->SetUniform("flAlpha", c->GetAlpha());
 }

@@ -93,11 +93,11 @@ public:
 
 	tstring							GetName() { return m_sName; }
 
-	void							SetTextureName(tstring sTexture) { m_sTexture = sTexture; };
-	void							SetTexture(const CTextureHandle& hTexture) { m_hTexture = hTexture; };
+	void							SetMaterialName(tstring sMaterial) { m_sMaterial = sMaterial; };
+	void							SetMaterial(const CMaterialHandle& hMaterial) { m_hMaterial = hMaterial; };
 
-	tstring							GetTextureName() { return m_sTexture; }
-	inline const CTextureHandle&	GetTexture() { return m_hTexture; }
+	tstring							GetMaterialName() { return m_sMaterial; }
+	inline const CMaterialHandle&	GetMaterial() { return m_hMaterial; }
 
 	void							SetModel(tstring sModel) { m_sModel = sModel; };
 	void							SetModel(size_t iModel) { m_iModel = iModel; };
@@ -184,8 +184,8 @@ protected:
 
 	tstring							m_sName;
 
-	tstring							m_sTexture;
-	CTextureHandle					m_hTexture;
+	tstring							m_sMaterial;
+	CMaterialHandle					m_hMaterial;
 
 	tstring							m_sModel;
 	size_t							m_iModel;

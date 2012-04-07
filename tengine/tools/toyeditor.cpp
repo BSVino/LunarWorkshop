@@ -23,6 +23,7 @@
 #include <tools/toybuilder/geppetto.h>
 #include <datamanager/dataserializer.h>
 #include <textures/texturelibrary.h>
+#include <textures/materiallibrary.h>
 #include <toys/toy.h>
 
 #include "workbench.h"
@@ -197,9 +198,13 @@ CSourcePanel::CSourcePanel()
 	m_pToyFileText->SetContentsChangedListener(this, ToyFileChanged);
 	AddControl(m_pToyFileText, true);
 
-	m_pMeshLabel = new glgui::CLabel("Mesh: ", "sans-serif", 10);
-	m_pMeshLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
-	AddControl(m_pMeshLabel);
+	m_pMeshMenu = new glgui::CMenu("Mesh: ");
+	m_bMesh = true;
+	m_pMeshMenu->AddSubmenu("Mesh", this, MeshSource);
+	m_pMeshMenu->AddSubmenu("Material", this, MaterialSource);
+	m_pMeshMenu->SetFont("sans-serif", 10);
+	m_pMeshMenu->SetAlign(glgui::CLabel::TA_MIDDLECENTER);
+	AddControl(m_pMeshMenu);
 
 	m_pMeshText = new glgui::CTextField();
 	m_pMeshText->SetContentsChangedListener(this, ModelChanged, "mesh");
@@ -210,7 +215,7 @@ CSourcePanel::CSourcePanel()
 	AddControl(m_pPhysLabel);
 
 	m_pPhysText = new glgui::CTextField();
-	m_pPhysText->SetContentsChangedListener(this, ModelChanged, "phys");
+	m_pPhysText->SetContentsChangedListener(this, PhysicsChanged, "phys");
 	AddControl(m_pPhysText, true);
 
 	m_pPhysShapesLabel = new glgui::CLabel("Physics Shapes: ", "sans-serif", 10);
@@ -282,14 +287,14 @@ void CSourcePanel::Layout()
 
 	float flControlMargin = 12;
 
-	m_pMeshLabel->Layout_AlignTop(m_pToyFileText, flControlMargin);
-	m_pMeshLabel->SetWidth(10);
-	m_pMeshLabel->SetHeight(1);
-	m_pMeshLabel->EnsureTextFits();
-	m_pMeshLabel->Layout_FullWidth();
+	m_pMeshMenu->Layout_AlignTop(m_pToyFileText, flControlMargin);
+	m_pMeshMenu->SetWidth(10);
+	m_pMeshMenu->SetHeight(1);
+	m_pMeshMenu->EnsureTextFits();
+	m_pMeshMenu->SetLeft(m_pToyFileText->GetLeft());
 
 	m_pMeshText->Layout_FullWidth();
-	m_pMeshText->SetTop(m_pMeshLabel->GetTop()+12);
+	m_pMeshText->SetTop(m_pMeshMenu->GetBottom());
 
 	m_pPhysLabel->Layout_AlignTop(m_pMeshText, flControlMargin);
 	m_pPhysLabel->SetWidth(10);
@@ -355,6 +360,33 @@ void CSourcePanel::UpdateFields()
 	m_pToyFileText->SetText(ToyEditor()->GetToy().m_sToyFile);
 	m_pMeshText->SetText(ToyEditor()->GetToy().m_sMesh);
 	m_pPhysText->SetText(ToyEditor()->GetToy().m_sPhys);
+
+	tstring sMesh = ToyEditor()->GetToy().m_sMesh;
+	if (sMesh.length() >= 4)
+	{
+		tstring sExtension = sMesh.substr(sMesh.length()-4);
+		if (sExtension == ".mat")
+		{
+			m_bMesh = false;
+			m_pMeshMenu->SetText("Material: ");
+		}
+		else if (sExtension == ".dae" || sExtension == ".obj" || sExtension == ".sia" || sExtension == ".png")
+		{
+			m_bMesh = true;
+			m_pMeshMenu->SetText("Mesh: ");
+		}
+	}
+}
+
+void CSourcePanel::SetModelSourcesAutoComplete(glgui::CTextField* pField)
+{
+	eastl::vector<tstring> asExtensions;
+	asExtensions.push_back(".obj");
+	asExtensions.push_back(".sia");
+	asExtensions.push_back(".dae");
+	asExtensions.push_back(".png");
+
+	pField->SetAutoCompleteFiles(GetDirectory(ToyEditor()->GetToy().m_sFilename), asExtensions);
 }
 
 void CSourcePanel::ToyFileChangedCallback(const tstring& sArgs)
@@ -377,25 +409,25 @@ void CSourcePanel::ToyFileChangedCallback(const tstring& sArgs)
 
 void CSourcePanel::ModelChangedCallback(const tstring& sArgs)
 {
-	glgui::CTextField* pField;
-	if (sArgs == "mesh")
-	{
-		pField = m_pMeshText;
-		ToyEditor()->GetToyToModify().m_sMesh = pField->GetText();
-	}
+	ToyEditor()->GetToyToModify().m_sMesh = m_pMeshText->GetText();
+
+	if (m_bMesh)
+		SetModelSourcesAutoComplete(m_pMeshText);
 	else
 	{
-		pField = m_pPhysText;
-		ToyEditor()->GetToyToModify().m_sPhys = pField->GetText();
+		eastl::vector<tstring> asExtensions;
+		asExtensions.push_back(".mat");
+
+		m_pMeshText->SetAutoCompleteFiles(FindAbsolutePath("."), asExtensions);
 	}
 
-	eastl::vector<tstring> asExtensions;
-	asExtensions.push_back(".obj");
-	asExtensions.push_back(".sia");
-	asExtensions.push_back(".dae");
-	asExtensions.push_back(".png");
+	ToyEditor()->Layout();
+}
 
-	pField->SetAutoCompleteFiles(GetDirectory(ToyEditor()->GetToy().m_sFilename), asExtensions);
+void CSourcePanel::PhysicsChangedCallback(const tstring& sArgs)
+{
+	ToyEditor()->GetToyToModify().m_sPhys = m_pPhysText->GetText();
+	SetModelSourcesAutoComplete(m_pPhysText);
 
 	ToyEditor()->Layout();
 }
@@ -441,6 +473,22 @@ void CSourcePanel::SaveCallback(const tstring& sArgs)
 void CSourcePanel::BuildCallback(const tstring& sArgs)
 {
 	ToyEditor()->GetToy().Build();
+}
+
+void CSourcePanel::MeshSourceCallback(const tstring& sArgs)
+{
+	m_pMeshMenu->SetText("Mesh:");
+	m_bMesh = true;
+	m_pMeshMenu->CloseMenu();
+	Layout();
+}
+
+void CSourcePanel::MaterialSourceCallback(const tstring& sArgs)
+{
+	m_pMeshMenu->SetText("Material:");
+	m_bMesh = false;
+	m_pMeshMenu->CloseMenu();
+	Layout();
 }
 
 CToyEditor* CToyEditor::s_pToyEditor = nullptr;
@@ -533,17 +581,23 @@ void CToyEditor::Layout()
 	if (m_iMeshPreview != ~0 && bGenPreviewDistance)
 		m_flPreviewDistance = CModelLibrary::GetModel(m_iMeshPreview)->m_aabbBoundingBox.Size().Length()*2;
 
-	m_hTexturePreview.Reset();
-	tstring sTexture = FindAbsolutePath(GetDirectory(GetToy().m_sFilename) + "/" + GetToy().m_sMesh);
-	if (IsFile(sTexture))
+	m_hMaterialPreview.Reset();
+	tstring sMaterial = GetToy().m_sMesh;
+	if (IsFile(sMaterial))
 	{
 		// Don't bother with clearing old ones, they'll get flushed eventually.
-		CTextureHandle hTexturePreview = CTextureLibrary::AddTexture(sTexture);
+		CMaterialHandle hMaterialPreview = CMaterialLibrary::AddAsset(sMaterial);
 
-		if (hTexturePreview.IsValid())
+		if (hMaterialPreview.IsValid())
 		{
-			m_hTexturePreview = hTexturePreview;
-			m_flPreviewDistance = (float)(hTexturePreview->m_iHeight+hTexturePreview->m_iWidth)/100;
+			m_hMaterialPreview = hMaterialPreview;
+
+			if (m_hMaterialPreview->m_ahTextures.size())
+			{
+				CTextureHandle hBaseTexture = m_hMaterialPreview->m_ahTextures[0];
+
+				m_flPreviewDistance = (float)(hBaseTexture->m_iHeight + hBaseTexture->m_iWidth)/100;
+			}
 		}
 	}
 
@@ -605,7 +659,7 @@ void CToyEditor::RenderScene()
 		c.RenderModel(m_iMeshPreview);
 	}
 
-	if (m_hTexturePreview.IsValid())
+	if (m_hMaterialPreview.IsValid())
 	{
 		CGameRenderingContext c(GameServer()->GetRenderer(), true);
 
@@ -614,7 +668,7 @@ void CToyEditor::RenderScene()
 
 		c.SetColor(Color(255, 255, 255));
 
-		c.RenderTextureModel(m_hTexturePreview);
+		c.RenderMaterialModel(m_hMaterialPreview);
 	}
 
 	if (m_iPhysPreview != ~0 && CModelLibrary::GetModel(m_iPhysPreview))
@@ -627,7 +681,7 @@ void CToyEditor::RenderScene()
 		c.ClearDepth();
 
 		float flAlpha = 0.3f;
-		if (m_iMeshPreview == ~0 && m_hTexturePreview.IsValid() == 0)
+		if (m_iMeshPreview == ~0 && m_hMaterialPreview.IsValid() == 0)
 			flAlpha = 1.0f;
 
 		c.SetColor(Color(0, 100, 155, (int)(255*flAlpha)));
@@ -653,7 +707,7 @@ void CToyEditor::RenderScene()
 		float flAlpha = 0.2f;
 		if (m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId() == i)
 			flAlpha = 0.8f;
-		if (m_iMeshPreview == ~0 && m_hTexturePreview.IsValid() == 0)
+		if (m_iMeshPreview == ~0 && m_hMaterialPreview.IsValid() == 0)
 			flAlpha = 1.0f;
 		if (flAlpha < 1)
 			c.SetBlend(BLEND_ALPHA);

@@ -168,6 +168,11 @@ void CMenu::Paint(float x, float y, float w, float h)
 		CRootPanel::PaintRect(x, y, w, h, clrBox, 1);
 	}
 
+	CLabel::Paint(x, y, w, h);
+}
+
+void CMenu::PostPaint()
+{
 	if (m_pMenu->IsVisible())
 	{
 		float mx, my, mw, mh;
@@ -188,8 +193,6 @@ void CMenu::Paint(float x, float y, float w, float h)
 			CRootPanel::PaintRect((float)m_MenuSelection.x, (float)m_MenuSelection.y+1, (float)m_MenuSelection.w, (float)m_MenuSelection.h-2, clrBox);
 		}
 	}
-
-	CLabel::Paint(x, y, w, h);
 }
 
 void CMenu::CursorIn()
@@ -337,6 +340,17 @@ void CMenu::CSubmenuPanel::Think()
 	}
 
 	CPanel::Think();
+}
+
+void CMenu::CSubmenuPanel::Paint(float x, float y, float w, float h)
+{
+}
+
+void CMenu::CSubmenuPanel::PostPaint()
+{
+	float x, y, w, h;
+	GetAbsDimensions(x, y, w, h);
+	BaseClass::Paint(x, y, w, h);
 }
 
 bool CMenu::CSubmenuPanel::IsVisible()

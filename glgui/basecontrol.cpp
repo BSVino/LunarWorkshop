@@ -317,7 +317,7 @@ void CBaseControl::PaintRect(float x, float y, float w, float h, const Color& c,
 	r.EndRenderVertexArray(6);
 }
 
-void CBaseControl::PaintTexture(const CTextureHandle& hTexture, float x, float y, float w, float h, const Color& c)
+void CBaseControl::PaintTexture(const CMaterialHandle& hMaterial, float x, float y, float w, float h, const Color& c)
 {
 	MakeQuad();
 
@@ -325,6 +325,8 @@ void CBaseControl::PaintTexture(const CTextureHandle& hTexture, float x, float y
 
 	if ((w < 0) ^ (h < 0))
 		r.SetBackCulling(false);
+
+	r.UseMaterial(hMaterial);
 
 	r.SetBlend(BLEND_ALPHA);
 	r.SetUniform("iBorder", 0);
@@ -335,8 +337,6 @@ void CBaseControl::PaintTexture(const CTextureHandle& hTexture, float x, float y
 
 	r.SetUniform("vecDimensions", Vector4D(x, y, w, h));
 
-	r.BindTexture(hTexture);
-
 	r.BeginRenderVertexArray(s_iQuad);
 	r.SetPositionBuffer(0u, 24);
 	r.SetTexCoordBuffer(12, 24);
@@ -346,7 +346,7 @@ void CBaseControl::PaintTexture(const CTextureHandle& hTexture, float x, float y
 	r.SetBackCulling(true);
 }
 
-void CBaseControl::PaintSheet(const CTextureHandle& hTexture, float x, float y, float w, float h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c)
+void CBaseControl::PaintSheet(const CMaterialHandle& hMaterial, float x, float y, float w, float h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c)
 {
 	MakeQuad();
 
@@ -354,6 +354,8 @@ void CBaseControl::PaintSheet(const CTextureHandle& hTexture, float x, float y, 
 
 	if ((w < 0) ^ (h < 0))
 		r.SetBackCulling(false);
+
+	r.UseMaterial(hMaterial);
 
 	r.SetBlend(BLEND_ALPHA);
 	r.SetUniform("iBorder", 0);
@@ -364,8 +366,6 @@ void CBaseControl::PaintSheet(const CTextureHandle& hTexture, float x, float y, 
 
 	r.SetUniform("vecDimensions", Vector4D(x, y, w, h));
 	r.SetUniform("vecTexCoords", Vector4D((float)sx/(float)tw, (float)sy/(float)th, (float)sw/(float)tw, (float)sh/(float)th));
-
-	r.BindTexture(hTexture);
 
 	r.BeginRenderVertexArray(s_iQuad);
 	r.SetPositionBuffer(0u, 24);

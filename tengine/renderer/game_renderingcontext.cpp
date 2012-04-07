@@ -12,6 +12,7 @@
 #include <textures/texturelibrary.h>
 #include <renderer/renderer.h>
 #include <toys/toy.h>
+#include <textures/materiallibrary.h>
 
 #include "game_renderer.h"
 
@@ -49,7 +50,7 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 			if (!pModel->m_aiVertexBufferSizes[m])
 				continue;
 
-			BindTexture(pModel->m_ahTextures[m]);
+			UseMaterial(pModel->m_ahMaterials[m]);
 
 			RenderModel(pModel, m);
 		}
@@ -95,8 +96,6 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	UseProgram("model");
 	SetUniform("vecColor", m_clrRender);
 
-	m_pRenderer->SetupShader(this, pModel, iMaterial);
-
 	TAssert(m_pShader);
 	if (!pModel || !m_pShader)
 		return;
@@ -116,22 +115,21 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	EndRenderVertexArray(pModel->m_aiVertexBufferSizes[iMaterial]);
 }
 
-void CGameRenderingContext::RenderTextureModel(const CTextureHandle& hTexture)
+void CGameRenderingContext::RenderMaterialModel(const CMaterialHandle& hMaterial)
 {
-	TAssert(hTexture.IsValid());
-	if (!hTexture.IsValid())
+	TAssert(hMaterial.IsValid());
+	if (!hMaterial.IsValid())
 		return;
 
-	if (!m_pShader)
-	{
-		UseProgram("model");
-		SetUniform("bDiffuse", true);
-	}
+	if (!hMaterial->m_ahTextures.size())
+		return;
 
-	Vector vecUp = Vector(0, 0.5f, 0) * (float)hTexture->m_iHeight/100;		// One texel is a centimeter.
-	Vector vecRight = Vector(0, 0, 0.5f) * (float)hTexture->m_iWidth/100;
+	CTextureHandle hBaseTexture = hMaterial->m_ahTextures[0];
 
-	BindTexture(hTexture);
+	Vector vecUp = Vector(0, 0.5f, 0) * (float)hBaseTexture->m_iHeight/100;		// One texel is a centimeter.
+	Vector vecRight = Vector(0, 0, 0.5f) * (float)hBaseTexture->m_iWidth/100;
+
+	UseMaterial(hMaterial);
 	BeginRenderTriFan();
 		TexCoord(0.0f, 1.0f);
 		Vertex(-vecRight + vecUp);
@@ -144,10 +142,10 @@ void CGameRenderingContext::RenderTextureModel(const CTextureHandle& hTexture)
 	EndRender();
 }
 
-void CGameRenderingContext::RenderBillboard(const tstring& sTexture, float flRadius)
+void CGameRenderingContext::RenderBillboard(const tstring& sMaterial, float flRadius)
 {
 	Vector vecUp, vecRight;
 	m_pRenderer->GetCameraVectors(NULL, &vecRight, &vecUp);
 
-	BaseClass::RenderBillboard(sTexture, flRadius, vecUp, vecRight);
+	BaseClass::RenderBillboard(sMaterial, flRadius, vecUp, vecRight);
 }

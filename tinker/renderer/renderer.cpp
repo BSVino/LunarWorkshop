@@ -71,11 +71,16 @@ void CRenderer::Initialize()
 
 void CRenderer::LoadShaders()
 {
-	CShaderLibrary::AddShader("quad", "quad", "quad");
-	CShaderLibrary::AddShader("text", "text", "text");
-	CShaderLibrary::AddShader("gui", "gui", "gui");
-	CShaderLibrary::AddShader("brightpass", "pass", "brightpass");
-	CShaderLibrary::AddShader("blur", "pass", "blur");
+	eastl::vector<tstring> asShaders = ListDirectory("shaders", false);
+
+	for (size_t i = 0; i < asShaders.size(); i++)
+	{
+		tstring sShader = asShaders[i];
+		if (sShader.substr(sShader.length()-4) != ".txt")
+			continue;
+
+		CShaderLibrary::AddShader("shaders/" + sShader);
+	}
 }
 
 CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_options_e eOptions)

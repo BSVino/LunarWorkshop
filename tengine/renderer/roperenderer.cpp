@@ -9,15 +9,15 @@
 #include <tinker/cvar.h>
 #include <tinker/profiler.h>
 #include <game/gameserver.h>
-#include <textures/texturelibrary.h>
+#include <textures/materiallibrary.h>
 #include <renderer/renderer.h>
 
-CRopeRenderer::CRopeRenderer(CRenderer *pRenderer, const CTextureHandle& hTexture, Vector vecStart, float flWidth)
+CRopeRenderer::CRopeRenderer(CRenderer *pRenderer, const CMaterialHandle& hMaterial, Vector vecStart, float flWidth)
 	: m_oContext(pRenderer)
 {
 	m_pRenderer = pRenderer;
 
-	m_oContext.BindTexture(hTexture);
+	m_oContext.UseMaterial(hMaterial);
 	m_vecLastLink = vecStart;
 	m_bFirstLink = true;
 

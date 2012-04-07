@@ -38,8 +38,8 @@ public:
 	tstring			GetOutputFile() const { return m_sOutputFile; }
 	void			SetOutputFile(const tstring& sOutput) { m_sOutputFile = sOutput; }
 
-	void			AddMaterial(const tstring& sTexture, const tstring& sOriginalFile = "");
-	size_t			GetNumMaterials() { return m_asTextures.size(); }
+	void			AddMaterial(const tstring& sMaterial, const tstring& sOriginalFile = "");
+	size_t			GetNumMaterials() { return m_asMaterials.size(); }
 	void			AddVertex(size_t iMaterial, Vector vecPosition, Vector2D vecUV);
 	size_t			GetNumVerts();
 
@@ -77,8 +77,8 @@ protected:
 	tstring					m_sOutputDirectory;
 	tstring					m_sOutputFile;
 
-	eastl::vector<tstring>					m_asTextures;
-	eastl::vector<tstring>					m_asCopyTextures;
+	eastl::vector<tstring>					m_asMaterials;
+	//eastl::vector<tstring>					m_asCopyTextures;
 	eastl::vector<eastl::vector<float> >	m_aaflData;
 	AABB									m_aabbBounds;
 	eastl::vector<uint32_t>					m_aiPhysIndices;

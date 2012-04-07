@@ -21,7 +21,7 @@ public:
 	void					RenderModel(size_t iModel, const class CBaseEntity* pEntity = nullptr);
 	void					RenderModel(class CModel* pModel, size_t iMaterial);
 
-	void					RenderTextureModel(const CTextureHandle& hTexture);
+	void					RenderMaterialModel(const CMaterialHandle& hMaterial);
 
 	void					RenderBillboard(const tstring& sTexture, float flRadius);
 

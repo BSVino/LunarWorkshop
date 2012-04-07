@@ -15,7 +15,7 @@
 #include <renderer/game_renderingcontext.h>
 #include <renderer/game_renderer.h>
 #include <tinker/profiler.h>
-#include <textures/texturelibrary.h>
+#include <textures/materiallibrary.h>
 #include <tinker/keys.h>
 #include <game/level.h>
 #include <game/gameserver.h>
@@ -499,7 +499,7 @@ CLevelEditor::CLevelEditor()
 	m_pEditorPanel->SetBorder(glgui::CPanel::BT_SOME);
 	glgui::CRootPanel::Get()->AddControl(m_pEditorPanel);
 
-	m_pCreateEntityButton = new glgui::CPictureButton("Create", CTextureLibrary::AddTexture("editor/create-entity.png"));
+	m_pCreateEntityButton = new glgui::CPictureButton("Create", CMaterialLibrary::AddAsset("editor/create-entity.png"));
 	m_pCreateEntityButton->SetPos(glgui::CRootPanel::Get()->GetWidth()/2-m_pCreateEntityButton->GetWidth()/2, 20);
 	m_pCreateEntityButton->SetClickedListener(this, CreateEntity);
 	m_pCreateEntityButton->SetTooltip("Create Entity Tool");
@@ -574,11 +574,11 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool b
 			r.RenderModel(pEntity->GetModelID(), nullptr);
 		}
 	}
-	else if (pEntity->GetTextureModel().IsValid())
+	else if (pEntity->GetMaterialModel().IsValid())
 	{
 		if (bTransparent)
 		{
-			TPROF("CLevelEditor::RenderModel(Texture)");
+			TPROF("CLevelEditor::RenderModel(Material)");
 			r.UseProgram("model");
 			r.SetUniform("bDiffuse", true);
 			if (bSelected)
@@ -587,8 +587,8 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool b
 				r.SetUniform("vecColor", Color(255, 255, 255, (char)(255*flAlpha)));
 
 			r.SetBlend(BLEND_ALPHA);
-			r.Scale(0, pEntity->GetTextureModelScale().y, pEntity->GetTextureModelScale().x);
-			r.RenderTextureModel(pEntity->GetTextureModel());
+			r.Scale(0, pEntity->GetMaterialModelScale().y, pEntity->GetMaterialModelScale().x);
+			r.RenderMaterialModel(pEntity->GetMaterialModel());
 		}
 	}
 	else

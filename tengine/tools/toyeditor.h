@@ -75,13 +75,18 @@ public:
 	void					LayoutFilename();
 	void					UpdateFields();
 
+	void					SetModelSourcesAutoComplete(glgui::CTextField* pField);
+
 	EVENT_CALLBACK(CSourcePanel, ToyFileChanged);
 	EVENT_CALLBACK(CSourcePanel, ModelChanged);
+	EVENT_CALLBACK(CSourcePanel, PhysicsChanged);
 	EVENT_CALLBACK(CSourcePanel, PhysicsAreaSelected);
 	EVENT_CALLBACK(CSourcePanel, NewPhysicsShape);
 	EVENT_CALLBACK(CSourcePanel, DeletePhysicsShape);
 	EVENT_CALLBACK(CSourcePanel, Save);
 	EVENT_CALLBACK(CSourcePanel, Build);
+	EVENT_CALLBACK(CSourcePanel, MeshSource);
+	EVENT_CALLBACK(CSourcePanel, MaterialSource);
 
 public:
 	glgui::CLabel*			m_pFilename;
@@ -89,7 +94,8 @@ public:
 	glgui::CLabel*			m_pToyFileLabel;
 	glgui::CTextField*		m_pToyFileText;
 
-	glgui::CLabel*			m_pMeshLabel;
+	glgui::CMenu*			m_pMeshMenu;
+	bool					m_bMesh;
 	glgui::CTextField*		m_pMeshText;
 
 	glgui::CLabel*			m_pPhysLabel;
@@ -156,7 +162,7 @@ protected:
 
 	size_t					m_iMeshPreview;
 	size_t					m_iPhysPreview;
-	CTextureHandle			m_hTexturePreview;
+	CMaterialHandle			m_hMaterialPreview;
 
 	bool					m_bRotatingPreview;
 	EAngle					m_angPreview;

@@ -10,10 +10,10 @@ void test_toy()
 {
 	CToyUtil t;
 
-	t.AddMaterial("test.png");
-	t.AddMaterial("test2.png");
-	t.AddMaterial("test0.png");
-	t.AddMaterial("test3.png");
+	t.AddMaterial("test.mat");
+	t.AddMaterial("test2.mat");
+	t.AddMaterial("test0.mat");
+	t.AddMaterial("test3.mat");
 	t.AddVertex(0, Vector(1, 2, 3), Vector2D(0, 0));
 	t.AddVertex(0, Vector(1, 3, 3), Vector2D(0, 1));
 	t.AddVertex(0, Vector(1, 2, 4), Vector2D(1, 1));
@@ -39,7 +39,7 @@ void test_toy()
 	t.AddPhysVertex(Vector(0, 0, 0));
 	t.AddPhysTriangle(0, 1, 2);
 	t.AddPhysTriangle(0, 2, 3);
-	t.AddPhysBox(TRS(Vector(1, 2, 3), EAngle(4, 5, 6), Vector(7, 8, 9)));
+	t.AddPhysBox(TRS(Vector(11, 12, 13), EAngle(4, 5, 6), Vector(7, 8, 9)));
 	t.AddPhysBox(TRS(Vector(9, 8, 7), EAngle(6, 5, 4), Vector(3, 2, 1)));
 	bool bWrite = t.Write("test.toy");
 	TAssert(bWrite);
@@ -48,9 +48,9 @@ void test_toy()
 
 	bool bRead = CToyUtil::Read("test.toy", pToy);
 	TAssert(bRead);
-	TAssert(strcmp(pToy->GetMaterialTexture(0), "test.png") == 0);
-	TAssert(strcmp(pToy->GetMaterialTexture(1), "test2.png") == 0);
-	TAssert(strcmp(pToy->GetMaterialTexture(2), "test3.png") == 0);
+	TAssert(strcmp(pToy->GetMaterialName(0), "test.mat") == 0);
+	TAssert(strcmp(pToy->GetMaterialName(1), "test2.mat") == 0);
+	TAssert(strcmp(pToy->GetMaterialName(2), "test3.mat") == 0);
 	TAssert(Vector(pToy->GetMaterialVert(0, 0)) == Vector(1, 2, 3));
 	TAssert(Vector2D(pToy->GetMaterialVert(0, 0)+3) == Vector2D(0, 0));
 	TAssert(Vector(pToy->GetMaterialVert(0, 1)) == Vector(1, 3, 3));
@@ -111,7 +111,7 @@ void test_toy()
 	TAssert(Vector(pToy->GetPhysicsVert(3)) == Vector(0, 0, 0));
 
 	TAssert(pToy->GetPhysicsNumBoxes() == 2);
-	TAssert(pToy->GetPhysicsBox(0).m_vecTranslation == Vector(1, 2, 3));
+	TAssert(pToy->GetPhysicsBox(0).m_vecTranslation == Vector(11, 12, 13));
 	TAssert(pToy->GetPhysicsBox(0).m_angRotation == EAngle(4, 5, 6));
 	TAssert(pToy->GetPhysicsBox(0).m_vecScaling == Vector(7, 8, 9));
 	TAssert(pToy->GetPhysicsBox(1).m_vecTranslation == Vector(9, 8, 7));
@@ -124,7 +124,7 @@ void test_toy()
 void test_scene()
 {
 	CToyUtil t1;
-	t1.AddMaterial("test.png");
+	t1.AddMaterial("test.mat");
 	t1.AddVertex(0, Vector(1, 2, 3), Vector2D(0, 0));
 	t1.AddVertex(0, Vector(1, 3, 3), Vector2D(0, 1));
 	t1.AddVertex(0, Vector(1, 2, 4), Vector2D(1, 1));
@@ -135,7 +135,7 @@ void test_scene()
 	TAssert(bWrite);
 
 	CToyUtil t2;
-	t2.AddMaterial("test.png");
+	t2.AddMaterial("test.mat");
 	t2.AddVertex(0, Vector(10, 2, 3), Vector2D(0, 0));
 	t2.AddVertex(0, Vector(10, 3, 3), Vector2D(0, 1));
 	t2.AddVertex(0, Vector(10, 2, 4), Vector2D(1, 1));
@@ -146,7 +146,7 @@ void test_scene()
 	TAssert(bWrite);
 
 	CToyUtil t3;
-	t3.AddMaterial("test.png");
+	t3.AddMaterial("test.mat");
 	t3.AddVertex(0, Vector(1, 20, 3), Vector2D(0, 0));
 	t3.AddVertex(0, Vector(1, 30, 3), Vector2D(0, 1));
 	t3.AddVertex(0, Vector(1, 20, 4), Vector2D(1, 1));

@@ -9,12 +9,12 @@
 
 #include <renderer/render_common.h>
 #include <renderer/renderingcontext.h>
-#include <textures/texturehandle.h>
+#include <textures/materialhandle.h>
 
 class CRopeRenderer
 {
 public:
-						CRopeRenderer(class CRenderer* pRenderer, const CTextureHandle& hTexture, Vector vecStart, float flWidth);
+						CRopeRenderer(class CRenderer* pRenderer, const CMaterialHandle& hMaterial, Vector vecStart, float flWidth);
 
 public:
 	void				AddLink(Vector vecLink);
@@ -32,7 +32,6 @@ protected:
 	CRenderer*			m_pRenderer;
 	CRenderingContext	m_oContext;
 
-	size_t				m_iTexture;
 	Vector				m_vecLastLink;
 	float				m_flLastLinkWidth;
 	bool				m_bFirstLink;

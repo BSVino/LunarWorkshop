@@ -37,7 +37,7 @@ set (TINKER_RENDERER_SOURCES
 )
 
 set (TINKER_TEXTURES_SOURCES
-	textures/texturehandle.cpp
+	textures/materiallibrary.cpp
 	textures/texturelibrary.cpp
 	textures/texturesheet.cpp
 )

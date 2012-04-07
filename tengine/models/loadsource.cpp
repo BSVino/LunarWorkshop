@@ -7,8 +7,9 @@
 
 #include <modelconverter/modelconverter.h>
 #include <renderer/renderer.h>
-#include <textures/texturelibrary.h>
+#include <textures/materiallibrary.h>
 #include <tinker/application.h>
+#include <datamanager/data.h>
 
 eastl::vector<tstring>					g_asTextures;
 eastl::vector<eastl::vector<float> >	g_aaflData;
@@ -123,27 +124,28 @@ bool CModel::LoadSourceFile()
 
 	LoadSceneIntoToy(pScene);
 
-	size_t iMaterials = g_asTextures.size();
+	size_t iTextures = g_asTextures.size();
 
-	m_ahTextures.resize(iMaterials);
-	m_aiVertexBuffers.resize(iMaterials);
-	m_aiVertexBufferSizes.resize(iMaterials);
+	m_ahMaterials.resize(iTextures);
+	m_aiVertexBuffers.resize(iTextures);
+	m_aiVertexBufferSizes.resize(iTextures);
 
-	for (size_t i = 0; i < iMaterials; i++)
+	for (size_t i = 0; i < iTextures; i++)
 	{
 		if (g_aaflData[i].size() == 0)
 			continue;
 
 		m_aiVertexBuffers[i] = CRenderer::LoadVertexDataIntoGL(g_aaflData[i].size()*4, &g_aaflData[i][0]);
 		m_aiVertexBufferSizes[i] = g_aaflData[i].size()/5;
-		m_ahTextures[i] = CTextureLibrary::AddTexture(g_asTextures[i]);
 
-		if (!m_ahTextures[i].IsValid())
-			m_ahTextures[i] = CTextureLibrary::AddTexture(GetDirectory(m_sFilename) + "/" + g_asTextures[i]);
+		CData oMaterialData;
+		CData* pShader = oMaterialData.AddChild("Shader", "model");
+		pShader->AddChild("Diffuse", g_asTextures[i]);
+		m_ahMaterials[i] = CMaterialLibrary::CreateMaterial(&oMaterialData);
 
-		//TAssert(m_aiTextures[i]);
-		if (!m_ahTextures[i].IsValid())
-			TError(tstring("Couldn't find texture \"") + g_asTextures[i] + "\"\n");
+		//TAssert(m_aiMaterials[i]);
+		if (!m_ahMaterials[i].IsValid())
+			TError(tstring("Couldn't create fake material for texture \"") + g_asTextures[i] + "\"\n");
 	}
 
 	m_aabbBoundingBox = g_aabbBounds;

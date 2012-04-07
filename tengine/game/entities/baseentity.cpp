@@ -10,7 +10,7 @@
 #include <tinker/application.h>
 #include <tinker/profiler.h>
 #include <network/commands.h>
-#include <textures/texturelibrary.h>
+#include <textures/materiallibrary.h>
 #include <tinker/cvar.h>
 #include <physics/physics.h>
 #include <game/entities/character.h>
@@ -72,7 +72,7 @@ NETVAR_TABLE_BEGIN(CBaseEntity);
 	NETVAR_DEFINE(CEntityHandle<CBaseEntity>, m_hTeam);
 	NETVAR_DEFINE(int, m_iCollisionGroup);
 	NETVAR_DEFINE(size_t, m_iModel);
-	NETVAR_DEFINE_INTERVAL(Vector2D, m_vecTextureModelScale, 0.15f);
+	NETVAR_DEFINE_INTERVAL(Vector2D, m_vecMaterialModelScale, 0.15f);
 	NETVAR_DEFINE(double, m_flSpawnTime);
 NETVAR_TABLE_END();
 
@@ -118,8 +118,8 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bClientSpawn);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", ~0, UnserializeString_ModelID);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CTextureHandle, m_hTextureModel);
-	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, Vector2D, m_vecTextureModelScale, "TextureScale", Vector2D(1, 1));
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CMaterialHandle, m_hMaterialModel);
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, Vector2D, m_vecMaterialModelScale, "MaterialScale", Vector2D(1, 1));
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, double, m_flSpawnTime);
 SAVEDATA_TABLE_END();
@@ -256,8 +256,8 @@ TVector CBaseEntity::GetGlobalCenter() const
 
 TFloat CBaseEntity::GetBoundingRadius() const
 {
-	if (m_hTextureModel.IsValid())
-		return m_vecTextureModelScale.Get().Length()/2;
+	if (m_hMaterialModel.IsValid())
+		return m_vecMaterialModelScale.Get().Length()/2;
 
 	return m_aabbBoundingBox.Size().Length()/2;
 }
@@ -874,14 +874,14 @@ void CBaseEntity::Render(bool bTransparent) const
 					}
 				}
 
-				if (m_hTextureModel.IsValid())
+				if (m_hMaterialModel.IsValid())
 				{
 					if (bTransparent)
 					{
-						TPROF("CRenderingContext::RenderModel(Texture)");
+						TPROF("CRenderingContext::RenderModel(Material)");
 						r.SetBlend(BLEND_ALPHA);
-						r.Scale(0, m_vecTextureModelScale.Get().y, m_vecTextureModelScale.Get().x);
-						r.RenderTextureModel(m_hTextureModel);
+						r.Scale(0, m_vecMaterialModelScale.Get().y, m_vecMaterialModelScale.Get().x);
+						r.RenderMaterialModel(m_hMaterialModel);
 					}
 				}
 			}
@@ -1556,17 +1556,17 @@ void CBaseEntity::PrecacheSound(const tstring& sSound)
 	pReg->m_asPrecaches.push_back(sSound);
 }
 
-void CBaseEntity::PrecacheTexture(const tstring& sTexture)
+void CBaseEntity::PrecacheMaterial(const tstring& sMaterial)
 {
 	CEntityRegistration* pReg = &GetEntityRegistration()[GetClassName()];
 	for (size_t i = 0; i < pReg->m_asPrecaches.size(); i++)
 	{
-		if (pReg->m_asPrecaches[i] == sTexture)
+		if (pReg->m_asPrecaches[i] == sMaterial)
 			return;
 	}
 
-	pReg->m_ahTexturePrecaches.push_back(CTextureLibrary::AddTexture(sTexture));
-	pReg->m_asPrecaches.push_back(sTexture);
+	pReg->m_ahMaterialPrecaches.push_back(CMaterialLibrary::AddAsset(sMaterial));
+	pReg->m_asPrecaches.push_back(sMaterial);
 }
 
 eastl::map<tstring, CEntityRegistration>& CBaseEntity::GetEntityRegistration()
@@ -2227,11 +2227,11 @@ void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 
 void UnserializeString_ModelID(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	CTextureHandle hTexture = CTextureLibrary::AddTexture(sData);
+	CMaterialHandle hMaterial = CMaterialLibrary::AddAsset(sData);
 
-	if (hTexture.IsValid())
+	if (hMaterial.IsValid())
 	{
-		pEntity->SetTextureModel(hTexture);
+		pEntity->SetMaterialModel(hMaterial);
 		return;
 	}
 
@@ -2240,7 +2240,10 @@ void UnserializeString_ModelID(const tstring& sData, CSaveData* pSaveData, CBase
 	TAssert(iID != ~0);
 	if (iID == ~0)
 	{
-		TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") couldn't find or load model '" + sData + "'\n");
+		if (pSaveData->m_pszHandle)
+			TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszHandle + ") couldn't find or load model '" + sData + "'\n");
+		else
+			TError("Entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ":" + pSaveData->m_pszVariableName + ") couldn't find or load model '" + sData + "'\n");
 		return;
 	}
 

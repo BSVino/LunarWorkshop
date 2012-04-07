@@ -52,7 +52,7 @@ public:
 
 public:
 	virtual void	Initialize();
-	virtual void	LoadShaders();
+	void			LoadShaders();
 
 	CFrameBuffer	CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_options_e eOptions);
 

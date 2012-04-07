@@ -13,6 +13,7 @@
 #include <tinker/cvar.h>
 #include <tinker/profiler.h>
 #include <textures/texturelibrary.h>
+#include <textures/materiallibrary.h>
 #include <renderer/renderer.h>
 #include <toys/toy.h>
 
@@ -34,7 +35,7 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 		GetContext().m_mView = oLastContext.m_mView;
 		GetContext().m_mTransformations = oLastContext.m_mTransformations;
 
-		GetContext().m_hTexture = oLastContext.m_hTexture;
+		GetContext().m_hMaterial = oLastContext.m_hMaterial;
 		GetContext().m_pFrameBuffer = oLastContext.m_pFrameBuffer;
 		GetContext().m_sProgram = oLastContext.m_sProgram;
 
@@ -57,6 +58,7 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 		m_pShader = NULL;
 
 		BindTexture(0);
+		UseMaterial(CMaterialHandle());
 		UseFrameBuffer(NULL);
 		UseProgram("");
 
@@ -77,7 +79,7 @@ CRenderingContext::~CRenderingContext()
 
 	if (s_aContexts.size())
 	{
-		BindTexture(GetContext().m_hTexture);
+		UseMaterial(GetContext().m_hMaterial);
 		UseFrameBuffer(GetContext().m_pFrameBuffer);
 		UseProgram(GetContext().m_sProgram);
 
@@ -267,16 +269,16 @@ void CRenderingContext::RenderWireBox(const AABB& aabbBounds)
 	EndRender();
 }
 
-void CRenderingContext::RenderBillboard(const CTextureHandle& hTexture, float flRadius, Vector vecUp, Vector vecRight)
+void CRenderingContext::RenderBillboard(const CMaterialHandle& hMaterial, float flRadius, Vector vecUp, Vector vecRight)
 {
-	TAssert(hTexture.IsValid());
-	if (!hTexture.IsValid())
+	TAssert(hMaterial.IsValid());
+	if (!hMaterial.IsValid())
 		return;
 
 	vecUp *= flRadius;
 	vecRight *= flRadius;
 
-	BindTexture(hTexture);
+	UseMaterial(hMaterial);
 	BeginRenderTriFan();
 		TexCoord(0.0f, 1.0f);
 		Vertex(-vecRight + vecUp);
@@ -329,6 +331,159 @@ void CRenderingContext::UseProgram(const tstring& sProgram)
 	SetUniform("mView", GetContext().m_mView);
 }
 
+void CRenderingContext::UseMaterial(const CMaterialHandle& hMaterial)
+{
+	if (!hMaterial.IsValid())
+		return;
+
+	GetContext().m_hMaterial = hMaterial;
+
+	UseProgram(hMaterial->m_sShader);
+
+	SetupMaterial();
+}
+
+void CRenderingContext::UseMaterial(const tstring& sName)
+{
+	UseMaterial(CMaterialLibrary::FindMaterial(sName));
+}
+
+void CRenderingContext::SetupMaterial()
+{
+	if (!GetContext().m_hMaterial.IsValid())
+		return;
+
+	if (!m_pShader)
+		return;
+
+	for (auto it = m_pShader->m_asUniforms.begin(); it != m_pShader->m_asUniforms.end(); it++)
+	{
+		auto it2 = m_pShader->m_aDefaults.find(it->first);
+		if (it2 == m_pShader->m_aDefaults.end())
+		{
+			if (it->second == "float")
+				SetUniform(it->first.c_str(), 0.0f);
+			else if (it->second == "vec2")
+				SetUniform(it->first.c_str(), Vector2D());
+			else if (it->second == "vec3")
+				SetUniform(it->first.c_str(), Vector());
+			else if (it->second == "vec4")
+				SetUniform(it->first.c_str(), Vector4D());
+			else if (it->second == "int")
+				SetUniform(it->first.c_str(), 0);
+			else if (it->second == "bool")
+				SetUniform(it->first.c_str(), false);
+			else if (it->second == "mat4")
+				SetUniform(it->first.c_str(), Matrix4x4());
+			else if (it->second == "sampler2D")
+				SetUniform(it->first.c_str(), 0);
+			else
+				TAssert(false);
+		}
+		else
+		{
+			if (it->second == "float")
+				SetUniform(it->first.c_str(), it2->second.m_flValue);
+			else if (it->second == "vec2")
+				SetUniform(it->first.c_str(), it2->second.m_vec2Value);
+			else if (it->second == "vec3")
+				SetUniform(it->first.c_str(), it2->second.m_vecValue);
+			else if (it->second == "vec4")
+				SetUniform(it->first.c_str(), it2->second.m_vec4Value);
+			else if (it->second == "int")
+				SetUniform(it->first.c_str(), it2->second.m_iValue);
+			else if (it->second == "bool")
+				SetUniform(it->first.c_str(), it2->second.m_bValue);
+			else if (it->second == "mat4")
+			{
+				TAssert(false);
+			}
+			else if (it->second == "sampler2D")
+			{
+				TAssert(false);
+			}
+			else
+				TAssert(false);
+		}
+	}
+
+	for (size_t i = 0; i < GetContext().m_hMaterial->m_aParameters.size(); i++)
+	{
+		auto& oParameter = GetContext().m_hMaterial->m_aParameters[i];
+		auto& it = m_pShader->m_aParameters.find(oParameter.m_sName);
+
+		TAssert(it != m_pShader->m_aParameters.end());
+		if (it == m_pShader->m_aParameters.end())
+			continue;
+
+		for (size_t j = 0; j < it->second.m_aActions.size(); j++)
+		{
+			auto& oAction = it->second.m_aActions[j];
+			tstring& sName = oAction.m_sName;
+			tstring& sValue = oAction.m_sValue;
+			tstring& sType = m_pShader->m_asUniforms[sName];
+			if (sValue == "[value]")
+			{
+				if (sType == "float")
+					SetUniform(sName.c_str(), oParameter.m_flValue);
+				else if (sType == "vec2")
+					SetUniform(sName.c_str(), oParameter.m_vec2Value);
+				else if (sType == "vec3")
+					SetUniform(sName.c_str(), oParameter.m_vecValue);
+				else if (sType == "vec4")
+					SetUniform(sName.c_str(), oParameter.m_vec4Value);
+				else if (sType == "int")
+					SetUniform(sName.c_str(), oParameter.m_iValue);
+				else if (sType == "bool")
+					SetUniform(sName.c_str(), oParameter.m_bValue);
+				else if (sType == "mat4")
+				{
+					TAssert(false);	// Unimplemented
+				}
+				else if (sType == "sampler2D")
+				{
+					// No op, handled below.
+				}
+				else
+					TAssert(false);
+			}
+			else
+			{
+				if (sType == "float")
+					SetUniform(sName.c_str(), oAction.m_flValue);
+				else if (sType == "vec2")
+					SetUniform(sName.c_str(), oAction.m_vec2Value);
+				else if (sType == "vec3")
+					SetUniform(sName.c_str(), oAction.m_vecValue);
+				else if (sType == "vec4")
+					SetUniform(sName.c_str(), oAction.m_vec4Value);
+				else if (sType == "int")
+					SetUniform(sName.c_str(), oAction.m_iValue);
+				else if (sType == "bool")
+					SetUniform(sName.c_str(), oAction.m_bValue);
+				else if (sType == "mat4")
+				{
+					TAssert(false);	// Unimplemented
+				}
+				else if (sType == "sampler2D")
+				{
+					TAssert(false);
+					SetUniform(sName.c_str(), 0);
+				}
+				else
+					TAssert(false);
+			}
+		}	
+	}
+
+	for (size_t i = 0; i < m_pShader->m_asTextures.size(); i++)
+	{
+		glActiveTexture(GL_TEXTURE0+i);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)GetContext().m_hMaterial->m_ahTextures[i]->m_iGLID);
+		SetUniform(m_pShader->m_asTextures[i].c_str(), (int)i);
+	}
+}
+
 void CRenderingContext::SetUniform(const char* pszName, int iValue)
 {
 	TAssert(m_pShader);
@@ -376,23 +531,6 @@ void CRenderingContext::SetUniform(const char* pszName, size_t iSize, const floa
 	TAssert(m_pShader);
 	int iUniform = glGetUniformLocation((GLuint)m_iProgram, pszName);
 	glUniform1fv(iUniform, iSize, aflValues);
-}
-
-void CRenderingContext::BindTexture(const tstring& sName, int iChannel)
-{
-	BindTexture(CTextureLibrary::FindTexture(sName), iChannel);
-}
-
-void CRenderingContext::BindTexture(const CTextureHandle& hTexture, int iChannel)
-{
-	// Not tested since the move to a stack
-	TAssert(iChannel == 0);
-
-	glActiveTexture(GL_TEXTURE0+iChannel);
-
-	glBindTexture(GL_TEXTURE_2D, (GLuint)hTexture.GetID());
-
-	GetContext().m_hTexture = hTexture;
 }
 
 void CRenderingContext::BindTexture(size_t iTexture, int iChannel)

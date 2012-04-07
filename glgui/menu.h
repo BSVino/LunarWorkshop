@@ -31,6 +31,7 @@ namespace glgui
 		virtual void				Think();
 		virtual void				Layout();
 		virtual void				Paint(float x, float y, float w, float h);
+		virtual void				PostPaint();
 
 		virtual bool				IsCursorListener() { return true; };
 		virtual void				CursorIn();
@@ -58,6 +59,9 @@ namespace glgui
 									CSubmenuPanel(CMenu* pMenu);
 
 			void					Think();
+
+			void					Paint(float x, float y, float w, float h);
+			void					PostPaint();
 
 			virtual bool			IsVisible();
 

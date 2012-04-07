@@ -16,14 +16,6 @@ CChainRenderer::CChainRenderer()
 	m_oMouseoverBuffer2 = CreateFrameBuffer(m_iWidth, m_iHeight, FB_TEXTURE);
 }
 
-void CChainRenderer::LoadShaders()
-{
-	BaseClass::LoadShaders();
-
-	CShaderLibrary::AddShader("model", "pass", "model");
-	CShaderLibrary::AddShader("mouseover", "pass", "mouseover");
-}
-
 void CChainRenderer::SetupFrame(class CRenderingContext* pContext)
 {
 	CRenderingContext c;

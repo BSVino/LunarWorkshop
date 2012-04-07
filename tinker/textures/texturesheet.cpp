@@ -22,7 +22,7 @@ CTextureSheet::CTextureSheet(tstring sFile)
 		if (pChild->GetKey() == "Texture")
 		{
 			tstring sTexture = pChild->GetValueTString();
-			m_hDefaultSheet = CTextureLibrary::AddTexture(sTexture);
+			m_hDefaultSheet = CTextureLibrary::AddAsset(sTexture);
 		}
 		else if (pChild->GetKey() == "Area")
 		{
@@ -54,7 +54,7 @@ CTextureSheet::CTextureSheet(tstring sFile)
 			if (pData)
 			{
 				tstring sTexture = pData->GetValueTString();
-				m_aAreas[pChild->GetValueTString()].m_hSheet = CTextureLibrary::AddTexture(sTexture);
+				m_aAreas[pChild->GetValueTString()].m_hSheet = CTextureLibrary::AddAsset(sTexture);
 			}
 		}
 	}

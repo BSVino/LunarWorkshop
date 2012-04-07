@@ -7,7 +7,7 @@
 #include <color.h>
 #include <geometry.h>
 
-#include <textures/texturehandle.h>
+#include <textures/materialhandle.h>
 
 #include "render_common.h"
 
@@ -21,7 +21,7 @@ protected:
 		Matrix4x4			m_mView;
 		Matrix4x4			m_mTransformations;
 
-		CTextureHandle		m_hTexture;
+		CMaterialHandle		m_hMaterial;
 		const class CFrameBuffer*	m_pFrameBuffer;
 		tstring				m_sProgram;
 
@@ -69,11 +69,14 @@ public:
 	void					RenderSphere();
 	void					RenderWireBox(const AABB& aabbBounds);
 
-	void					RenderBillboard(const CTextureHandle& hTexture, float flRadius, Vector vecUp, Vector vecRight);
+	void					RenderBillboard(const CMaterialHandle& hMaterial, float flRadius, Vector vecUp, Vector vecRight);
 
 	void					UseFrameBuffer(const class CFrameBuffer* pBuffer);
 	const class CFrameBuffer* GetActiveFrameBuffer() { return GetContext().m_pFrameBuffer; }
 	void					UseProgram(const tstring& sProgram);
+	void					UseMaterial(const CMaterialHandle& hMaterial);
+	void					UseMaterial(const tstring& sName);
+	void					SetupMaterial();
 	size_t					GetActiveProgram() { return m_iProgram; }
 	class CShader*			GetActiveShader() { return m_pShader; }
 	void					SetUniform(const char* pszName, int iValue);
@@ -83,8 +86,6 @@ public:
 	void					SetUniform(const char* pszName, const ::Color& vecValue);
 	void					SetUniform(const char* pszName, const Matrix4x4& mValue);
 	void					SetUniform(const char* pszName, size_t iSize, const float* aflValues);
-	void					BindTexture(const tstring& sName, int iChannel = 0);
-	void					BindTexture(const CTextureHandle& hTexture, int iChannel = 0);
 	void					BindTexture(size_t iTexture, int iChannel = 0);
 	void					BindBufferTexture(const CFrameBuffer& oBuffer, int iChannel = 0);
 	void					SetColor(const ::Color& c);	// Set the mesh's uniform color. Do this before BeginRender*

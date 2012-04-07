@@ -8,6 +8,7 @@
 #include <datamanager/dataserializer.h>
 #include <modelconverter/modelconverter.h>
 #include <toys/toy_util.h>
+#include <tinker/textures/materiallibrary.h>
 
 bool CGeppetto::LoadSceneAreas(CData* pData)
 {
@@ -274,6 +275,7 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 		tstring sExtension = pMesh->GetValueTString().substr(pMesh->GetValueTString().length()-4);
 		if (sExtension == ".png")
 		{
+			TAssert(false);	// Not updated since the switch to materials.
 			int x, y, n;
 			unsigned char* pData = stbi_load((GetPath(pMesh->GetValueTString())).c_str(), &x, &y, &n, 0);
 
@@ -292,6 +294,37 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 				t.AddMaterial(GetPath(pMesh->GetValueTString()));
 			else
 				t.AddMaterial(t.GetOutputDirectory() + "/" + pMesh->GetValueTString(), GetPath(pMesh->GetValueTString()));
+			t.AddVertex(0, -vecRight + vecUp, Vector2D(0.0f, 1.0f));
+			t.AddVertex(0, -vecRight - vecUp, Vector2D(0.0f, 0.0f));
+			t.AddVertex(0, vecRight - vecUp, Vector2D(1.0f, 0.0f));
+
+			t.AddVertex(0, -vecRight + vecUp, Vector2D(0.0f, 1.0f));
+			t.AddVertex(0, vecRight - vecUp, Vector2D(1.0f, 0.0f));
+			t.AddVertex(0, vecRight + vecUp, Vector2D(1.0f, 1.0f));
+		}
+		else if (sExtension == ".mat")
+		{
+			CMaterialHandle hMaterial(pMesh->GetValueTString());
+			if (!hMaterial.IsValid())
+			{
+				TError("Input material  '" + pMesh->GetValueTString() + "' does not exist or is invalid.\n");
+				return false;
+			}
+
+			if (!hMaterial->m_ahTextures.size())
+			{
+				TError("Input material  '" + pMesh->GetValueTString() + "' has no textures.\n");
+				return false;
+			}
+
+			float w = (float)hMaterial->m_ahTextures[0]->m_iWidth;
+			float h = (float)hMaterial->m_ahTextures[0]->m_iHeight;
+
+			Vector vecUp = Vector(0, 0.5f, 0) * h/100;
+			Vector vecRight = Vector(0, 0, 0.5f) * w/100;
+
+			t.AddMaterial(pMesh->GetValueTString());
+
 			t.AddVertex(0, -vecRight + vecUp, Vector2D(0.0f, 1.0f));
 			t.AddVertex(0, -vecRight - vecUp, Vector2D(0.0f, 0.0f));
 			t.AddVertex(0, vecRight - vecUp, Vector2D(1.0f, 0.0f));

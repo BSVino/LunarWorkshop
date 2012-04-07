@@ -35,18 +35,18 @@ public:
 public:
 	static size_t			GetNumTextures() { return Get()->m_aTextures.size(); }
 
-	static CTextureHandle	AddTexture(const tstring& sTexture, int iClamp = 0);
+	static CTextureHandle	AddAsset(const tstring& sTexture, int iClamp = 0);
 	static CTextureHandle	FindTexture(const tstring& sTexture);
 	static size_t			FindTextureID(const tstring& sTexture);
 	static void				ReleaseTexture(const tstring& sTexture);
-	static void				ReleaseTexture(const CTexture* pTexture);
+	static void				ReleaseAsset(const CTexture* pTexture);
 
 	static size_t			GetTextureGLID(const tstring& sTexture);
 	static size_t			GetTextureWidth(const tstring& sTexture);
 	static size_t			GetTextureHeight(const tstring& sTexture);
 
 	static size_t			GetNumTexturesLoaded() { return Get()->m_aTextures.size(); };
-	static bool				IsTextureLoaded(const tstring& sTexture);
+	static bool				IsAssetLoaded(const tstring& sTexture);
 
 	static void				UnloadTexture(const tstring& sTexture);
 
@@ -61,5 +61,7 @@ protected:
 private:
 	static CTextureLibrary*	s_pTextureLibrary;
 };
+
+#include <tinker/assethandle_functions.h>
 
 #endif

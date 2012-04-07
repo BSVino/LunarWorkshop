@@ -2,6 +2,7 @@
 #define TENGINE_GAME_RENDERER_H
 
 #include <renderer/renderer.h>
+#include <textures/materialhandle.h>
 #include <textures/texturehandle.h>
 
 class CRenderBatch
@@ -25,8 +26,6 @@ public:
 					CGameRenderer(size_t iWidth, size_t iHeight);
 
 public:
-	virtual void	LoadShaders();
-
 	virtual void	SetupFrame(class CRenderingContext* pContext);
 	virtual void	DrawSkybox(class CRenderingContext* pContext);
 	virtual void	ModifySkyboxContext(class CRenderingContext* c) {};
@@ -44,8 +43,6 @@ public:
 	void			ClassifySceneAreaPosition(class CModel* pModel);
 	void			FindSceneAreaPosition(class CModel* pModel);
 	size_t			GetSceneAreaPosition(class CModel* pModel);
-
-	virtual void	SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial);
 
 	const class CBaseEntity*	GetRenderingEntity() { return m_pRendering; }
 
@@ -69,7 +66,7 @@ protected:
 
 	bool			m_bBatchThisFrame;
 	bool			m_bBatching;
-	eastl::map<CTextureHandle, eastl::vector<CRenderBatch> > m_aBatches;
+	eastl::map<CMaterialHandle, eastl::vector<CRenderBatch> > m_aBatches;
 
 	const CBaseEntity*	m_pRendering;
 

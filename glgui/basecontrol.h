@@ -3,7 +3,7 @@
 
 #include "glgui.h"
 
-#include <textures/texturehandle.h>
+#include <textures/materialhandle.h>
 
 namespace glgui
 {
@@ -103,8 +103,8 @@ namespace glgui
 		void			SetBorder(Border b) { m_eBorder = b; };
 
 		static void		PaintRect(float x, float y, float w, float h, const Color& c = g_clrBox, int iBorder = 0, bool bHighlight = false);
-		static void		PaintTexture(const CTextureHandle& hTexture, float x, float y, float w, float h, const Color& c = Color(255, 255, 255, 255));
-		static void		PaintSheet(const CTextureHandle& hTexture, float x, float y, float w, float h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c = Color(255, 255, 255, 255));
+		static void		PaintTexture(const CMaterialHandle& hTexture, float x, float y, float w, float h, const Color& c = Color(255, 255, 255, 255));
+		static void		PaintSheet(const CMaterialHandle& hTexture, float x, float y, float w, float h, int sx, int sy, int sw, int sh, int tw, int th, const Color& c = Color(255, 255, 255, 255));
 		static void		MakeQuad();
 
 	protected:

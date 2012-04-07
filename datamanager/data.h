@@ -39,6 +39,8 @@ public:
 	size_t					GetValueUInt() const;
 	float					GetValueFloat() const;
 	Vector2D				GetValueVector2D() const;
+	Vector					GetValueVector() const;
+	Vector4D				GetValueVector4D() const;
 	EAngle					GetValueEAngle() const;
 	TRS						GetValueTRS() const;
 

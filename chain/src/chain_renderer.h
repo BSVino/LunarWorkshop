@@ -14,8 +14,6 @@ public:
 					CChainRenderer();
 
 public:
-	virtual void	LoadShaders();
-
 	virtual void	SetupFrame(class CRenderingContext* pContext);
 	virtual void	RenderFullscreenBuffers(class CRenderingContext* pContext);
 

@@ -9,6 +9,8 @@
 
 #include <tinker/application.h>
 #include <tinker/cvar.h>
+#include <datamanager/data.h>
+#include <datamanager/dataserializer.h>
 
 CShaderLibrary* CShaderLibrary::s_pShaderLibrary = NULL;
 static CShaderLibrary g_ShaderLibrary = CShaderLibrary();
@@ -60,14 +62,93 @@ CShaderLibrary::~CShaderLibrary()
 	s_pShaderLibrary = NULL;
 }
 
-void CShaderLibrary::AddShader(const tstring& sName, const tstring& sVertex, const tstring& sFragment)
+void CShaderLibrary::AddShader(const tstring& sFile)
 {
 	TAssert(!Get()->m_bCompiled);
 	if (Get()->m_bCompiled)
 		return;
 
-	Get()->m_aShaders.push_back(CShader(sName, sVertex, sFragment));
-	Get()->m_aShaderNames[sName] = Get()->m_aShaders.size()-1;
+	std::basic_ifstream<tchar> f(sFile.c_str());
+
+	if (!f.is_open())
+	{
+		TError("Couldn't open shader file: " + sFile + "\n");
+		return;
+	}
+
+	std::shared_ptr<CData> pData(new CData());
+	CDataSerializer::Read(f, pData.get());
+
+	CData* pName = pData->FindChild("Name");
+	CData* pVertex = pData->FindChild("Vertex");
+	CData* pFragment = pData->FindChild("Fragment");
+
+	TAssert(pName);
+	if (!pName)
+	{
+		TError("Malformed shader file. " + sFile + " has no Name entry.\n");
+		return;
+	}
+
+	TAssert(pVertex);
+	if (!pVertex)
+	{
+		TError("Malformed shader file. " + sFile + " has no Vertex entry.\n");
+		return;
+	}
+
+	TAssert(pFragment);
+	if (!pFragment)
+	{
+		TError("Malformed shader file. " + sFile + " has no Fragment entry.\n");
+		return;
+	}
+
+	Get()->m_aShaders.push_back(CShader(pName->GetValueTString(), pVertex->GetValueTString(), pFragment->GetValueTString()));
+	Get()->m_aShaderNames[pName->GetValueTString()] = Get()->m_aShaders.size()-1;
+
+	auto& oShader = Get()->m_aShaders.back();
+
+	for (size_t i = 0; i < pData->GetNumChildren(); i++)
+	{
+		CData* pChild = pData->GetChild(i);
+		if (pChild->GetKey() == "Parameter")
+		{
+			auto& oParameter = oShader.m_aParameters.insert(pChild->GetValueTString());
+
+			for (size_t j = 0; j < pChild->GetNumChildren(); j++)
+			{
+				CData* pUniform = pChild->GetChild(j);
+				if (pUniform->GetKey() != "Uniform")
+					continue;
+
+				auto& oUniform = oParameter.first->second.m_aActions.push_back();
+				oUniform.m_sName = pUniform->GetValueTString();
+				CData* pValue = pUniform->FindChild("Value");
+				CData* pTexture = pUniform->FindChild("Texture");
+				TAssert(!(pValue && pTexture));
+				TAssert(pValue || pTexture);
+
+				if (pValue)
+					oUniform.m_sValue = pValue->GetValueTString();
+				else if (pTexture)
+				{
+					oUniform.m_sValue = pTexture->GetValueTString();
+					oShader.m_asTextures.push_back(pUniform->GetValueTString());
+				}
+			}
+		}
+		else if (pChild->GetKey() == "Defaults")
+		{
+			for (size_t j = 0; j < pChild->GetNumChildren(); j++)
+			{
+				CData* pUniform = pChild->GetChild(j);
+				auto& oDefault = oShader.m_aDefaults.insert(pUniform->GetKey());
+				oDefault.first->second.m_sName = pUniform->GetKey();
+				oDefault.first->second.m_sValue = pUniform->GetValueTString();
+			}
+		}
+	}
 }
 
 void CShaderLibrary::CompileShaders(int iSamples)
@@ -285,6 +366,123 @@ bool CShader::Compile()
 	glBindFragDataLocation(m_iProgram, 0, "vecOutputColor");
 
 	TAssert(m_iPositionAttribute != ~0);
+
+	int iNumUniforms;
+	glGetProgramiv(m_iProgram, GL_ACTIVE_UNIFORMS, &iNumUniforms);
+
+	char szUniformName[256];
+	GLsizei iLength;
+	GLint iSize;
+	GLenum iType;
+	for (int i = 0; i < iNumUniforms; i++)
+	{
+		glGetActiveUniform(m_iProgram, i, sizeof(szUniformName), &iLength, &iSize, &iType, szUniformName);
+
+		tstring sUniformName = szUniformName;
+		if (sUniformName == "mProjection")
+			continue;
+		if (sUniformName == "mView")
+			continue;
+		if (sUniformName == "mGlobal")
+			continue;
+
+		tstring& sType = m_asUniforms.insert(sUniformName).first->second;
+		switch (iType)
+		{
+		case GL_FLOAT: sType = "float"; break;
+		case GL_FLOAT_VEC2: sType = "vec2"; break;
+		case GL_FLOAT_VEC3: sType = "vec3"; break;
+		case GL_FLOAT_VEC4: sType = "vec4"; break;
+		case GL_INT: sType = "int"; break;
+		case GL_BOOL: sType = "bool"; break;
+		case GL_FLOAT_MAT4: sType = "mat4"; break;
+		case GL_SAMPLER_2D: sType = "sampler2D"; break;
+		default: TAssert(false);
+		}
+	}
+
+	for (auto it = m_aParameters.begin(); it != m_aParameters.end(); it++)
+	{
+		for (size_t j = 0; j < it->second.m_aActions.size(); j++)
+		{
+			auto it2 = m_asUniforms.find(it->second.m_aActions[j].m_sName);
+			TAssert(it2 != m_asUniforms.end());
+			if (it2 == m_asUniforms.end())
+			{
+				TError("Shader '" + m_sName + "' specifies a uniform '" + it->second.m_aActions[j].m_sName + "' that is not in the linked program.\n");
+				continue;
+			}
+
+			tstring& sType = it2->second;
+
+			// This is almost cheating
+			CData d;
+			d.SetValue(it->second.m_aActions[j].m_sValue);
+
+			if (sType == "float")
+				it->second.m_aActions[j].m_flValue = d.GetValueFloat();
+			else if (sType == "vec2")
+				it->second.m_aActions[j].m_vec2Value = d.GetValueVector2D();
+			else if (sType == "vec3")
+				it->second.m_aActions[j].m_vecValue = d.GetValueVector();
+			else if (sType == "vec4")
+				it->second.m_aActions[j].m_vec4Value = d.GetValueVector4D();
+			else if (sType == "int")
+				it->second.m_aActions[j].m_iValue = d.GetValueInt();
+			else if (sType == "bool")
+				it->second.m_aActions[j].m_bValue = d.GetValueBool();
+			else if (sType == "mat4")
+			{
+				TAssert(false); // Unimplemented
+			}
+			else if (sType == "sampler2D")
+			{
+				// No op.
+			}
+			else
+				TAssert(false);
+		}
+	}
+
+	for (auto it = m_aDefaults.begin(); it != m_aDefaults.end(); it++)
+	{
+		auto it2 = m_asUniforms.find(it->first);
+		TAssert(it2 != m_asUniforms.end());
+		if (it2 == m_asUniforms.end())
+		{
+			TError("Shader '" + m_sName + "' specifies a default for uniform '" + it->second.m_sName + "' that is not in the linked program.\n");
+			continue;
+		}
+
+		tstring& sType = it2->second;
+
+		// Again with the cheating.
+		CData d;
+		d.SetValue(it->second.m_sValue);
+
+		if (sType == "float")
+			it->second.m_flValue = d.GetValueFloat();
+		else if (sType == "vec2")
+			it->second.m_vec2Value = d.GetValueVector2D();
+		else if (sType == "vec3")
+			it->second.m_vecValue = d.GetValueVector();
+		else if (sType == "vec4")
+			it->second.m_vec4Value = d.GetValueVector4D();
+		else if (sType == "int")
+			it->second.m_iValue = d.GetValueInt();
+		else if (sType == "bool")
+			it->second.m_bValue = d.GetValueBool();
+		else if (sType == "mat4")
+		{
+			TAssert(false); // Unimplemented
+		}
+		else if (sType == "sampler2D")
+		{
+			TAssert(false); // Can't set a default texture... yet.
+		}
+		else
+			TAssert(false);
+	}
 
 	return true;
 }

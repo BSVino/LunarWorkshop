@@ -171,6 +171,40 @@ Vector2D CData::GetValueVector2D() const
 	return vecResult;
 }
 
+Vector CData::GetValueVector() const
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(GetValueTString(), asTokens);
+
+	Vector vecResult;
+	if (asTokens.size() > 0)
+		vecResult.x = (float)stof(asTokens[0].c_str());
+	if (asTokens.size() > 1)
+		vecResult.y = (float)stof(asTokens[1].c_str());
+	if (asTokens.size() > 2)
+		vecResult.z = (float)stof(asTokens[2].c_str());
+
+	return vecResult;
+}
+
+Vector4D CData::GetValueVector4D() const
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(GetValueTString(), asTokens);
+
+	Vector4D vecResult;
+	if (asTokens.size() > 0)
+		vecResult.x = (float)stof(asTokens[0].c_str());
+	if (asTokens.size() > 1)
+		vecResult.y = (float)stof(asTokens[1].c_str());
+	if (asTokens.size() > 2)
+		vecResult.z = (float)stof(asTokens[2].c_str());
+	if (asTokens.size() > 3)
+		vecResult.w = (float)stof(asTokens[3].c_str());
+
+	return vecResult;
+}
+
 EAngle CData::GetValueEAngle() const
 {
 	eastl::vector<tstring> asTokens;

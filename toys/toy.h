@@ -31,8 +31,8 @@
 	Mesh data format - Stuff that can be freed once it's loaded into the engine. Vertex data, materials, triangles, uv's, normals, etc
 
 	∀ material:
-		2 bytes, unsigned, texture name length (including null termination)
-		x bytes, null terminated string, texture file name
+		2 bytes, unsigned, material name length (including null termination)
+		x bytes, null terminated string, material file name
 		∀ vertex:
 			4 bytes, float, x
 			4 bytes, float, y
@@ -92,8 +92,8 @@ public:
 public:
 	const AABB&	GetAABB();
 	size_t		GetNumMaterials();
-	size_t		GetMaterialTextureLength(size_t iMaterial);
-	char*		GetMaterialTexture(size_t iMaterial);
+	size_t		GetMaterialNameLength(size_t iMaterial);
+	char*		GetMaterialName(size_t iMaterial);
 	size_t		GetMaterialNumVerts(size_t iMaterial);
 	float*		GetMaterialVerts(size_t iMaterial);
 	float*		GetMaterialVert(size_t iMaterial, size_t iVert);

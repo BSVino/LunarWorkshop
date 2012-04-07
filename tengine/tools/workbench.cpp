@@ -13,7 +13,7 @@
 #include <renderer/game_renderingcontext.h>
 #include <renderer/game_renderer.h>
 #include <tinker/profiler.h>
-#include <textures/texturelibrary.h>
+#include <textures/materiallibrary.h>
 #include <tinker/keys.h>
 #include <game/gameserver.h>
 

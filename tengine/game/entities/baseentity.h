@@ -14,7 +14,7 @@
 
 #include <network/network.h>
 #include <game/entityhandle.h>
-#include <textures/texturehandle.h>
+#include <textures/materialhandle.h>
 
 extern enum collision_type_e;
 
@@ -168,7 +168,7 @@ public:
 	eastl::vector<CNetworkedVariableData>	m_aNetworkVariables;
 	eastl::map<eastl::string, CEntityInput>		m_aInputs;
 	eastl::vector<tstring>		m_asPrecaches;
-	eastl::vector<CTextureHandle>	m_ahTexturePrecaches;
+	eastl::vector<CMaterialHandle>	m_ahMaterialPrecaches;
 	bool						m_bCreatableInEditor;
 };
 
@@ -491,8 +491,8 @@ public:
 	class CModel*							GetModel() const;
 	virtual void							OnSetModel() {};
 
-	void									SetTextureModel(const CTextureHandle& hTexture) { m_hTextureModel = hTexture; }
-	const CTextureHandle&					GetTextureModel() const { return m_hTextureModel; };
+	void									SetMaterialModel(const CMaterialHandle& hMaterial) { m_hMaterialModel = hMaterial; }
+	const CMaterialHandle&					GetMaterialModel() const { return m_hMaterialModel; };
 
 	virtual Matrix4x4						GetRenderTransform() const { return Matrix4x4(GetGlobalTransform()); };
 	virtual Vector							GetRenderOrigin() const { return GetRenderTransform().GetTranslation(); };
@@ -598,7 +598,7 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnActivated);
 	DECLARE_ENTITY_OUTPUT(OnDeactivated);
 
-	virtual bool							ShouldRender() const { return (size_t)m_iModel != ~0 || m_hTextureModel.IsValid(); };
+	virtual bool							ShouldRender() const { return (size_t)m_iModel != ~0 || m_hMaterialModel.IsValid(); };
 	virtual bool							ShouldRenderModel() const { return true; };
 	virtual void							PreRender(bool bTransparent) const;
 	virtual void							ModifyContext(class CRenderingContext* pContext, bool bTransparent) const {};
@@ -676,7 +676,7 @@ public:
 	void									PrecacheModel(const tstring& sModel);
 	void									PrecacheParticleSystem(const tstring& sSystem);
 	void									PrecacheSound(const tstring& sSound);
-	void									PrecacheTexture(const tstring& sTexture);
+	void									PrecacheMaterial(const tstring& sMaterial);
 
 public:
 	static void								RegisterEntity(const char* pszClassName, const char* pszParentClass, EntityRegisterCallback pfnRegisterCallback, EntityPrecacheCallback pfnPrecacheCallback, EntityCreateCallback pfnCreateCallback);
@@ -749,8 +749,8 @@ protected:
 	CNetworkedVariable<int>					m_iCollisionGroup;
 
 	CNetworkedVariable<size_t>				m_iModel;
-	CTextureHandle							m_hTextureModel;
-	CNetworkedVariable<Vector2D>			m_vecTextureModelScale;
+	CMaterialHandle							m_hMaterialModel;
+	CNetworkedVariable<Vector2D>			m_vecMaterialModelScale;
 
 	size_t									m_iSpawnSeed;
 	CNetworkedVariable<double>				m_flSpawnTime;

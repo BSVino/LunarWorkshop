@@ -19,7 +19,7 @@ CTextureLibrary::~CTextureLibrary()
 	s_pTextureLibrary = NULL;
 }
 
-CTextureHandle CTextureLibrary::AddTexture(const tstring& sTexture, int iClamp)
+CTextureHandle CTextureLibrary::AddAsset(const tstring& sTexture, int iClamp)
 {
 	if (!sTexture.length())
 		return CTextureHandle();
@@ -57,7 +57,7 @@ CTextureHandle CTextureLibrary::FindTexture(const tstring& sTexture)
 
 size_t CTextureLibrary::FindTextureID(const tstring& sTexture)
 {
-	return FindTexture(sTexture).GetID();
+	return FindTexture(sTexture)->m_iGLID;
 }
 
 void CTextureLibrary::ReleaseTexture(const tstring& sTexture)
@@ -70,7 +70,7 @@ void CTextureLibrary::ReleaseTexture(const tstring& sTexture)
 	it->second.m_iReferences--;
 }
 
-void CTextureLibrary::ReleaseTexture(const CTexture* pTexture)
+void CTextureLibrary::ReleaseAsset(const CTexture* pTexture)
 {
 	if (!pTexture)
 		return;
@@ -109,7 +109,7 @@ size_t CTextureLibrary::GetTextureHeight(const tstring& sTexture)
 	return it->second.m_iHeight;
 }
 
-bool CTextureLibrary::IsTextureLoaded(const tstring& sTexture)
+bool CTextureLibrary::IsAssetLoaded(const tstring& sTexture)
 {
 	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
 	if (it == Get()->m_aTextures.end())

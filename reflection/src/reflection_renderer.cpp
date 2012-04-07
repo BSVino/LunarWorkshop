@@ -28,14 +28,6 @@ void CReflectionRenderer::Initialize()
 	m_bRenderingReflection = false;
 }
 
-void CReflectionRenderer::LoadShaders()
-{
-	BaseClass::LoadShaders();
-
-	CShaderLibrary::AddShader("model", "pass", "model");
-	CShaderLibrary::AddShader("reflection", "pass", "reflection");
-}
-
 void CReflectionRenderer::PreRender()
 {
 	TPROF("CReflectionRenderer::SetupFrame");
@@ -254,62 +246,6 @@ void CReflectionRenderer::StartRenderingReflection(class CRenderingContext* pCon
 	glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 	glGetIntegerv( GL_VIEWPORT, m_aiViewport );
 	glViewport(0, 0, (GLsizei)m_oSceneBuffer.m_iWidth, (GLsizei)m_oSceneBuffer.m_iHeight);
-}
-
-void CReflectionRenderer::SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial)
-{
-	bool bModel = false;
-	if (pModel->m_sFilename == "models/mirror.toy")
-		bModel = true;
-	if (pModel->m_sFilename == "models/mirror_horizontal.toy")
-		bModel = true;
-
-	size_t iBuffer = ~0;
-	if (bModel)
-		iBuffer = static_cast<const CMirror*>(m_pRendering)->GetBuffer();
-
-	if (bModel && pModel->m_aiTextures[iMaterial] == 0 && iBuffer != ~0)
-	{
-		c->BindBufferTexture(GetReflectionBuffer(iBuffer));
-
-		c->UseProgram("reflection");
-		c->SetUniform("bDiffuse", true);
-		c->SetUniform("iDiffuse", 0);
-
-		c->SetUniform("vecColor", c->GetColor());
-		c->SetUniform("flAlpha", c->GetAlpha());
-
-		c->SetUniform("flScreenWidth", (float)Application()->GetWindowWidth());
-		c->SetUniform("flScreenHeight", (float)Application()->GetWindowHeight());
-
-		c->SetUniform("bDiscardReflection", m_bRenderingReflection);
-
-		return;
-	}
-
-	bModel = false;
-	if (pModel->m_sFilename == "models/characters/kaleidobeast.toy")
-		bModel = true;
-
-	if (bModel && iMaterial == 1)
-	{
-		const CKaleidobeast* pBeast = static_cast<const CKaleidobeast*>(m_pRendering);
-
-		c->UseProgram("model");
-		c->SetUniform("bDiffuse", true);
-		c->SetUniform("iDiffuse", 0);
-
-		if (pBeast->CanSeePlayer())
-			c->SetUniform("vecColor", Color(255, 0, 0));
-		else
-			c->SetUniform("vecColor", c->GetColor());
-
-		c->SetUniform("flAlpha", c->GetAlpha());
-
-		return;
-	}
-
-	BaseClass::SetupShader(c, pModel, iMaterial);
 }
 
 CFrameBuffer& CReflectionRenderer::GetReflectionBuffer(size_t i)

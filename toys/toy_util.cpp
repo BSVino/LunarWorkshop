@@ -30,46 +30,50 @@ tstring CToyUtil::GetScriptDirectoryFile(const tstring& sFile) const
 	return FindAbsolutePath(m_sScriptDirectory + DIR_SEP + sFile);
 }
 
-void CToyUtil::AddMaterial(const tstring& sTexture, const tstring& sOriginalFile)
+void CToyUtil::AddMaterial(const tstring& sMaterial, const tstring& sOriginalFile)
 {
-	tstring sOriginal = sOriginalFile;
-	if (!sOriginal.length())
-		sOriginal = sTexture;
+//	tstring sOriginal = sOriginalFile;
+//	if (!sOriginal.length())
+//		sOriginal = sMaterial;
 
-	if (!sTexture.length())
+	tstring sFullName = sMaterial;
+	if (sFullName.length() < 4 || sFullName.substr(sFullName.length()-4) != ".mat")
+		sFullName += ".mat";
+
+	if (!sFullName.length())
 	{
-		m_asTextures.push_back(sTexture);
-		m_asCopyTextures.push_back(sOriginal);
+		m_asMaterials.push_back(sFullName);
+		//m_asCopyTextures.push_back(sOriginal);
 	}
 	else
 	{
 		tstring sDirectoryPath = FindAbsolutePath(m_sGameDirectory);
-		tstring sTexturePath = FindAbsolutePath(sTexture);
+		tstring sMaterialPath = FindAbsolutePath(sFullName);
 
-		if (m_sGameDirectory.length() && sTexturePath.find(sDirectoryPath) == 0)
+		if (m_sGameDirectory.length() && sMaterialPath.find(sDirectoryPath) == 0)
 		{
 			size_t iLength = sDirectoryPath.length()+1;
 			if (sDirectoryPath.back() == '\\' || sDirectoryPath.back() == '/')
 				iLength = sDirectoryPath.length();
 
-			m_asTextures.push_back(ToForwardSlashes(sTexturePath.substr(iLength)));
+			m_asMaterials.push_back(ToForwardSlashes(sMaterialPath.substr(iLength)));
 		}
 		else
 		{
 			tstring sScriptPath = FindAbsolutePath(m_sScriptDirectory);
-			if (m_sScriptDirectory.length() && sTexturePath.find(sScriptPath) == 0)
+			if (m_sScriptDirectory.length() && sMaterialPath.find(sScriptPath) == 0)
 			{
 				size_t iLength = sScriptPath.length()+1;
 				if (sScriptPath.back() == '\\' || sScriptPath.back() == '/')
 					iLength = sScriptPath.length();
 
-				m_asTextures.push_back(GetFilenameAndExtension(ToForwardSlashes(sTexturePath.substr(iLength))));
+				m_asMaterials.push_back(GetFilenameAndExtension(ToForwardSlashes(sMaterialPath.substr(iLength))));
 			}
 			else
-				m_asTextures.push_back(GetFilenameAndExtension(sTexture));
+				m_asMaterials.push_back(GetFilenameAndExtension(sFullName));
 		}
 
-		m_asCopyTextures.push_back(sOriginal);
+		//m_asCopyTextures.push_back(sOriginal);
 	}
 
 	m_aaflData.push_back();
@@ -372,19 +376,19 @@ bool CToyUtil::Write(const tstring& sFilename)
 {
 	CalculateVisibleAreas();
 
-	for (size_t i = m_asTextures.size()-1; i < m_asTextures.size(); i--)
+	for (size_t i = m_asMaterials.size()-1; i < m_asMaterials.size(); i--)
 	{
 		// Must have at least one vertex or you get the boot.
 		if (!m_aaflData[i].size())
 		{
 			m_aaflData.erase(m_aaflData.begin()+i);
-			m_asTextures.erase(m_asTextures.begin()+i);
-			m_asCopyTextures.erase(m_asCopyTextures.begin()+i);
+			m_asMaterials.erase(m_asMaterials.begin()+i);
+			//m_asCopyTextures.erase(m_asCopyTextures.begin()+i);
 		}
 	}
 
 	// Copy textures to the destination folders.
-	for (size_t i = 0; i < m_asTextures.size(); i++)
+/*	for (size_t i = 0; i < m_asTextures.size(); i++)
 	{
 		if (!m_asCopyTextures[i].length())
 			continue;
@@ -394,7 +398,7 @@ bool CToyUtil::Write(const tstring& sFilename)
 
 		if (!CopyFileTo(m_asCopyTextures[i], m_asTextures[i], true))
 			TError("Couldn't copy texture '" + m_asCopyTextures[i] + "' to '" + m_asTextures[i] + "'.\n");
-	}
+	}*/
 
 	FILE* fp = tfopen(sFilename, "w");
 
@@ -407,12 +411,12 @@ bool CToyUtil::Write(const tstring& sFilename)
 	TAssert(sizeof(m_aabbBounds) == 4*6);
 	fwrite(&m_aabbBounds, sizeof(m_aabbBounds), 1, fp);
 
-	uint8_t iMaterials = m_asTextures.size();
+	uint8_t iMaterials = m_asMaterials.size();
 	fwrite(&iMaterials, sizeof(iMaterials), 1, fp);
 
 	uint32_t iFirstMaterial = TOY_HEADER_SIZE;
 	uint32_t iSizeSoFar = iFirstMaterial;
-	for (size_t i = 0; i < m_asTextures.size(); i++)
+	for (size_t i = 0; i < m_asMaterials.size(); i++)
 	{
 		fwrite(&iSizeSoFar, sizeof(iSizeSoFar), 1, fp);
 
@@ -421,7 +425,7 @@ bool CToyUtil::Write(const tstring& sFilename)
 
 		uint32_t iSize = 0;
 		iSize += MESH_MATERIAL_TEXNAME_LENGTH_SIZE;
-		iSize += m_asTextures[i].length()+1;
+		iSize += m_asMaterials[i].length()+1;
 		iSize += (m_aaflData[i].size()/5)*MESH_MATERIAL_VERTEX_SIZE;
 
 		iSizeSoFar += iSize;
@@ -458,13 +462,13 @@ bool CToyUtil::Write(const tstring& sFilename)
 
 		fwrite(g_szMeshHeader, sizeof(g_szMeshHeader), 1, fp);
 
-		iMaterials = m_asTextures.size();
+		iMaterials = m_asMaterials.size();
 
-		for (size_t i = 0; i < m_asTextures.size(); i++)
+		for (size_t i = 0; i < m_asMaterials.size(); i++)
 		{
-			uint16_t iLength = m_asTextures[i].length()+1;
+			uint16_t iLength = m_asMaterials[i].length()+1;
 			fwrite(&iLength, sizeof(iLength), 1, fp);
-			fwrite(m_asTextures[i].c_str(), iLength, 1, fp);
+			fwrite(m_asMaterials[i].c_str(), iLength, 1, fp);
 
 			fwrite(m_aaflData[i].data(), m_aaflData[i].size()*sizeof(float), 1, fp);
 		}

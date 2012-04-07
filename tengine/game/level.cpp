@@ -5,7 +5,7 @@
 
 #include <datamanager/data.h>
 #include <models/models.h>
-#include <textures/texturelibrary.h>
+#include <textures/materiallibrary.h>
 #include <game/entities/baseentity.h>
 
 void CLevel::ReadInfoFromData(const CData* pData)
@@ -207,11 +207,11 @@ void CLevelEntity::SetParameterValue(const tstring& sKey, const tstring& sValue)
 	CSaveData oSaveData;
 	CSaveData* pSaveData = CBaseEntity::FindSaveDataValuesByHandle(("C" + GetClass()).c_str(), sKey.c_str(), &oSaveData);
 
-	if (pSaveData->m_bDefault)
+	if (pSaveData->m_pszHandle && pSaveData->m_bDefault)
 	{
 		// Special case.
 		if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
-			m_hTextureModel = CTextureLibrary::AddTexture(sValue);
+			m_hMaterialModel = CMaterialLibrary::AddAsset(sValue);
 
 		if (strcmp(pSaveData->m_pszType, "bool") == 0)
 		{
@@ -352,14 +352,14 @@ size_t CLevelEntity::CalculateModelID(CLevelEntity* pThis)
 	return CModelLibrary::FindModel(sModel);
 }
 
-Vector2D CLevelEntity::CalculateTextureModelScale(CLevelEntity* pThis)
+Vector2D CLevelEntity::CalculateMaterialModelScale(CLevelEntity* pThis)
 {
-	tstring sScale = pThis->GetParameterValue("TextureScale");
+	tstring sScale = pThis->GetParameterValue("MaterialScale");
 
 	if (CanUnserializeString_Vector2D(sScale))
 		return UnserializeString_Vector2D(sScale);
 
-	return *((Vector2D*)&CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "TextureScale")->m_oDefault);
+	return *((Vector2D*)&CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "MaterialScale")->m_oDefault);
 }
 
 AABB CLevelEntity::CalculateBoundingBox(CLevelEntity* pThis)

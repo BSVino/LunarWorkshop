@@ -5,7 +5,7 @@
 #include <toys/toy_util.h>
 #include <toys/toy.h>
 #include <renderer/renderer.h>
-#include <textures/texturelibrary.h>
+#include <textures/materiallibrary.h>
 #include <physics/physics.h>
 #include <tinker/application.h>
 
@@ -232,7 +232,7 @@ bool CModel::Load()
 
 	size_t iMaterials = m_pToy->GetNumMaterials();
 
-	m_ahTextures.resize(iMaterials);
+	m_ahMaterials.resize(iMaterials);
 	m_aiVertexBuffers.resize(iMaterials);
 	m_aiVertexBufferSizes.resize(iMaterials);
 
@@ -243,14 +243,14 @@ bool CModel::Load()
 
 		m_aiVertexBuffers[i] = LoadBufferIntoGL(i);
 		m_aiVertexBufferSizes[i] = m_pToy->GetMaterialNumVerts(i);
-		m_ahTextures[i] = CTextureLibrary::AddTexture(m_pToy->GetMaterialTexture(i));
+		m_ahMaterials[i] = CMaterialLibrary::AddAsset(m_pToy->GetMaterialName(i));
 
-		if (!m_ahTextures[i].IsValid())
-			m_ahTextures[i] = CTextureLibrary::AddTexture(GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialTexture(i));
+		if (!m_ahMaterials[i].IsValid())
+			m_ahMaterials[i] = CMaterialLibrary::AddAsset(GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialName(i));
 
-		//TAssert(m_aiTextures[i]);
-		if (!m_ahTextures[i].IsValid())
-			TError(tstring("Couldn't find texture \"") + m_pToy->GetMaterialTexture(i) + "\"\n");
+		//TAssert(m_aiMaterials[i]);
+		if (!m_ahMaterials[i].IsValid())
+			TError(tstring("Couldn't find material \"") + m_pToy->GetMaterialName(i) + "\"\n");
 	}
 
 	if (m_pToy->GetPhysicsNumTris())

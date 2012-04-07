@@ -7,7 +7,7 @@
 #include <tinker/cvar.h>
 #include <tinker/profiler.h>
 #include <models/models.h>
-#include <textures/texturelibrary.h>
+#include <textures/materiallibrary.h>
 #include <renderer/game_renderer.h>
 #include <renderer/game_renderingcontext.h>
 #include <ui/gamewindow.h>
@@ -308,8 +308,8 @@ void CParticleSystem::Load()
 
 	m_bLoaded = true;
 
-	if (GetTextureName().length() > 0)
-		SetTexture(CTextureLibrary::AddTexture(GetTextureName()));
+	if (GetMaterialName().length() > 0)
+		SetMaterial(CMaterialLibrary::AddAsset(GetMaterialName()));
 
 	if (GetModelName().length() > 0)
 		SetModel(CModelLibrary::AddModel(GetModelName()));
@@ -329,8 +329,8 @@ void CParticleSystem::Unload()
 
 	m_bLoaded = false;
 
-	if (GetTextureName().length() > 0)
-		CTextureLibrary::ReleaseTexture(GetTextureName());
+	if (GetMaterialName().length() > 0)
+		CMaterialLibrary::ReleaseMaterial(GetMaterialName());
 
 	if (GetModelName().length() > 0)
 		CModelLibrary::ReleaseModel(GetModelName());
@@ -343,7 +343,7 @@ void CParticleSystem::Unload()
 
 bool CParticleSystem::IsRenderable()
 {
-	return !!GetTexture() || !!GetModel();
+	return !!GetMaterial() || !!GetModel();
 }
 
 void CParticleSystem::AddChild(size_t iSystem)
@@ -536,8 +536,8 @@ void CSystemInstance::Render(CGameRenderingContext* c)
 	Vector vecForward, vecRight, vecUp;
 	pRenderer->GetCameraVectors(&vecForward, &vecRight, &vecUp);
 
-	if (m_pSystem->GetTexture())
-		c->BindTexture(m_pSystem->GetTexture());
+	if (m_pSystem->GetMaterial())
+		c->UseMaterial(m_pSystem->GetMaterial());
 
 	c->SetBlend(m_pSystem->GetBlend());
 	c->SetDepthMask(m_pSystem->GetBlend() == BLEND_NONE);

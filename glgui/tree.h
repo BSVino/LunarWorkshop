@@ -39,7 +39,7 @@ namespace glgui
 		bool								IsExpanded() { return m_pExpandButton->IsExpanded(); };
 		void								SetExpanded(bool bExpanded) { m_pExpandButton->SetExpanded(bExpanded); };
 
-		void								SetIcon(const CTextureHandle& hTexture) { m_hIconTexture = hTexture; };
+		void								SetIcon(const CMaterialHandle& hMaterial) { m_hIconMaterial = hMaterial; };
 		virtual void						SetDraggable(bool bDraggable) { m_bDraggable = true; };
 
 		virtual bool						IsVisible();
@@ -66,7 +66,7 @@ namespace glgui
 		class CTree*						m_pTree;
 		class CLabel*						m_pLabel;
 
-		CTextureHandle						m_hIconTexture;
+		CMaterialHandle						m_hIconMaterial;
 
 		CPictureButton*						m_pVisibilityButton;
 		CPictureButton*						m_pEditButton;
@@ -76,7 +76,7 @@ namespace glgui
 		class CExpandButton : public CPictureButton
 		{
 		public:
-											CExpandButton(const CTextureHandle& hTexture);
+											CExpandButton(const CMaterialHandle& hMaterial);
 
 		public:
 			void							Think();
@@ -102,7 +102,7 @@ namespace glgui
 		friend class CTreeNode;
 
 	public:
-											CTree(const CTextureHandle& hArrowTexture = CTextureHandle(), const CTextureHandle& hEditTexture = CTextureHandle(), const CTextureHandle& hVisibilityTexture = CTextureHandle());
+											CTree(const CMaterialHandle& hArrowMaterial = CMaterialHandle(), const CMaterialHandle& hEditMaterial = CMaterialHandle(), const CMaterialHandle& hVisibilityMaterial = CMaterialHandle());
 		virtual								~CTree();
 
 	public:
@@ -162,9 +162,9 @@ namespace glgui
 		size_t								m_iHilighted;
 		size_t								m_iSelected;
 
-		CTextureHandle						m_hArrowTexture;
-		CTextureHandle						m_hVisibilityTexture;
-		CTextureHandle						m_hEditTexture;
+		CMaterialHandle						m_hArrowMaterial;
+		CMaterialHandle						m_hVisibilityMaterial;
+		CMaterialHandle						m_hEditMaterial;
 
 		IEventListener::Callback			m_pfnSelectedCallback;
 		IEventListener*						m_pSelectedListener;
@@ -216,14 +216,14 @@ namespace glgui
 
 		virtual void AddVisibilityButton()
 		{
-			m_pVisibilityButton = new CPictureButton("@", m_pTree->m_iVisibilityTexture);
+			m_pVisibilityButton = new CPictureButton("@", m_pTree->m_iVisibilityMaterial);
 			m_pVisibilityButton->SetClickedListener(this, Visibility);
 			AddControl(m_pVisibilityButton);
 		}
 
 		virtual void AddEditButton(EditFnCallback pfnCallback)
 		{
-			m_pEditButton = new CPictureButton("*", m_pTree->m_iEditTexture);
+			m_pEditButton = new CPictureButton("*", m_pTree->m_hEditMaterial);
 			m_pEditButton->SetClickedListener(this, Edit);
 			AddControl(m_pEditButton);
 			m_pfnCallback = pfnCallback;

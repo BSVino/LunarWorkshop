@@ -27,6 +27,7 @@
 #include <ui/gamewindow.h>
 #include <physics/physics.h>
 #include <tools/workbench.h>
+#include <textures/materiallibrary.h>
 
 #include "camera.h"
 #include "level.h"
@@ -137,7 +138,7 @@ void CGameServer::AllowPrecaches()
 	{
 		CEntityRegistration* pRegistration = &it->second;
 		pRegistration->m_asPrecaches.clear();
-		pRegistration->m_ahTexturePrecaches.clear();
+		pRegistration->m_ahMaterialPrecaches.clear();
 	}
 
 	CModelLibrary::ResetReferenceCounts();
@@ -193,10 +194,11 @@ void CGameServer::PrecacheList()
 	CParticleSystemLibrary::ClearUnreferenced();
 	CModelLibrary::ClearUnreferenced();
 	CTextureLibrary::ClearUnreferenced();
+	CMaterialLibrary::ClearUnreferenced();
 	CSoundLibrary::ClearUnreferenced();
 
 	TMsg("Done.\n");
-	TMsg(sprintf(tstring("%d models, %d textures, %d sounds and %d particle systems precached.\n"), CModelLibrary::GetNumModelsLoaded(), CTextureLibrary::GetNumTextures(), CSoundLibrary::GetNumSoundsLoaded(), CParticleSystemLibrary::GetNumParticleSystemsLoaded()));
+	TMsg(sprintf(tstring("%d models, %d materials, %d textures, %d sounds and %d particle systems precached.\n"), CModelLibrary::GetNumModelsLoaded(), CMaterialLibrary::GetNumMaterials(), CTextureLibrary::GetNumTextures(), CSoundLibrary::GetNumSoundsLoaded(), CParticleSystemLibrary::GetNumParticleSystemsLoaded()));
 
 	m_bAllowPrecaches = false;
 }
@@ -350,8 +352,8 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 
 			CSaveData oSaveDataValues;
 			CSaveData* pSaveData = CBaseEntity::FindSaveDataValuesByHandle(pEntity->GetClassName(), sHandle.c_str(), &oSaveDataValues);
-			TAssert(pSaveData);
-			if (!pSaveData)
+			TAssert(pSaveData && pSaveData->m_pszHandle);
+			if (!pSaveData || !pSaveData->m_pszHandle)
 			{
 				TError("Unknown handle '" + sHandle + "'\n");
 				continue;

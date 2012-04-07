@@ -15,7 +15,6 @@ public:
 
 public:
 	virtual void	Initialize();
-	virtual void	LoadShaders();
 
 	virtual void	PreRender();
 	virtual void	ModifyContext(class CRenderingContext* pContext);
@@ -24,8 +23,6 @@ public:
 	virtual void	FinishRendering(class CRenderingContext* pContext);
 	virtual void	StartRenderingReflection(class CRenderingContext* pContext, CMirror* pMirror);
 	bool			IsRenderingReflection() const { return m_bRenderingReflection; }
-
-	void			SetupShader(CRenderingContext* c, CModel* pModel, size_t iMaterial);
 
 	float			BloomBrightnessCutoff() const { return 1.25f; }
 

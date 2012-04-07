@@ -9,7 +9,7 @@
 #include <geometry.h>
 #include <trs.h>
 
-#include <textures/texturehandle.h>
+#include <textures/materialhandle.h>
 
 // A description of an entity for use in the level editor
 class CLevelEntity
@@ -57,7 +57,7 @@ public:
 		m_trsGlobalTRS.SetCallbacks(&CalculateGlobalTRS, this);
 		m_bVisible.SetCallbacks(&CalculateVisible, this);
 		m_iModel.SetCallbacks(&CalculateModelID, this);
-		m_vecTextureModelScale.SetCallbacks(&CalculateTextureModelScale, this);
+		m_vecMaterialModelScale.SetCallbacks(&CalculateMaterialModelScale, this);
 		m_aabbBounds.SetCallbacks(&CalculateBoundingBox, this);
 		m_sName.SetCallbacks(&CalculateName, this);
 	}
@@ -68,7 +68,7 @@ public:
 		m_trsGlobalTRS.Dirtify();
 		m_bVisible.Dirtify();
 		m_iModel.Dirtify();
-		m_vecTextureModelScale.Dirtify();
+		m_vecMaterialModelScale.Dirtify();
 		m_aabbBounds.Dirtify();
 		m_sName.Dirtify();
 	}
@@ -76,7 +76,7 @@ public:
 	tstring								GetClass() { return m_sClass; }
 	void								SetClass(const tstring& sClass) { m_sClass = sClass; }
 
-	const CTextureHandle&				GetTextureModel() { return m_hTextureModel; }
+	const CMaterialHandle&				GetMaterialModel() { return m_hMaterialModel; }
 
 	eastl::vector<CLevelEntityOutput>&	GetOutputs() { return m_aOutputs; }
 
@@ -91,7 +91,7 @@ public:
 	TRS									GetGlobalTRS() { return m_trsGlobalTRS; }
 	bool								IsVisible() { return m_bVisible; }
 	size_t								GetModelID() { return m_iModel; }
-	Vector2D							GetTextureModelScale() { return m_vecTextureModelScale; }
+	Vector2D							GetMaterialModelScale() { return m_vecMaterialModelScale; }
 	AABB								GetBoundingBox() { return m_aabbBounds; }
 	tstring								GetName() { return m_sName; }
 
@@ -100,20 +100,20 @@ public:
 	static TRS							CalculateGlobalTRS(CLevelEntity* pThis);
 	static bool							CalculateVisible(CLevelEntity* pThis);
 	static size_t						CalculateModelID(CLevelEntity* pThis);
-	static Vector2D						CalculateTextureModelScale(CLevelEntity* pThis);
+	static Vector2D						CalculateMaterialModelScale(CLevelEntity* pThis);
 	static AABB							CalculateBoundingBox(CLevelEntity* pThis);
 	static tstring						CalculateName(CLevelEntity* pThis);
 
 private:
 	tstring								m_sClass;
 	eastl::map<tstring, tstring>		m_asParameters;
-	CTextureHandle						m_hTextureModel;
+	CMaterialHandle						m_hMaterialModel;
 
 	CCachedValue<Matrix4x4, CLevelEntity>	m_mGlobalTransform;
 	CCachedValue<TRS, CLevelEntity>			m_trsGlobalTRS;
 	CCachedValue<bool, CLevelEntity>		m_bVisible;
 	CCachedValue<size_t, CLevelEntity>		m_iModel;
-	CCachedValue<Vector2D, CLevelEntity>	m_vecTextureModelScale;
+	CCachedValue<Vector2D, CLevelEntity>	m_vecMaterialModelScale;
 	CCachedValue<AABB, CLevelEntity>		m_aabbBounds;
 	CCachedValue<tstring, CLevelEntity>		m_sName;
 

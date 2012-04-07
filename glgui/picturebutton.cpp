@@ -4,10 +4,10 @@
 
 using namespace glgui;
 
-CPictureButton::CPictureButton(const tstring& sText, const CTextureHandle& hTexture, bool bToggle)
+CPictureButton::CPictureButton(const tstring& sText, const CMaterialHandle& hMaterial, bool bToggle)
 	: CButton(0, 0, 32, 32, sText, bToggle)
 {
-	m_hTexture = hTexture;
+	m_hMaterial = hMaterial;
 	m_bShowBackground = true;
 	m_bSheet = false;
 }
@@ -26,14 +26,14 @@ void CPictureButton::Paint(float x, float y, float w, float h)
 
 	if (m_bSheet)
 	{
-		PaintSheet(m_hTexture, x, y, w, h, m_iSX, m_iSY, m_iSW, m_iSH, m_iTW, m_iTH, Color(255,255,255,(unsigned char)(GetAlpha()*flHighlight)));
+		PaintSheet(m_hMaterial, x, y, w, h, m_iSX, m_iSY, m_iSW, m_iSH, m_iTW, m_iTH, Color(255,255,255,(unsigned char)(GetAlpha()*flHighlight)));
 	}
-	else if (m_hTexture.IsValid())
+	else if (m_hMaterial.IsValid())
 	{
 		glEnablei(GL_BLEND, 0);
 		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		PaintTexture(m_hTexture, x, y, w, h, Color(255,255,255,(unsigned char)(GetAlpha()*flHighlight)));
+		PaintTexture(m_hMaterial, x, y, w, h, Color(255,255,255,(unsigned char)(GetAlpha()*flHighlight)));
 	}
 	else
 	{
@@ -45,16 +45,16 @@ void CPictureButton::Paint(float x, float y, float w, float h)
 	CBaseControl::Paint(x, y, w, h);
 }
 
-void CPictureButton::SetTexture(const CTextureHandle& hTexture)
+void CPictureButton::SetTexture(const CMaterialHandle& hMaterial)
 {
 	m_bSheet = false;
-	m_hTexture = hTexture;
+	m_hMaterial = hMaterial;
 }
 
-void CPictureButton::SetSheetTexture(const CTextureHandle& hTexture, int sx, int sy, int sw, int sh, int tw, int th)
+void CPictureButton::SetSheetTexture(const CMaterialHandle& hMaterial, int sx, int sy, int sw, int sh, int tw, int th)
 {
 	m_bSheet = true;
-	m_hTexture = hTexture;
+	m_hMaterial = hMaterial;
 	m_iSX = sx;
 	m_iSY = sy;
 	m_iSW = sw;
@@ -63,10 +63,10 @@ void CPictureButton::SetSheetTexture(const CTextureHandle& hTexture, int sx, int
 	m_iTH = th;
 }
 
-void CPictureButton::SetSheetTexture(const CTextureHandle& hTexture, const Rect& rArea, int tw, int th)
+void CPictureButton::SetSheetTexture(const CMaterialHandle& hMaterial, const Rect& rArea, int tw, int th)
 {
 	m_bSheet = true;
-	m_hTexture = hTexture;
+	m_hMaterial = hMaterial;
 	m_iSX = rArea.x;
 	m_iSY = rArea.y;
 	m_iSW = rArea.w;
