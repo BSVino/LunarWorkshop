@@ -421,17 +421,18 @@ void CBulletPhysics::UnloadCollisionMesh(const tstring& sModel)
 	if (it == m_apCollisionMeshes.end())
 		return;
 
-#ifdef _DEBUG
 	// Make sure there are no objects using this collision shape.
 	for (int i = 0; i < m_pDynamicsWorld->getCollisionObjectArray().size(); i++)
 	{
 		auto pObject = m_pDynamicsWorld->getCollisionObjectArray()[i];
 		CEntityHandle<CBaseEntity> hEntity((size_t)pObject->getUserPointer());
-		if (pObject->getCollisionShape() == it->second.m_pCollisionShape)
-			TMsg("Entity found with collision shape which is being unloaded: " + tstring(hEntity->GetClassName()) + ":" + convertstring<char, tchar>(hEntity->GetName()) + "\n");
 		TAssert(pObject->getCollisionShape() != it->second.m_pCollisionShape);
+		if (pObject->getCollisionShape() == it->second.m_pCollisionShape)
+		{
+			TError("Entity found with collision shape '" + sModel + "' which is being unloaded: " + tstring(hEntity->GetClassName()) + ":" + convertstring<char, tchar>(hEntity->GetName()) + "\n");
+			RemoveEntity(hEntity);
+		}
 	}
-#endif
 
 	delete it->second.m_pCollisionShape;
 	delete it->second.m_pIndexVertexArray;
