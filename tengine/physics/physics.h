@@ -40,6 +40,8 @@ public:
 	virtual void			SetControllerColliding(class CBaseEntity* pEnt, bool bColliding) {};
 	virtual void			SetEntityGravity(class CBaseEntity* pEnt, const Vector& vecGravity) {};
 	virtual void			SetEntityUpVector(class CBaseEntity* pEnt, const Vector& vecUp) {};
+	virtual void			SetLinearFactor(class CBaseEntity* pEnt, const Vector& vecFactor) {};
+	virtual void			SetAngularFactor(class CBaseEntity* pEnt, const Vector& vecFactor) {};
 
 	virtual void			CharacterJump(class CBaseEntity* pEnt) {};
 };

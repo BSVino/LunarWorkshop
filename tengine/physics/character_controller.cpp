@@ -96,6 +96,7 @@ CCharacterController::CCharacterController(CCharacter* pEntity, btPairCachingGho
 	m_flVerticalOffset = 0.0;
 	m_vecGravity = btVector3(0, -9.8f, 0);
 	m_vecUpVector = btVector3(0, 1, 0);
+	m_vecLinearFactor = btVector3(1, 1, 1);
 	m_flMaxFallSpeed = 55.0; // Terminal velocity of a sky diver in m/s.
 	m_flJumpSpeed = 6.0;
 	m_flCurrentStepOffset = m_flStepHeight;
@@ -203,6 +204,8 @@ void CCharacterController::playerStep(btCollisionWorld* pCollisionWorld, btScala
 	btTransform mWorld;
 	mWorld = m_pGhostObject->getWorldTransform();
 
+	btVector3 vecOriginalPosition = mWorld.getOrigin();
+
 	StepUp(pCollisionWorld);
 
 	StepForwardAndStrafe(pCollisionWorld, m_vecWalkDirection * dt);
@@ -211,7 +214,7 @@ void CCharacterController::playerStep(btCollisionWorld* pCollisionWorld, btScala
 
 	// printf("\n");
 
-	mWorld.setOrigin (m_vecCurrentPosition);
+	mWorld.setOrigin(mWorld.getOrigin() + (m_vecCurrentPosition - vecOriginalPosition) * m_vecLinearFactor);
 	m_pGhostObject->setWorldTransform (mWorld);
 }
 
@@ -327,6 +330,7 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 	pCollisionWorld->getDispatcher()->dispatchAllCollisionPairs(m_pGhostObject->getOverlappingPairCache(), pCollisionWorld->getDispatchInfo(), pCollisionWorld->getDispatcher());
 
 	m_vecCurrentPosition = m_pGhostObject->getWorldTransform().getOrigin();
+	btVector3 vecOriginalPosition = m_vecCurrentPosition;
 
 	btScalar maxPen = btScalar(0.0);
 	for (int i = 0; i < m_pGhostObject->getOverlappingPairCache()->getNumOverlappingPairs(); i++)
@@ -431,7 +435,7 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 	}
 
 	btTransform mNew = m_pGhostObject->getWorldTransform();
-	mNew.setOrigin(m_vecCurrentPosition);
+	mNew.setOrigin(mNew.getOrigin() + (m_vecCurrentPosition - vecOriginalPosition) * m_vecLinearFactor);
 	m_pGhostObject->setWorldTransform(mNew);
 
 	//printf("m_vecTouchingNormal = %f,%f,%f\n", m_vecTouchingNormal[0], m_vecTouchingNormal[1], m_vecTouchingNormal[2]);

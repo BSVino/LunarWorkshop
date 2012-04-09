@@ -40,6 +40,8 @@ void CGrottoCharacter::Spawn()
 	m_iReflected = 0;
 
 	m_iDepthLevel = (int)(GetGlobalOrigin().z / METERS_PER_DEPTH);
+
+	GamePhysics()->SetLinearFactor(this, Vector(0, 1, 1));
 }
 
 TVector CGrottoCharacter::GetGoalVelocity()

@@ -60,6 +60,9 @@ public:
 	void			SetUpVector(const btVector3& v) { m_vecUpVector = v; };
 	btVector3		GetUpVector() const { return m_vecUpVector; };
 
+	void			SetLinearFactor(const btVector3& v) { m_vecLinearFactor = v; };
+	btVector3		GetLinearFactor() const { return m_vecLinearFactor; };
+
 	/// The max slope determines the maximum angle that the controller can walk up.
 	/// The slope angle is measured in radians.
 	void			SetMaxSlope(btScalar slopeRadians);
@@ -102,6 +105,8 @@ protected:
 	btVector3		m_vecGravity;
 
 	btVector3		m_vecUpVector;
+
+	btVector3		m_vecLinearFactor;
 
 	btScalar		m_flStepHeight;
 

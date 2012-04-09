@@ -589,6 +589,33 @@ void CBulletPhysics::SetEntityUpVector(class CBaseEntity* pEnt, const Vector& ve
 		pPhysicsEntity->m_pCharacterController->SetUpVector(v);
 }
 
+void CBulletPhysics::SetLinearFactor(class CBaseEntity* pEnt, const Vector& vecFactor)
+{
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
+	if (!pPhysicsEntity)
+		return;
+
+	btVector3 v(vecFactor.x, vecFactor.y, vecFactor.z);
+
+	if (pPhysicsEntity->m_pRigidBody)
+		pPhysicsEntity->m_pRigidBody->setLinearFactor(v);
+	else if (pPhysicsEntity->m_pCharacterController)
+		pPhysicsEntity->m_pCharacterController->SetLinearFactor(v);
+}
+
+void CBulletPhysics::SetAngularFactor(class CBaseEntity* pEnt, const Vector& vecFactor)
+{
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
+	if (!pPhysicsEntity)
+		return;
+
+	btVector3 v(vecFactor.x, vecFactor.y, vecFactor.z);
+
+	TAssert(!pPhysicsEntity->m_pCharacterController);
+	if (pPhysicsEntity->m_pRigidBody)
+		pPhysicsEntity->m_pRigidBody->setAngularFactor(v);
+}
+
 void CBulletPhysics::CharacterJump(class CBaseEntity* pEnt)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
