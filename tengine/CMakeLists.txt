@@ -130,6 +130,8 @@ source_group(UI FILES ${TENGINE_UI_SOURCES})
 source_group(Tinker FILES ${TENGINE_TINKER_SOURCES})
 source_group(Tools FILES ${TENGINE_TOOLS_SOURCES})
 
+add_msvc_precompiled_header("game/entities/baseentity.h" "game/entities/baseentity_pch.cpp" TENGINE_SOURCES)
+
 add_library(tengine STATIC ${TENGINE_SOURCES})
 target_link_libraries (tengine tinker modelconverter toys geppetto)
 
