@@ -60,28 +60,6 @@ size_t CTextureLibrary::FindTextureID(const tstring& sTexture)
 	return FindTexture(sTexture)->m_iGLID;
 }
 
-void CTextureLibrary::ReleaseTexture(const tstring& sTexture)
-{
-	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
-	if (it == Get()->m_aTextures.end())
-		return;
-
-	TAssert(it->second.m_iReferences > 0);
-	it->second.m_iReferences--;
-}
-
-void CTextureLibrary::ReleaseAsset(const CTexture* pTexture)
-{
-	if (!pTexture)
-		return;
-
-	CTexture* pTextureNonConst = const_cast<CTexture*>(pTexture);
-
-	TAssert(pTextureNonConst->m_iReferences > 0);
-	if (pTextureNonConst->m_iReferences > 0)
-		pTextureNonConst->m_iReferences--;
-}
-
 size_t CTextureLibrary::GetTextureGLID(const tstring& sTexture)
 {
 	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);

@@ -38,8 +38,6 @@ public:
 	static CTextureHandle	AddAsset(const tstring& sTexture, int iClamp = 0);
 	static CTextureHandle	FindTexture(const tstring& sTexture);
 	static size_t			FindTextureID(const tstring& sTexture);
-	static void				ReleaseTexture(const tstring& sTexture);
-	static void				ReleaseAsset(const CTexture* pTexture);
 
 	static size_t			GetTextureGLID(const tstring& sTexture);
 	static size_t			GetTextureWidth(const tstring& sTexture);

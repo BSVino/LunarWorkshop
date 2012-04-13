@@ -56,8 +56,6 @@ public:
 	static CMaterialHandle	AddAsset(const tstring& sMaterial, int iClamp = 0);
 	static CMaterialHandle	CreateMaterial(const class CData* pData, const tstring& sMaterial="");
 	static CMaterialHandle	FindMaterial(const tstring& sMaterial);
-	static void				ReleaseMaterial(const tstring& sMaterial);
-	static void				ReleaseAsset(const CMaterial* pMaterial);
 
 	static size_t			GetNumMaterialsLoaded() { return Get()->m_aMaterials.size(); };
 	static bool				IsAssetLoaded(const tstring& sMaterial);

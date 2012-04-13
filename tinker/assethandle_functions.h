@@ -29,7 +29,7 @@ CAssetHandle<C, L>::CAssetHandle(const CAssetHandle& c)
 template <class C, class L>
 CAssetHandle<C, L>::~CAssetHandle()
 {
-	L::ReleaseAsset(m_pAsset);
+	Reset();
 }
 
 template <class C, class L>
@@ -54,13 +54,17 @@ void CAssetHandle<C, L>::Reset()
 	if (!IsValid())
 		return;
 
-	L::ReleaseAsset(m_pAsset);
+	TAssertNoMsg(m_pAsset->m_iReferences);
+	const_cast<C*>(m_pAsset)->m_iReferences--;
+
 	m_pAsset = nullptr;
 }
 
 template <class C, class L>
 const CAssetHandle<C, L>& CAssetHandle<C, L>::operator=(const CAssetHandle<C, L>& c)
 {
+	Reset();
+
 	m_sName = c.m_sName;
 	if (c.m_pAsset)
 	{

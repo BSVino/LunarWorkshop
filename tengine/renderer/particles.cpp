@@ -329,8 +329,7 @@ void CParticleSystem::Unload()
 
 	m_bLoaded = false;
 
-	if (GetMaterialName().length() > 0)
-		CMaterialLibrary::ReleaseMaterial(GetMaterialName());
+	SetMaterial(CMaterialHandle());
 
 	if (GetModelName().length() > 0)
 		CModelLibrary::ReleaseModel(GetModelName());

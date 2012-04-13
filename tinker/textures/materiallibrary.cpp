@@ -157,28 +157,6 @@ CMaterialHandle CMaterialLibrary::FindMaterial(const tstring& sMaterial)
 	return CMaterialHandle(sMaterial, &it->second);
 }
 
-void CMaterialLibrary::ReleaseMaterial(const tstring& sMaterial)
-{
-	eastl::map<tstring, CMaterial>::iterator it = Get()->m_aMaterials.find(sMaterial);
-	if (it == Get()->m_aMaterials.end())
-		return;
-
-	TAssert(it->second.m_iReferences > 0);
-	it->second.m_iReferences--;
-}
-
-void CMaterialLibrary::ReleaseAsset(const CMaterial* pMaterial)
-{
-	if (!pMaterial)
-		return;
-
-	CMaterial* pMaterialNonConst = const_cast<CMaterial*>(pMaterial);
-
-	TAssert(pMaterialNonConst->m_iReferences > 0);
-	if (pMaterialNonConst->m_iReferences > 0)
-		pMaterialNonConst->m_iReferences--;
-}
-
 bool CMaterialLibrary::IsAssetLoaded(const tstring& sMaterial)
 {
 	eastl::map<tstring, CMaterial>::iterator it = Get()->m_aMaterials.find(sMaterial);
