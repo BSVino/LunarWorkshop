@@ -119,22 +119,27 @@ void CShaderLibrary::AddShader(const tstring& sFile)
 			for (size_t j = 0; j < pChild->GetNumChildren(); j++)
 			{
 				CData* pUniform = pChild->GetChild(j);
-				if (pUniform->GetKey() != "Uniform")
-					continue;
-
-				auto& oUniform = oParameter.first->second.m_aActions.push_back();
-				oUniform.m_sName = pUniform->GetValueTString();
-				CData* pValue = pUniform->FindChild("Value");
-				CData* pTexture = pUniform->FindChild("Texture");
-				TAssert(!(pValue && pTexture));
-				TAssert(pValue || pTexture);
-
-				if (pValue)
-					oUniform.m_sValue = pValue->GetValueTString();
-				else if (pTexture)
+				if (pUniform->GetKey() == "Uniform")
 				{
-					oUniform.m_sValue = pTexture->GetValueTString();
-					oShader.m_asTextures.push_back(pUniform->GetValueTString());
+					auto& oUniform = oParameter.first->second.m_aActions.push_back();
+					oUniform.m_sName = pUniform->GetValueTString();
+					CData* pValue = pUniform->FindChild("Value");
+					CData* pTexture = pUniform->FindChild("Texture");
+					TAssert(!(pValue && pTexture));
+					TAssert(pValue || pTexture);
+
+					if (pValue)
+						oUniform.m_sValue = pValue->GetValueTString();
+					else if (pTexture)
+					{
+						oUniform.m_sValue = pTexture->GetValueTString();
+						oShader.m_asTextures.push_back(pUniform->GetValueTString());
+					}
+				}
+				else if (pUniform->GetKey() == "Blend")
+				{
+					tstring& sBlend = oParameter.first->second.m_sBlend;
+					sBlend = pUniform->GetValueTString();
 				}
 			}
 		}

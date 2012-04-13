@@ -41,11 +41,6 @@ void CPlayerCharacter::Spawn()
 	BaseClass::Spawn();
 }
 
-void CPlayerCharacter::PreRender(bool bTransparent) const
-{
-	BaseClass::PreRender(bTransparent);
-}
-
 void CPlayerCharacter::PlaceMirror(mirror_t eMirror)
 {
 	if (m_hMirror != NULL)

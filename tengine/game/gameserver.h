@@ -88,7 +88,6 @@ public:
 	void										Think(double flHostTime);
 	void										Simulate();
 	void										Render();
-	void										RenderEverything();
 
 	virtual void								Think() {};
 
@@ -150,8 +149,6 @@ protected:
 	double										m_flFrameTime;		// This is the delta of each frame of game time
 	double										m_flHostTime;		// This is the current time for the computer
 	size_t										m_iFrame;
-
-	eastl::vector<CBaseEntity*>					m_apRenderList;
 
 	class CCamera*								m_pCamera;
 

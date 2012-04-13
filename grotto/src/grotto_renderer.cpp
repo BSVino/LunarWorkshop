@@ -82,7 +82,7 @@ void CGrottoRenderer::PreRender()
 		if (pPlayerCharacter)
 			c.SetWinding(!(pPlayerCharacter->IsReflected(REFLECTION_LATERAL) == pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)));
 
-		GameServer()->RenderEverything();
+		RenderEverything();
 		FinishRendering(&c);
 
 		m_bRenderingReflection = false;

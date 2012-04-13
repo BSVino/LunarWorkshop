@@ -15,7 +15,6 @@ public:
 	void						Spawn();
 
 	bool						ShouldRender() const { return true; };
-	void						PreRender(bool bTransparent) const;
 
 	void						PlaceMirror(mirror_t eMirror);
 

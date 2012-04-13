@@ -98,8 +98,8 @@ public:
 	virtual					~CLevelEditor();
 
 public:
-	void					RenderEntity(size_t i, bool bTransparent);
-	void					RenderEntity(class CLevelEntity* pEntity, bool bTransparent, bool bSelected=false);
+	void					RenderEntity(size_t i);
+	void					RenderEntity(class CLevelEntity* pEntity, bool bSelected=false);
 	void					RenderCreateEntityPreview();
 
 	Vector					PositionFromMouse();

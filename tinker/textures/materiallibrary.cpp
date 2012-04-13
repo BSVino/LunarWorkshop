@@ -84,6 +84,14 @@ CMaterialHandle CMaterialLibrary::CreateMaterial(const CData* pData, const tstri
 			continue;
 		}
 
+		if (it->second.m_sBlend.length())
+		{
+			oMat.m_sBlend = it->second.m_sBlend;
+			if (oMat.m_sBlend == "[value]")
+				oMat.m_sBlend = pParameter->GetValueTString();
+			continue;
+		}
+
 		CMaterial::CParameter& oPar = oMat.m_aParameters.push_back();
 		oPar.m_sName = sParameter;
 		oPar.m_sValue = pParameter->GetValueTString();

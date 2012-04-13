@@ -16,7 +16,7 @@ public:
 	void			Spawn();
 	void			Think();
 
-	void			PostRender(bool bTransparent) const;
+	void			PostRender() const;
 
 	bool			CanSeePlayer() const { return m_bSeesPlayer; }
 	void			LosePlayer();

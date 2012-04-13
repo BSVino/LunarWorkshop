@@ -50,7 +50,15 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 			if (!pModel->m_aiVertexBufferSizes[m])
 				continue;
 
-			UseMaterial(pModel->m_ahMaterials[m]);
+			CMaterialHandle& hMaterial = pModel->m_ahMaterials[m];
+
+			if (m_pRenderer->IsRenderingTransparent() && hMaterial->m_sBlend == "")
+				continue;
+
+			if (!m_pRenderer->IsRenderingTransparent() && hMaterial->m_sBlend != "")
+				continue;
+
+			UseMaterial(hMaterial);
 
 			RenderModel(pModel, m);
 		}

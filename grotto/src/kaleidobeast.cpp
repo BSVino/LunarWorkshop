@@ -132,9 +132,9 @@ void CKaleidobeast::Think()
 	BaseClass::Think();
 }
 
-void CKaleidobeast::PostRender(bool bTransparent) const
+void CKaleidobeast::PostRender() const
 {
-	if (!bTransparent)
+	if (GameServer()->GetRenderer()->IsRenderingTransparent())
 		return;
 
 	CRenderingContext c(GameServer()->GetRenderer(), true);

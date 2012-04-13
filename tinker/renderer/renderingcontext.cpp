@@ -356,6 +356,17 @@ void CRenderingContext::SetupMaterial()
 	if (!m_pShader)
 		return;
 
+	const tstring& sMaterialBlend = GetContext().m_hMaterial->m_sBlend;
+	if (sMaterialBlend == "alpha")
+		SetBlend(BLEND_ALPHA);
+	else if (sMaterialBlend == "additive")
+		SetBlend(BLEND_ADDITIVE);
+	else
+	{
+		TAssert(!sMaterialBlend.length());
+		SetBlend(BLEND_NONE);
+	}
+
 	for (auto it = m_pShader->m_asUniforms.begin(); it != m_pShader->m_asUniforms.end(); it++)
 	{
 		auto it2 = m_pShader->m_aDefaults.find(it->first);

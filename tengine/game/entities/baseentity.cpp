@@ -830,20 +830,20 @@ void CBaseEntity::SetActive(const eastl::vector<tstring>& sArgs)
 
 CVar show_centers("debug_show_centers", "off");
 
-void CBaseEntity::PreRender(bool bTransparent) const
+void CBaseEntity::PreRender() const
 {
 	if (ShouldRenderModel() && CModelLibrary::GetModel(m_iModel))
 		GameServer()->GetRenderer()->ClassifySceneAreaPosition(CModelLibrary::GetModel(m_iModel));
 }
 
-void CBaseEntity::Render(bool bTransparent) const
+void CBaseEntity::Render() const
 {
 	TPROF("CBaseEntity::Render");
 
 	if (!IsVisible())
 		return;
 
-	PreRender(bTransparent);
+	PreRender();
 
 	do {
 		CGameRenderingContext r(GameServer()->GetRenderer(), true);
@@ -854,7 +854,7 @@ void CBaseEntity::Render(bool bTransparent) const
 
 		r.Transform(GetRenderTransform());
 
-		ModifyContext(&r, bTransparent);
+		ModifyContext(&r);
 
 		if (r.GetAlpha() > 0)
 		{
@@ -862,21 +862,13 @@ void CBaseEntity::Render(bool bTransparent) const
 			{
 				if (m_iModel != (size_t)~0)
 				{
-					if (r.GetBlend() == BLEND_NONE && !bTransparent)
-					{
-						TPROF("CRenderingContext::RenderModel(Opaque)");
-						r.RenderModel(GetModelID(), this);
-					}
-					else if (r.GetBlend() != BLEND_NONE && bTransparent)
-					{
-						TPROF("CRenderingContext::RenderModel(Transparent)");
-						r.RenderModel(GetModelID(), this);
-					}
+					TPROF("CRenderingContext::RenderModel()");
+					r.RenderModel(GetModelID(), this);
 				}
 
 				if (m_hMaterialModel.IsValid())
 				{
-					if (bTransparent)
+					if (GameServer()->GetRenderer()->IsRenderingTransparent())
 					{
 						TPROF("CRenderingContext::RenderModel(Material)");
 						r.SetBlend(BLEND_ALPHA);
@@ -887,11 +879,11 @@ void CBaseEntity::Render(bool bTransparent) const
 			}
 
 			TPROF("CBaseEntity::OnRender");
-			OnRender(&r, bTransparent);
+			OnRender(&r);
 		}
 	} while (false);
 
-	PostRender(bTransparent);
+	PostRender();
 
 	if (show_centers.GetBool())
 	{

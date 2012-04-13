@@ -22,6 +22,7 @@ public:
 	size_t			m_iReferences;
 
 	tstring			m_sShader;
+	tstring			m_sBlend;
 
 	class CParameter
 	{

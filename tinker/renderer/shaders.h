@@ -52,6 +52,8 @@ public:
 		};
 
 		eastl::vector<CUniform>	m_aActions;
+
+		tstring				m_sBlend;
 	};
 
 	eastl::map<tstring, CParameter>				m_aParameters;	// What the shader.txt has.

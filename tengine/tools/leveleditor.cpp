@@ -524,7 +524,7 @@ CLevelEditor::~CLevelEditor()
 	delete m_pCreateEntityPanel;
 }
 
-void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
+void CLevelEditor::RenderEntity(size_t i)
 {
 	CLevelEntity* pEntity = &m_pLevel->GetEntityData()[i];
 
@@ -532,13 +532,13 @@ void CLevelEditor::RenderEntity(size_t i, bool bTransparent)
 	{
 		CLevelEntity oCopy = *pEntity;
 		oCopy.SetGlobalTransform(Manipulator()->GetTransform());
-		RenderEntity(&oCopy, bTransparent, true);
+		RenderEntity(&oCopy, true);
 	}
 	else
-		RenderEntity(pEntity, bTransparent, m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i);
+		RenderEntity(pEntity, m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i);
 }
 
-void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool bSelected)
+void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected)
 {
 	CGameRenderingContext r(GameServer()->GetRenderer(), true);
 
@@ -562,21 +562,12 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool b
 		else
 			r.SetColor(Color(255, 255, 255));
 
-		r.SetBlend(BLEND_ALPHA);
-		if (r.GetBlend() == BLEND_NONE && !bTransparent)
-		{
-			TPROF("CLevelEditor::RenderEntity(Opaque)");
-			r.RenderModel(pEntity->GetModelID(), nullptr);
-		}
-		else if (r.GetBlend() != BLEND_NONE && bTransparent)
-		{
-			TPROF("CLevelEditor::RenderEntity(Transparent)");
-			r.RenderModel(pEntity->GetModelID(), nullptr);
-		}
+		TPROF("CLevelEditor::RenderEntity()");
+		r.RenderModel(pEntity->GetModelID(), nullptr);
 	}
 	else if (pEntity->GetMaterialModel().IsValid())
 	{
-		if (bTransparent)
+		if (GameServer()->GetRenderer()->IsRenderingTransparent())
 		{
 			TPROF("CLevelEditor::RenderModel(Material)");
 			r.UseProgram("model");
@@ -586,7 +577,6 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bTransparent, bool b
 			else
 				r.SetUniform("vecColor", Color(255, 255, 255, (char)(255*flAlpha)));
 
-			r.SetBlend(BLEND_ALPHA);
 			r.Scale(0, pEntity->GetMaterialModelScale().y, pEntity->GetMaterialModelScale().x);
 			r.RenderMaterialModel(pEntity->GetMaterialModel());
 		}
@@ -769,12 +759,16 @@ void CLevelEditor::RenderScene()
 
 	TPROF("CLevelEditor::RenderEntities()");
 
+	GameServer()->GetRenderer()->SetRenderingTransparent(false);
+
 	auto& aEntityData = m_pLevel->GetEntityData();
 	for (size_t i = 0; i < aEntityData.size(); i++)
-		RenderEntity(i, false);
+		RenderEntity(i);
+
+	GameServer()->GetRenderer()->SetRenderingTransparent(true);
 
 	for (size_t i = 0; i < aEntityData.size(); i++)
-		RenderEntity(i, true);
+		RenderEntity(i);
 
 	if (m_pCreateEntityPanel->IsVisible() && m_pCreateEntityPanel->m_bReadyToCreate)
 		RenderCreateEntityPreview();

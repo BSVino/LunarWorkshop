@@ -14,6 +14,8 @@
 #include <physics/physics.h>
 #include <toys/toy.h>
 #include <textures/materiallibrary.h>
+#include <renderer/particles.h>
+#include <tools/workbench.h>
 
 #include "game_renderingcontext.h"
 
@@ -32,6 +34,84 @@ CGameRenderer::CGameRenderer(size_t iWidth, size_t iHeight)
 	DisableSkybox();
 
 	m_pRendering = nullptr;
+}
+
+CVar r_cullfrustum("r_frustumculling", "on");
+
+void CGameRenderer::Render()
+{
+	TPROF("CGameRenderer::Render");
+
+	CCamera* pCamera = GameServer()->GetCamera();
+
+	SetCameraPosition(pCamera->GetCameraPosition());
+	SetCameraDirection(pCamera->GetCameraDirection());
+	SetCameraUp(pCamera->GetCameraUp());
+	SetCameraFOV(pCamera->GetCameraFOV());
+	SetCameraNear(pCamera->GetCameraNear());
+	SetCameraFar(pCamera->GetCameraFar());
+
+	PreRender();
+
+	{
+		CGameRenderingContext c(this);
+		ModifyContext(&c);
+		SetupFrame(&c);
+		StartRendering(&c);
+
+		if (CWorkbench::IsActive())
+			CWorkbench::RenderScene();
+		else
+			RenderEverything();
+
+		FinishRendering(&c);
+		FinishFrame(&c);
+	}
+
+	PostRender();
+}
+
+void CGameRenderer::RenderEverything()
+{
+	m_apRenderList.reserve(CBaseEntity::GetNumEntities());
+	m_apRenderList.clear();
+
+	bool bFrustumCulling = r_cullfrustum.GetBool();
+
+	// None of these had better get deleted while we're doing this since they're not handles.
+	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
+	{
+		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
+		if (!pEntity)
+			continue;
+
+		if (!pEntity->ShouldRender())
+			continue;
+
+		if (bFrustumCulling && !IsSphereInFrustum(pEntity->GetGlobalCenter(), (float)pEntity->GetBoundingRadius()))
+			continue;
+
+		m_apRenderList.push_back(pEntity);
+	}
+
+	m_bRenderingTransparent = false;
+
+	BeginBatching();
+
+	// First render all opaque objects
+	size_t iEntites = m_apRenderList.size();
+	for (size_t i = 0; i < iEntites; i++)
+		m_apRenderList[i]->Render();
+
+	RenderBatches();
+
+	m_bRenderingTransparent = true;
+
+	// Now render all transparent objects. Should really sort this back to front but meh for now.
+	for (size_t i = 0; i < iEntites; i++)
+		m_apRenderList[i]->Render();
+
+	CParticleSystemLibrary::Render();
 }
 
 void CGameRenderer::SetupFrame(class CRenderingContext* pContext)
@@ -224,9 +304,21 @@ void CGameRenderer::RenderBatches()
 
 	for (auto it = m_aBatches.begin(); it != m_aBatches.end(); it++)
 	{
-		c.UseMaterial(it->first);
+		size_t iJobs = it->second.size();
+		if (!iJobs)
+			continue;
 
-		for (size_t i = 0; i < it->second.size(); i++)
+		const CMaterialHandle& hMaterial = it->first;
+
+		c.UseMaterial(hMaterial);
+
+		if (IsRenderingTransparent() && hMaterial->m_sBlend == "")
+			continue;
+
+		if (!IsRenderingTransparent() && hMaterial->m_sBlend != "")
+			continue;
+
+		for (size_t i = 0; i < iJobs; i++)
 		{
 			CRenderBatch* pBatch = &it->second[i];
 

@@ -26,6 +26,9 @@ public:
 					CGameRenderer(size_t iWidth, size_t iHeight);
 
 public:
+	virtual void	Render();
+	virtual void	RenderEverything();
+
 	virtual void	SetupFrame(class CRenderingContext* pContext);
 	virtual void	DrawSkybox(class CRenderingContext* pContext);
 	virtual void	ModifySkyboxContext(class CRenderingContext* c) {};
@@ -43,6 +46,9 @@ public:
 	void			ClassifySceneAreaPosition(class CModel* pModel);
 	void			FindSceneAreaPosition(class CModel* pModel);
 	size_t			GetSceneAreaPosition(class CModel* pModel);
+
+	bool			IsRenderingTransparent() const { return m_bRenderingTransparent; }
+	void			SetRenderingTransparent(bool b) { m_bRenderingTransparent = b; }
 
 	const class CBaseEntity*	GetRenderingEntity() { return m_pRendering; }
 
@@ -63,6 +69,9 @@ protected:
 	Vector			m_avecSkyboxRT[6];
 	Vector			m_avecSkyboxUP[6];
 	Vector			m_avecSkyboxDN[6];
+
+	eastl::vector<CBaseEntity*>	m_apRenderList;
+	bool			m_bRenderingTransparent;
 
 	bool			m_bBatchThisFrame;
 	bool			m_bBatching;

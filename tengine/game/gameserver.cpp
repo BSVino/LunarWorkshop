@@ -675,8 +675,6 @@ void CGameServer::Simulate()
 	GamePhysics()->Simulate();
 }
 
-CVar r_cullfrustum("r_frustumculling", "on");
-
 void CGameServer::Render()
 {
 	TPROF("CGameServer::Render");
@@ -686,74 +684,7 @@ void CGameServer::Render()
 
 	GetCamera()->Think();
 
-	CGameRenderer* pRenderer = GameWindow()->GetRenderer();
-
-	pRenderer->SetCameraPosition(GetCamera()->GetCameraPosition());
-	pRenderer->SetCameraDirection(GetCamera()->GetCameraDirection());
-	pRenderer->SetCameraUp(GetCamera()->GetCameraUp());
-	pRenderer->SetCameraFOV(GetCamera()->GetCameraFOV());
-	pRenderer->SetCameraNear(GetCamera()->GetCameraNear());
-	pRenderer->SetCameraFar(GetCamera()->GetCameraFar());
-
-	pRenderer->PreRender();
-
-	{
-		CGameRenderingContext c(pRenderer);
-		pRenderer->ModifyContext(&c);
-		pRenderer->SetupFrame(&c);
-		pRenderer->StartRendering(&c);
-
-		if (CWorkbench::IsActive())
-			CWorkbench::RenderScene();
-		else
-			RenderEverything();
-
-		pRenderer->FinishRendering(&c);
-		pRenderer->FinishFrame(&c);
-	}
-
-	pRenderer->PostRender();
-}
-
-void CGameServer::RenderEverything()
-{
-	CGameRenderer* pRenderer = GetRenderer();
-
-	m_apRenderList.reserve(CBaseEntity::GetNumEntities());
-	m_apRenderList.clear();
-
-	bool bFrustumCulling = r_cullfrustum.GetBool();
-
-	// None of these had better get deleted while we're doing this since they're not handles.
-	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
-	{
-		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
-		if (!pEntity)
-			continue;
-
-		if (!pEntity->ShouldRender())
-			continue;
-
-		if (bFrustumCulling && !pRenderer->IsSphereInFrustum(pEntity->GetGlobalCenter(), (float)pEntity->GetBoundingRadius()))
-			continue;
-
-		m_apRenderList.push_back(pEntity);
-	}
-
-	pRenderer->BeginBatching();
-
-	// First render all opaque objects
-	size_t iEntites = m_apRenderList.size();
-	for (size_t i = 0; i < iEntites; i++)
-		m_apRenderList[i]->Render(false);
-
-	pRenderer->RenderBatches();
-
-	// Now render all transparent objects. Should really sort this back to front but meh for now.
-	for (size_t i = 0; i < iEntites; i++)
-		m_apRenderList[i]->Render(true);
-
-	CParticleSystemLibrary::Render();
+	GameWindow()->GetRenderer()->Render();
 }
 
 void CGameServer::GenerateSaveCRC(size_t iInput)
