@@ -952,14 +952,19 @@ void CToySource::Build() const
 
 	if (bSuccess)
 	{
-		CModel* pModel = CModelLibrary::GetModel(CModelLibrary::FindModel(m_sToyFile));
-		TAssert(pModel);
-		if (pModel)
+		if (CModelLibrary::FindModel(m_sToyFile))
 		{
-			pModel->m_iReferences = 0;
-			CModelLibrary::ClearUnreferenced();
-			CModelLibrary::AddModel(m_sToyFile);
+			CModel* pModel = CModelLibrary::GetModel(CModelLibrary::FindModel(m_sToyFile));
+			TAssert(pModel);
+			if (pModel)
+			{
+				pModel->m_iReferences = 0;
+				CModelLibrary::ClearUnreferenced();
+				CModelLibrary::AddModel(m_sToyFile);
+			}
 		}
+		else
+			CModelLibrary::AddModel(m_sToyFile);
 	}
 }
 
