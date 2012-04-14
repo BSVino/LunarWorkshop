@@ -1,5 +1,7 @@
 #include "game_renderer.h"
 
+#include <EASTL/sort.h>
+
 #include <maths.h>
 #include <simplex.h>
 
@@ -71,6 +73,12 @@ void CGameRenderer::Render()
 	PostRender();
 }
 
+bool DistanceCompare(CBaseEntity* a, CBaseEntity* b)
+{
+	Vector vecCamera = GameServer()->GetCamera()->GetCameraPosition();
+	return ((a->GetGlobalOrigin() - vecCamera).LengthSqr() > (b->GetGlobalOrigin() - vecCamera).LengthSqr());
+}
+
 void CGameRenderer::RenderEverything()
 {
 	m_apRenderList.reserve(CBaseEntity::GetNumEntities());
@@ -94,6 +102,8 @@ void CGameRenderer::RenderEverything()
 		m_apRenderList.push_back(pEntity);
 	}
 
+	eastl::sort(m_apRenderList.begin(), m_apRenderList.end(), DistanceCompare);
+
 	m_bRenderingTransparent = false;
 
 	BeginBatching();
@@ -107,7 +117,7 @@ void CGameRenderer::RenderEverything()
 
 	m_bRenderingTransparent = true;
 
-	// Now render all transparent objects. Should really sort this back to front but meh for now.
+	// Now render all transparent objects.
 	for (size_t i = 0; i < iEntites; i++)
 		m_apRenderList[i]->Render();
 
