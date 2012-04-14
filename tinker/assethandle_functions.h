@@ -63,12 +63,15 @@ void CAssetHandle<C, L>::Reset()
 template <class C, class L>
 const CAssetHandle<C, L>& CAssetHandle<C, L>::operator=(const CAssetHandle<C, L>& c)
 {
+	// If c == *this, c.m_pAsset will be clobbered in Reset()
+	const C* pAsset = c.m_pAsset;
+
 	Reset();
 
 	m_sName = c.m_sName;
-	if (c.m_pAsset)
+	if (pAsset)
 	{
-		m_pAsset = c.m_pAsset;
+		m_pAsset = pAsset;
 		const_cast<C*>(m_pAsset)->m_iReferences++;
 	}
 	else

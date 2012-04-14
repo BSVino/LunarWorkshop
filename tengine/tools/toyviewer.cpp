@@ -131,6 +131,8 @@ void CToyViewer::RenderScene()
 			m_iToyPreview = ~0;
 	}
 
+	GameServer()->GetRenderer()->SetRenderingTransparent(false);
+
 	if (m_iToyPreview != ~0 && pModel)
 	{
 		CGameRenderingContext c(GameServer()->GetRenderer(), true);

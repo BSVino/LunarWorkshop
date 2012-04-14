@@ -130,7 +130,7 @@ tstring CCreateToySourcePanel::GetToyFileName()
 {
 	tstring sToyFile = m_pToyFileText->GetText();
 
-	if (sToyFile.length() <= 4 || sToyFile.substr(sToyFile.length()-4) != ".toy")
+	if (!tstr_endswith(sToyFile, ".toy"))
 		sToyFile.append(".toy");
 
 	return sToyFile;
@@ -140,7 +140,7 @@ tstring CCreateToySourcePanel::GetSourceFileName()
 {
 	tstring sSourceFile = m_pSourceFileText->GetText();
 
-	if (sSourceFile.length() <= 4 || sSourceFile.substr(sSourceFile.length()-4) != ".txt")
+	if (!tstr_endswith(sSourceFile, ".txt"))
 		sSourceFile.append(".txt");
 
 	return "../sources/" + sSourceFile;
@@ -644,6 +644,8 @@ void CToyEditor::SetupMenu()
 
 void CToyEditor::RenderScene()
 {
+	GameServer()->GetRenderer()->SetRenderingTransparent(false);
+
 	if (m_iMeshPreview != ~0)
 		TAssert(CModelLibrary::GetModel(m_iMeshPreview));
 
@@ -670,6 +672,8 @@ void CToyEditor::RenderScene()
 
 		c.RenderMaterialModel(m_hMaterialPreview);
 	}
+
+	GameServer()->GetRenderer()->SetRenderingTransparent(true);
 
 	if (m_iPhysPreview != ~0 && CModelLibrary::GetModel(m_iPhysPreview))
 	{

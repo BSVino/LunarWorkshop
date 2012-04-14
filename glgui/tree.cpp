@@ -219,6 +219,9 @@ void CTree::ClearTree()
 	m_iHilighted = ~0;
 	m_iSelected = ~0;
 
+	if (m_pSelectedListener)
+		m_pfnSelectedCallback(m_pSelectedListener, "-1");
+
 	for (size_t i = m_apAllNodes.size()-1; i < m_apAllNodes.size(); i--)
 	{
 		IControl* pNode = m_apAllNodes[i];

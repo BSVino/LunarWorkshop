@@ -401,7 +401,7 @@ void CGameServer::ReadLevels(tstring sDirectory)
 	{
 		tstring sFile = sDirectory + "/" + asFiles[i];
 
-		if (IsFile(sFile) && sFile.substr(sFile.length()-4).compare(".txt") == 0)
+		if (IsFile(sFile) && tstr_endswith(sFile, ".txt"))
 			ReadLevelInfo(sFile);
 
 		if (IsDirectory(sFile))

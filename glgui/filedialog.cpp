@@ -100,10 +100,7 @@ void CFileDialog::Layout()
 
 		for (size_t j = 0; j < m_asExtensions.size(); j++)
 		{
-			if (sFile.length() < m_asExtensions[j].length())
-				continue;
-
-			if (sFile.substr(sFile.length()-m_asExtensions[j].length()) != m_asExtensions[j])
+			if (!tstr_endswith(sFile, m_asExtensions[j]))
 				continue;
 
 			m_pFileList->AddNode(sFile);

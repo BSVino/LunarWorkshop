@@ -215,7 +215,7 @@ void CEntityPropertiesPanel::ModelChangedCallback(const tstring& sArgs)
 	eastl::vector<tstring> asExtensionsExclude;
 
 	asExtensions.push_back(".toy");
-	asExtensions.push_back(".png");
+	asExtensions.push_back(".mat");
 	asExtensionsExclude.push_back(".mesh.toy");
 	asExtensionsExclude.push_back(".phys.toy");
 	asExtensionsExclude.push_back(".area.toy");
@@ -344,7 +344,7 @@ void CCreateEntityPanel::ModelChangedCallback(const tstring& sArgs)
 	eastl::vector<tstring> asExtensionsExclude;
 
 	asExtensions.push_back(".toy");
-	asExtensions.push_back(".png");
+	asExtensions.push_back(".mat");
 	asExtensionsExclude.push_back(".mesh.toy");
 	asExtensionsExclude.push_back(".phys.toy");
 	asExtensionsExclude.push_back(".area.toy");
@@ -499,7 +499,7 @@ CLevelEditor::CLevelEditor()
 	m_pEditorPanel->SetBorder(glgui::CPanel::BT_SOME);
 	glgui::CRootPanel::Get()->AddControl(m_pEditorPanel);
 
-	m_pCreateEntityButton = new glgui::CPictureButton("Create", CMaterialLibrary::AddAsset("editor/create-entity.png"));
+	m_pCreateEntityButton = new glgui::CPictureButton("Create", CMaterialLibrary::AddAsset("editor/create-entity.mat"));
 	m_pCreateEntityButton->SetPos(glgui::CRootPanel::Get()->GetWidth()/2-m_pCreateEntityButton->GetWidth()/2, 20);
 	m_pCreateEntityButton->SetClickedListener(this, CreateEntity);
 	m_pCreateEntityButton->SetTooltip("Create Entity Tool");
@@ -623,6 +623,9 @@ Vector CLevelEditor::PositionFromMouse()
 
 void CLevelEditor::EntitySelected()
 {
+	if (!m_pLevel)
+		return;
+
 	size_t iSelected = m_pEditorPanel->m_pEntities->GetSelectedNodeId();
 	auto& aEntities = m_pLevel->GetEntityData();
 

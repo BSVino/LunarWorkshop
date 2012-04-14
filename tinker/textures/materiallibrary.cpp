@@ -26,7 +26,7 @@ CMaterialHandle CMaterialLibrary::AddAsset(const tstring& sMaterial, int iClamp)
 	if (!sMaterial.length())
 		return CMaterialHandle();
 
-	if (sMaterial.substr(sMaterial.length()-4) != ".mat")
+	if (!tstr_endswith(sMaterial, ".mat"))
 		return CMaterialHandle();
 
 	CMaterialHandle hMaterial = FindMaterial(sMaterial);

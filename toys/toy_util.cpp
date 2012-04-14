@@ -37,7 +37,7 @@ void CToyUtil::AddMaterial(const tstring& sMaterial, const tstring& sOriginalFil
 //		sOriginal = sMaterial;
 
 	tstring sFullName = sMaterial;
-	if (sFullName.length() < 4 || sFullName.substr(sFullName.length()-4) != ".mat")
+	if (!tstr_endswith(sFullName, ".mat"))
 		sFullName += ".mat";
 
 	if (!sFullName.length())

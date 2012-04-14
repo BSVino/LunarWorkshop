@@ -10,7 +10,7 @@ public:
 				TRS(const Vector& T, const EAngle& R, const Vector& S);
 
 public:
-	Matrix4x4	GetMatrix4x4(bool bScale = true) const;
+	Matrix4x4	GetMatrix4x4(bool bRS = true) const;
 
 public:
 	Vector		m_vecTranslation;
@@ -30,12 +30,14 @@ inline TRS::TRS(const Vector& T, const EAngle& R, const Vector& S)
 	m_vecScaling = S;
 }
 
-inline Matrix4x4 TRS::GetMatrix4x4(bool bScale) const
+inline Matrix4x4 TRS::GetMatrix4x4(bool bRS) const
 {
 	Matrix4x4 m;
 	m.SetTranslation(m_vecTranslation);
-	m.SetAngles(m_angRotation);
-	if (bScale)
+	if (bRS)
+	{
+		m.SetAngles(m_angRotation);
 		m.AddScale(m_vecScaling);
+	}
 	return m;
 }

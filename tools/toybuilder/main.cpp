@@ -29,7 +29,7 @@ int main(int argc, char** args)
 
 	tstring sInput = args[1];
 
-	if (sInput.substr(sInput.length()-4) == ".txt")
+	if (tstr_endswith(sInput, ".txt"))
 	{
 		if (!g.BuildFromInputScript(sInput))
 		{

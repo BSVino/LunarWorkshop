@@ -76,7 +76,7 @@ void CRenderer::LoadShaders()
 	for (size_t i = 0; i < asShaders.size(); i++)
 	{
 		tstring sShader = asShaders[i];
-		if (sShader.substr(sShader.length()-4) != ".txt")
+		if (!tstr_endswith(sShader, ".txt"))
 			continue;
 
 		CShaderLibrary::AddShader("shaders/" + sShader);
