@@ -77,7 +77,7 @@ void CGrottoPlayer::KeyPress(int c)
 		return;
 	}
 
-	if (c == ' ')
+	if (c == 'Q')
 	{
 		GetPlayerCharacter()->FlipScreen();
 		return;
