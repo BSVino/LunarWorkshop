@@ -78,8 +78,11 @@ inline tstring GetRelativePath(const tstring& sPath, const tstring& sFrom)
 	while ((int)sAbsolutePath.length() >= iIdentical && (int)sAbsoluteFrom.length() >= iIdentical && sAbsolutePath[iIdentical] == sAbsoluteFrom[iIdentical])
 		iIdentical++;
 
-	tstring sBasePath = sAbsolutePath.substr(iIdentical);
+	tstring sBasePath = sAbsolutePath.substr(iIdentical+1);
 	tstring sBaseFrom = sAbsoluteFrom.substr(iIdentical);
+
+	if (!sBaseFrom.length())
+		return sBasePath;
 
 	size_t iDirectories = 1;
 	for (size_t i = 0; i < sBaseFrom.length(); i++)

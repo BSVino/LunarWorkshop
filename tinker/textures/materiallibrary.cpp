@@ -46,7 +46,7 @@ CMaterialHandle CMaterialLibrary::AddAsset(const tstring& sMaterial, int iClamp)
 
 CMaterialHandle CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& sMaterialOutput)
 {
-	tstring sMaterial = sMaterialOutput;
+	tstring sMaterial = ToForwardSlashes(sMaterialOutput);
 	if (!sMaterialOutput.length())
 		sMaterial = "[from data]";
 
@@ -66,7 +66,8 @@ CMaterialHandle CMaterialLibrary::CreateMaterial(const CData* pData, const tstri
 		return CMaterialHandle();
 	}
 
-	CMaterial oMat;
+	CMaterial& oMat = Get()->m_aMaterials[sMaterial];
+	oMat.Clear();
 
 	oMat.m_sFile = sMaterial;
 
@@ -106,23 +107,23 @@ CMaterialHandle CMaterialLibrary::CreateMaterial(const CData* pData, const tstri
 			TError("Material file '" + oMat.m_sFile + "' has a texture that couldn't be found: " + pShader->m_asTextures[i] + "\n");
 	}
 
-	Get()->m_aMaterials[sMaterial] = oMat;
-
-	return CMaterialHandle(sMaterial, &Get()->m_aMaterials[sMaterial]);
+	return CMaterialHandle(sMaterial, &oMat);
 }
 
 CMaterialHandle CMaterialLibrary::FindMaterial(const tstring& sMaterial)
 {
-	eastl::map<tstring, CMaterial>::iterator it = Get()->m_aMaterials.find(sMaterial);
+	tstring sMaterialForward = ToForwardSlashes(sMaterial);
+	eastl::map<tstring, CMaterial>::iterator it = Get()->m_aMaterials.find(sMaterialForward);
 	if (it == Get()->m_aMaterials.end())
 		return CMaterialHandle();
 
-	return CMaterialHandle(sMaterial, &it->second);
+	return CMaterialHandle(sMaterialForward, &it->second);
 }
 
 bool CMaterialLibrary::IsAssetLoaded(const tstring& sMaterial)
 {
-	eastl::map<tstring, CMaterial>::iterator it = Get()->m_aMaterials.find(sMaterial);
+	tstring sMaterialForward = ToForwardSlashes(sMaterial);
+	eastl::map<tstring, CMaterial>::iterator it = Get()->m_aMaterials.find(sMaterialForward);
 	if (it == Get()->m_aMaterials.end())
 		return false;
 
@@ -231,4 +232,18 @@ void CMaterial::Save() const
 
 	tstring sEnd = "}\n";
 	f.write(sEnd.data(), sEnd.length());
+}
+
+void CMaterial::Reload()
+{
+	std::basic_ifstream<tchar> f(m_sFile.c_str());
+
+	TAssert(f.is_open());
+	if (!f.is_open())
+		return;
+
+	std::shared_ptr<CData> pData(new CData());
+	CDataSerializer::Read(f, pData.get());
+
+	CMaterialLibrary::CreateMaterial(pData.get(), m_sFile);
 }

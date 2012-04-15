@@ -32,10 +32,12 @@ CModelLibrary::~CModelLibrary()
 	s_pModelLibrary = NULL;
 }
 
-size_t CModelLibrary::AddModel(const tstring& sModel)
+size_t CModelLibrary::AddModel(const tstring& sModelFile)
 {
-	if (!sModel.length())
+	if (!sModelFile.length())
 		return ~0;
+
+	tstring sModel = ToForwardSlashes(sModelFile);
 
 	size_t iModel = FindModel(sModel);
 	if (iModel != ~0)
@@ -103,8 +105,10 @@ CModel* CModelLibrary::GetModel(size_t i)
 	return Get()->m_apModels[i];
 }
 
-size_t CModelLibrary::FindModel(const tstring& sModel)
+size_t CModelLibrary::FindModel(const tstring& sModelFile)
 {
+	tstring sModel = ToForwardSlashes(sModelFile);
+
 	for (size_t i = 0; i < Get()->m_apModels.size(); i++)
 	{
 		if (!Get()->m_apModels[i])
@@ -117,8 +121,10 @@ size_t CModelLibrary::FindModel(const tstring& sModel)
 	return ~0;
 }
 
-void CModelLibrary::ReleaseModel(const tstring& sModel)
+void CModelLibrary::ReleaseModel(const tstring& sModelFile)
 {
+	tstring sModel = ToForwardSlashes(sModelFile);
+
 	ReleaseModel(FindModel(sModel));
 }
 

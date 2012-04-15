@@ -19,7 +19,19 @@ public:
 	}
 
 public:
+	void Clear()
+	{
+		m_sFile = "";
+		m_sShader = "";
+		m_sBlend = "";
+		m_ahTextures.clear();
+		m_aParameters.clear();
+
+		// Don't clear references, there's probably open handles to this material.
+	}
+
 	void			Save() const;
+	void			Reload();
 
 public:
 	tstring			m_sFile;

@@ -367,6 +367,7 @@ void CMaterialPanel::ParameterChangedCallback(const tstring& sArgs)
 void CMaterialPanel::SaveCallback(const tstring& sArgs)
 {
 	MaterialEditor()->GetMaterialPreview()->Save();
+	const_cast<CMaterial*>(MaterialEditor()->GetMaterialPreview().GetAsset())->Reload();
 }
 
 REGISTER_WORKBENCH_TOOL(MaterialEditor);
@@ -402,7 +403,8 @@ CMaterialEditor::~CMaterialEditor()
 
 void CMaterialEditor::Activate()
 {
-	m_pCreateMaterialPanel->SetVisible(true);
+	if (!m_hMaterial)
+		m_pCreateMaterialPanel->SetVisible(true);
 	m_pMaterialPanel->SetVisible(true);
 
 	GetFileMenu()->AddSubmenu("New", this, NewMaterial);
@@ -472,7 +474,9 @@ void CMaterialEditor::ChooseMaterialCallback(const tstring& sArgs)
 
 void CMaterialEditor::OpenMaterialCallback(const tstring& sArgs)
 {
-	m_hMaterial = CMaterialLibrary::AddAsset(sArgs);
+	tstring sGamePath = GetRelativePath(sArgs, ".");
+
+	m_hMaterial = CMaterialLibrary::AddAsset(sGamePath);
 
 	m_pMaterialPanel->Layout();
 

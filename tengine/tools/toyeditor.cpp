@@ -777,8 +777,10 @@ void CToyEditor::ChooseToyCallback(const tstring& sArgs)
 
 void CToyEditor::OpenToyCallback(const tstring& sArgs)
 {
+	tstring sGamePath = GetRelativePath(sArgs, ".");
+
 	m_oToySource = CToySource();
-	m_oToySource.Open(sArgs);
+	m_oToySource.Open(sGamePath);
 
 	m_pSourcePanel->Layout();
 	m_pSourcePanel->UpdateFields();

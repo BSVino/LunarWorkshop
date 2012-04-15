@@ -186,13 +186,15 @@ void CToyViewer::ChooseToyCallback(const tstring& sArgs)
 
 void CToyViewer::OpenToyCallback(const tstring& sArgs)
 {
+	tstring sGamePath = GetRelativePath(sArgs, ".");
+
 	CModelLibrary::ReleaseModel(m_iToyPreview);
 
-	m_iToyPreview = CModelLibrary::AddModel(sArgs);
+	m_iToyPreview = CModelLibrary::AddModel(sGamePath);
 
 	if (m_iToyPreview != ~0)
 	{
-		m_sToyPreview = sArgs;
+		m_sToyPreview = sGamePath;
 		m_flPreviewDistance = CModelLibrary::GetModel(m_iToyPreview)->m_aabbBoundingBox.Size().Length()*2;
 	}
 
