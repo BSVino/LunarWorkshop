@@ -49,6 +49,7 @@ public:
 			Vector			m_vecValue;
 			Vector4D		m_vec4Value;
 			tstring			m_sValue;
+			bool			m_bTexture;
 		};
 
 		eastl::vector<CUniform>	m_aActions;

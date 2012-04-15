@@ -218,7 +218,7 @@ void CRenderingContext::SetWinding(bool bWinding)
 
 void CRenderingContext::ClearColor(const ::Color& clrClear)
 {
-	glClearColor((char)(clrClear.r()*255), (char)(clrClear.g()*255), (char)(clrClear.b()*255), (char)(clrClear.a()*255));
+	glClearColor((float)(clrClear.r())/255, (float)(clrClear.g())/255, (float)(clrClear.b())/255, (float)(clrClear.a())/255);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 

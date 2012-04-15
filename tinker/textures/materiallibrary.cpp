@@ -68,6 +68,8 @@ CMaterialHandle CMaterialLibrary::CreateMaterial(const CData* pData, const tstri
 
 	CMaterial oMat;
 
+	oMat.m_sFile = sMaterial;
+
 	oMat.m_sShader = pShaderData->GetValueTString();
 	oMat.m_ahTextures.resize(pShader->m_asTextures.size());
 
@@ -94,53 +96,14 @@ CMaterialHandle CMaterialLibrary::CreateMaterial(const CData* pData, const tstri
 
 		CMaterial::CParameter& oPar = oMat.m_aParameters.push_back();
 		oPar.m_sName = sParameter;
-		oPar.m_sValue = pParameter->GetValueTString();
 
-		tstring sType;
-		for (size_t j = 0; j < it->second.m_aActions.size(); j++)
-			if (it->second.m_aActions[j].m_sValue == "[value]")
-				sType = pShader->m_asUniforms[it->second.m_aActions[j].m_sName];
+		FillParameter(oMat, oMat.m_aParameters.size()-1, pShader, pParameter);
+	}
 
-		TAssert(sType.length());
-
-		if (sType == "float")
-			oPar.m_flValue = pParameter->GetValueFloat();
-		else if (sType == "vec2")
-			oPar.m_vec2Value = pParameter->GetValueVector2D();
-		else if (sType == "vec3")
-			oPar.m_vecValue = pParameter->GetValueVector();
-		else if (sType == "vec4")
-			oPar.m_vec4Value = pParameter->GetValueVector4D();
-		else if (sType == "int")
-			oPar.m_iValue = pParameter->GetValueInt();
-		else if (sType == "bool")
-			oPar.m_bValue = pParameter->GetValueBool();
-		else if (sType == "mat4")
-		{
-			TAssert(false); // Unimplemented
-		}
-		else if (sType == "sampler2D")
-		{
-			// No op. Texture is read below.
-		}
-		else
-			TAssert(false);
-
-		for (size_t j = 0; j < it->second.m_aActions.size(); j++)
-		{
-			for (size_t k = 0; k < pShader->m_asTextures.size(); k++)
-			{
-				if (pShader->m_asTextures[k] == it->second.m_aActions[j].m_sName)
-				{
-					oMat.m_ahTextures[k] = CTextureHandle(pParameter->GetValueTString());
-					if (!oMat.m_ahTextures[k].IsValid())
-						oMat.m_ahTextures[k] = CTextureHandle(GetDirectory(sMaterial) + "/" + oPar.m_sValue);
-					TAssert(oMat.m_ahTextures[k].IsValid());
-					if (!oMat.m_ahTextures[k].IsValid())
-						TError("Material file '" + sMaterial + "' has a texture that couldn't be found: " + sParameter + ": " + pParameter->GetValueTString() + "\n");
-				}
-			}
-		}
+	for (size_t i = 0; i < oMat.m_ahTextures.size(); i++)
+	{
+		if (!oMat.m_ahTextures[i].IsValid())
+			TError("Material file '" + oMat.m_sFile + "' has a texture that couldn't be found: " + pShader->m_asTextures[i] + "\n");
 	}
 
 	Get()->m_aMaterials[sMaterial] = oMat;
@@ -175,4 +138,97 @@ void CMaterialLibrary::ClearUnreferenced()
 		else
 			it++;
 	}
+}
+
+void CMaterialLibrary::FillParameter(CMaterial& oMat, size_t iPar, CShader* pShader, const class CData* pData)
+{
+	CMaterial::CParameter& oPar = oMat.m_aParameters[iPar];
+
+	auto it = pShader->m_aParameters.find(oPar.m_sName);
+	TAssert(it != pShader->m_aParameters.end());
+	if (it == pShader->m_aParameters.end())
+	{
+		TError("Material file has a property that's not in the shader: " + oMat.m_sFile + "\n");
+		return;
+	}
+
+	CShader::CParameter* pShaderPar = &it->second;
+
+	oPar.m_sValue = pData->GetValueTString();
+
+	tstring sType;
+	for (size_t j = 0; j < pShaderPar->m_aActions.size(); j++)
+		if (pShaderPar->m_aActions[j].m_sValue == "[value]")
+			sType = pShader->m_asUniforms[pShaderPar->m_aActions[j].m_sName];
+
+	TAssert(sType.length());
+
+	if (sType == "float")
+		oPar.m_flValue = pData->GetValueFloat();
+	else if (sType == "vec2")
+		oPar.m_vec2Value = pData->GetValueVector2D();
+	else if (sType == "vec3")
+		oPar.m_vecValue = pData->GetValueVector();
+	else if (sType == "vec4")
+		oPar.m_vec4Value = pData->GetValueVector4D();
+	else if (sType == "int")
+		oPar.m_iValue = pData->GetValueInt();
+	else if (sType == "bool")
+		oPar.m_bValue = pData->GetValueBool();
+	else if (sType == "mat4")
+	{
+		TAssert(false); // Unimplemented
+	}
+	else if (sType == "sampler2D")
+	{
+		// No op. Texture is read below.
+	}
+	else
+		TAssert(false);
+
+	for (size_t j = 0; j < pShaderPar->m_aActions.size(); j++)
+	{
+		for (size_t k = 0; k < pShader->m_asTextures.size(); k++)
+		{
+			if (pShader->m_asTextures[k] == pShaderPar->m_aActions[j].m_sName)
+			{
+				oMat.m_ahTextures[k] = CTextureHandle(pData->GetValueTString());
+				if (!oMat.m_ahTextures[k].IsValid())
+					oMat.m_ahTextures[k] = CTextureHandle(GetDirectory(oMat.m_sFile) + "/" + oPar.m_sValue);
+			}
+		}
+	}
+}
+
+void CMaterial::Save() const
+{
+	if (m_sFile == "[from data]")
+	{
+		TAssert(m_sFile != "[from data]");
+		return;
+	}
+
+	std::basic_ofstream<tchar> f(m_sFile.c_str());
+
+	TAssert(f.is_open());
+	if (!f.is_open())
+		return;
+
+	tstring sShader = "Shader: " + m_sShader + "\n{\n";
+	f.write(sShader.data(), sShader.length());
+
+	if (m_sBlend.length())
+	{
+		tstring sOut = "\tBlend: " + m_sBlend + "\n";
+		f.write(sOut.data(), sOut.length());
+	}
+
+	for (size_t i = 0; i < m_aParameters.size(); i++)
+	{
+		tstring sOut = "\t" + m_aParameters[i].m_sName + ": " + m_aParameters[i].m_sValue + "\n";
+		f.write(sOut.data(), sOut.length());
+	}
+
+	tstring sEnd = "}\n";
+	f.write(sEnd.data(), sEnd.length());
 }

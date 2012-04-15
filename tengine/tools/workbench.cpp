@@ -20,6 +20,7 @@
 #include "manipulator.h"
 
 extern int g_iImportLevelEditor;
+extern int g_iImportMaterialEditor;
 extern int g_iImportToyEditor;
 extern int g_iImportToyViewer;
 // Use this to force import of required entities.
@@ -30,6 +31,7 @@ public:
 	CAutoToolsImport()
 	{
 		g_iImportLevelEditor = 1;
+		g_iImportMaterialEditor = 1;
 		g_iImportToyEditor = 1;
 		g_iImportToyViewer = 1;
 	}

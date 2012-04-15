@@ -19,6 +19,11 @@ public:
 	}
 
 public:
+	void			Save() const;
+
+public:
+	tstring			m_sFile;
+
 	size_t			m_iReferences;
 
 	tstring			m_sShader;
@@ -62,8 +67,10 @@ public:
 
 	static void				ClearUnreferenced();
 
-public:
 	static CMaterialLibrary*	Get() { return s_pMaterialLibrary; };
+
+public:
+	static void				FillParameter(CMaterial& oMat, size_t iPar, class CShader* pShader, const class CData* pData);
 
 protected:
 	eastl::map<tstring, CMaterial>	m_aMaterials;
