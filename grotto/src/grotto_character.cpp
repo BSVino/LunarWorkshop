@@ -56,7 +56,7 @@ TVector CGrottoCharacter::GetGoalVelocity()
 
 float CGrottoCharacter::EyeHeight() const
 {
-	return 1.65f;
+	return 0;
 }
 
 void CGrottoCharacter::OnSetLocalTransform(Matrix4x4& mNew)
