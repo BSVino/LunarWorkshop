@@ -52,6 +52,9 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 
 			CMaterialHandle& hMaterial = pModel->m_ahMaterials[m];
 
+			if (!hMaterial)
+				continue;
+
 			if (m_pRenderer->IsRenderingTransparent() && hMaterial->m_sBlend == "")
 				continue;
 

@@ -320,6 +320,9 @@ void CGameRenderer::RenderBatches()
 
 		const CMaterialHandle& hMaterial = it->first;
 
+		if (!hMaterial)
+			continue;
+
 		c.UseMaterial(hMaterial);
 
 		if (IsRenderingTransparent() && hMaterial->m_sBlend == "")

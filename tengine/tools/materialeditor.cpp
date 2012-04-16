@@ -27,7 +27,7 @@ CCreateMaterialPanel::CCreateMaterialPanel()
 	SetHeaderColor(Color(100, 100, 100, 255));
 	SetBorder(glgui::CPanel::BT_SOME);
 
-	m_pMaterialFileLabel = new glgui::CLabel("Toy File:", "sans-serif", 10);
+	m_pMaterialFileLabel = new glgui::CLabel("Material File:", "sans-serif", 10);
 	m_pMaterialFileLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
 	AddControl(m_pMaterialFileLabel);
 	m_pMaterialFileText = new glgui::CTextField();
