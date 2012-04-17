@@ -8,6 +8,7 @@
 #include "token.h"
 #include "receptacle.h"
 #include "kaleidobeast.h"
+#include "depthtransitionarea.h"
 
 REGISTER_ENTITY(CPlayerCharacter);
 
@@ -201,20 +202,36 @@ void CPlayerCharacter::Reflected(reflection_t eReflectionType)
 
 void CPlayerCharacter::GoIntoScreen()
 {
-	m_iDepthLevel++;
+	if (!m_hTouchingDepthTransitionArea)
+		return;
 
-	Vector vecPosition = GetGlobalOrigin();
-	vecPosition.x = (float)(m_iDepthLevel * METERS_PER_DEPTH);
-	SetGlobalOrigin(vecPosition);
+	if (!m_hTouchingDepthTransitionArea->IsValid())
+		return;
+
+	Vector vecDestination = m_hTouchingDepthTransitionArea->GetDestination();
+	Vector vecPlayerDirection = AngleVector(m_angView);
+
+	if (vecPlayerDirection.Dot(vecDestination-GetGlobalOrigin()) < 0)
+		return;
+
+	SetGlobalOrigin(vecDestination);
 }
 
 void CPlayerCharacter::GoOutOfScreen()
 {
-	m_iDepthLevel--;
+	if (!m_hTouchingDepthTransitionArea)
+		return;
 
-	Vector vecPosition = GetGlobalOrigin();
-	vecPosition.x = (float)(m_iDepthLevel * METERS_PER_DEPTH);
-	SetGlobalOrigin(vecPosition);
+	if (!m_hTouchingDepthTransitionArea->IsValid())
+		return;
+
+	Vector vecDestination = m_hTouchingDepthTransitionArea->GetDestination();
+	Vector vecPlayerDirection = AngleVector(m_angView);
+
+	if (vecPlayerDirection.Dot(vecDestination-GetGlobalOrigin()) > 0)
+		return;
+
+	SetGlobalOrigin(vecDestination);
 }
 
 void CPlayerCharacter::FlipScreen()

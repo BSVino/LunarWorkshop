@@ -15,12 +15,15 @@ public:
 
 	virtual void		Think();
 
-	virtual void		Touching(const CBaseEntity* pOther);
+	virtual void		Touching(CBaseEntity* pOther);
 	virtual void		BeginTouchingList();
 	virtual void		EndTouchingList();
 
-	virtual void		StartTouch(const CBaseEntity* pOther);
-	virtual void		EndTouch(const CBaseEntity* pOther);
+	void				StartTouch(CBaseEntity* pOther);
+	void				EndTouch(CBaseEntity* pOther);
+
+	virtual void		OnStartTouch(CBaseEntity* pOther) {};
+	virtual void		OnEndTouch(CBaseEntity* pOther) {};
 
 	DECLARE_ENTITY_OUTPUT(OnStartTouch);
 	DECLARE_ENTITY_OUTPUT(OnEndTouch);

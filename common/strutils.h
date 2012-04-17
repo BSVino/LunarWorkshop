@@ -306,6 +306,14 @@ inline tstring pretty_float(float f)
 	return s.substr(0, i);
 }
 
+inline bool tstr_startswith(const tstring& sString, const tstring& sBeginning)
+{
+	if (sString.length() < sBeginning.length())
+		return false;
+
+	return (sString.substr(0, sBeginning.length()) == sBeginning);
+}
+
 inline bool tstr_endswith(const tstring& sString, const tstring& sEnding)
 {
 	if (sString.length() < sEnding.length())

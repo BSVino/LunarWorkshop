@@ -28,6 +28,7 @@ public:
 	void				Activate(IManipulatorListener* pListener, const TRS& trs=TRS(), const tstring& sArguments="");
 	void				Deactivate();
 	bool				IsActive() { return m_bActive; }
+	bool				IsTransforming() { return m_bTransforming; }
 
 	void				SetTransfromType(TransformType eTransform) { m_eTransform = eTransform; }
 	TransformType		GetTransfromType() { return m_eTransform; }
@@ -36,7 +37,7 @@ public:
 
 	void				Render();
 
-	Matrix4x4			GetTransform(bool bRS = true);
+	Matrix4x4			GetTransform(bool bRotation = true, bool bScaling = true);
 	TRS					GetTRS() { return m_trsTransform; }
 	void				SetTRS(const TRS& trs) { m_trsTransform = trs; }
 

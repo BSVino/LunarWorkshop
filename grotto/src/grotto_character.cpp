@@ -10,6 +10,7 @@
 #include "grotto_playercharacter.h"
 #include "mirror.h"
 #include "reflectionproxy.h"
+#include "depthtransitionarea.h"
 
 REGISTER_ENTITY(CGrottoCharacter);
 
@@ -21,7 +22,6 @@ SAVEDATA_TABLE_BEGIN(CGrottoCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mLateralReflection);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mVerticalReflection);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CMirror>, m_hMirrorInside);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iDepthLevel);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CGrottoCharacter);
@@ -38,8 +38,6 @@ void CGrottoCharacter::Spawn()
 	BaseClass::Spawn();
 
 	m_iReflected = 0;
-
-	m_iDepthLevel = (int)(GetGlobalOrigin().z / METERS_PER_DEPTH);
 
 	GamePhysics()->SetLinearFactor(this, Vector(0, 1, 1));
 }
@@ -278,4 +276,9 @@ bool CGrottoCharacter::ShouldCollideWith(CBaseEntity* pOther, const TVector& vec
 	}
 
 	return true;
+}
+
+void CGrottoCharacter::SetTouchingDepthTransitionArea(CDepthTransitionArea* pArea)
+{
+	m_hTouchingDepthTransitionArea = pArea;
 }

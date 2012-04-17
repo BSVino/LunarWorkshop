@@ -214,7 +214,7 @@ void CGameRenderer::FinishRendering(class CRenderingContext* pContext)
 
 	BaseClass::FinishRendering(pContext);
 
-	if (show_physics.GetBool() && ShouldRenderPhysicsDebug())
+	if (show_physics.GetBool() && ShouldRenderPhysicsDebug() && !CWorkbench::IsActive())
 		GamePhysics()->DebugDraw(show_physics.GetInt());
 }
 

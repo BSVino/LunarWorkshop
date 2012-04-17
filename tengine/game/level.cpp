@@ -61,6 +61,9 @@ void CLevel::SaveToFile()
 
 		for (auto it = pEntity->GetParameters().begin(); it != pEntity->GetParameters().end(); it++)
 		{
+			if (it->first == "Name")
+				continue;
+
 			tstring sName = "\t" + it->first + ": " + it->second + "\n";
 			f.write(sName.data(), sName.length());
 		}
@@ -334,6 +337,10 @@ TRS CLevelEntity::CalculateGlobalTRS(CLevelEntity* pThis)
 	if (sLocalAngles.length() && CanUnserializeString_EAngle(sLocalAngles))
 		trsLocal.m_angRotation = UnserializeString_EAngle(sLocalAngles);
 
+	tstring sScale = pThis->GetParameterValue("Scale");
+	if (sScale.length() && CanUnserializeString_TVector(sScale))
+		trsLocal.m_vecScaling = UnserializeString_TVector(sScale);
+
 	return trsLocal;
 }
 
@@ -352,14 +359,14 @@ size_t CLevelEntity::CalculateModelID(CLevelEntity* pThis)
 	return CModelLibrary::FindModel(sModel);
 }
 
-Vector2D CLevelEntity::CalculateMaterialModelScale(CLevelEntity* pThis)
+Vector CLevelEntity::CalculateScale(CLevelEntity* pThis)
 {
-	tstring sScale = pThis->GetParameterValue("MaterialScale");
+	tstring sScale = pThis->GetParameterValue("Scale");
 
-	if (CanUnserializeString_Vector2D(sScale))
-		return UnserializeString_Vector2D(sScale);
+	if (CanUnserializeString_TVector(sScale))
+		return UnserializeString_TVector(sScale);
 
-	return *((Vector2D*)&CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "MaterialScale")->m_oDefault);
+	return *((Vector*)&CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "Scale")->m_oDefault);
 }
 
 AABB CLevelEntity::CalculateBoundingBox(CLevelEntity* pThis)

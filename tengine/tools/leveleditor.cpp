@@ -142,6 +142,8 @@ void CEntityPropertiesPanel::Layout()
 
 				if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
 					pTextField->SetContentsChangedListener(this, ModelChanged, sprintf("%d", i));
+				else if (tstr_startswith(pSaveData->m_pszType, "CEntityHandle"))
+					pTextField->SetContentsChangedListener(this, TargetChanged, sprintf("%d ", i) + pSaveData->m_pszType);
 				else
 					pTextField->SetContentsChangedListener(this, PropertyChanged);
 
@@ -221,6 +223,55 @@ void CEntityPropertiesPanel::ModelChangedCallback(const tstring& sArgs)
 	asExtensionsExclude.push_back(".area.toy");
 
 	static_cast<glgui::CTextField*>(m_apPropertyOptions[stoi(sArgs)])->SetAutoCompleteFiles(".", asExtensions, asExtensionsExclude);
+
+	if (m_pPropertyChangedListener)
+		m_pfnPropertyChangedCallback(m_pPropertyChangedListener, "");
+}
+
+void CEntityPropertiesPanel::TargetChangedCallback(const tstring& sArgs)
+{
+	eastl::vector<tstring> asTokens;
+	tstrtok(sArgs, asTokens, "<>");
+
+	TAssert(asTokens.size() == 2);
+	if (asTokens.size() != 2)
+		return;
+
+	eastl::vector<tstring> asTargets;
+
+	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
+	{
+		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
+		if (!pEntity)
+			continue;
+
+		if (!pEntity->GetName().length())
+			continue;
+
+		CEntityRegistration* pRegistration = CBaseEntity::GetRegisteredEntity(pEntity->GetClassName());
+		TAssert(pRegistration);
+		if (!pRegistration)
+			continue;
+
+		bool bFound = false;
+		while (pRegistration)
+		{
+			if (asTokens[1] == pRegistration->m_pszEntityClass)
+			{
+				bFound = true;
+				break;
+			}
+
+			pRegistration = CBaseEntity::GetRegisteredEntity(pRegistration->m_pszParentClass);
+		}
+
+		if (!bFound)
+			continue;
+
+		asTargets.push_back(pEntity->GetName());
+	}
+
+	static_cast<glgui::CTextField*>(m_apPropertyOptions[stoi(sArgs)])->SetAutoCompleteCommands(asTargets);
 
 	if (m_pPropertyChangedListener)
 		m_pfnPropertyChangedCallback(m_pPropertyChangedListener, "");
@@ -531,7 +582,7 @@ void CLevelEditor::RenderEntity(size_t i)
 	if (m_pEditorPanel->m_pEntities->GetSelectedNodeId() == i)
 	{
 		CLevelEntity oCopy = *pEntity;
-		oCopy.SetGlobalTransform(Manipulator()->GetTransform());
+		oCopy.SetGlobalTransform(Manipulator()->GetTransform(true, false));	// Scaling is already done in RenderEntity()
 		RenderEntity(&oCopy, true);
 	}
 	else
@@ -547,6 +598,10 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected)
 		r.UseFrameBuffer(GameServer()->GetRenderer()->GetSceneBuffer());
 
 	r.Transform(pEntity->GetGlobalTransform());
+
+	Vector vecScale = pEntity->GetScale();
+	if (bSelected && Manipulator()->IsTransforming())
+		vecScale = Manipulator()->GetNewTRS().m_vecScaling;
 
 	float flAlpha = 1;
 	if (!pEntity->IsVisible())
@@ -577,7 +632,7 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected)
 			else
 				r.SetUniform("vecColor", Color(255, 255, 255, (char)(255*flAlpha)));
 
-			r.Scale(0, pEntity->GetMaterialModelScale().y, pEntity->GetMaterialModelScale().x);
+			r.Scale(0, vecScale.y, vecScale.x);
 			r.RenderMaterialModel(pEntity->GetMaterialModel());
 		}
 	}
@@ -589,6 +644,9 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected)
 		else
 			r.SetUniform("vecColor", Color(255, 255, 255, (char)(255*flAlpha)));
 		r.SetUniform("bDiffuse", false);
+
+		r.Scale(vecScale.x, vecScale.y, vecScale.z);
+
 		r.RenderWireBox(pEntity->GetBoundingBox());
 	}
 }
@@ -821,8 +879,10 @@ void CLevelEditor::ManipulatorUpdated(const tstring& sArguments)
 
 	Vector vecTranslation = Manipulator()->GetTRS().m_vecTranslation;
 	EAngle angRotation = Manipulator()->GetTRS().m_angRotation;
+	Vector vecScaling = Manipulator()->GetTRS().m_vecScaling;
 	GetLevel()->GetEntityData()[iSelected].SetParameterValue("LocalOrigin", pretty_float(vecTranslation.x) + " " + pretty_float(vecTranslation.y) + " " + pretty_float(vecTranslation.z));
 	GetLevel()->GetEntityData()[iSelected].SetParameterValue("LocalAngles", pretty_float(angRotation.p) + " " + pretty_float(angRotation.y) + " " + pretty_float(angRotation.r));
+	GetLevel()->GetEntityData()[iSelected].SetParameterValue("Scale", pretty_float(vecScaling.x) + " " + pretty_float(vecScaling.y) + " " + pretty_float(vecScaling.z));
 
 	m_pEditorPanel->LayoutEntities();
 }

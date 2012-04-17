@@ -93,7 +93,7 @@ bool CManipulatorTool::MouseInput(int iButton, int iState)
 	float flClosest = -1;
 	m_iLockedAxis = -1;
 
-	Matrix4x4 mTransform = m_trsTransform.GetMatrix4x4(false);
+	Matrix4x4 mTransform = m_trsTransform.GetMatrix4x4(false, false);
 
 	float flScale = (GameServer()->GetCamera()->GetCameraPosition() - mTransform.GetTranslation()).Length()/10;
 	Vector vecX = (Vector(1, 0, 0)*flScale);
@@ -152,7 +152,7 @@ void CManipulatorTool::Render()
 	if (!IsActive())
 		return;
 
-	Matrix4x4 mTransform = GetTransform(false);
+	Matrix4x4 mTransform = GetTransform(false, false);
 
 	float flScale = (GameServer()->GetCamera()->GetCameraPosition() - mTransform.GetTranslation()).Length()/10;
 
@@ -214,12 +214,12 @@ void CManipulatorTool::Render()
 	c.SetUniform("bDiffuse", true);
 }
 
-Matrix4x4 CManipulatorTool::GetTransform(bool bRS)
+Matrix4x4 CManipulatorTool::GetTransform(bool bRotation, bool bScaling)
 {
 	if (m_bTransforming)
-		return GetNewTRS().GetMatrix4x4(bRS);
+		return GetNewTRS().GetMatrix4x4(bRotation, bScaling);
 
-	return m_trsTransform.GetMatrix4x4(bRS);
+	return m_trsTransform.GetMatrix4x4(bRotation, bScaling);
 }
 
 TRS CManipulatorTool::GetNewTRS()

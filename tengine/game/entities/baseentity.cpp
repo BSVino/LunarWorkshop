@@ -27,6 +27,7 @@ bool g_bAutoImporting = false;
 #include "mathgate.h"
 #include "playerstart.h"
 #include "static.h"
+#include "target.h"
 #include "trigger.h"
 #include "prop.h"
 // Use this to force import of required entities.
@@ -44,6 +45,7 @@ public:
 			CMathGate m;
 			CPlayerStart p;
 			CStatic s;
+			CTarget t2;
 			CTrigger t;
 			CProp p2;
 		}
@@ -65,6 +67,7 @@ NETVAR_TABLE_BEGIN(CBaseEntity);
 	NETVAR_DEFINE_INTERVAL(TVector, m_vecLocalOrigin, 0.15f);
 	NETVAR_DEFINE_INTERVAL(EAngle, m_angLocalAngles, 0.15f);
 	NETVAR_DEFINE_INTERVAL(TVector, m_vecLocalVelocity, 0.15f);
+	NETVAR_DEFINE_INTERVAL(Vector, m_vecScale, 0.15f);
 	NETVAR_DEFINE(bool, m_bTakeDamage);
 	NETVAR_DEFINE(float, m_flTotalHealth);
 	NETVAR_DEFINE(float, m_flHealth);
@@ -72,7 +75,6 @@ NETVAR_TABLE_BEGIN(CBaseEntity);
 	NETVAR_DEFINE(CEntityHandle<CBaseEntity>, m_hTeam);
 	NETVAR_DEFINE(int, m_iCollisionGroup);
 	NETVAR_DEFINE(size_t, m_iModel);
-	NETVAR_DEFINE_INTERVAL(Vector2D, m_vecMaterialModelScale, 0.15f);
 	NETVAR_DEFINE(double, m_flSpawnTime);
 NETVAR_TABLE_END();
 
@@ -104,6 +106,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, EAngle, m_angLocalAngles, "LocalAngles", UnserializeString_LocalAngles);
 	SAVEDATA_EDITOR_VARIABLE("LocalAngles");
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, TVector, m_vecLocalVelocity);
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, Vector, m_vecScale, "Scale", Vector(1, 1, 1));
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iHandle);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, bool, m_bTakeDamage, "TakeDamage", false);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, float, m_flTotalHealth, "TotalHealth");
@@ -119,7 +122,6 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", ~0, UnserializeString_ModelID);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CMaterialHandle, m_hMaterialModel);
-	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, Vector2D, m_vecMaterialModelScale, "MaterialScale", Vector2D(1, 1));
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, double, m_flSpawnTime);
 SAVEDATA_TABLE_END();
@@ -155,6 +157,8 @@ CBaseEntity::CBaseEntity()
 	s_apEntityList[m_iHandle] = this;
 
 	s_iEntities++;
+
+	m_vecScale = Vector(1, 1, 1);
 
 	m_iCollisionGroup = 0;
 
@@ -257,9 +261,9 @@ TVector CBaseEntity::GetGlobalCenter() const
 TFloat CBaseEntity::GetBoundingRadius() const
 {
 	if (m_hMaterialModel.IsValid())
-		return m_vecMaterialModelScale.Get().Length()/2;
+		return m_vecScale.Get().Length()/2;
 
-	return m_aabbBoundingBox.Size().Length()/2;
+	return (m_aabbBoundingBox.Size()*m_vecScale.Get()).Length()/2;
 }
 
 void CBaseEntity::SetModel(const tstring& sModel)
@@ -872,7 +876,7 @@ void CBaseEntity::Render() const
 					{
 						TPROF("CRenderingContext::RenderModel(Material)");
 						r.SetBlend(BLEND_ALPHA);
-						r.Scale(0, m_vecMaterialModelScale.Get().y, m_vecMaterialModelScale.Get().x);
+						r.Scale(0, m_vecScale.Get().y, m_vecScale.Get().x);
 						r.RenderMaterialModel(m_hMaterialModel);
 					}
 				}
@@ -2094,7 +2098,6 @@ void UnserializeString_TVector(const tstring& sData, CSaveData* pSaveData, CBase
 
 	case CSaveData::DATA_NETVAR:
 	{
-		TAssert(false);
 		CNetworkedVector* pVariable = (CNetworkedVector*)pData;
 		(*pVariable) = vecData;
 		break;
@@ -2259,7 +2262,6 @@ void UnserializeString_EntityHandle(const tstring& sData, CSaveData* pSaveData, 
 	switch(pSaveData->m_eType)
 	{
 	case CSaveData::DATA_COPYTYPE:
-		TAssert(false);
 		*pData = hData;
 		break;
 

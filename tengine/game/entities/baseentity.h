@@ -551,6 +551,8 @@ public:
 	DECLARE_ENTITY_INPUT(SetLocalOrigin);
 	DECLARE_ENTITY_INPUT(SetLocalAngles);
 
+	inline Vector							GetScale() const { return m_vecScale; }
+
 	virtual TVector							GetUpVector() const { return TVector(0, 1, 0); };
 
 	virtual bool							TransformsChildUp() const { return false; };
@@ -615,7 +617,7 @@ public:
 
 	virtual void							Think() {};
 
-	virtual void							Touching(const CBaseEntity* pOther) {};
+	virtual void							Touching(CBaseEntity* pOther) {};
 	virtual void							BeginTouchingList() {};
 	virtual void							EndTouchingList() {};
 
@@ -728,6 +730,7 @@ protected:
 	TVector									m_vecLastLocalOrigin;
 	CNetworkedEAngle						m_angLocalAngles;
 	CNetworkedVector						m_vecLocalVelocity;
+	CNetworkedVector						m_vecScale;
 
 	size_t									m_iHandle;
 
@@ -750,7 +753,6 @@ protected:
 
 	CNetworkedVariable<size_t>				m_iModel;
 	CMaterialHandle							m_hMaterialModel;
-	CNetworkedVariable<Vector2D>			m_vecMaterialModelScale;
 
 	size_t									m_iSpawnSeed;
 	CNetworkedVariable<double>				m_flSpawnTime;

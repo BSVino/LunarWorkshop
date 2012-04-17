@@ -5,6 +5,7 @@
 #include "grotto.h"
 
 class CMirror;
+class CDepthTransitionArea;
 
 // One level every two meters
 #define METERS_PER_DEPTH 2
@@ -45,6 +46,8 @@ public:
 
 	Matrix4x4					GetReflectionMatrix() const { return m_mLateralReflection * m_mVerticalReflection; }
 
+	void						SetTouchingDepthTransitionArea(CDepthTransitionArea* pArea);
+
 protected:
 	// A bit map of types of reflection applied currently.
 	size_t						m_iReflected;	// Protected and reflected? Rejected? Projected? INFLECTED?!?
@@ -52,5 +55,5 @@ protected:
 	Matrix4x4					m_mVerticalReflection;	// For rendering
 	CEntityHandle<CMirror>		m_hMirrorInside;
 
-	int							m_iDepthLevel;
+	CEntityHandle<CDepthTransitionArea>	m_hTouchingDepthTransitionArea;
 };

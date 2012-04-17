@@ -57,7 +57,7 @@ public:
 		m_trsGlobalTRS.SetCallbacks(&CalculateGlobalTRS, this);
 		m_bVisible.SetCallbacks(&CalculateVisible, this);
 		m_iModel.SetCallbacks(&CalculateModelID, this);
-		m_vecMaterialModelScale.SetCallbacks(&CalculateMaterialModelScale, this);
+		m_vecScale.SetCallbacks(&CalculateScale, this);
 		m_aabbBounds.SetCallbacks(&CalculateBoundingBox, this);
 		m_sName.SetCallbacks(&CalculateName, this);
 	}
@@ -68,7 +68,7 @@ public:
 		m_trsGlobalTRS.Dirtify();
 		m_bVisible.Dirtify();
 		m_iModel.Dirtify();
-		m_vecMaterialModelScale.Dirtify();
+		m_vecScale.Dirtify();
 		m_aabbBounds.Dirtify();
 		m_sName.Dirtify();
 	}
@@ -91,7 +91,7 @@ public:
 	TRS									GetGlobalTRS() { return m_trsGlobalTRS; }
 	bool								IsVisible() { return m_bVisible; }
 	size_t								GetModelID() { return m_iModel; }
-	Vector2D							GetMaterialModelScale() { return m_vecMaterialModelScale; }
+	Vector								GetScale() { return m_vecScale; }
 	AABB								GetBoundingBox() { return m_aabbBounds; }
 	tstring								GetName() { return m_sName; }
 
@@ -100,7 +100,7 @@ public:
 	static TRS							CalculateGlobalTRS(CLevelEntity* pThis);
 	static bool							CalculateVisible(CLevelEntity* pThis);
 	static size_t						CalculateModelID(CLevelEntity* pThis);
-	static Vector2D						CalculateMaterialModelScale(CLevelEntity* pThis);
+	static Vector						CalculateScale(CLevelEntity* pThis);
 	static AABB							CalculateBoundingBox(CLevelEntity* pThis);
 	static tstring						CalculateName(CLevelEntity* pThis);
 
@@ -113,7 +113,7 @@ private:
 	CCachedValue<TRS, CLevelEntity>			m_trsGlobalTRS;
 	CCachedValue<bool, CLevelEntity>		m_bVisible;
 	CCachedValue<size_t, CLevelEntity>		m_iModel;
-	CCachedValue<Vector2D, CLevelEntity>	m_vecMaterialModelScale;
+	CCachedValue<Vector, CLevelEntity>		m_vecScale;
 	CCachedValue<AABB, CLevelEntity>		m_aabbBounds;
 	CCachedValue<tstring, CLevelEntity>		m_sName;
 

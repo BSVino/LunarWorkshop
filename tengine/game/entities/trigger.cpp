@@ -17,6 +17,7 @@ SAVEDATA_TABLE_BEGIN_EDITOR(CTrigger);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYVECTOR, CEntityHandle<CBaseEntity>, m_ahTouching);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYVECTOR, CEntityHandle<CBaseEntity>, m_ahLastTouching);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bVisible);
+	SAVEDATA_EDITOR_VARIABLE("Scale");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CTrigger);
@@ -64,14 +65,14 @@ void CTrigger::Think()
 		EndVisible();
 }
 
-void CTrigger::Touching(const CBaseEntity* pOther)
+void CTrigger::Touching(CBaseEntity* pOther)
 {
 	if (!IsActive())
 		return;
 
 	for (size_t i = 0; i < m_ahLastTouching.size(); i++)
 	{
-		if (m_ahLastTouching[i] == pOther)
+		if (m_ahLastTouching[i] == (const CBaseEntity*)pOther)
 		{
 			// We were touching before and we still are. Great.
 			m_ahTouching.push_back(pOther);
@@ -103,14 +104,16 @@ void CTrigger::EndTouchingList()
 	}
 }
 
-void CTrigger::StartTouch(const CBaseEntity* pOther)
+void CTrigger::StartTouch(CBaseEntity* pOther)
 {
 	CallOutput("OnStartTouch");
+	OnStartTouch(pOther);
 }
 
-void CTrigger::EndTouch(const CBaseEntity* pOther)
+void CTrigger::EndTouch(CBaseEntity* pOther)
 {
 	CallOutput("OnEndTouch");
+	OnEndTouch(pOther);
 }
 
 void CTrigger::StartVisible()

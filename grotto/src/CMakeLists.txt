@@ -22,6 +22,7 @@ set (GROTTO_SYSTEM_SOURCES
 )
 
 set (GROTTO_ENTITY_SOURCES
+	depthtransitionarea.cpp
 	kaleidobeast.cpp
 	mirror.cpp
 	momento.cpp

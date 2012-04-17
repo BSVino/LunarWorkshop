@@ -120,6 +120,10 @@ void CToyUtil::AddPhysVertex(Vector vecPosition)
 
 void CToyUtil::AddPhysBox(const TRS& trsBox)
 {
+	TAssert(trsBox.m_angRotation.p == 0);
+	TAssert(trsBox.m_angRotation.y == 0);
+	TAssert(trsBox.m_angRotation.r == 0);
+
 	m_atrsPhysBoxes.push_back(trsBox);
 
 	AABB aabbBox = CToy::s_aabbBoxDimensions;

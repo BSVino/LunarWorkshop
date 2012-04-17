@@ -21,6 +21,7 @@ public:
 	void					Layout();
 
 	EVENT_CALLBACK(CEntityPropertiesPanel, ModelChanged);
+	EVENT_CALLBACK(CEntityPropertiesPanel, TargetChanged);
 	EVENT_CALLBACK(CEntityPropertiesPanel, PropertyChanged);
 
 	void					SetPropertyChangedListener(glgui::IEventListener* pListener, glgui::IEventListener::Callback pfnCallback);
