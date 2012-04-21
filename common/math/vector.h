@@ -343,12 +343,12 @@ public:
 	bool	operator==(const EAngle& v) const
 	{
 		float flEp = 0.000001f;
-		return AngleDifference(v.p, p) < flEp && AngleDifference(v.y, y) < flEp && AngleDifference(v.r, r) < flEp;
+		return fabs(AngleDifference(v.p, p)) < flEp && fabs(AngleDifference(v.y, y)) < flEp && fabs(AngleDifference(v.r, r)) < flEp;
 	}
 
 	bool	Equals(const EAngle& v, float flEp = 0.000001f) const
 	{
-		return AngleDifference(v.p, p) < flEp && AngleDifference(v.y, y) < flEp && AngleDifference(v.r, r) < flEp;
+		return fabs(AngleDifference(v.p, p)) < flEp && fabs(AngleDifference(v.y, y)) < flEp && fabs(AngleDifference(v.r, r)) < flEp;
 	}
 
 	// Can find equivalence even in dangerous situations such as Gimbal lock.

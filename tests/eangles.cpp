@@ -41,6 +41,7 @@ void test_eangles()
 	TAssert(AngleApproach(45, -136, 1) == -137);
 	TAssert(EAngle(0, 180, 0) == EAngle(0, -180, 0));
 	TAssert(EAngle(0, 360, 0) == EAngle(0, 0, 0));
+	TAssert(!EAngle(0, 0, 0).Equals(EAngle(0, 180, 0), 0.1f));
 	TAssert(EAngle(90, 0, 180).EqualsExhaustive(EAngle(90, 180, 0)));	// Because of Gimbal lock
 	TAssert(EAngle(180, 0, 0).EqualsExhaustive(EAngle(0, 180, 180)));	// Because of Gimbal lock
 

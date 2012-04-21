@@ -138,7 +138,7 @@ void test_matrix()
 
 	m.Identity();
 	m.SetRotation(90, Vector(0, 1, 0));
-	TAssert(m.GetAngles() == EAngle(0, 90, 0));
+	TAssert(m.GetAngles() == EAngle(0, -90, 0));
 	TAssert(m.GetForwardVector() == Vector(0, 0, -1));
 	TAssert(m.GetUpVector() == Vector(0, 1, 0));
 

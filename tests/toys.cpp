@@ -39,8 +39,8 @@ void test_toy()
 	t.AddPhysVertex(Vector(0, 0, 0));
 	t.AddPhysTriangle(0, 1, 2);
 	t.AddPhysTriangle(0, 2, 3);
-	t.AddPhysBox(TRS(Vector(11, 12, 13), EAngle(4, 5, 6), Vector(7, 8, 9)));
-	t.AddPhysBox(TRS(Vector(9, 8, 7), EAngle(6, 5, 4), Vector(3, 2, 1)));
+	t.AddPhysBox(TRS(Vector(11, 12, 13), EAngle(0, 0, 0), Vector(7, 8, 9)));
+	t.AddPhysBox(TRS(Vector(9, 8, 7), EAngle(0, 0, 0), Vector(3, 2, 1)));
 	bool bWrite = t.Write("test.toy");
 	TAssert(bWrite);
 
@@ -112,10 +112,10 @@ void test_toy()
 
 	TAssert(pToy->GetPhysicsNumBoxes() == 2);
 	TAssert(pToy->GetPhysicsBox(0).m_vecTranslation == Vector(11, 12, 13));
-	TAssert(pToy->GetPhysicsBox(0).m_angRotation == EAngle(4, 5, 6));
+	TAssert(pToy->GetPhysicsBox(0).m_angRotation == EAngle(0, 0, 0));
 	TAssert(pToy->GetPhysicsBox(0).m_vecScaling == Vector(7, 8, 9));
 	TAssert(pToy->GetPhysicsBox(1).m_vecTranslation == Vector(9, 8, 7));
-	TAssert(pToy->GetPhysicsBox(1).m_angRotation == EAngle(6, 5, 4));
+	TAssert(pToy->GetPhysicsBox(1).m_angRotation == EAngle(0, 0, 0));
 	TAssert(pToy->GetPhysicsBox(1).m_vecScaling == Vector(3, 2, 1));
 
 	delete pToy;
