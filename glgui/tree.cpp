@@ -300,6 +300,9 @@ void CTree::SetSelectedNode(size_t iNode)
 		return;
 
 	m_iSelected = iNode;
+
+	if (m_pSelectedListener)
+		m_pfnSelectedCallback(m_pSelectedListener, sprintf("%d", GetSelectedNodeId()));
 }
 
 void CTree::SetSelectedListener(IEventListener* pListener, IEventListener::Callback pfnCallback)
