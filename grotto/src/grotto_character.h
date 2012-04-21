@@ -46,7 +46,7 @@ public:
 
 	Matrix4x4					GetReflectionMatrix() const { return m_mLateralReflection * m_mVerticalReflection; }
 
-	void						SetTouchingDepthTransitionArea(CDepthTransitionArea* pArea);
+	void						SetTouchingDepthTransitionArea(CDepthTransitionArea* pArea, bool bTouching);
 
 protected:
 	// A bit map of types of reflection applied currently.
@@ -55,5 +55,5 @@ protected:
 	Matrix4x4					m_mVerticalReflection;	// For rendering
 	CEntityHandle<CMirror>		m_hMirrorInside;
 
-	CEntityHandle<CDepthTransitionArea>	m_hTouchingDepthTransitionArea;
+	eastl::vector<CEntityHandle<CDepthTransitionArea>>	m_ahTouchingDepthTransitionArea;
 };

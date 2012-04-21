@@ -21,7 +21,7 @@ void CDepthTransitionArea::OnStartTouch(CBaseEntity* pOther)
 	if (!pCharacter)
 		return;
 
-	pCharacter->SetTouchingDepthTransitionArea(this);
+	pCharacter->SetTouchingDepthTransitionArea(this, true);
 }
 
 void CDepthTransitionArea::OnEndTouch(CBaseEntity* pOther)
@@ -30,7 +30,7 @@ void CDepthTransitionArea::OnEndTouch(CBaseEntity* pOther)
 	if (!pCharacter)
 		return;
 
-	pCharacter->SetTouchingDepthTransitionArea(nullptr);
+	pCharacter->SetTouchingDepthTransitionArea(this, false);
 }
 
 bool CDepthTransitionArea::IsValid() const

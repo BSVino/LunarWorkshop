@@ -202,13 +202,16 @@ void CPlayerCharacter::Reflected(reflection_t eReflectionType)
 
 void CPlayerCharacter::GoIntoScreen()
 {
-	if (!m_hTouchingDepthTransitionArea)
+	if (!m_ahTouchingDepthTransitionArea.size())
 		return;
 
-	if (!m_hTouchingDepthTransitionArea->IsValid())
+	TAssert(m_ahTouchingDepthTransitionArea.size() == 1);
+
+	CDepthTransitionArea* pArea = m_ahTouchingDepthTransitionArea[0];
+	if (!pArea->IsValid())
 		return;
 
-	Vector vecDestination = m_hTouchingDepthTransitionArea->GetDestination();
+	Vector vecDestination = pArea->GetDestination();
 	Vector vecPlayerDirection = AngleVector(m_angView);
 
 	if (vecPlayerDirection.Dot(vecDestination-GetGlobalOrigin()) < 0)
@@ -219,13 +222,16 @@ void CPlayerCharacter::GoIntoScreen()
 
 void CPlayerCharacter::GoOutOfScreen()
 {
-	if (!m_hTouchingDepthTransitionArea)
+	if (!m_ahTouchingDepthTransitionArea.size())
 		return;
 
-	if (!m_hTouchingDepthTransitionArea->IsValid())
+	TAssert(m_ahTouchingDepthTransitionArea.size() == 1);
+
+	CDepthTransitionArea* pArea = m_ahTouchingDepthTransitionArea[0];
+	if (!pArea->IsValid())
 		return;
 
-	Vector vecDestination = m_hTouchingDepthTransitionArea->GetDestination();
+	Vector vecDestination = pArea->GetDestination();
 	Vector vecPlayerDirection = AngleVector(m_angView);
 
 	if (vecPlayerDirection.Dot(vecDestination-GetGlobalOrigin()) > 0)

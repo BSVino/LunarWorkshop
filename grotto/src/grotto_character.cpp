@@ -22,6 +22,7 @@ SAVEDATA_TABLE_BEGIN(CGrottoCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mLateralReflection);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mVerticalReflection);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CMirror>, m_hMirrorInside);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYVECTOR, CEntityHandle<CDepthTransitionArea>, m_ahTouchingDepthTransitionArea);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CGrottoCharacter);
@@ -278,7 +279,17 @@ bool CGrottoCharacter::ShouldCollideWith(CBaseEntity* pOther, const TVector& vec
 	return true;
 }
 
-void CGrottoCharacter::SetTouchingDepthTransitionArea(CDepthTransitionArea* pArea)
+void CGrottoCharacter::SetTouchingDepthTransitionArea(CDepthTransitionArea* pArea, bool bTouching)
 {
-	m_hTouchingDepthTransitionArea = pArea;
+	for (size_t i = 0; i < m_ahTouchingDepthTransitionArea.size(); i++)
+	{
+		if (m_ahTouchingDepthTransitionArea[i] == (const CDepthTransitionArea*)pArea)
+		{
+			if (!bTouching)
+				m_ahTouchingDepthTransitionArea.erase(m_ahTouchingDepthTransitionArea.begin()+i);
+			return;
+		}
+	}
+
+	m_ahTouchingDepthTransitionArea.push_back(pArea);
 }
