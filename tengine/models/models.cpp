@@ -209,19 +209,7 @@ CModel::~CModel()
 {
 	TAssert(m_iReferences == 0);
 
-	if (m_pToy && m_pToy->GetPhysicsNumTris())
-		GamePhysics()->UnloadCollisionMesh(m_sFilename);
-
-	for (size_t i = 0; i < m_aiVertexBuffers.size(); i++)
-	{
-		if (m_aiVertexBufferSizes[i] == 0)
-			continue;
-
-		UnloadBufferFromGL(m_aiVertexBuffers[i]);
-	}
-
-	if (m_pToy)
-		delete m_pToy;
+	Unload();
 }
 
 bool CModel::Load()
@@ -274,7 +262,30 @@ size_t CModel::LoadBufferIntoGL(size_t iMaterial)
 	return CRenderer::LoadVertexDataIntoGL(m_pToy->GetMaterialNumVerts(iMaterial)*m_pToy->GetVertexSize(), m_pToy->GetMaterialVerts(iMaterial));
 }
 
+void CModel::Unload()
+{
+	if (m_pToy && m_pToy->GetPhysicsNumTris())
+		GamePhysics()->UnloadCollisionMesh(m_sFilename);
+
+	for (size_t i = 0; i < m_aiVertexBuffers.size(); i++)
+	{
+		if (m_aiVertexBufferSizes[i] == 0)
+			continue;
+
+		UnloadBufferFromGL(m_aiVertexBuffers[i]);
+	}
+
+	if (m_pToy)
+		delete m_pToy;
+}
+
 void CModel::UnloadBufferFromGL(size_t iBuffer)
 {
 	CRenderer::UnloadVertexDataFromGL(iBuffer);
+}
+
+void CModel::Reload()
+{
+	Unload();
+	Load();
 }

@@ -963,17 +963,7 @@ void CToySource::Build() const
 			CModel* pModel = CModelLibrary::GetModel(CModelLibrary::FindModel(m_sToyFile));
 			TAssert(pModel);
 			if (pModel)
-			{
-				TAssert(false);
-
-				// The following code doesn't work. Instead it needs to be like:
-				// pModel->Reload();
-				// so that it can preserve handles.
-
-				pModel->m_iReferences = 0;
-				CModelLibrary::ClearUnreferenced();
-				CModelLibrary::AddModel(m_sToyFile);
-			}
+				pModel->Reload();
 		}
 		else
 			CModelLibrary::AddModel(m_sToyFile);

@@ -22,7 +22,11 @@ public:
 	bool					Load();
 	bool					LoadSourceFile();
 	size_t					LoadBufferIntoGL(size_t iMaterial);
+
+	void					Unload();
 	void					UnloadBufferFromGL(size_t iBuffer);
+
+	void					Reload();
 
 public:
 	size_t					m_iReferences;
