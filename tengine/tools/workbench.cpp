@@ -222,11 +222,13 @@ CWorkbenchTool* CWorkbench::GetActiveTool()
 	return m_apTools[m_iActiveTool];
 }
 
+static CVar workbench("workbench", "off");
+
 CWorkbench* Workbench(bool bCreate)
 {
 	// This function won't work unless we're in dev mode.
 	// I don't want memory wasted on the level editor for most players.
-	if (!CVar::GetCVarBool("developer"))
+	if (!CVar::GetCVarBool("developer") && !workbench.GetBool())
 		return nullptr;
 
 	static bool bCreated = false;
