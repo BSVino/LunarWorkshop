@@ -9,7 +9,7 @@
 #include <tinker/cvar.h>
 #include <game/gameserver.h>
 #include <glgui/rootpanel.h>
-#include <game/camera.h>
+#include <game/cameramanager.h>
 #include <renderer/renderer.h>
 #include <tengine/game/entities/game.h>
 #include <ui/hudviewport.h>
@@ -309,9 +309,9 @@ bool CGameWindow::KeyPress(int c)
 			return true;
 	}
 
-	if (GameServer() && GameServer()->GetCamera())
+	if (GameServer() && GameServer()->GetCameraManager())
 	{
-		if (GameServer()->GetCamera()->KeyDown(c))
+		if (GameServer()->GetCameraManager()->KeyDown(c))
 			return true;
 	}
 
@@ -337,9 +337,9 @@ void CGameWindow::KeyRelease(int c)
 {
 	BaseClass::KeyRelease(c);
 
-	if (GameServer() && GameServer()->GetCamera())
+	if (GameServer() && GameServer()->GetCameraManager())
 	{
-		if (GameServer()->GetCamera()->KeyUp(c))
+		if (GameServer()->GetCameraManager()->KeyUp(c))
 			return;
 	}
 
@@ -366,8 +366,8 @@ void CGameWindow::MouseMotion(int x, int y)
 	if (CWorkbench::IsActive())
 		Workbench()->MouseMotion(x, y);
 
-	if (GameServer() && GameServer()->GetCamera())
-		GameServer()->GetCamera()->MouseInput(x, y);
+	if (GameServer() && GameServer()->GetCameraManager())
+		GameServer()->GetCameraManager()->MouseInput(x, y);
 
 	if (Game() && m_bHaveLastMouse)
 	{
@@ -397,9 +397,9 @@ bool CGameWindow::MouseInput(int iButton, int iState)
 			return true;
 	}
 
-	if (GameServer() && GameServer()->GetCamera())
+	if (GameServer() && GameServer()->GetCameraManager())
 	{
-		if (GameServer()->GetCamera()->MouseButton(iButton, iState))
+		if (GameServer()->GetCameraManager()->MouseButton(iButton, iState))
 			return true;
 	}
 

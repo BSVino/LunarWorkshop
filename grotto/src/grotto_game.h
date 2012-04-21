@@ -15,7 +15,6 @@ public:
 
 	class CGrottoCharacter*		GetLocalPlayerCharacter();
 	class CGrottoRenderer*		GetGrottoRenderer();
-	class CGrottoCamera*		GetGrottoCamera();
 };
 
 inline class CGrottoGame* GrottoGame()

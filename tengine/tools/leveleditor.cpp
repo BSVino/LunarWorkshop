@@ -96,7 +96,7 @@ void CEntityPropertiesPanel::Layout()
 
 			m_apPropertyLabels.push_back(new glgui::CLabel(tstring(pSaveData->m_pszHandle) + ": ", "sans-serif", 10));
 			m_apPropertyLabels.back()->SetAlign(glgui::CLabel::TA_TOPLEFT);
-			AddControl(m_apPropertyLabels.back());
+			AddControl(m_apPropertyLabels.back(), true);
 			m_apPropertyLabels.back()->SetLeft(15);
 			m_apPropertyLabels.back()->SetTop(flTop);
 			m_apPropertyLabels.back()->SetWidth(10);
@@ -106,7 +106,7 @@ void CEntityPropertiesPanel::Layout()
 			{
 				glgui::CCheckBox* pCheckbox = new glgui::CCheckBox();
 				m_apPropertyOptions.push_back(pCheckbox);
-				AddControl(pCheckbox);
+				AddControl(pCheckbox, true);
 				pCheckbox->SetLeft(m_apPropertyLabels.back()->GetRight() + 10);
 				pCheckbox->SetTop(flTop);
 				pCheckbox->SetSize(12, 12);
@@ -135,7 +135,7 @@ void CEntityPropertiesPanel::Layout()
 
 				glgui::CTextField* pTextField = new glgui::CTextField();
 				m_apPropertyOptions.push_back(pTextField);
-				AddControl(pTextField);
+				AddControl(pTextField, true);
 				pTextField->SetWidth(GetWidth()-30);
 				pTextField->CenterX();
 				pTextField->SetTop(flTop+12);
@@ -243,6 +243,11 @@ void CEntityPropertiesPanel::ModelChangedCallback(const tstring& sArgs)
 
 void CEntityPropertiesPanel::TargetChangedCallback(const tstring& sArgs)
 {
+	CLevel* pLevel = LevelEditor()->GetLevel();
+
+	if (!pLevel)
+		return;
+
 	eastl::vector<tstring> asTokens;
 	tstrtok(sArgs, asTokens, "<>");
 
@@ -252,16 +257,16 @@ void CEntityPropertiesPanel::TargetChangedCallback(const tstring& sArgs)
 
 	eastl::vector<tstring> asTargets;
 
-	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
+	for (size_t i = 0; i < pLevel->GetEntityData().size(); i++)
 	{
-		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
+		auto* pEntity = &pLevel->GetEntityData()[i];
 		if (!pEntity)
 			continue;
 
 		if (!pEntity->GetName().length())
 			continue;
 
-		CEntityRegistration* pRegistration = CBaseEntity::GetRegisteredEntity(pEntity->GetClassName());
+		CEntityRegistration* pRegistration = CBaseEntity::GetRegisteredEntity("C"+pEntity->GetClass());
 		TAssert(pRegistration);
 		if (!pRegistration)
 			continue;
@@ -478,7 +483,7 @@ void CEditorPanel::Layout()
 	m_pPropertiesPanel->SetTop(m_pObjectTitle->GetBottom() + 5);
 	m_pPropertiesPanel->SetLeft(5);
 	m_pPropertiesPanel->SetRight(GetWidth()-5);
-	m_pPropertiesPanel->SetMaxHeight(GetBottom() - m_pObjectTitle->GetBottom() - 10);
+	m_pPropertiesPanel->SetMaxHeight(GetHeight() - m_pPropertiesPanel->GetTop() - 10);
 
 	BaseClass::Layout();
 }
@@ -835,7 +840,7 @@ bool CLevelEditor::MouseInput(int iButton, int iState)
 
 void CLevelEditor::Activate()
 {
-	SetCameraOrientation(GameServer()->GetCamera()->GetCameraPosition(), GameServer()->GetCamera()->GetCameraDirection());
+	SetCameraOrientation(GameServer()->GetCameraManager()->GetCameraPosition(), GameServer()->GetCameraManager()->GetCameraDirection());
 
 	m_pLevel = GameServer()->GetLevel(CVar::GetCVarValue("game_level"));
 
@@ -879,10 +884,10 @@ void CLevelEditor::RenderScene()
 
 void CLevelEditor::CameraThink()
 {
-	if (Workbench()->GetCamera()->GetFreeMode())
+	if (Workbench()->GetCameraManager()->GetFreeMode())
 	{
-		m_vecEditCamera = Workbench()->GetCamera()->GetFreeCameraPosition();
-		m_angEditCamera = Workbench()->GetCamera()->GetFreeCameraAngles();
+		m_vecEditCamera = Workbench()->GetCameraManager()->GetFreeCameraPosition();
+		m_angEditCamera = Workbench()->GetCameraManager()->GetFreeCameraAngles();
 	}
 }
 

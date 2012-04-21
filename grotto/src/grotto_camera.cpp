@@ -10,49 +10,26 @@
 #include "grotto_game.h"
 #include "grotto_renderer.h"
 
-CGrottoCamera::CGrottoCamera()
-{
-	m_bThirdPerson = true;
+REGISTER_ENTITY(CGrottoCamera);
 
-	CVar::SetCVar("cam_third_back", 20.0f);
-	CVar::SetCVar("cam_third_right", 0.0f);
+NETVAR_TABLE_BEGIN(CGrottoCamera);
+NETVAR_TABLE_END();
+
+SAVEDATA_TABLE_BEGIN_EDITOR(CGrottoCamera);
+SAVEDATA_TABLE_END();
+
+INPUTS_TABLE_BEGIN(CGrottoCamera);
+INPUTS_TABLE_END();
+
+void CGrottoCamera::Spawn()
+{
+	BaseClass::Spawn();
 }
 
 void CGrottoCamera::Think()
 {
-	if (GrottoGame()->GetNumLocalPlayers())
-		m_hCharacter = GrottoGame()->GetLocalPlayerCharacter();
-	else
-		m_hCharacter = nullptr;
+	if (!m_hCameraTarget)
+		m_hCameraTarget = GrottoGame()->GetLocalPlayerCharacter();
 
 	BaseClass::Think();
-}
-
-Vector CGrottoCamera::GetCameraPosition()
-{
-	if (CVar::GetCVarValue("game_mode") == "menu")
-		return CCamera::GetCameraPosition();
-
-	return BaseClass::GetCameraPosition();
-}
-
-Vector CGrottoCamera::GetCameraDirection()
-{
-	if (CVar::GetCVarValue("game_mode") == "menu")
-		return CCamera::GetCameraDirection();
-
-	return BaseClass::GetCameraDirection();
-}
-
-TVector CGrottoCamera::GetCameraUp()
-{
-	if (CVar::GetCVarValue("game_mode") == "menu")
-		return CCamera::GetCameraUp();
-
-	return BaseClass::GetCameraUp();
-}
-
-float CGrottoCamera::GetCameraFOV()
-{
-	return 40;
 }

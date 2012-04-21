@@ -3,13 +3,13 @@
 #include <tstring.h>
 #include <glgui/panel.h>
 #include <glgui/movablepanel.h>
-#include <game/camera.h>
+#include <game/cameramanager.h>
 
 #include "tool.h"
 
-class CWorkbenchCamera : public CCamera
+class CWorkbenchCamera : public CCameraManager
 {
-	DECLARE_CLASS(CWorkbenchCamera, CCamera);
+	DECLARE_CLASS(CWorkbenchCamera, CCameraManager);
 
 public:
 	virtual void	Think();
@@ -49,7 +49,7 @@ public:
 
 	static void				RenderScene();
 
-	static CCamera*			GetCamera();
+	static CCameraManager*	GetCameraManager();
 
 	static void				RegisterTool(const char* pszTool, ToolCreator pfnToolCreator);
 

@@ -8,7 +8,7 @@
 #include <network/network.h>
 #include <tinker/application.h>
 #include <tinker/cvar.h>
-#include <game/camera.h>
+#include <game/cameramanager.h>
 
 REGISTER_ENTITY(CGame);
 

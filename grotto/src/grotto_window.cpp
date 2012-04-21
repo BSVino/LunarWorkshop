@@ -8,7 +8,7 @@
 #include <glgui/rootpanel.h>
 #include <renderer/renderer.h>
 #include <tinker/cvar.h>
-#include <game/camera.h>
+#include <game/cameramanager.h>
 
 #include "grotto_renderer.h"
 

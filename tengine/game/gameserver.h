@@ -117,7 +117,7 @@ public:
 	size_t										GetFrame() { return m_iFrame; }
 
 	class CGameRenderer*						GetRenderer();
-	class CCamera*								GetCamera();
+	class CCameraManager*						GetCameraManager();
 
 	bool										IsLoading() { return m_bLoading; };
 	void										SetLoading(bool bLoading) { m_bLoading = bLoading; };
@@ -150,7 +150,7 @@ protected:
 	double										m_flHostTime;		// This is the current time for the computer
 	size_t										m_iFrame;
 
-	class CCamera*								m_pCamera;
+	class CCameraManager*						m_pCameraManager;
 
 	bool										m_bLoading;
 	bool										m_bRestartLevel;
@@ -182,7 +182,6 @@ inline class CGameServer* GameServer()
 // Let the game directory define this.
 extern class CGame* CreateGame();
 extern class CGameRenderer* CreateRenderer();
-extern class CCamera* CreateCamera();
 extern CResource<CLevel> CreateLevel();
 extern class CHUDViewport* CreateHUD();
 extern tstring GetInitialGameMode();

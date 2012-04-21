@@ -15,7 +15,6 @@ endif (WIN32)
 set (GROTTO_SYSTEM_SOURCES
 	main.cpp
 
-	grotto_camera.cpp
 	grotto_renderer.cpp
 	grotto_systems.cpp
 	grotto_window.cpp
@@ -30,6 +29,7 @@ set (GROTTO_ENTITY_SOURCES
 	reflectionproxy.cpp
 	token.cpp
 
+	grotto_camera.cpp
 	grotto_player.cpp
 	grotto_game.cpp
 	grotto_character.cpp

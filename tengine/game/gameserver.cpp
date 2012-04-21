@@ -29,7 +29,7 @@
 #include <tools/workbench.h>
 #include <textures/materiallibrary.h>
 
-#include "camera.h"
+#include "cameramanager.h"
 #include "level.h"
 
 eastl::map<tstring, CPrecacheItem> CGameServer::s_aPrecacheClasses;
@@ -52,7 +52,7 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 
 	CBaseEntity::s_apEntityList.resize(m_iMaxEnts);
 
-	m_pCamera = NULL;
+	m_pCameraManager = NULL;
 
 	m_iSaveCRC = 0;
 
@@ -120,8 +120,8 @@ CGameServer::~CGameServer()
 	for (size_t i = 0; i < m_apLevels.size(); i++)
 		m_apLevels[i].reset();
 
-	if (m_pCamera)
-		delete m_pCamera;
+	if (m_pCameraManager)
+		delete m_pCameraManager;
 
 	if (m_pWorkListener)
 		m_pWorkListener->EndProgress();
@@ -240,8 +240,8 @@ void CGameServer::Initialize()
 
 	CParticleSystemLibrary::ClearInstances();
 
-	if (!m_pCamera)
-		m_pCamera = CreateCamera();
+	if (!m_pCameraManager)
+		m_pCameraManager = new CCameraManager();
 
 	if (m_pWorkListener)
 		m_pWorkListener->EndProgress();
@@ -679,10 +679,10 @@ void CGameServer::Render()
 {
 	TPROF("CGameServer::Render");
 
-	if (!GetCamera())
+	if (!GetCameraManager())
 		return;
 
-	GetCamera()->Think();
+	GetCameraManager()->Think();
 
 	GameWindow()->GetRenderer()->Render();
 }
@@ -994,12 +994,12 @@ CGameRenderer* CGameServer::GetRenderer()
 	return static_cast<CGameRenderer*>(GameWindow()->GetRenderer());
 }
 
-CCamera* CGameServer::GetCamera()
+CCameraManager* CGameServer::GetCameraManager()
 {
 	if (CWorkbench::IsActive())
-		return CWorkbench::GetCamera();
+		return CWorkbench::GetCameraManager();
 
-	return m_pCamera;
+	return m_pCameraManager;
 }
 
 CGame* CGameServer::GetGame()

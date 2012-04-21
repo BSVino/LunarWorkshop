@@ -24,8 +24,7 @@ if (WIN32)
 endif (WIN32)
 
 set (TENGINE_GAME_SOURCES
-	game/camera.cpp
-	game/charactercamera.cpp
+	game/cameramanager.cpp
 	game/gameserver.cpp
 	game/level.cpp
 	game/networkedeffect.cpp
@@ -34,8 +33,10 @@ set (TENGINE_GAME_SOURCES
 set (TENGINE_GAME_ENTITY_SOURCES
 	game/entities/baseentity.cpp
 	game/entities/beam.cpp
+	game/entities/camera.cpp
 	game/entities/counter.cpp
 	game/entities/character.cpp
+	game/entities/charactercamera.cpp
 	game/entities/game.cpp
 	game/entities/kinematic.cpp
 	game/entities/logicgate.cpp

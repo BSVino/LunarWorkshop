@@ -1,0 +1,252 @@
+#include "cameramanager.h"
+
+#include <maths.h>
+#include <mtrand.h>
+#include <renderer/game_renderer.h>
+#include <tinker/cvar.h>
+#include <tinker/application.h>
+#include <game/gameserver.h>
+#include <game/entities/camera.h>
+
+CCameraManager::CCameraManager()
+{
+	m_bFreeMode = false;
+
+	m_iMouseLastX = 0;
+	m_iMouseLastY = 0;
+}
+
+CVar shrink_frustum("debug_shrink_frustum", "no");
+
+CVar cam_free("cam_free", "off");
+
+void CCameraManager::Think()
+{
+	bool bFreeMode = cam_free.GetBool();
+	if (bFreeMode != m_bFreeMode)
+	{
+		m_vecFreeCamera = GetCameraPosition();
+		m_angFreeCamera = VectorAngles((GetCameraDirection()).Normalized());
+		m_bFreeMode = bFreeMode;
+		CApplication::Get()->SetMouseCursorEnabled(!m_bFreeMode);
+	}
+
+	if (m_bFreeMode)
+	{
+		Vector vecForward, vecRight;
+		AngleVectors(m_angFreeCamera, &vecForward, NULL, &vecRight);
+
+		m_vecFreeCamera += vecForward * m_vecFreeVelocity.x * (float)GameServer()->GetFrameTime() * 20;
+		m_vecFreeCamera += vecRight * m_vecFreeVelocity.z * (float)GameServer()->GetFrameTime() * 20;
+	}
+	else
+	{
+		if (shrink_frustum.GetBool())
+			GameServer()->GetRenderer()->FrustumOverride(GetCameraPosition(), GetCameraDirection(), GetCameraFOV()-1, GetCameraNear()+1, GetCameraFar()-1);
+	}
+
+	for (size_t i = 0; i < m_ahCameras.size(); i++)
+		m_ahCameras[i]->CameraThink();
+}
+
+TVector CCameraManager::GetCameraPosition()
+{
+	if (m_bFreeMode)
+		return m_vecFreeCamera;
+
+	CCamera* pCamera = GetCurrentCamera();
+	if (!pCamera)
+		return TVector(30, 30, 30);
+
+	return pCamera->GetGlobalOrigin();
+}
+
+TVector CCameraManager::GetCameraDirection()
+{
+	if (m_bFreeMode)
+		return AngleVector(m_angFreeCamera);
+
+	CCamera* pCamera = GetCurrentCamera();
+	if (!pCamera)
+		return TVector(1,0,0);
+
+	return AngleVector(pCamera->GetGlobalAngles());
+}
+
+TVector CCameraManager::GetCameraUp()
+{
+	CCamera* pCamera = GetCurrentCamera();
+	if (!pCamera)
+		return TVector(0, 1, 0);
+
+	return pCamera->GetUpVector();
+}
+
+float CCameraManager::GetCameraFOV()
+{
+	CCamera* pCamera = GetCurrentCamera();
+	if (!pCamera)
+		return 44.0f;
+
+	return pCamera->GetFOV();
+}
+
+void CCameraManager::MouseInput(int x, int y)
+{
+	int dx, dy;
+
+	dx = x - m_iMouseLastX;
+	dy = y - m_iMouseLastY;
+
+	if (m_bFreeMode)
+	{
+		m_angFreeCamera.y += (dx/5.0f);
+		m_angFreeCamera.p -= (dy/5.0f);
+
+		if (m_angFreeCamera.p > 89)
+			m_angFreeCamera.p = 89;
+
+		if (m_angFreeCamera.p < -89)
+			m_angFreeCamera.p = -89;
+
+		while (m_angFreeCamera.y > 180)
+			m_angFreeCamera.y -= 360;
+
+		while (m_angFreeCamera.y < -180)
+			m_angFreeCamera.y += 360;
+	}
+
+	m_iMouseLastX = x;
+	m_iMouseLastY = y;
+}
+
+CVar lock_freemode_frustum("debug_lock_freemode_frustum", "no");
+
+bool CCameraManager::KeyDown(int c)
+{
+	if (CVar::GetCVarBool("cheats") && c == 'Z')
+	{
+		cam_free.SetValue(m_bFreeMode?"off":"on");
+
+		if (lock_freemode_frustum.GetBool())
+		{
+			if (m_bFreeMode)
+				GameServer()->GetRenderer()->FrustumOverride(GetCameraPosition(), GetCameraDirection(), GetCameraFOV(), GetCameraNear(), GetCameraFar());
+			else
+				GameServer()->GetRenderer()->CancelFrustumOverride();
+		}
+
+		return true;
+	}
+
+	if (m_bFreeMode)
+	{
+		if (c == 'W')
+		{
+			m_vecFreeVelocity.x = 1.0f;
+			return true;
+		}
+
+		if (c == 'S')
+		{
+			m_vecFreeVelocity.x = -1.0f;
+			return true;
+		}
+
+		if (c == 'D')
+		{
+			m_vecFreeVelocity.z = 1.0f;
+			return true;
+		}
+
+		if (c == 'A')
+		{
+			m_vecFreeVelocity.z = -1.0f;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool CCameraManager::KeyUp(int c)
+{
+	if (m_bFreeMode)
+	{
+		if (c == 'W')
+		{
+			m_vecFreeVelocity.x = 0.0f;
+			return true;
+		}
+
+		if (c == 'S')
+		{
+			m_vecFreeVelocity.x = 0.0f;
+			return true;
+		}
+
+		if (c == 'D')
+		{
+			m_vecFreeVelocity.z = 0.0f;
+			return true;
+		}
+
+		if (c == 'A')
+		{
+			m_vecFreeVelocity.z = 0.0f;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void CCameraManager::AddCamera(CCamera* pCamera)
+{
+	if (!pCamera)
+		return;
+
+#ifdef _DEBUG
+	for (size_t i = 0; i < m_ahCameras.size(); i++)
+		TAssert(m_ahCameras[i] != (const CCamera*)pCamera);
+#endif
+
+	m_ahCameras.push_back(pCamera);
+
+	if (m_ahCameras.size() == 1)
+		m_iCurrentCamera = 0;
+}
+
+void CCameraManager::RemoveCamera(CCamera* pCamera)
+{
+	if (!pCamera)
+		return;
+
+	for (size_t i = 0; i < m_ahCameras.size(); i++)
+	{
+		if (m_ahCameras[i] == (const CCamera*)pCamera)
+		{
+			TAssert(m_iCurrentCamera != i || m_ahCameras.size() == 1);
+			if (m_iCurrentCamera == i)
+				m_iCurrentCamera = 0;
+			else if (m_iCurrentCamera > i)
+				m_iCurrentCamera--;
+
+			m_ahCameras.erase(m_ahCameras.begin()+i);
+			break;
+		}
+	}
+}
+
+CCamera* CCameraManager::GetCurrentCamera()
+{
+	if (m_iCurrentCamera >= m_ahCameras.size())
+		return nullptr;
+
+	return m_ahCameras[m_iCurrentCamera];
+}
+
+CCameraManager* CameraManager()
+{
+	return GameServer()->GetCameraManager();
+}

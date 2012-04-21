@@ -4,7 +4,7 @@
 
 #include <glgui/panel.h>
 #include <glgui/movablepanel.h>
-#include <game/camera.h>
+#include <game/cameramanager.h>
 #include <textures/materialhandle.h>
 
 #include "tool.h"

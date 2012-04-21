@@ -197,7 +197,7 @@ void CWorkbench::RenderScene()
 	Manipulator()->Render();
 }
 
-CCamera* CWorkbench::GetCamera()
+CCameraManager* CWorkbench::GetCameraManager()
 {
 	return Workbench()->m_pCamera;
 }

@@ -25,12 +25,6 @@ CGameRenderer* CreateRenderer()
 	return new CGrottoRenderer();
 }
 
-CCamera* CreateCamera()
-{
-	CCamera* pCamera = new CGrottoCamera();
-	return pCamera;
-}
-
 CResource<CLevel> CreateLevel()
 {
 	return new CLevel();
@@ -106,9 +100,4 @@ CGrottoCharacter* CGrottoGame::GetLocalPlayerCharacter()
 CGrottoRenderer* CGrottoGame::GetGrottoRenderer()
 {
 	return static_cast<CGrottoRenderer*>(GameServer()->GetRenderer());
-}
-
-CGrottoCamera* CGrottoGame::GetGrottoCamera()
-{
-	return static_cast<CGrottoCamera*>(GameServer()->GetCamera());
 }

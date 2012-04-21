@@ -12,7 +12,7 @@
 #include <tinker/profiler.h>
 #include <game/gameserver.h>
 #include <textures/texturelibrary.h>
-#include <game/camera.h>
+#include <game/cameramanager.h>
 #include <physics/physics.h>
 #include <toys/toy.h>
 #include <textures/materiallibrary.h>
@@ -44,7 +44,7 @@ void CGameRenderer::Render()
 {
 	TPROF("CGameRenderer::Render");
 
-	CCamera* pCamera = GameServer()->GetCamera();
+	CCameraManager* pCamera = GameServer()->GetCameraManager();
 
 	SetCameraPosition(pCamera->GetCameraPosition());
 	SetCameraDirection(pCamera->GetCameraDirection());
@@ -75,7 +75,7 @@ void CGameRenderer::Render()
 
 bool DistanceCompare(CBaseEntity* a, CBaseEntity* b)
 {
-	Vector vecCamera = GameServer()->GetCamera()->GetCameraPosition();
+	Vector vecCamera = GameServer()->GetCameraManager()->GetCameraPosition();
 	return ((a->GetGlobalOrigin() - vecCamera).LengthSqr() > (b->GetGlobalOrigin() - vecCamera).LengthSqr());
 }
 
@@ -142,7 +142,7 @@ void CGameRenderer::DrawSkybox(class CRenderingContext* pContext)
 
 	TAssert(false);	// Hasn't been tested since the 3.0 port
 
-	CCamera* pCamera = GameServer()->GetCamera();
+	CCameraManager* pCamera = GameServer()->GetCameraManager();
 
 	SetCameraPosition(pCamera->GetCameraPosition());
 	SetCameraDirection(pCamera->GetCameraDirection());
