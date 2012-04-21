@@ -761,6 +761,19 @@ void CLevelEditor::PopulateLevelEntityFromPanel(class CLevelEntity* pEntity, CEn
 	}
 }
 
+void CLevelEditor::DuplicateSelectedEntity()
+{
+	if (!m_pEditorPanel->m_pEntities->GetSelectedNode())
+		return;
+
+	auto& aEntityData = m_pLevel->GetEntityData();
+	auto& oNewEntity = aEntityData.push_back();
+	oNewEntity = aEntityData[m_pEditorPanel->m_pEntities->GetSelectedNodeId()];
+
+	m_pEditorPanel->Layout();
+	m_pEditorPanel->m_pEntities->SetSelectedNode(aEntityData.size()-1);
+}
+
 void CLevelEditor::CreateEntityCallback(const tstring& sArgs)
 {
 	m_pCreateEntityPanel->SetPos(glgui::CRootPanel::Get()->GetWidth()/2-m_pCreateEntityPanel->GetWidth()/2, 72);
@@ -796,6 +809,13 @@ bool CLevelEditor::KeyPress(int c)
 		if (m_pLevel)
 			m_pLevel->SaveToFile();
 
+		return true;
+	}
+
+	// H for the same reason, my dvorak to qwerty key mapper
+	if ((c == 'D' || c == 'H') && Application()->IsCtrlDown())
+	{
+		DuplicateSelectedEntity();
 		return true;
 	}
 

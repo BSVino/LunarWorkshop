@@ -107,6 +107,7 @@ public:
 	void					EntitySelected();
 	void					CreateEntityFromPanel(const Vector& vecPosition);
 	static void				PopulateLevelEntityFromPanel(class CLevelEntity* pEntity, CEntityPropertiesPanel* pPanel);
+	void					DuplicateSelectedEntity();
 
 	class CLevel*			GetLevel() { return m_pLevel; }
 
