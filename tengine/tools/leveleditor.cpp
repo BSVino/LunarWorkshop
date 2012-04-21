@@ -602,6 +602,9 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected)
 	if (pEntity->ShouldRenderInverted())
 		r.SetWinding(!r.GetWinding());
 
+	if (pEntity->ShouldDisableBackCulling())
+		r.SetBackCulling(false);
+
 	Vector vecScale = pEntity->GetScale();
 	if (bSelected && Manipulator()->IsTransforming())
 		vecScale = Manipulator()->GetNewTRS().m_vecScaling;

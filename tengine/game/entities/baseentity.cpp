@@ -123,6 +123,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", ~0, UnserializeString_ModelID);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CMaterialHandle, m_hMaterialModel);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bRenderInverted, "RenderInverted", false);
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bDisableBackCulling, "DisableBackCulling", false);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, double, m_flSpawnTime);
 SAVEDATA_TABLE_END();
@@ -262,7 +263,18 @@ TVector CBaseEntity::GetGlobalCenter() const
 TFloat CBaseEntity::GetBoundingRadius() const
 {
 	if (m_hMaterialModel.IsValid())
-		return m_vecScale.Get().Length()/2;
+	{
+		if (!m_hMaterialModel->m_ahTextures.size())
+			return 0;
+
+		if (!m_hMaterialModel->m_ahTextures[0].IsValid())
+			return 0;
+
+		size_t iWidth = m_hMaterialModel->m_ahTextures[0]->m_iWidth;
+		size_t iHeight = m_hMaterialModel->m_ahTextures[0]->m_iHeight;
+
+		return (GetGlobalTransform() * (Vector(0, (float)iWidth, (float)iHeight)/2 * m_vecScale.Get())).Length()/2;
+	}
 
 	return (m_aabbBoundingBox.Size()*m_vecScale.Get()).Length()/2;
 }
@@ -861,6 +873,9 @@ void CBaseEntity::Render() const
 
 		if (m_bRenderInverted)
 			r.SetWinding(!r.GetWinding());
+
+		if (m_bDisableBackCulling)
+			r.SetBackCulling(false);
 
 		ModifyContext(&r);
 

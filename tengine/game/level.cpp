@@ -362,6 +362,15 @@ bool CLevelEntity::CalculateRenderInverted(CLevelEntity* pThis)
 	return *((bool*)&CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "RenderInverted")->m_oDefault);
 }
 
+bool CLevelEntity::CalculateDisableBackCulling(CLevelEntity* pThis)
+{
+	tstring sDisableBackCulling = pThis->GetParameterValue("DisableBackCulling");
+	if (sDisableBackCulling.length() && CanUnserializeString_bool(sDisableBackCulling))
+		return UnserializeString_bool(sDisableBackCulling);
+
+	return *((bool*)&CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "DisableBackCulling")->m_oDefault);
+}
+
 size_t CLevelEntity::CalculateModelID(CLevelEntity* pThis)
 {
 	tstring sModel = pThis->GetParameterValue("Model");

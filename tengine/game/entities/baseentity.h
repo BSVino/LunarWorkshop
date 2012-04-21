@@ -754,6 +754,7 @@ protected:
 	CNetworkedVariable<size_t>				m_iModel;
 	CMaterialHandle							m_hMaterialModel;
 	bool									m_bRenderInverted;
+	bool									m_bDisableBackCulling;
 
 	size_t									m_iSpawnSeed;
 	CNetworkedVariable<double>				m_flSpawnTime;

@@ -57,6 +57,7 @@ public:
 		m_trsGlobalTRS.SetCallbacks(&CalculateGlobalTRS, this);
 		m_bVisible.SetCallbacks(&CalculateVisible, this);
 		m_bRenderInverted.SetCallbacks(&CalculateRenderInverted, this);
+		m_bDisableBackCulling.SetCallbacks(&CalculateDisableBackCulling, this);
 		m_iModel.SetCallbacks(&CalculateModelID, this);
 		m_vecScale.SetCallbacks(&CalculateScale, this);
 		m_aabbBounds.SetCallbacks(&CalculateBoundingBox, this);
@@ -69,6 +70,7 @@ public:
 		m_trsGlobalTRS.Dirtify();
 		m_bVisible.Dirtify();
 		m_bRenderInverted.Dirtify();
+		m_bDisableBackCulling.Dirtify();
 		m_iModel.Dirtify();
 		m_vecScale.Dirtify();
 		m_aabbBounds.Dirtify();
@@ -93,6 +95,7 @@ public:
 	TRS									GetGlobalTRS() { return m_trsGlobalTRS; }
 	bool								IsVisible() { return m_bVisible; }
 	bool								ShouldRenderInverted() { return m_bRenderInverted; }
+	bool								ShouldDisableBackCulling() { return m_bDisableBackCulling; }
 	size_t								GetModelID() { return m_iModel; }
 	Vector								GetScale() { return m_vecScale; }
 	AABB								GetBoundingBox() { return m_aabbBounds; }
@@ -103,6 +106,7 @@ public:
 	static TRS							CalculateGlobalTRS(CLevelEntity* pThis);
 	static bool							CalculateVisible(CLevelEntity* pThis);
 	static bool							CalculateRenderInverted(CLevelEntity* pThis);
+	static bool							CalculateDisableBackCulling(CLevelEntity* pThis);
 	static size_t						CalculateModelID(CLevelEntity* pThis);
 	static Vector						CalculateScale(CLevelEntity* pThis);
 	static AABB							CalculateBoundingBox(CLevelEntity* pThis);
@@ -117,6 +121,7 @@ private:
 	CCachedValue<TRS, CLevelEntity>			m_trsGlobalTRS;
 	CCachedValue<bool, CLevelEntity>		m_bVisible;
 	CCachedValue<bool, CLevelEntity>		m_bRenderInverted;
+	CCachedValue<bool, CLevelEntity>		m_bDisableBackCulling;
 	CCachedValue<size_t, CLevelEntity>		m_iModel;
 	CCachedValue<Vector, CLevelEntity>		m_vecScale;
 	CCachedValue<AABB, CLevelEntity>		m_aabbBounds;
