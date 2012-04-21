@@ -337,6 +337,7 @@ CTreeNode::CTreeNode(CTreeNode* pParent, CTree* pTree, const tstring& sText, con
 	m_pLabel->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pLabel->SetText(sText.c_str());
 	m_pLabel->SetFont(sFont, 11);
+	m_pLabel->SetWrap(false);
 	AddControl(m_pLabel);
 
 	m_pExpandButton = new CExpandButton(m_pTree->m_hArrowMaterial);
