@@ -433,3 +433,48 @@ void CGameWindow::MouseWheel(int x, int y)
 	if (CWorkbench::IsActive())
 		Workbench()->MouseWheel(x, y);
 }
+
+bool CGameWindow::JoystickButtonPress(int iJoystick, int c)
+{
+	if (BaseClass::JoystickButtonPress(iJoystick, c))
+		return true;
+
+	if (Game())
+	{
+		for (size_t i = 0; i < Game()->GetNumLocalPlayers(); i++)
+		{
+			CPlayer* pPlayer = Game()->GetLocalPlayer(i);
+			pPlayer->JoystickButtonPress(iJoystick, c);
+		}
+	}
+
+	return false;
+}
+
+void CGameWindow::JoystickButtonRelease(int iJoystick, int c)
+{
+	BaseClass::JoystickButtonRelease(iJoystick, c);
+
+	if (Game())
+	{
+		for (size_t i = 0; i < Game()->GetNumLocalPlayers(); i++)
+		{
+			CPlayer* pPlayer = Game()->GetLocalPlayer(i);
+			pPlayer->JoystickButtonRelease(iJoystick, c);
+		}
+	}
+}
+
+void CGameWindow::JoystickAxis(int iJoystick, int iAxis, float flValue, float flChange)
+{
+	BaseClass::JoystickAxis(iJoystick, iAxis, flValue, flChange);
+
+	if (Game())
+	{
+		for (size_t i = 0; i < Game()->GetNumLocalPlayers(); i++)
+		{
+			CPlayer* pPlayer = Game()->GetLocalPlayer(i);
+			pPlayer->JoystickAxis(iJoystick, iAxis, flValue, flChange);
+		}
+	}
+}

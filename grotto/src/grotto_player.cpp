@@ -85,3 +85,46 @@ void CGrottoPlayer::KeyPress(int c)
 
 	BaseClass::KeyPress(c);
 }
+
+void CGrottoPlayer::JoystickButtonPress(int iJoystick, int c)
+{
+	if (m_hCharacter == NULL)
+		return;
+
+	if (c == TINKER_KEY_JOYSTICK_4)
+		GetPlayerCharacter()->FindItems();
+
+	if (c == TINKER_KEY_JOYSTICK_1)
+	{
+		GetPlayerCharacter()->GoIntoScreen();
+		return;
+	}
+
+	if (c == TINKER_KEY_JOYSTICK_3)
+	{
+		GetPlayerCharacter()->GoOutOfScreen();
+		return;
+	}
+
+	if (c == TINKER_KEY_JOYSTICK_7)
+	{
+		GetPlayerCharacter()->FlipScreen();
+		return;
+	}
+
+	if (c == TINKER_KEY_JOYSTICK_8)
+	{
+		GetPlayerCharacter()->FlipScreen();
+		return;
+	}
+
+	BaseClass::JoystickButtonPress(iJoystick, c);
+}
+
+void CGrottoPlayer::JoystickAxis(int iJoystick, int iAxis, float flValue, float flChange)
+{
+	if (iAxis == 1)
+		return;
+
+	BaseClass::JoystickAxis(iJoystick, iAxis, flValue, flChange);
+}

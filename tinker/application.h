@@ -74,6 +74,14 @@ public:
 	bool						IsMouseMiddleDown();
 	void						GetMousePosition(int& x, int& y);
 
+	void						InitJoystickInput();
+	void						ProcessJoystickInput();
+
+	virtual bool				JoystickButtonPress(int iJoystick, int c) { return false; };
+	virtual void				JoystickButtonRelease(int iJoystick, int c) {};
+
+	virtual void				JoystickAxis(int iJoystick, int iAxis, float flValue, float flChange) {};
+
 	void						SetMouseCursorEnabled(bool bEnabled);
 	bool						IsMouseCursorEnabled();
 

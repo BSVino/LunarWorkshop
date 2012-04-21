@@ -35,6 +35,9 @@ public:
 	virtual bool				MouseInput(int iButton, int iState);
 	bool						GetLastMouse(int& x, int& y);
 	virtual void				MouseWheel(int x, int y);
+	virtual bool				JoystickButtonPress(int iJoystick, int c);
+	virtual void				JoystickButtonRelease(int iJoystick, int c);
+	virtual void				JoystickAxis(int iJoystick, int iAxis, float flValue, float flChange);
 
 	class CGameServer*			GetGameServer() { return m_pGameServer; };
 	class CGameRenderer*		GetRenderer() { return m_pRenderer; };

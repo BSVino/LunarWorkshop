@@ -14,6 +14,8 @@ public:
 	virtual void					MouseMotion(int x, int y);
 	virtual void					MouseInput(int iButton, int iState);
 	virtual void					KeyPress(int c);
+	virtual void					JoystickButtonPress(int iJoystick, int c);
+	virtual void					JoystickAxis(int iJoystick, int iAxis, float flValue, float flChange);
 
 	mirror_t						GetCurrentMirror() const { return m_eCurrentMirror; }
 

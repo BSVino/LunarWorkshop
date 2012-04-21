@@ -2,6 +2,7 @@
 
 #include <game/entities/game.h>
 #include <tinker/cvar.h>
+#include <tinker/keys.h>
 
 #include "character.h"
 
@@ -114,6 +115,40 @@ void CPlayer::KeyRelease(int c)
 		m_hCharacter->StopMove(MOVE_RIGHT);
 	if (c == 'A')
 		m_hCharacter->StopMove(MOVE_LEFT);
+}
+
+void CPlayer::JoystickButtonPress(int iJoystick, int c)
+{
+	if (c == TINKER_KEY_JOYSTICK_2)
+		m_hCharacter->Jump();
+}
+
+void CPlayer::JoystickAxis(int iJoystick, int iAxis, float flValue, float flChange)
+{
+	if (iAxis == 0)
+	{
+		if (flValue < -0.1f)
+			m_hCharacter->Move(MOVE_LEFT);
+		else if (flValue > 0.1f)
+			m_hCharacter->Move(MOVE_RIGHT);
+		else
+		{
+			m_hCharacter->StopMove(MOVE_LEFT);
+			m_hCharacter->StopMove(MOVE_RIGHT);
+		}
+	}
+	else if (iAxis == 1)
+	{
+		if (flValue < -0.1f)
+			m_hCharacter->Move(MOVE_BACKWARD);
+		else if (flValue > 0.1f)
+			m_hCharacter->Move(MOVE_FORWARD);
+		else
+		{
+			m_hCharacter->StopMove(MOVE_BACKWARD);
+			m_hCharacter->StopMove(MOVE_FORWARD);
+		}
+	}
 }
 
 void CPlayer::SetCharacter(CCharacter* pCharacter)

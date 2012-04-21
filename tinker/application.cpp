@@ -174,6 +174,8 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 	glfwSwapInterval( 1 );
 	glfwSetTime( 0.0 );
 
+	InitJoystickInput();
+
 	SetMouseCursorEnabled(true);
 
 	GLenum err = gl3wInit();
@@ -310,6 +312,8 @@ void CApplication::SwapBuffers()
 {
 	glfwSwapBuffers();
 	glfwPollEvents();
+
+	ProcessJoystickInput();
 }
 
 double CApplication::GetTime()
@@ -688,6 +692,90 @@ bool CApplication::IsMouseMiddleDown()
 void CApplication::GetMousePosition(int& x, int& y)
 {
 	glfwGetMousePos((GLFWwindow)m_pWindow, &x, &y);
+}
+
+class CJoystick
+{
+public:
+	CJoystick()
+	{
+		m_bPresent = false;
+	}
+
+public:
+	bool					m_bPresent;
+	eastl::vector<float>	m_aflAxis;
+	unsigned char			m_iButtons;
+	unsigned long long		m_aiButtonStates;
+};
+
+static eastl::vector<CJoystick> g_aJoysticks;
+static const size_t MAX_JOYSTICKS = 16; // This is how many GLFW supports.
+
+void CApplication::InitJoystickInput()
+{
+	g_aJoysticks.resize(MAX_JOYSTICKS);
+
+	for (size_t i = 0; i < MAX_JOYSTICKS; i++)
+	{
+		if (glfwGetJoystickParam(GLFW_JOYSTICK_1 + i, GLFW_PRESENT) == GL_TRUE)
+		{
+			g_aJoysticks[i].m_bPresent = true;
+			g_aJoysticks[i].m_aflAxis.resize(glfwGetJoystickParam(GLFW_JOYSTICK_1 + i, GLFW_AXES));
+
+			for (size_t j = 0; j < g_aJoysticks[i].m_aflAxis.size(); j++)
+				g_aJoysticks[i].m_aflAxis[j] = 0;
+
+			g_aJoysticks[i].m_iButtons = glfwGetJoystickParam(GLFW_JOYSTICK_1 + i, GLFW_BUTTONS);
+			g_aJoysticks[i].m_aiButtonStates = 0;
+
+			TAssert(g_aJoysticks[i].m_iButtons < sizeof(g_aJoysticks[i].m_aiButtonStates)*8);
+		}
+	}
+}
+
+void CApplication::ProcessJoystickInput()
+{
+	if (g_aJoysticks.size() != MAX_JOYSTICKS)
+		return;
+
+	for (size_t i = 0; i < MAX_JOYSTICKS; i++)
+	{
+		CJoystick& oJoystick = g_aJoysticks[i];
+
+		if (!oJoystick.m_bPresent)
+			continue;
+
+		static eastl::vector<float> aflAxis;
+		aflAxis.resize(oJoystick.m_aflAxis.size());
+		glfwGetJoystickPos(i, &aflAxis[0], oJoystick.m_aflAxis.size());
+
+		for (size_t j = 0; j < oJoystick.m_aflAxis.size(); j++)
+		{
+			if (aflAxis[j] != oJoystick.m_aflAxis[j])
+				JoystickAxis(i, j, aflAxis[j], aflAxis[j]-oJoystick.m_aflAxis[j]);
+		}
+
+		oJoystick.m_aflAxis = aflAxis;
+
+		static eastl::vector<unsigned char> aiButtons;
+		aiButtons.resize(oJoystick.m_iButtons);
+		glfwGetJoystickButtons(i, &aiButtons[0], oJoystick.m_iButtons);
+
+		for (size_t j = 0; j < oJoystick.m_iButtons; j++)
+		{
+			unsigned long long iButtonMask = (1<<j);
+			if (aiButtons[j] == GLFW_PRESS && !(oJoystick.m_aiButtonStates&iButtonMask))
+				JoystickButtonPress(i, MapJoystickKey(j));
+			else if (aiButtons[j] == GLFW_RELEASE && (oJoystick.m_aiButtonStates&iButtonMask))
+				JoystickButtonRelease(i, MapJoystickKey(j));
+
+			if (aiButtons[j] == GLFW_PRESS)
+				oJoystick.m_aiButtonStates |= iButtonMask;
+			else
+				oJoystick.m_aiButtonStates &= ~iButtonMask;
+		}
+	}
 }
 
 void CApplication::SetMouseCursorEnabled(bool bEnabled)
