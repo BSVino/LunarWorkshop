@@ -144,6 +144,9 @@ void CGameRenderingContext::RenderMaterialModel(const CMaterialHandle& hMaterial
 	Vector vecRight = Vector(0, 0, 0.5f) * (float)hBaseTexture->m_iWidth/100;
 
 	UseMaterial(hMaterial);
+
+	SetUniform("vecColor", m_clrRender);
+
 	BeginRenderTriFan();
 		TexCoord(0.0f, 1.0f);
 		Vertex(-vecRight + vecUp);

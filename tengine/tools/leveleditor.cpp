@@ -650,9 +650,9 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected)
 			r.UseProgram("model");
 			r.SetUniform("bDiffuse", true);
 			if (bSelected)
-				r.SetUniform("vecColor", Color(255, 0, 0, (char)(255*flAlpha)));
+				r.SetColor(Color(255, 0, 0, (char)(255*flAlpha)));
 			else
-				r.SetUniform("vecColor", Color(255, 255, 255, (char)(255*flAlpha)));
+				r.SetColor(Color(255, 255, 255, (char)(255*flAlpha)));
 
 			r.Scale(0, vecScale.y, vecScale.x);
 			r.RenderMaterialModel(pEntity->GetMaterialModel());
