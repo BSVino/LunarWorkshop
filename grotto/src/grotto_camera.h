@@ -9,4 +9,12 @@ class CGrottoCamera : public CCamera
 public:
 	virtual void				Spawn();
 	virtual void				Think();
+	virtual void				CameraThink();
+
+	bool						IsAutoTracking();
+
+protected:
+	EAngle						m_angTarget;
+	EAngle						m_angTargetGoal;
+	double						m_flLastTargetChange;
 };
