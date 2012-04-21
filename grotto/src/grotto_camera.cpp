@@ -14,7 +14,7 @@ CGrottoCamera::CGrottoCamera()
 {
 	m_bThirdPerson = true;
 
-	CVar::SetCVar("cam_third_back", 40.0f);
+	CVar::SetCVar("cam_third_back", 20.0f);
 	CVar::SetCVar("cam_third_right", 0.0f);
 }
 
