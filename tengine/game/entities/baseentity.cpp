@@ -122,6 +122,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", ~0, UnserializeString_ModelID);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CMaterialHandle, m_hMaterialModel);
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bRenderInverted, "RenderInverted", false);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, double, m_flSpawnTime);
 SAVEDATA_TABLE_END();
@@ -857,6 +858,9 @@ void CBaseEntity::Render() const
 			r.UseFrameBuffer(GameServer()->GetRenderer()->GetSceneBuffer());
 
 		r.Transform(GetRenderTransform());
+
+		if (m_bRenderInverted)
+			r.SetWinding(!r.GetWinding());
 
 		ModifyContext(&r);
 

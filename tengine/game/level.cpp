@@ -353,6 +353,15 @@ bool CLevelEntity::CalculateVisible(CLevelEntity* pThis)
 	return *((bool*)&CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "Visible")->m_oDefault);
 }
 
+bool CLevelEntity::CalculateRenderInverted(CLevelEntity* pThis)
+{
+	tstring sRenderInverted = pThis->GetParameterValue("RenderInverted");
+	if (sRenderInverted.length() && CanUnserializeString_bool(sRenderInverted))
+		return UnserializeString_bool(sRenderInverted);
+
+	return *((bool*)&CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "RenderInverted")->m_oDefault);
+}
+
 size_t CLevelEntity::CalculateModelID(CLevelEntity* pThis)
 {
 	tstring sModel = pThis->GetParameterValue("Model");
