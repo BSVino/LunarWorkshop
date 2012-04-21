@@ -292,9 +292,9 @@ inline tstring toupper(tstring s)
 	return s;
 }
 
-inline tstring pretty_float(float f)
+inline tstring pretty_float(float f, int iMaxLength=8)
 {
-	tstring s = sprintf("%.8f", f);
+	tstring s = sprintf("%." + sprintf("%d", iMaxLength) + "f", f);
 
 	size_t i = s.length();
 	while (s[i-1] == '0')

@@ -148,7 +148,20 @@ void CEntityPropertiesPanel::Layout()
 					pTextField->SetContentsChangedListener(this, PropertyChanged);
 
 				if (m_pEntity && m_pEntity->HasParameterValue(pSaveData->m_pszHandle))
+				{
 					pTextField->SetText(m_pEntity->GetParameterValue(pSaveData->m_pszHandle));
+
+					if (strcmp(pSaveData->m_pszType, "Vector") == 0 && CanUnserializeString_TVector(pTextField->GetText()))
+					{
+						Vector v = UnserializeString_TVector(pTextField->GetText());
+						pTextField->SetText(pretty_float(v.x, 4) + " " + pretty_float(v.y, 4) + " " + pretty_float(v.z, 4));
+					}
+					else if (strcmp(pSaveData->m_pszType, "EAngle") == 0 && CanUnserializeString_EAngle(pTextField->GetText()))
+					{
+						EAngle v = UnserializeString_EAngle(pTextField->GetText());
+						pTextField->SetText(pretty_float(v.p, 4) + " " + pretty_float(v.y, 4) + " " + pretty_float(v.r, 4));
+					}
+				}
 				else if (pSaveData->m_bDefault)
 				{
 					if (strcmp(pSaveData->m_pszType, "size_t") == 0)
@@ -164,31 +177,31 @@ void CEntityPropertiesPanel::Layout()
 					else if (strcmp(pSaveData->m_pszType, "Vector") == 0)
 					{
 						Vector v = *((Vector*)&pSaveData->m_oDefault[0]);
-						pTextField->SetText(pretty_float(v.x) + " " + pretty_float(v.y) + " " + pretty_float(v.z));
+						pTextField->SetText(pretty_float(v.x, 4) + " " + pretty_float(v.y, 4) + " " + pretty_float(v.z, 4));
 					}
 					else if (strcmp(pSaveData->m_pszType, "Vector2D") == 0)
 					{
 						Vector2D v = *((Vector2D*)&pSaveData->m_oDefault[0]);
-						pTextField->SetText(pretty_float(v.x) + " " + pretty_float(v.y));
+						pTextField->SetText(pretty_float(v.x, 4) + " " + pretty_float(v.y, 4));
 					}
 					else if (strcmp(pSaveData->m_pszType, "EAngle") == 0)
 					{
 						EAngle v = *((EAngle*)&pSaveData->m_oDefault[0]);
-						pTextField->SetText(pretty_float(v.p) + " " + pretty_float(v.y) + " " + pretty_float(v.r));
+						pTextField->SetText(pretty_float(v.p, 4) + " " + pretty_float(v.y, 4) + " " + pretty_float(v.r, 4));
 					}
 					else if (strcmp(pSaveData->m_pszType, "Matrix4x4") == 0)
 					{
 						Matrix4x4 m = *((Matrix4x4*)&pSaveData->m_oDefault[0]);
 						EAngle e = m.GetAngles();
 						Vector v = m.GetTranslation();
-						pTextField->SetText(pretty_float(e.p) + " " + pretty_float(v.y) + " " + pretty_float(e.r) + " " + pretty_float(v.x) + " " + pretty_float(v.y) + " " + pretty_float(v.z));
+						pTextField->SetText(pretty_float(e.p, 4) + " " + pretty_float(v.y, 4) + " " + pretty_float(e.r, 4) + " " + pretty_float(v.x, 4) + " " + pretty_float(v.y, 4) + " " + pretty_float(v.z, 4));
 					}
 					else if (strcmp(pSaveData->m_pszType, "AABB") == 0)
 					{
 						AABB b = *((AABB*)&pSaveData->m_oDefault[0]);
 						Vector v1 = b.m_vecMins;
 						Vector v2 = b.m_vecMaxs;
-						pTextField->SetText(pretty_float(v1.x) + " " + pretty_float(v1.y) + " " + pretty_float(v1.z) + " " + pretty_float(v2.x) + " " + pretty_float(v2.y) + " " + pretty_float(v2.z));
+						pTextField->SetText(pretty_float(v1.x, 4) + " " + pretty_float(v1.y, 4) + " " + pretty_float(v1.z, 4) + " " + pretty_float(v2.x, 4) + " " + pretty_float(v2.y, 4) + " " + pretty_float(v2.z, 4));
 					}
 					else
 					{
@@ -446,9 +459,12 @@ void CEditorPanel::Layout()
 			auto& oEntity = aEntities[i];
 
 			tstring sName = oEntity.GetParameterValue("Name");
+			tstring sModel = oEntity.GetParameterValue("Model");
 
 			if (sName.length())
-				m_pEntities->AddNode(oEntity.GetClass() + ": " + oEntity.GetParameterValue("Name"));
+				m_pEntities->AddNode(oEntity.GetClass() + ": " + sName);
+			else if (sModel.length())
+				m_pEntities->AddNode(oEntity.GetClass() + " (" + GetFilename(sModel) + ")");
 			else
 				m_pEntities->AddNode(oEntity.GetClass());
 		}
