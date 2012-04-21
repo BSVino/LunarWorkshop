@@ -16,6 +16,10 @@ public:
 
 	bool						ShouldRender() const { return true; };
 
+	virtual TFloat				EyeHeight() const;
+	virtual TFloat				BaseCharacterSpeed() { return 3.0f; }
+	virtual TFloat				JumpStrength() { return 3.0f; }
+
 	void						PlaceMirror(mirror_t eMirror);
 
 	CMirror*					GetMirror() const;

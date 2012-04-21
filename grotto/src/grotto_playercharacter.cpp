@@ -42,6 +42,11 @@ void CPlayerCharacter::Spawn()
 	BaseClass::Spawn();
 }
 
+float CPlayerCharacter::EyeHeight() const
+{
+	return 0;
+}
+
 void CPlayerCharacter::PlaceMirror(mirror_t eMirror)
 {
 	if (m_hMirror != NULL)
