@@ -24,6 +24,9 @@ public:
 	virtual float	GetCameraNear() { return 1.0f; };
 	virtual float	GetCameraFar() { return 10000.0f; };
 
+	virtual bool	ShouldTransition();
+	virtual float	GetTransitionLerp();
+
 	bool			GetFreeMode() { return m_bFreeMode; };
 	TVector			GetFreeCameraPosition() const { return m_vecFreeCamera; };
 	EAngle			GetFreeCameraAngles() const { return m_angFreeCamera; };
@@ -50,6 +53,10 @@ public:
 
 	eastl::vector<CEntityHandle<CCamera>>	m_ahCameras;
 	size_t			m_iCurrentCamera;
+
+	double			m_flTransitionBegin;
+	float			m_flTransitionTime;
+	size_t			m_iLastCamera;
 };
 
 CCameraManager* CameraManager();

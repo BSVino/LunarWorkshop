@@ -14,6 +14,8 @@ CCameraManager::CCameraManager()
 
 	m_iMouseLastX = 0;
 	m_iMouseLastY = 0;
+
+	m_flTransitionBegin = 0;
 }
 
 CVar shrink_frustum("debug_shrink_frustum", "no");
@@ -47,6 +49,12 @@ void CCameraManager::Think()
 
 	for (size_t i = 0; i < m_ahCameras.size(); i++)
 		m_ahCameras[i]->CameraThink();
+
+	if (m_flTransitionBegin != 0)
+	{
+		if (GameServer()->GetGameTime() > m_flTransitionBegin + m_flTransitionTime)
+			m_flTransitionBegin = 0;
+	}
 }
 
 TVector CCameraManager::GetCameraPosition()
@@ -57,6 +65,15 @@ TVector CCameraManager::GetCameraPosition()
 	CCamera* pCamera = GetActiveCamera();
 	if (!pCamera)
 		return TVector(30, 30, 30);
+
+	if (ShouldTransition())
+	{
+		CCamera* pFrom = m_ahCameras[m_iLastCamera];
+		CCamera* pTo = m_ahCameras[m_iCurrentCamera];
+		float flLerp = GetTransitionLerp();
+		Vector vecDifference = pTo->GetGlobalOrigin() - pFrom->GetGlobalOrigin();
+		return pFrom->GetGlobalOrigin() + vecDifference*flLerp;
+	}
 
 	return pCamera->GetGlobalOrigin();
 }
@@ -70,6 +87,15 @@ TVector CCameraManager::GetCameraDirection()
 	if (!pCamera)
 		return TVector(1,0,0);
 
+	if (ShouldTransition())
+	{
+		CCamera* pFrom = m_ahCameras[m_iLastCamera];
+		CCamera* pTo = m_ahCameras[m_iCurrentCamera];
+		float flLerp = GetTransitionLerp();
+		EAngle angDifference = pTo->GetGlobalAngles() - pFrom->GetGlobalAngles();
+		return AngleVector(pFrom->GetGlobalAngles() + angDifference*flLerp);
+	}
+
 	return AngleVector(pCamera->GetGlobalAngles());
 }
 
@@ -78,6 +104,15 @@ TVector CCameraManager::GetCameraUp()
 	CCamera* pCamera = GetActiveCamera();
 	if (!pCamera)
 		return TVector(0, 1, 0);
+
+	if (ShouldTransition())
+	{
+		CCamera* pFrom = m_ahCameras[m_iLastCamera];
+		CCamera* pTo = m_ahCameras[m_iCurrentCamera];
+		float flLerp = GetTransitionLerp();
+		Vector vecDifference = pTo->GetUpVector() - pFrom->GetUpVector();
+		return pFrom->GetUpVector() + vecDifference*flLerp;
+	}
 
 	return pCamera->GetUpVector();
 }
@@ -88,7 +123,43 @@ float CCameraManager::GetCameraFOV()
 	if (!pCamera)
 		return 44.0f;
 
+	if (ShouldTransition())
+	{
+		CCamera* pFrom = m_ahCameras[m_iLastCamera];
+		CCamera* pTo = m_ahCameras[m_iCurrentCamera];
+		float flLerp = GetTransitionLerp();
+		return RemapVal(flLerp, 0, 1, pFrom->GetFOV(), pTo->GetFOV());
+	}
+
 	return pCamera->GetFOV();
+}
+
+bool CCameraManager::ShouldTransition()
+{
+	if (m_flTransitionBegin == 0)
+		return false;
+
+	if (GameServer()->GetGameTime() > m_flTransitionBegin + m_flTransitionTime)
+		return false;
+
+	if (m_iLastCamera >= m_ahCameras.size())
+		return false;
+
+	if (m_iCurrentCamera >= m_ahCameras.size())
+		return false;
+
+	if (!m_ahCameras[m_iLastCamera])
+		return false;
+
+	if (!m_ahCameras[m_iCurrentCamera])
+		return false;
+
+	return true;
+}
+
+float CCameraManager::GetTransitionLerp()
+{
+	return Lerp(RemapVal((float)GameServer()->GetGameTime(), (float)m_flTransitionBegin, (float)m_flTransitionBegin+m_flTransitionTime, 0, 1), 0.8f);
 }
 
 void CCameraManager::MouseInput(int x, int y)
@@ -273,7 +344,13 @@ void CCameraManager::SetActiveCamera(CCamera* pCamera)
 		if (m_ahCameras[i] == (const CCamera*)pCamera)
 		{
 			if (GetActiveCamera())
+			{
 				GetActiveCamera()->SetActive(false);
+
+				m_flTransitionBegin = GameServer()->GetGameTime();
+				m_flTransitionTime = 0.5f;
+				m_iLastCamera = m_iCurrentCamera;
+			}
 
 			m_iCurrentCamera = i;
 
