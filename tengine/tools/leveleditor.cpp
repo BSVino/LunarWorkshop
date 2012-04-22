@@ -11,6 +11,7 @@
 #include <glgui/checkbox.h>
 #include <glgui/panel.h>
 #include <glgui/movablepanel.h>
+#include <glgui/slidingpanel.h>
 #include <tinker/application.h>
 #include <renderer/game_renderingcontext.h>
 #include <renderer/game_renderer.h>
@@ -97,7 +98,7 @@ void CEntityPropertiesPanel::Layout()
 			m_apPropertyLabels.push_back(new glgui::CLabel(tstring(pSaveData->m_pszHandle) + ": ", "sans-serif", 10));
 			m_apPropertyLabels.back()->SetAlign(glgui::CLabel::TA_TOPLEFT);
 			AddControl(m_apPropertyLabels.back(), true);
-			m_apPropertyLabels.back()->SetLeft(15);
+			m_apPropertyLabels.back()->SetLeft(0);
 			m_apPropertyLabels.back()->SetTop(flTop);
 			m_apPropertyLabels.back()->SetWidth(10);
 			m_apPropertyLabels.back()->EnsureTextFits();
@@ -136,8 +137,8 @@ void CEntityPropertiesPanel::Layout()
 				glgui::CTextField* pTextField = new glgui::CTextField();
 				m_apPropertyOptions.push_back(pTextField);
 				AddControl(pTextField, true);
-				pTextField->SetWidth(GetWidth()-30);
-				pTextField->CenterX();
+				pTextField->Layout_FullWidth(0);
+				pTextField->SetWidth(pTextField->GetWidth()-15);
 				pTextField->SetTop(flTop+12);
 
 				if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
@@ -216,8 +217,9 @@ void CEntityPropertiesPanel::Layout()
 		pszClassName = pRegistration->m_pszParentClass;
 	} while (pRegistration->m_pszParentClass);
 
-	if (flTop > m_flMaxHeight)
-		flTop = m_flMaxHeight;
+	float flMaxHeight = GetParent()->GetHeight() - GetParent()->GetDefaultMargin();
+	if (flTop > flMaxHeight)
+		flTop = flMaxHeight;
 
 	SetHeight(flTop);
 
@@ -382,7 +384,6 @@ void CCreateEntityPanel::Layout()
 	if (m_bReadyToCreate)
 	{
 		m_pPropertiesPanel->SetClass("C" + m_pClass->GetText());
-		m_pPropertiesPanel->SetMaxHeight(300);
 		m_pPropertiesPanel->SetVisible(true);
 	}
 
@@ -431,10 +432,49 @@ CEditorPanel::CEditorPanel()
 	m_pObjectTitle = new glgui::CLabel("", "sans-serif", 20);
 	AddControl(m_pObjectTitle);
 
+	m_pSlider = new glgui::CSlidingContainer();
+	AddControl(m_pSlider);
+
+	m_pPropertiesSlider = new glgui::CSlidingPanel(m_pSlider, "Properties");
+	m_pOutputsSlider = new glgui::CSlidingPanel(m_pSlider, "Outputs");
+
 	m_pPropertiesPanel = new CEntityPropertiesPanel(true);
 	m_pPropertiesPanel->SetBackgroundColor(Color(10, 10, 10, 50));
 	m_pPropertiesPanel->SetPropertyChangedListener(this, PropertyChanged);
-	AddControl(m_pPropertiesPanel);
+	m_pPropertiesSlider->AddControl(m_pPropertiesPanel);
+
+	m_pOutputs = new glgui::CTree();
+	m_pOutputs->SetBackgroundColor(Color(0, 0, 0, 100));
+	m_pOutputs->SetSelectedListener(this, OutputSelected);
+	m_pOutputsSlider->AddControl(m_pOutputs);
+
+	m_pAddOutput = new glgui::CButton("Add");
+	m_pAddOutput->SetClickedListener(this, AddOutput);
+	m_pOutputsSlider->AddControl(m_pAddOutput);
+
+	m_pRemoveOutput = new glgui::CButton("Remove");
+	m_pRemoveOutput->SetClickedListener(this, RemoveOutput);
+	m_pOutputsSlider->AddControl(m_pRemoveOutput);
+
+	m_pOutput = new glgui::CMenu("Choose Output");
+	m_pOutputsSlider->AddControl(m_pOutput);
+
+	m_pOutputEntityNameLabel = new glgui::CLabel("Target Entity:", "sans-serif", 10);
+	m_pOutputEntityNameLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
+	m_pOutputsSlider->AddControl(m_pOutputEntityNameLabel);
+	m_pOutputEntityNameText = new glgui::CTextField();
+	m_pOutputEntityNameText->SetContentsChangedListener(this, TargetEntityChanged);
+	m_pOutputsSlider->AddControl(m_pOutputEntityNameText);
+
+	m_pInput = new glgui::CMenu("Choose Input");
+	m_pOutputsSlider->AddControl(m_pInput);
+
+	m_pOutputArgsLabel = new glgui::CLabel("Arguments:", "sans-serif", 10);
+	m_pOutputArgsLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
+	m_pOutputsSlider->AddControl(m_pOutputArgsLabel);
+	m_pOutputArgsText = new glgui::CTextField();
+	m_pOutputArgsText->SetContentsChangedListener(this, ArgumentsChanged);
+	m_pOutputsSlider->AddControl(m_pOutputArgsText);
 }
 
 void CEditorPanel::Layout()
@@ -478,32 +518,30 @@ void CEditorPanel::Layout()
 	m_pObjectTitle->SetPos(0, 220);
 	m_pObjectTitle->SetSize(GetWidth(), 25);
 
-	LayoutEntities();
+	float flTempMargin = 5;
+	m_pSlider->Layout_AlignTop(m_pObjectTitle, flTempMargin);
+	m_pSlider->Layout_FullWidth(flTempMargin);
+	m_pSlider->SetBottom(GetHeight() - flTempMargin);
 
-	m_pPropertiesPanel->SetTop(m_pObjectTitle->GetBottom() + 5);
-	m_pPropertiesPanel->SetLeft(5);
-	m_pPropertiesPanel->SetRight(GetWidth()-5);
-	m_pPropertiesPanel->SetMaxHeight(GetHeight() - m_pPropertiesPanel->GetTop() - 10);
+	flTempMargin = 2;
+	m_pPropertiesPanel->Layout_AlignTop(nullptr, flTempMargin);
+	m_pPropertiesPanel->Layout_FullWidth(flTempMargin);
+
+	LayoutEntity();
 
 	BaseClass::Layout();
 }
 
-void CEditorPanel::LayoutEntities()
+void CEditorPanel::LayoutEntity()
 {
 	m_pObjectTitle->SetText("(No Object Selected)");
 	m_pPropertiesPanel->SetVisible(false);
 	m_pPropertiesPanel->SetEntity(nullptr);
 
-	CLevel* pLevel = LevelEditor()->GetLevel();
+	CLevelEntity* pEntity = GetCurrentEntity();
 
-	if (!pLevel)
-		return;
-
-	auto& aEntities = pLevel->GetEntityData();
-
-	if (m_pEntities->GetSelectedNodeId() < aEntities.size())
+	if (pEntity)
 	{
-		CLevelEntity* pEntity = &aEntities[m_pEntities->GetSelectedNodeId()];
 		if (pEntity->GetName().length())
 			m_pObjectTitle->SetText(pEntity->GetClass() + ": " + pEntity->GetName());
 		else
@@ -512,12 +550,199 @@ void CEditorPanel::LayoutEntities()
 		m_pPropertiesPanel->SetClass("C" + pEntity->GetClass());
 		m_pPropertiesPanel->SetEntity(pEntity);
 		m_pPropertiesPanel->SetVisible(true);
+
+		m_pOutputs->ClearTree();
+
+		auto& aEntityOutputs = pEntity->GetOutputs();
+
+		for (size_t i = 0; i < aEntityOutputs.size(); i++)
+		{
+			auto& oEntityOutput = aEntityOutputs[i];
+
+			m_pOutputs->AddNode(oEntityOutput.m_sOutput + " -> " + oEntityOutput.m_sTargetName + ":" + oEntityOutput.m_sInput);
+		}
+
+		m_pOutputs->Layout();
 	}
+
+	LayoutOutput();
+}
+
+void CEditorPanel::LayoutOutput()
+{
+	m_pAddOutput->SetEnabled(false);
+	m_pRemoveOutput->SetEnabled(false);
+	m_pOutput->SetEnabled(false);
+	m_pOutputEntityNameText->SetEnabled(false);
+	m_pInput->SetEnabled(false);
+	m_pOutputArgsText->SetEnabled(false);
+
+	m_pOutputs->Layout_AlignTop();
+	m_pOutputs->Layout_FullWidth();
+	m_pOutputs->SetHeight(50);
+
+	m_pAddOutput->SetHeight(15);
+	m_pAddOutput->Layout_AlignTop(m_pOutputs);
+	m_pAddOutput->Layout_Column(2, 0);
+	m_pRemoveOutput->SetHeight(15);
+	m_pRemoveOutput->Layout_AlignTop(m_pOutputs);
+	m_pRemoveOutput->Layout_Column(2, 1);
+
+	m_pOutput->Layout_AlignTop(m_pAddOutput, 10);
+	m_pOutput->ClearSubmenus();
+	m_pOutput->SetSize(100, 30);
+	m_pOutput->CenterX();
+	m_pOutput->SetText("Choose Output");
+
+	m_pOutputEntityNameLabel->Layout_AlignTop(m_pOutput);
+	m_pOutputEntityNameText->SetTop(m_pOutputEntityNameLabel->GetTop()+12);
+	m_pOutputEntityNameText->SetText("");
+	m_pOutputEntityNameText->Layout_FullWidth();
+
+	m_pInput->Layout_AlignTop(m_pOutputEntityNameText, 10);
+	m_pInput->ClearSubmenus();
+	m_pInput->SetSize(100, 30);
+	m_pInput->CenterX();
+	m_pInput->SetText("Choose Input");
+
+	m_pOutputArgsLabel->Layout_AlignTop(m_pInput);
+	m_pOutputArgsText->SetTop(m_pOutputArgsLabel->GetTop()+12);
+	m_pOutputArgsText->SetText("");
+	m_pOutputArgsText->Layout_FullWidth();
+
+	CLevelEntity* pEntity = GetCurrentEntity();
+	if (!pEntity)
+		return;
+
+	m_pAddOutput->SetEnabled(true);
+	m_pRemoveOutput->SetEnabled(true);
+
+	CLevelEntity::CLevelEntityOutput* pOutput = GetCurrentOutput();
+	if (!pOutput)
+		return;
+
+	if (pOutput->m_sTargetName.length())
+		m_pOutputEntityNameText->SetText(pOutput->m_sTargetName);
+
+	if (pOutput->m_sArgs.length())
+		m_pOutputArgsText->SetText(pOutput->m_sArgs);
+
+	if (pOutput->m_sOutput.length())
+		m_pOutput->SetText(pOutput->m_sOutput);
+
+	if (pOutput->m_sInput.length())
+		m_pInput->SetText(pOutput->m_sInput);
+
+	CEntityRegistration* pRegistration = CBaseEntity::GetRegisteredEntity("C" + pEntity->GetClass());
+	TAssert(pRegistration);
+	if (!pRegistration)
+		return;
+
+	m_pOutput->SetEnabled(true);
+	m_pOutputEntityNameText->SetEnabled(true);
+	m_pInput->SetEnabled(true);
+	m_pOutputArgsText->SetEnabled(true);
+
+	m_pOutput->ClearSubmenus();
+
+	do {
+		for (size_t i = 0; i < pRegistration->m_aSaveData.size(); i++)
+		{
+			auto& oSaveData = pRegistration->m_aSaveData[i];
+			if (oSaveData.m_eType != CSaveData::DATA_OUTPUT)
+				continue;
+
+			m_pOutput->AddSubmenu(oSaveData.m_pszHandle, this, ChooseOutput);
+		}
+
+		if (!pRegistration->m_pszParentClass)
+			break;
+
+		pRegistration = CBaseEntity::GetRegisteredEntity(pRegistration->m_pszParentClass);
+	} while (pRegistration);
+
+	LayoutInput();
+}
+
+void CEditorPanel::LayoutInput()
+{
+	auto pOutput = GetCurrentOutput();
+	if (!pOutput)
+		return;
+
+	CLevel* pLevel = LevelEditor()->GetLevel();
+	if (!pLevel)
+		return;
+
+	CEntityRegistration* pRegistration = nullptr;
+	if (m_pOutputEntityNameText->GetText()[0] == '*')
+		pRegistration = CBaseEntity::GetRegisteredEntity("C" + m_pOutputEntityNameText->GetText().substr(1));
+	else if (m_pOutputEntityNameText->GetText().length())
+	{
+		CLevelEntity* pTarget = nullptr;
+
+		for (size_t i = 0; i < pLevel->GetEntityData().size(); i++)
+		{
+			if (!pLevel->GetEntityData()[i].GetName().length())
+				continue;
+
+			if (pLevel->GetEntityData()[i].GetName() == m_pOutputEntityNameText->GetText())
+			{
+				pTarget = &pLevel->GetEntityData()[i];
+				break;
+			}
+		}
+
+		if (pTarget)
+			pRegistration = CBaseEntity::GetRegisteredEntity("C" + pTarget->GetClass());
+	}
+
+	m_pInput->ClearSubmenus();
+
+	if (pRegistration)
+	{
+		do {
+			for (auto it = pRegistration->m_aInputs.begin(); it != pRegistration->m_aInputs.end(); it++)
+				m_pInput->AddSubmenu(it->first, this, ChooseInput);
+
+			if (!pRegistration->m_pszParentClass)
+				break;
+
+			pRegistration = CBaseEntity::GetRegisteredEntity(pRegistration->m_pszParentClass);
+		} while (pRegistration);
+	}
+}
+
+CLevelEntity* CEditorPanel::GetCurrentEntity()
+{
+	CLevel* pLevel = LevelEditor()->GetLevel();
+
+	if (!pLevel)
+		return nullptr;
+
+	auto& aEntities = pLevel->GetEntityData();
+
+	if (m_pEntities->GetSelectedNodeId() >= aEntities.size())
+		return nullptr;
+
+	return &aEntities[m_pEntities->GetSelectedNodeId()];
+}
+
+CLevelEntity::CLevelEntityOutput* CEditorPanel::GetCurrentOutput()
+{
+	CLevelEntity* pEntity = GetCurrentEntity();
+
+	auto& aEntityOutputs = pEntity->GetOutputs();
+
+	if (m_pOutputs->GetSelectedNodeId() >= aEntityOutputs.size())
+		return nullptr;
+
+	return &aEntityOutputs[m_pOutputs->GetSelectedNodeId()];
 }
 
 void CEditorPanel::EntitySelectedCallback(const tstring& sArgs)
 {
-	LayoutEntities();
+	LayoutEntity();
 
 	LevelEditor()->EntitySelected();
 
@@ -540,21 +765,119 @@ void CEditorPanel::EntitySelectedCallback(const tstring& sArgs)
 
 void CEditorPanel::PropertyChangedCallback(const tstring& sArgs)
 {
-	CLevel* pLevel = LevelEditor()->GetLevel();
-
-	if (!pLevel)
+	CLevelEntity* pEntity = GetCurrentEntity();
+	if (!pEntity)
 		return;
 
-	auto& aEntities = pLevel->GetEntityData();
-
-	if (m_pEntities->GetSelectedNodeId() < aEntities.size())
+	if (pEntity)
 	{
-		CLevelEntity* pEntity = &aEntities[m_pEntities->GetSelectedNodeId()];
 		CLevelEditor::PopulateLevelEntityFromPanel(pEntity, m_pPropertiesPanel);
 
 		if (Manipulator()->IsActive())
 			Manipulator()->SetTRS(pEntity->GetGlobalTRS());
 	}
+}
+
+void CEditorPanel::OutputSelectedCallback(const tstring& sArgs)
+{
+	LayoutOutput();
+}
+
+void CEditorPanel::AddOutputCallback(const tstring& sArgs)
+{
+	CLevelEntity* pEntity = GetCurrentEntity();
+	if (!pEntity)
+		return;
+
+	pEntity->GetOutputs().push_back();
+
+	LayoutEntity();
+
+	m_pOutputs->SetSelectedNode(pEntity->GetOutputs().size()-1);
+}
+
+void CEditorPanel::RemoveOutputCallback(const tstring& sArgs)
+{
+	CLevelEntity* pEntity = GetCurrentEntity();
+	if (!pEntity)
+		return;
+
+	pEntity->GetOutputs().erase(pEntity->GetOutputs().begin()+m_pOutputs->GetSelectedNodeId());
+}
+
+void CEditorPanel::ChooseOutputCallback(const tstring& sArgs)
+{
+	m_pOutput->Pop(true, true);
+
+	auto pOutput = GetCurrentOutput();
+	if (!pOutput)
+		return;
+
+	eastl::vector<tstring> asTokens;
+	tstrtok(sArgs, asTokens);
+	pOutput->m_sOutput = asTokens[1];
+	m_pOutput->SetText(pOutput->m_sOutput);
+
+	LayoutInput();
+}
+
+void CEditorPanel::TargetEntityChangedCallback(const tstring& sArgs)
+{
+	CLevel* pLevel = LevelEditor()->GetLevel();
+	if (!pLevel)
+		return;
+
+	auto pOutput = GetCurrentOutput();
+	if (!pOutput)
+		return;
+
+	pOutput->m_sTargetName = m_pOutputEntityNameText->GetText();
+
+	eastl::vector<tstring> asTargets;
+
+	for (size_t i = 0; i < pLevel->GetEntityData().size(); i++)
+	{
+		auto* pEntity = &pLevel->GetEntityData()[i];
+		if (!pEntity)
+			continue;
+
+		if (!pEntity->GetName().length())
+			continue;
+
+		CEntityRegistration* pRegistration = CBaseEntity::GetRegisteredEntity("C"+pEntity->GetClass());
+		TAssert(pRegistration);
+		if (!pRegistration)
+			continue;
+
+		asTargets.push_back(pEntity->GetName());
+	}
+
+	m_pOutputEntityNameText->SetAutoCompleteCommands(asTargets);
+
+	LayoutInput();
+}
+
+void CEditorPanel::ChooseInputCallback(const tstring& sArgs)
+{
+	m_pInput->Pop(true, true);
+
+	auto pOutput = GetCurrentOutput();
+	if (!pOutput)
+		return;
+
+	eastl::vector<tstring> asTokens;
+	tstrtok(sArgs, asTokens);
+	pOutput->m_sInput = asTokens[1];
+	m_pInput->SetText(pOutput->m_sInput);
+}
+
+void CEditorPanel::ArgumentsChangedCallback(const tstring& sArgs)
+{
+	auto pOutput = GetCurrentOutput();
+	if (!pOutput)
+		return;
+
+	pOutput->m_sArgs = m_pOutputArgsText->GetText();
 }
 
 REGISTER_WORKBENCH_TOOL(LevelEditor);
@@ -931,5 +1254,5 @@ void CLevelEditor::ManipulatorUpdated(const tstring& sArguments)
 	GetLevel()->GetEntityData()[iSelected].SetParameterValue("LocalAngles", pretty_float(angRotation.p) + " " + pretty_float(angRotation.y) + " " + pretty_float(angRotation.r));
 	GetLevel()->GetEntityData()[iSelected].SetParameterValue("Scale", pretty_float(vecScaling.x) + " " + pretty_float(vecScaling.y) + " " + pretty_float(vecScaling.z));
 
-	m_pEditorPanel->LayoutEntities();
+	m_pEditorPanel->LayoutEntity();
 }

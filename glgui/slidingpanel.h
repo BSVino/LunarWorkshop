@@ -35,17 +35,12 @@ namespace glgui
 
 		virtual void				SetCurrent(bool bCurrent);
 
-//		virtual void				SetTitle(char* pszNew) { m_pTitle->SetText(pszNew); };
-//		virtual void				SetTitle(tchar* pszNew) { m_pTitle->SetText(pszNew); };
-//		virtual void				AppendTitle(char* pszNew) { m_pTitle->AppendText(pszNew); };
-//		virtual void				AppendTitle(tchar* pszNew) { m_pTitle->AppendText(pszNew); };
-
 		static float				SLIDER_COLLAPSED_HEIGHT;
 
 	protected:
 		bool						m_bCurrent;
 
-//		CLabel*						m_pTitle;
+		CLabel*						m_pTitle;
 
 		CPanel*						m_pInnerPanel;
 	};
@@ -53,6 +48,7 @@ namespace glgui
 	class CSlidingContainer : public CPanel
 	{
 	public:
+									CSlidingContainer();
 									CSlidingContainer(float x, float y, float w, float h);
 
 	public:

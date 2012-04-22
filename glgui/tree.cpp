@@ -125,7 +125,7 @@ void CTree::Paint(float x, float y, float w, float h)
 		CRootPanel::PaintRect(cx, cy, cw, ch, clrHilight, 2);
 	}
 
-	if (m_iSelected != ~0 && m_apAllNodes[m_iSelected]->IsVisible())
+	if (m_iSelected < m_apAllNodes.size() && m_apAllNodes[m_iSelected]->IsVisible())
 	{
 		IControl* pNode = m_apAllNodes[m_iSelected];
 		float cx, cy, cw, ch;

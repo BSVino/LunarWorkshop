@@ -15,6 +15,8 @@ public:
 
 	bool			IsTracking();
 
+	virtual void	OnActivated();
+
 	virtual float	GetFOV() { return m_flFOV; }
 
 protected:

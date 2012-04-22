@@ -36,7 +36,8 @@ public:
 	void			AddCamera(CCamera* pCamera);
 	void			RemoveCamera(CCamera* pCamera);
 
-	CCamera*		GetCurrentCamera();
+	void			SetActiveCamera(CCamera* pCamera);
+	CCamera*		GetActiveCamera();
 
 public:
 	bool			m_bFreeMode;

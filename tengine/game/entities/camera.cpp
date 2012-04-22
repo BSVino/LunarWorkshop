@@ -77,3 +77,8 @@ bool CCamera::IsTracking()
 
 	return false;
 }
+
+void CCamera::OnActivated()
+{
+	CameraManager()->SetActiveCamera(this);
+}

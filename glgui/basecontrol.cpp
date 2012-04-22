@@ -171,7 +171,7 @@ void CBaseControl::Layout_FullWidth(float flMargin)
 		return;
 
 	SetLeft(flParentMargin);
-	SetRight(GetParent()->GetWidth()-flParentMargin/2);
+	SetRight(GetParent()->GetWidth()-flParentMargin);
 }
 
 void CBaseControl::Layout_AlignTop(CBaseControl* pOther, float flMargin)
@@ -230,10 +230,11 @@ void CBaseControl::Layout_ColumnFixed(int iTotalColumns, int iColumn, float flWi
 
 void CBaseControl::SetVisible(bool bVis)
 {
-	if (bVis && !m_bVisible)
-		Layout();
-
+	bool bWasVisible = m_bVisible;
 	m_bVisible = bVis;
+
+	if (bVis && !bWasVisible)
+		Layout();
 }
 
 bool CBaseControl::IsVisible()

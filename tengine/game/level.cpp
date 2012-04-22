@@ -68,10 +68,10 @@ void CLevel::SaveToFile()
 			f.write(sName.data(), sName.length());
 		}
 
-		for (auto it = pEntity->GetOutputs().begin(); it != pEntity->GetOutputs().end(); it++)
+		for (size_t j = 0; j < pEntity->GetOutputs().size(); j++)
 		{
-			auto pOutput = &pEntity->GetOutputs()[i];
-			tstring sOutput = "\n\tOutput: " + pOutput->m_sOutput + "\n{\n";
+			auto pOutput = &pEntity->GetOutputs()[j];
+			tstring sOutput = "\n\tOutput: " + pOutput->m_sOutput + "\n\t{\n";
 			f.write(sOutput.data(), sOutput.length());
 
 			if (pOutput->m_sTargetName.length())

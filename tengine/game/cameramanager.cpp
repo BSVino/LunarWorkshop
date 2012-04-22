@@ -54,7 +54,7 @@ TVector CCameraManager::GetCameraPosition()
 	if (m_bFreeMode)
 		return m_vecFreeCamera;
 
-	CCamera* pCamera = GetCurrentCamera();
+	CCamera* pCamera = GetActiveCamera();
 	if (!pCamera)
 		return TVector(30, 30, 30);
 
@@ -66,7 +66,7 @@ TVector CCameraManager::GetCameraDirection()
 	if (m_bFreeMode)
 		return AngleVector(m_angFreeCamera);
 
-	CCamera* pCamera = GetCurrentCamera();
+	CCamera* pCamera = GetActiveCamera();
 	if (!pCamera)
 		return TVector(1,0,0);
 
@@ -75,7 +75,7 @@ TVector CCameraManager::GetCameraDirection()
 
 TVector CCameraManager::GetCameraUp()
 {
-	CCamera* pCamera = GetCurrentCamera();
+	CCamera* pCamera = GetActiveCamera();
 	if (!pCamera)
 		return TVector(0, 1, 0);
 
@@ -84,7 +84,7 @@ TVector CCameraManager::GetCameraUp()
 
 float CCameraManager::GetCameraFOV()
 {
-	CCamera* pCamera = GetCurrentCamera();
+	CCamera* pCamera = GetActiveCamera();
 	if (!pCamera)
 		return 44.0f;
 
@@ -215,6 +215,11 @@ void CCameraManager::AddCamera(CCamera* pCamera)
 
 	if (m_ahCameras.size() == 1)
 		m_iCurrentCamera = 0;
+
+	if (pCamera == GetActiveCamera())
+		pCamera->SetActive(true);
+	else
+		pCamera->SetActive(false);
 }
 
 void CCameraManager::RemoveCamera(CCamera* pCamera)
@@ -226,11 +231,20 @@ void CCameraManager::RemoveCamera(CCamera* pCamera)
 	{
 		if (m_ahCameras[i] == (const CCamera*)pCamera)
 		{
-			TAssert(m_iCurrentCamera != i || m_ahCameras.size() == 1);
+			pCamera->SetActive(false);
+
 			if (m_iCurrentCamera == i)
+			{
 				m_iCurrentCamera = 0;
+				if (GetActiveCamera())
+					GetActiveCamera()->SetActive(true);
+			}
 			else if (m_iCurrentCamera > i)
+			{
 				m_iCurrentCamera--;
+				if (GetActiveCamera())
+					GetActiveCamera()->SetActive(true);
+			}
 
 			m_ahCameras.erase(m_ahCameras.begin()+i);
 			break;
@@ -238,12 +252,36 @@ void CCameraManager::RemoveCamera(CCamera* pCamera)
 	}
 }
 
-CCamera* CCameraManager::GetCurrentCamera()
+CCamera* CCameraManager::GetActiveCamera()
 {
 	if (m_iCurrentCamera >= m_ahCameras.size())
 		return nullptr;
 
 	return m_ahCameras[m_iCurrentCamera];
+}
+
+void CCameraManager::SetActiveCamera(CCamera* pCamera)
+{
+	if (!pCamera)
+		return;
+
+	if (pCamera == GetActiveCamera())
+		return;
+
+	for (size_t i = 0; i < m_ahCameras.size(); i++)
+	{
+		if (m_ahCameras[i] == (const CCamera*)pCamera)
+		{
+			if (GetActiveCamera())
+				GetActiveCamera()->SetActive(false);
+
+			m_iCurrentCamera = i;
+
+			if (GetActiveCamera())
+				GetActiveCamera()->SetActive(true);
+			return;
+		}
+	}
 }
 
 CCameraManager* CameraManager()

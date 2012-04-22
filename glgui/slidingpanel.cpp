@@ -2,9 +2,11 @@
 
 #include <tinker/shell.h>
 
+#include "label.h"
+
 using namespace glgui;
 
-float CSlidingPanel::SLIDER_COLLAPSED_HEIGHT = 30;
+float CSlidingPanel::SLIDER_COLLAPSED_HEIGHT = 20;
 
 CSlidingPanel::CInnerPanel::CInnerPanel(CSlidingContainer* pMaster)
 	: CPanel(0, 0, 100, SLIDER_COLLAPSED_HEIGHT)
@@ -23,15 +25,18 @@ bool CSlidingPanel::CInnerPanel::IsVisible()
 CSlidingPanel::CSlidingPanel(CSlidingContainer* pParent, char* pszTitle)
 	: CPanel(0, 0, 100, 5)
 {
+	SetBorder(BT_SOME);
+
 	TAssert(pParent);
 
 	m_bCurrent = false;
 
-//	m_pTitle = new CLabel(0, 0, 100, SLIDER_COLLAPSED_HEIGHT, pszTitle);
-//	AddControl(m_pTitle);
+	m_pTitle = new CLabel(0, 0, 100, SLIDER_COLLAPSED_HEIGHT, pszTitle);
+	AddControl(m_pTitle);
 
 	m_pInnerPanel = new CInnerPanel(pParent);
 	m_pInnerPanel->SetBorder(CPanel::BT_NONE);
+	m_pInnerPanel->SetDefaultMargin(2);
 	AddControl(m_pInnerPanel);
 
 	// Add to tail so that panels appear in the order they are added.
@@ -40,7 +45,7 @@ CSlidingPanel::CSlidingPanel(CSlidingContainer* pParent, char* pszTitle)
 
 void CSlidingPanel::Layout()
 {
-//	m_pTitle->SetSize(m_pParent->GetWidth(), SLIDER_COLLAPSED_HEIGHT);
+	m_pTitle->SetSize(m_pParent->GetWidth(), SLIDER_COLLAPSED_HEIGHT);
 
 	m_pInnerPanel->SetPos(5, SLIDER_COLLAPSED_HEIGHT);
 	m_pInnerPanel->SetSize(GetWidth() - 10, GetHeight() - 5 - SLIDER_COLLAPSED_HEIGHT);
@@ -76,7 +81,7 @@ size_t CSlidingPanel::AddControl(IControl* pControl, bool bToTail)
 	// This way the inner panel can be set not visible in order
 	// to set all children not visible at once.
 
-	if (/*pControl != m_pTitle && */pControl != m_pInnerPanel)
+	if (pControl != m_pTitle && pControl != m_pInnerPanel)
 	{
 		return m_pInnerPanel->AddControl(pControl, bToTail);
 	}
@@ -91,9 +96,20 @@ void CSlidingPanel::SetCurrent(bool bCurrent)
 	m_pInnerPanel->SetVisible(bCurrent);
 }
 
+CSlidingContainer::CSlidingContainer()
+	: CPanel(0, 0, 100, 100)
+{
+	m_iCurrent = 0;
+
+	SetBorder(BT_NONE);
+	SetCurrent(0);
+}
+
 CSlidingContainer::CSlidingContainer(float x, float y, float w, float h)
 	: CPanel(x, y, w, h)
 {
+	m_iCurrent = 0;
+
 	SetBorder(BT_NONE);
 	SetCurrent(0);
 }
@@ -106,9 +122,6 @@ void CSlidingContainer::Layout()
 
 	for (size_t i = 0; i < iCount; i++)
 	{
-		if (!m_apControls[i]->IsVisible())
-			continue;
-
 		m_apControls[i]->SetPos(0, y);
 		m_apControls[i]->SetSize(GetWidth(), (i == m_iCurrent)?flCurrentHeight:CSlidingPanel::SLIDER_COLLAPSED_HEIGHT);
 

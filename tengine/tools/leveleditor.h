@@ -6,6 +6,7 @@
 #include <glgui/panel.h>
 #include <glgui/movablepanel.h>
 #include <game/cameramanager.h>
+#include <game/level.h>
 
 #include "tool.h"
 #include "manipulator.h"
@@ -27,12 +28,10 @@ public:
 	void					SetPropertyChangedListener(glgui::IEventListener* pListener, glgui::IEventListener::Callback pfnCallback);
 
 	void					SetClass(const tstring& sClass) { m_sClass = sClass; }
-	void					SetMaxHeight(float flMaxHeight) { m_flMaxHeight = flMaxHeight; }
 	void					SetEntity(class CLevelEntity* pEntity);
 
 public:
 	tstring								m_sClass;
-	float								m_flMaxHeight;
 	float								m_bCommonProperties;
 	class CLevelEntity*					m_pEntity;
 
@@ -80,16 +79,46 @@ public:
 
 public:
 	void					Layout();
-	void					LayoutEntities();
+	void					LayoutEntity();
+	void					LayoutOutput();
+	void					LayoutInput();
+
+	CLevelEntity*			GetCurrentEntity();
+	CLevelEntity::CLevelEntityOutput* GetCurrentOutput();
 
 	EVENT_CALLBACK(CEditorPanel, EntitySelected);
 	EVENT_CALLBACK(CEditorPanel, PropertyChanged);
+	EVENT_CALLBACK(CEditorPanel, OutputSelected);
+	EVENT_CALLBACK(CEditorPanel, AddOutput);
+	EVENT_CALLBACK(CEditorPanel, RemoveOutput);
+	EVENT_CALLBACK(CEditorPanel, ChooseOutput);
+	EVENT_CALLBACK(CEditorPanel, TargetEntityChanged);
+	EVENT_CALLBACK(CEditorPanel, ChooseInput);
+	EVENT_CALLBACK(CEditorPanel, ArgumentsChanged);
 
 public:
 	glgui::CTree*			m_pEntities;
 	glgui::CLabel*			m_pObjectTitle;
 
+	glgui::CSlidingContainer*	m_pSlider;
+	glgui::CSlidingPanel*	m_pPropertiesSlider;
+	glgui::CSlidingPanel*	m_pOutputsSlider;
+
 	CEntityPropertiesPanel*	m_pPropertiesPanel;
+
+	glgui::CTree*			m_pOutputs;
+	glgui::CButton*			m_pAddOutput;
+	glgui::CButton*			m_pRemoveOutput;
+
+	glgui::CMenu*			m_pOutput;
+
+	glgui::CLabel*			m_pOutputEntityNameLabel;
+	glgui::CTextField*		m_pOutputEntityNameText;
+
+	glgui::CMenu*			m_pInput;
+
+	glgui::CLabel*			m_pOutputArgsLabel;
+	glgui::CTextField*		m_pOutputArgsText;
 };
 
 class CLevelEditor : public CWorkbenchTool, public glgui::IEventListener, public IManipulatorListener

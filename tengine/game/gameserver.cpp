@@ -306,7 +306,7 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 		// Process outputs here so that they exist when handle callbacks run.
 		for (size_t k = 0; k < pLevelEntity->GetOutputs().size(); k++)
 		{
-			auto pOutput = &pLevelEntity->GetOutputs()[i];
+			auto pOutput = &pLevelEntity->GetOutputs()[k];
 			tstring sValue = pOutput->m_sOutput;
 
 			CSaveData* pSaveData = CBaseEntity::FindOutput(pEntity->GetClassName(), sValue);
