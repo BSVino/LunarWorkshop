@@ -3,6 +3,7 @@
 #include <tinker/application.h>
 #include <physics/physics.h>
 #include <renderer/game_renderingcontext.h>
+#include <textures/materiallibrary.h>
 
 #include "mirror.h"
 #include "token.h"
@@ -25,14 +26,14 @@ INPUTS_TABLE_END();
 
 void CPlayerCharacter::Precache()
 {
-	PrecacheModel("models/pedestal.toy");
+	PrecacheMaterial("models/otto/otto.mat");
 }
 
 void CPlayerCharacter::Spawn()
 {
 	Precache();
 
-	SetModel("models/pedestal.toy");
+	SetMaterialModel(CMaterialLibrary::FindMaterial("models/otto/otto.mat"));
 
 	SetMass(60);
 	m_aabbBoundingBox = AABB(Vector(-0.35f, 0, -0.35f), Vector(0.35f, 2, 0.35f));
@@ -40,6 +41,15 @@ void CPlayerCharacter::Spawn()
 	SetGlobalGravity(Vector(0, -9.8f, 0)*2);
 
 	BaseClass::Spawn();
+}
+
+Matrix4x4 CPlayerCharacter::GetRenderTransform() const
+{
+	Matrix4x4 mRender = BaseClass::GetRenderTransform();
+
+	mRender.AddTranslation(Vector(0, (m_aabbBoundingBox.m_vecMaxs.y - m_aabbBoundingBox.m_vecMins.y)/2, 0));
+
+	return mRender;
 }
 
 float CPlayerCharacter::EyeHeight() const

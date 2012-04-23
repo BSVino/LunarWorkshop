@@ -495,7 +495,7 @@ public:
 	const CMaterialHandle&					GetMaterialModel() const { return m_hMaterialModel; };
 
 	virtual Matrix4x4						GetRenderTransform() const { return Matrix4x4(GetGlobalTransform()); };
-	virtual Vector							GetRenderOrigin() const { return GetRenderTransform().GetTranslation(); };
+	Vector									GetRenderOrigin() const { return GetRenderTransform().GetTranslation(); };
 	EAngle									GetRenderAngles() const { return GetRenderTransform().GetAngles(); };
 
 	void									SetMoveParent(CBaseEntity* pParent);
