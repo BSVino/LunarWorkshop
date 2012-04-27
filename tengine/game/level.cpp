@@ -285,7 +285,7 @@ void CLevelEntity::SetParameterValue(const tstring& sKey, const tstring& sValue)
 			}
 			else
 			{
-				TAssert(false);
+				TUnimplemented();
 			}
 		}
 	}
@@ -308,7 +308,7 @@ Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)
 
 	tstring sMoveParent = pThis->GetParameterValue("MoveParent");
 	if (sMoveParent.length())
-		TAssert(false);
+		TUnimplemented();
 
 	tstring sLocalOrigin = pThis->GetParameterValue("LocalOrigin");
 	if (sLocalOrigin.length() && CanUnserializeString_TVector(sLocalOrigin))
@@ -327,7 +327,7 @@ TRS CLevelEntity::CalculateGlobalTRS(CLevelEntity* pThis)
 
 	tstring sMoveParent = pThis->GetParameterValue("MoveParent");
 	if (sMoveParent.length())
-		TAssert(false);
+		TUnimplemented();
 
 	tstring sLocalOrigin = pThis->GetParameterValue("LocalOrigin");
 	if (sLocalOrigin.length() && CanUnserializeString_TVector(sLocalOrigin))

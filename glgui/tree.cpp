@@ -552,7 +552,7 @@ void CTreeNode::CExpandButton::Think()
 
 void CTreeNode::CExpandButton::Paint(float x, float y, float w, float h)
 {
-	TAssert(false);
+	TUnimplemented();
 
 /*	glPushAttrib(GL_ENABLE_BIT);
 	glEnablei(GL_BLEND, 0);

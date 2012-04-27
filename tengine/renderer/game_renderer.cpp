@@ -140,7 +140,7 @@ void CGameRenderer::DrawSkybox(class CRenderingContext* pContext)
 {
 	TPROF("CGameRenderer::DrawSkybox");
 
-	TAssert(false);	// Hasn't been tested since the 3.0 port
+	TUnimplemented();	// Hasn't been tested since the 3.0 port
 
 	CCameraManager* pCamera = GameServer()->GetCameraManager();
 
@@ -220,7 +220,7 @@ void CGameRenderer::FinishRendering(class CRenderingContext* pContext)
 
 void CGameRenderer::SetSkybox(const CTextureHandle& ft, const CTextureHandle& bk, const CTextureHandle& lf, const CTextureHandle& rt, const CTextureHandle& up, const CTextureHandle& dn)
 {
-	TAssert(false); // Not ported to GL3. Needs to be converted from quads to tris.
+	TUnimplemented(); // Not ported to GL3. Needs to be converted from quads to tris.
 
 	m_hSkyboxFT = ft;
 	m_hSkyboxLF = lf;

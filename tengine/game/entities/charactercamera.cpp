@@ -30,7 +30,7 @@ CCharacterCamera::CCharacterCamera()
 void CCharacterCamera::CameraThink()
 {
 	// This whole entity is untested since the move to the camera manager.
-	TAssert(false);
+	TUnimplemented();
 
 	BaseClass::CameraThink();
 

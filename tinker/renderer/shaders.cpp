@@ -405,7 +405,7 @@ bool CShader::Compile()
 		case GL_BOOL: sType = "bool"; break;
 		case GL_FLOAT_MAT4: sType = "mat4"; break;
 		case GL_SAMPLER_2D: sType = "sampler2D"; break;
-		default: TAssert(false);
+		default: TUnimplemented();
 		}
 	}
 
@@ -441,14 +441,14 @@ bool CShader::Compile()
 				it->second.m_aActions[j].m_bValue = d.GetValueBool();
 			else if (sType == "mat4")
 			{
-				TAssert(false); // Unimplemented
+				TUnimplemented();
 			}
 			else if (sType == "sampler2D")
 			{
 				// No op.
 			}
 			else
-				TAssert(false);
+				TUnimplemented();
 		}
 	}
 
@@ -482,14 +482,14 @@ bool CShader::Compile()
 			it->second.m_bValue = d.GetValueBool();
 		else if (sType == "mat4")
 		{
-			TAssert(false); // Unimplemented
+			TUnimplemented(); 
 		}
 		else if (sType == "sampler2D")
 		{
-			TAssert(false); // Can't set a default texture... yet.
+			TUnimplemented(); // Can't set a default texture... yet.
 		}
 		else
-			TAssert(false);
+			TUnimplemented();
 	}
 
 	return true;

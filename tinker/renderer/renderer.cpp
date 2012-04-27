@@ -272,7 +272,7 @@ void CRenderer::FinishRendering(class CRenderingContext* pContext)
 
 	if (show_frustum.GetBool())
 	{
-		TAssert(false);
+		TUnimplemented();
 
 		for (size_t i = 0; i < 6; i++)
 		{

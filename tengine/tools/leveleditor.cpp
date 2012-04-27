@@ -206,7 +206,7 @@ void CEntityPropertiesPanel::Layout()
 					}
 					else
 					{
-						TAssert(false);
+						TUnimplemented();
 					}
 				}
 

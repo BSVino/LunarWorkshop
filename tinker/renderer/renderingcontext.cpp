@@ -389,7 +389,7 @@ void CRenderingContext::SetupMaterial()
 			else if (it->second == "sampler2D")
 				SetUniform(it->first.c_str(), 0);
 			else
-				TAssert(false);
+				TUnimplemented();
 		}
 		else
 		{
@@ -407,14 +407,14 @@ void CRenderingContext::SetupMaterial()
 				SetUniform(it->first.c_str(), it2->second.m_bValue);
 			else if (it->second == "mat4")
 			{
-				TAssert(false);
+				TUnimplemented();
 			}
 			else if (it->second == "sampler2D")
 			{
-				TAssert(false);
+				TUnimplemented();
 			}
 			else
-				TAssert(false);
+				TUnimplemented();
 		}
 	}
 
@@ -449,14 +449,14 @@ void CRenderingContext::SetupMaterial()
 					SetUniform(sName.c_str(), oParameter.m_bValue);
 				else if (sType == "mat4")
 				{
-					TAssert(false);	// Unimplemented
+					TUnimplemented();
 				}
 				else if (sType == "sampler2D")
 				{
 					// No op, handled below.
 				}
 				else
-					TAssert(false);
+					TUnimplemented();
 			}
 			else
 			{
@@ -474,15 +474,15 @@ void CRenderingContext::SetupMaterial()
 					SetUniform(sName.c_str(), oAction.m_bValue);
 				else if (sType == "mat4")
 				{
-					TAssert(false);	// Unimplemented
+					TUnimplemented();
 				}
 				else if (sType == "sampler2D")
 				{
-					TAssert(false);
+					TUnimplemented();
 					SetUniform(sName.c_str(), 0);
 				}
 				else
-					TAssert(false);
+					TUnimplemented();
 			}
 		}	
 	}
@@ -614,7 +614,7 @@ void CRenderingContext::BeginRenderQuads()
 	m_bNormal = false;
 	m_bColor = false;
 
-	TAssert(false);
+	TUnimplemented();
 	//m_iDrawMode = GL_QUADS;
 }
 

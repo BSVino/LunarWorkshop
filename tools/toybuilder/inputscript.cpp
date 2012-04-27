@@ -275,7 +275,7 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 		tstring sExtension = pMesh->GetValueTString().substr(pMesh->GetValueTString().length()-4);
 		if (sExtension == ".png")
 		{
-			TAssert(false);	// Not updated since the switch to materials.
+			TUnimplemented();	// Not updated since the switch to materials.
 			int x, y, n;
 			unsigned char* pData = stbi_load((GetPath(pMesh->GetValueTString())).c_str(), &x, &y, &n, 0);
 

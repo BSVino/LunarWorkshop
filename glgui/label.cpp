@@ -198,7 +198,7 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 
 		if (m_bScissor)
 		{
-			TAssert(false);	// Untested
+			TUnimplemented();
 			if (r.x < 0)
 			{
 				GetAbsPos(r.x, r.y);
@@ -244,7 +244,7 @@ void CLabel::GetAlignmentOffset(float flLineWidth, float flLineHeight, const tst
 		break;
 
 	case TA_RIGHTCENTER:
-		TAssert(false);
+		TUnimplemented();
 		x = w - lw;
 		y = h/2 - m_flTotalHeight/2;
 		break;
@@ -255,7 +255,7 @@ void CLabel::GetAlignmentOffset(float flLineWidth, float flLineHeight, const tst
 		break;
 
 	case TA_BOTTOMCENTER:
-		TAssert(false);
+		TUnimplemented();
 		x = w/2 - lw/2;
 		y = h - m_flTotalHeight;
 		break;

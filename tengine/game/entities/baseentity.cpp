@@ -232,7 +232,7 @@ void CBaseEntity::SetSaveDataDefaults()
 
 			case CSaveData::DATA_COPYARRAY:
 			case CSaveData::DATA_COPYVECTOR:
-				TAssert(false);
+				TUnimplemented();
 				break;
 
 			case CSaveData::DATA_STRING:
@@ -1978,19 +1978,19 @@ void UnserializeString_bool(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 	case CSaveData::DATA_STRING:
 	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
-		TAssert(false);
+		TUnimplemented();
 		break;
 	}
 }
 
 void UnserializeString_int(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	TAssert(false);
+	TUnimplemented();
 }
 
 void UnserializeString_size_t(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	TAssert(false);
+	TUnimplemented();
 
 	size_t i = UnserializeString_size_t(sData);
 
@@ -2013,7 +2013,7 @@ void UnserializeString_size_t(const tstring& sData, CSaveData* pSaveData, CBaseE
 	case CSaveData::DATA_STRING:
 	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
-		TAssert(false);
+		TUnimplemented();
 		break;
 	}
 }
@@ -2031,7 +2031,7 @@ void UnserializeString_float(const tstring& sData, CSaveData* pSaveData, CBaseEn
 
 	case CSaveData::DATA_NETVAR:
 	{
-		TAssert(false);
+		TUnimplemented();
 		CNetworkedVariable<float>* pVariable = (CNetworkedVariable<float>*)pData;
 		(*pVariable) = f;
 		break;
@@ -2042,7 +2042,7 @@ void UnserializeString_float(const tstring& sData, CSaveData* pSaveData, CBaseEn
 	case CSaveData::DATA_STRING:
 	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
-		TAssert(false);
+		TUnimplemented();
 		break;
 	}
 }
@@ -2060,7 +2060,7 @@ void UnserializeString_double(const tstring& sData, CSaveData* pSaveData, CBaseE
 
 	case CSaveData::DATA_NETVAR:
 	{
-		TAssert(false);
+		TUnimplemented();
 		CNetworkedVariable<double>* pVariable = (CNetworkedVariable<double>*)pData;
 		(*pVariable) = f;
 		break;
@@ -2071,7 +2071,7 @@ void UnserializeString_double(const tstring& sData, CSaveData* pSaveData, CBaseE
 	case CSaveData::DATA_STRING:
 	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
-		TAssert(false);
+		TUnimplemented();
 		break;
 	}
 }
@@ -2087,7 +2087,7 @@ void UnserializeString_tstring(const tstring& sData, CSaveData* pSaveData, CBase
 
 	case CSaveData::DATA_NETVAR:
 	{
-		TAssert(false);
+		TUnimplemented();
 		CNetworkedString* pVariable = (CNetworkedString*)psData;
 		(*pVariable) = sData;
 		break;
@@ -2098,7 +2098,7 @@ void UnserializeString_tstring(const tstring& sData, CSaveData* pSaveData, CBase
 	case CSaveData::DATA_COPYTYPE:
 	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
-		TAssert(false);
+		TUnimplemented();
 		break;
 	}
 }
@@ -2111,7 +2111,7 @@ void UnserializeString_TVector(const tstring& sData, CSaveData* pSaveData, CBase
 	switch(pSaveData->m_eType)
 	{
 	case CSaveData::DATA_COPYTYPE:
-		TAssert(false);
+		TUnimplemented();
 		*pData = vecData;
 		break;
 
@@ -2127,7 +2127,7 @@ void UnserializeString_TVector(const tstring& sData, CSaveData* pSaveData, CBase
 	case CSaveData::DATA_STRING:
 	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
-		TAssert(false);
+		TUnimplemented();
 		break;
 	}
 }
@@ -2145,7 +2145,7 @@ void UnserializeString_Vector2D(const tstring& sData, CSaveData* pSaveData, CBas
 	switch(pSaveData->m_eType)
 	{
 	case CSaveData::DATA_COPYTYPE:
-		TAssert(false);
+		TUnimplemented();
 		*pData = vecData;
 		break;
 
@@ -2161,14 +2161,14 @@ void UnserializeString_Vector2D(const tstring& sData, CSaveData* pSaveData, CBas
 	case CSaveData::DATA_STRING:
 	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
-		TAssert(false);
+		TUnimplemented();
 		break;
 	}
 }
 
 void UnserializeString_EAngle(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	TAssert(false);
+	TUnimplemented();
 }
 
 void UnserializeString_Matrix4x4(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
@@ -2184,7 +2184,7 @@ void UnserializeString_Matrix4x4(const tstring& sData, CSaveData* pSaveData, CBa
 
 	case CSaveData::DATA_NETVAR:
 	{
-		TAssert(false);
+		TUnimplemented();
 		CNetworkedVariable<Matrix4x4>* pVariable = (CNetworkedVariable<Matrix4x4>*)pData;
 		(*pVariable) = mData;
 		break;
@@ -2195,7 +2195,7 @@ void UnserializeString_Matrix4x4(const tstring& sData, CSaveData* pSaveData, CBa
 	case CSaveData::DATA_STRING:
 	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
-		TAssert(false);
+		TUnimplemented();
 		break;
 	}
 }
@@ -2223,7 +2223,7 @@ void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 
 	case CSaveData::DATA_NETVAR:
 	{
-		TAssert(false);
+		TUnimplemented();
 		CNetworkedVariable<AABB>* pVariable = (CNetworkedVariable<AABB>*)pData;
 		(*pVariable) = aabbData;
 		break;
@@ -2234,7 +2234,7 @@ void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 	case CSaveData::DATA_STRING:
 	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
-		TAssert(false);
+		TUnimplemented();
 		break;
 	}
 }
@@ -2296,7 +2296,7 @@ void UnserializeString_EntityHandle(const tstring& sData, CSaveData* pSaveData, 
 	case CSaveData::DATA_STRING:
 	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
-		TAssert(false);
+		TUnimplemented();
 		break;
 	}
 }

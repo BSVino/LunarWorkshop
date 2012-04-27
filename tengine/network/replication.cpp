@@ -71,7 +71,7 @@ void CGameServerNetwork::UpdateNetworkVariables(int iClient, bool bForceAll)
 				// For one, m_flLastUpdate needs to be a double
 				pVariable->m_flLastUpdate = (float)flTime;
 				// For two, it's shit.
-				TAssert(false);
+				TUnimplemented();
 				// Try some testing or something.
 
 				CNetworkParameters p;

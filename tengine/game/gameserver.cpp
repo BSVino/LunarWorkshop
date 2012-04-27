@@ -324,14 +324,14 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 
 			if (!sTarget.length())
 			{
-				TAssert(false);
+				TUnimplemented();
 				TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing a target.\n");
 				continue;
 			}
 
 			if (!sInput.length())
 			{
-				TAssert(false);
+				TUnimplemented();
 				TError("Output '" + sValue + "' of entity '" + pEntity->GetName() + "' (" + pEntity->GetClassName() + ") is missing an input.\n");
 				continue;
 			}

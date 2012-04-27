@@ -178,14 +178,14 @@ void CMaterialLibrary::FillParameter(CMaterial& oMat, size_t iPar, CShader* pSha
 		oPar.m_bValue = pData->GetValueBool();
 	else if (sType == "mat4")
 	{
-		TAssert(false); // Unimplemented
+		TUnimplemented();
 	}
 	else if (sType == "sampler2D")
 	{
 		// No op. Texture is read below.
 	}
 	else
-		TAssert(false);
+		TUnimplemented();
 
 	for (size_t j = 0; j < pShaderPar->m_aActions.size(); j++)
 	{
