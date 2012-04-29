@@ -43,7 +43,7 @@ void CPlayerCharacter::Spawn()
 	BaseClass::Spawn();
 }
 
-Matrix4x4 CPlayerCharacter::GetRenderTransform() const
+const Matrix4x4 CPlayerCharacter::GetRenderTransform() const
 {
 	Matrix4x4 mRender = BaseClass::GetRenderTransform();
 

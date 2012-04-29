@@ -89,6 +89,9 @@ size_t CTextureLibrary::GetTextureHeight(const tstring& sTexture)
 
 bool CTextureLibrary::IsAssetLoaded(const tstring& sTexture)
 {
+	if (!Get())
+		return false;
+
 	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
 	if (it == Get()->m_aTextures.end())
 		return false;

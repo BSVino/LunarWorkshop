@@ -31,7 +31,7 @@ inline float SLerp(float x, float flLerp)
 }
 
 template <class T>
-inline T LerpValue(T from, T to, float flLerp)
+inline const T LerpValue(const T& from, const T& to, float flLerp)
 {
 	return to * flLerp + from * (1-flLerp);
 }

@@ -26,7 +26,7 @@ public:
 
 	void							Move(movetype_t);
 	void							StopMove(movetype_t);
-	virtual TVector					GetGoalVelocity();
+	virtual const TVector			GetGoalVelocity();
 	virtual void					MoveThink();
 	virtual void					MoveThink_NoClip();
 	virtual void					Jump();
@@ -55,16 +55,16 @@ public:
 	virtual float					AttackTime() const { return 0.3f; }
 	virtual float					AttackDamage() const { return 50; }
 	virtual float					AttackSphereRadius() const { return 40.0f; }
-	virtual TVector					AttackSphereCenter() const { return GetGlobalCenter(); }
+	virtual const TVector			AttackSphereCenter() const { return GetGlobalCenter(); }
 
 	virtual bool					ShouldCollide() const { return false; }
 
 	virtual void					SetViewAngles(const EAngle& angView) { m_angView = angView; }
-	virtual EAngle					GetViewAngles() const { return m_angView; }
+	virtual const EAngle			GetViewAngles() const { return m_angView; }
 
 	DECLARE_ENTITY_INPUT(SetViewAngles);
 
-	virtual EAngle					GetThirdPersonCameraAngles() const { return GetViewAngles(); }
+	virtual const EAngle			GetThirdPersonCameraAngles() const { return GetViewAngles(); }
 
 	CBaseEntity*					GetGroundEntity() const { return m_hGround; }
 	void							SetGroundEntity(CBaseEntity* pEntity);

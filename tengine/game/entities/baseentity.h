@@ -57,11 +57,11 @@ bool CanUnserializeString_AABB(const tstring& sData);
 // The last three arguments are for error reporting if the unserialization goes awry.
 bool UnserializeString_bool(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 size_t UnserializeString_size_t(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
-TVector UnserializeString_TVector(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
-TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
-EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
-Matrix4x4 UnserializeString_Matrix4x4(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
-AABB UnserializeString_AABB(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+const TVector UnserializeString_TVector(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+const TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+const EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+const Matrix4x4 UnserializeString_Matrix4x4(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+const AABB UnserializeString_AABB(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 
 void UnserializeString_bool(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
 void UnserializeString_int(const tstring& sData, class CSaveData* pData, class CBaseEntity* pEntity);
@@ -133,7 +133,7 @@ public:
 	void									AddTarget(const eastl::string& sTargetName, const eastl::string& sInput, const eastl::string& sArgs, bool bKill);
 	void									Clear();
 
-	tstring									FormatArgs(tstring sArgs);
+	const tstring							FormatArgs(tstring sArgs);
 
 	void									SetEntity(class CBaseEntity* pEnt) { m_pEnt = pEnt; }
 	void									SetOutputName(const eastl::string& sOutputName) { m_sOutputName = sOutputName; }
@@ -479,11 +479,11 @@ public:
 	float									GetMass() const { return m_flMass; };
 
 	virtual const AABB&						GetBoundingBox() const { return m_aabbBoundingBox; }
-	virtual TVector							GetLocalCenter() const;
-	virtual TVector							GetGlobalCenter() const;
-	virtual TFloat							GetBoundingRadius() const;
+	virtual const TVector					GetLocalCenter() const;
+	virtual const TVector					GetGlobalCenter() const;
+	virtual const TFloat					GetBoundingRadius() const;
 
-	virtual TFloat							GetRenderRadius() const { return GetBoundingRadius(); };
+	virtual const TFloat					GetRenderRadius() const { return GetBoundingRadius(); };
 
 	void									SetModel(const tstring& sModel);
 	void									SetModel(size_t iModel);
@@ -494,37 +494,37 @@ public:
 	void									SetMaterialModel(const CMaterialHandle& hMaterial) { m_hMaterialModel = hMaterial; }
 	const CMaterialHandle&					GetMaterialModel() const { return m_hMaterialModel; };
 
-	virtual Matrix4x4						GetRenderTransform() const { return Matrix4x4(GetGlobalTransform()); };
-	Vector									GetRenderOrigin() const { return GetRenderTransform().GetTranslation(); };
-	EAngle									GetRenderAngles() const { return GetRenderTransform().GetAngles(); };
+	virtual const Matrix4x4					GetRenderTransform() const { return Matrix4x4(GetGlobalTransform()); };
+	const Vector							GetRenderOrigin() const { return GetRenderTransform().GetTranslation(); };
+	const EAngle							GetRenderAngles() const { return GetRenderTransform().GetAngles(); };
 
 	void									SetMoveParent(CBaseEntity* pParent);
 	CBaseEntity*							GetMoveParent() const { return m_hMoveParent; };
 	bool									HasMoveParent() const { return m_hMoveParent != NULL; };
 	void									InvalidateGlobalTransforms();
-	TMatrix									GetParentGlobalTransform() const;
+	const TMatrix							GetParentGlobalTransform() const;
 
 	const TMatrix&							GetGlobalTransform();
-	TMatrix									GetGlobalTransform() const;
+	const TMatrix							GetGlobalTransform() const;
 	void									SetGlobalTransform(const TMatrix& m);
 
-	TMatrix									GetGlobalToLocalTransform();
-	TMatrix									GetGlobalToLocalTransform() const;
+	const TMatrix							GetGlobalToLocalTransform();
+	const TMatrix							GetGlobalToLocalTransform() const;
 
-	virtual TVector							GetGlobalOrigin();
-	virtual EAngle							GetGlobalAngles();
+	virtual const TVector					GetGlobalOrigin();
+	virtual const EAngle					GetGlobalAngles();
 
-	virtual TVector							GetGlobalOrigin() const;
-	virtual EAngle							GetGlobalAngles() const;
+	virtual const TVector					GetGlobalOrigin() const;
+	virtual const EAngle					GetGlobalAngles() const;
 
 	void									SetGlobalOrigin(const TVector& vecOrigin);
 	void									SetGlobalAngles(const EAngle& angAngles);
 
-	virtual TVector							GetGlobalVelocity();
-	virtual TVector							GetGlobalVelocity() const;
+	virtual const TVector					GetGlobalVelocity();
+	virtual const TVector					GetGlobalVelocity() const;
 	void									SetGlobalVelocity(const TVector& vecVelocity);
 
-	virtual inline TVector					GetGlobalGravity() const { return m_vecGlobalGravity; };
+	virtual inline const TVector			GetGlobalGravity() const { return m_vecGlobalGravity; };
 	void									SetGlobalGravity(const TVector& vecGravity);
 
 	const TMatrix&							GetLocalTransform() const { return m_mLocalTransform; }
@@ -534,26 +534,26 @@ public:
 	const Quaternion&						GetLocalRotation() const { return m_qLocalRotation; }
 	void									SetLocalRotation(const Quaternion& q);
 
-	virtual inline TVector					GetLocalOrigin() const { return m_vecLocalOrigin; };
+	virtual inline const TVector			GetLocalOrigin() const { return m_vecLocalOrigin; };
 	void									SetLocalOrigin(const TVector& vecOrigin);
 
-	inline TVector							GetLastLocalOrigin() const { return m_vecLastLocalOrigin; };
+	inline const TVector					GetLastLocalOrigin() const { return m_vecLastLocalOrigin; };
 	void									SetLastLocalOrigin(const TVector& vecOrigin) { m_vecLastLocalOrigin = vecOrigin; };
 
-	inline TVector							GetLastGlobalOrigin() const;
+	inline const TVector					GetLastGlobalOrigin() const;
 
-	inline TVector							GetLocalVelocity() const { return m_vecLocalVelocity; };
+	inline const TVector					GetLocalVelocity() const { return m_vecLocalVelocity; };
 	void									SetLocalVelocity(const TVector& vecVelocity);
 
-	inline EAngle							GetLocalAngles() const { return m_angLocalAngles; };
+	inline const EAngle						GetLocalAngles() const { return m_angLocalAngles; };
 	void									SetLocalAngles(const EAngle& angLocalAngles);
 
 	DECLARE_ENTITY_INPUT(SetLocalOrigin);
 	DECLARE_ENTITY_INPUT(SetLocalAngles);
 
-	inline Vector							GetScale() const { return m_vecScale; }
+	inline const Vector						GetScale() const { return m_vecScale; }
 
-	virtual TVector							GetUpVector() const { return TVector(0, 1, 0); };
+	virtual const TVector					GetUpVector() const { return TVector(0, 1, 0); };
 
 	virtual bool							TransformsChildUp() const { return false; };
 
@@ -625,7 +625,7 @@ public:
 	void									CallOutput(const eastl::string& sName);
 	void									AddOutputTarget(const eastl::string& sName, const eastl::string& sTargetName, const eastl::string& sInput, const eastl::string& sArgs = "", bool bKill = false);
 	void									RemoveOutputs(const eastl::string& sName);
-	virtual tstring							GetOutputValue(const tstring& sOutput, size_t iValue) { return ""; }
+	virtual const tstring					GetOutputValue(const tstring& sOutput, size_t iValue) { return ""; }
 	DECLARE_ENTITY_INPUT(RemoveOutput);
 
 	void									EmitSound(const tstring& sSound, float flVolume = 1.0f, bool bLoop = false);
@@ -633,7 +633,7 @@ public:
 	bool									IsSoundPlaying(const tstring& sModel);
 	void									SetSoundVolume(const tstring& sModel, float flVolume);
 
-	virtual TFloat							Distance(const TVector& vecSpot) const;
+	virtual const TFloat					Distance(const TVector& vecSpot) const;
 
 	// Physics callback - Should this object collide with pOther at the specified point?
 	// At this point the expensive collision checks have passed and the two objects will
@@ -720,8 +720,8 @@ protected:
 
 	AABB									m_aabbBoundingBox;
 
-	bool									m_bGlobalTransformsDirty;
-	TMatrix									m_mGlobalTransform;
+	mutable bool							m_bGlobalTransformsDirty;
+	mutable TMatrix							m_mGlobalTransform;
 	CNetworkedVector						m_vecGlobalGravity;
 
 	TMatrix									m_mLocalTransform;

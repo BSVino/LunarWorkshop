@@ -20,7 +20,7 @@ public:
 public:
 	virtual void				Spawn();
 
-	virtual TVector				GetGoalVelocity();
+	virtual const TVector		GetGoalVelocity();
 
 	virtual void				OnSetLocalTransform(Matrix4x4& mNew);
 	virtual void				TestMirror(CMirror* pMirror, Matrix4x4& mNew);
@@ -33,14 +33,14 @@ public:
 	CMirror*					GetMirrorInside() const;
 	virtual void				Reflected(reflection_t eReflectionType) {};
 
-	virtual TVector				GetUpVector() const;
+	virtual const TVector		GetUpVector() const;
 
 	// Is the point near enough to a mirror to be considered inside of it for physics purposes?
 	bool						IsNearMirror(class CMirror* pMirror, const Vector& vecPoint) const;
 
 	virtual bool				ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const;
 
-	Matrix4x4					GetReflectionMatrix() const { return m_mLateralReflection * m_mVerticalReflection; }
+	const Matrix4x4				GetReflectionMatrix() const { return m_mLateralReflection * m_mVerticalReflection; }
 
 	void						SetTouchingDepthTransitionArea(CDepthTransitionArea* pArea, bool bTouching);
 

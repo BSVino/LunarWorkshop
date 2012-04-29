@@ -17,7 +17,7 @@ public:
 
 	DECLARE_ENTITY_OUTPUT(OnResult);
 
-	tstring				GetOutputValue(const tstring& sOutput, size_t iValue);
+	const tstring		GetOutputValue(const tstring& sOutput, size_t iValue);
 
 public:
 	float				m_flBase;

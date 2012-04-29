@@ -94,7 +94,7 @@ void CCharacter::StopMove(movetype_t eMoveType)
 		m_vecGoalVelocity.z = 0;
 }
 
-TVector CCharacter::GetGoalVelocity()
+const TVector CCharacter::GetGoalVelocity()
 {
 	if (m_vecGoalVelocity.LengthSqr())
 		m_vecGoalVelocity.Normalize();

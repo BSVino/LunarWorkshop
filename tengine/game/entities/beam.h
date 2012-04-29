@@ -8,8 +8,8 @@ class CBeam : public CBaseEntity
 
 public:
 	// There are used in frustum culling so we override them with our own stuff
-	virtual TVector			GetGlobalCenter() const;
-	virtual TFloat			GetBoundingRadius() const;
+	virtual const TVector	GetGlobalCenter() const;
+	virtual const TFloat	GetBoundingRadius() const;
 
 	virtual bool			ShouldRender() const { return true; };
 	virtual void			PostRender(bool bTransparent) const;

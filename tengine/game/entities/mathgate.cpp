@@ -60,7 +60,7 @@ void CMathGate::InputRight(const eastl::vector<tstring>& sArgs)
 	CallOutput("OnResult");
 }
 
-tstring CMathGate::GetOutputValue(const tstring& sOutput, size_t iValue)
+const tstring CMathGate::GetOutputValue(const tstring& sOutput, size_t iValue)
 {
 	TAssert(sOutput == "OnResult" && iValue == 0);
 

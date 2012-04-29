@@ -43,7 +43,7 @@ void CGrottoCharacter::Spawn()
 	GamePhysics()->SetLinearFactor(this, Vector(0, 1, 1));
 }
 
-TVector CGrottoCharacter::GetGoalVelocity()
+const TVector CGrottoCharacter::GetGoalVelocity()
 {
 	TVector vecGoalVelocity = BaseClass::GetGoalVelocity();
 
@@ -240,7 +240,7 @@ CMirror* CGrottoCharacter::GetMirrorInside() const
 	return m_hMirrorInside;
 }
 
-TVector CGrottoCharacter::GetUpVector() const
+const TVector CGrottoCharacter::GetUpVector() const
 {
 	if (IsReflected(REFLECTION_VERTICAL))
 		return Vector(0, -1, 0);

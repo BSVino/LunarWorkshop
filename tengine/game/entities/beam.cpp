@@ -17,12 +17,12 @@ SAVEDATA_TABLE_END();
 INPUTS_TABLE_BEGIN(CBeam);
 INPUTS_TABLE_END();
 
-TVector CBeam::GetGlobalCenter() const
+const TVector CBeam::GetGlobalCenter() const
 {
 	return (m_vecStart + m_vecEnd)/2;
 }
 
-TFloat CBeam::GetBoundingRadius() const
+const TFloat CBeam::GetBoundingRadius() const
 {
 	return (m_vecStart - m_vecEnd).Length()/2;
 }

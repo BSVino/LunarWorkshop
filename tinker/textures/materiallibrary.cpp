@@ -122,6 +122,9 @@ CMaterialHandle CMaterialLibrary::FindMaterial(const tstring& sMaterial)
 
 bool CMaterialLibrary::IsAssetLoaded(const tstring& sMaterial)
 {
+	if (!Get())
+		return false;
+
 	tstring sMaterialForward = ToForwardSlashes(sMaterial);
 	eastl::map<tstring, CMaterial>::iterator it = Get()->m_aMaterials.find(sMaterialForward);
 	if (it == Get()->m_aMaterials.end())

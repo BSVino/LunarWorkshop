@@ -15,7 +15,7 @@ public:
 	void						Spawn();
 
 	bool						ShouldRender() const { return true; };
-	virtual Matrix4x4			GetRenderTransform() const;
+	virtual const Matrix4x4		GetRenderTransform() const;
 
 	virtual TFloat				EyeHeight() const;
 	virtual TFloat				BaseCharacterSpeed() { return 3.0f; }

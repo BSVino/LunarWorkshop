@@ -250,17 +250,17 @@ void CBaseEntity::Spawn()
 {
 }
 
-TVector CBaseEntity::GetLocalCenter() const
+const TVector CBaseEntity::GetLocalCenter() const
 {
 	return GetLocalTransform() * m_aabbBoundingBox.Center();
 }
 
-TVector CBaseEntity::GetGlobalCenter() const
+const TVector CBaseEntity::GetGlobalCenter() const
 {
 	return GetGlobalTransform() * m_aabbBoundingBox.Center();
 }
 
-TFloat CBaseEntity::GetBoundingRadius() const
+const TFloat CBaseEntity::GetBoundingRadius() const
 {
 	if (m_hMaterialModel.IsValid())
 	{
@@ -384,7 +384,7 @@ void CBaseEntity::InvalidateGlobalTransforms()
 		m_ahMoveChildren[i]->InvalidateGlobalTransforms();
 }
 
-TMatrix CBaseEntity::GetParentGlobalTransform() const
+const TMatrix CBaseEntity::GetParentGlobalTransform() const
 {
 	if (!HasMoveParent())
 		return TMatrix();
@@ -407,15 +407,19 @@ const TMatrix& CBaseEntity::GetGlobalTransform()
 	return m_mGlobalTransform;
 }
 
-TMatrix CBaseEntity::GetGlobalTransform() const
+const TMatrix CBaseEntity::GetGlobalTransform() const
 {
 	if (!m_bGlobalTransformsDirty)
 		return m_mGlobalTransform;
 
 	if (m_hMoveParent == NULL)
-		return m_mLocalTransform;
+		m_mGlobalTransform = m_mLocalTransform;
 	else
-		return m_hMoveParent->GetGlobalTransform() * m_mLocalTransform;
+		m_mGlobalTransform = m_hMoveParent->GetGlobalTransform() * m_mLocalTransform;
+
+	m_bGlobalTransformsDirty = false;
+
+	return m_mGlobalTransform;
 }
 
 void CBaseEntity::SetGlobalTransform(const TMatrix& m)
@@ -446,7 +450,7 @@ void CBaseEntity::SetGlobalTransform(const TMatrix& m)
 		GamePhysics()->SetEntityTransform(this, GetGlobalTransform());
 }
 
-TMatrix CBaseEntity::GetGlobalToLocalTransform()
+const TMatrix CBaseEntity::GetGlobalToLocalTransform()
 {
 	if (HasMoveParent())
 		return GetMoveParent()->GetGlobalTransform().InvertedRT();
@@ -454,7 +458,7 @@ TMatrix CBaseEntity::GetGlobalToLocalTransform()
 		return GetGlobalTransform().InvertedRT();
 }
 
-TMatrix CBaseEntity::GetGlobalToLocalTransform() const
+const TMatrix CBaseEntity::GetGlobalToLocalTransform() const
 {
 	if (HasMoveParent())
 		return GetMoveParent()->GetGlobalTransform().InvertedRT();
@@ -462,22 +466,22 @@ TMatrix CBaseEntity::GetGlobalToLocalTransform() const
 		return GetGlobalTransform().InvertedRT();
 }
 
-TVector CBaseEntity::GetGlobalOrigin()
+const TVector CBaseEntity::GetGlobalOrigin()
 {
 	return GetGlobalTransform().GetTranslation();
 }
 
-EAngle CBaseEntity::GetGlobalAngles()
+const EAngle CBaseEntity::GetGlobalAngles()
 {
 	return GetGlobalTransform().GetAngles();
 }
 
-TVector CBaseEntity::GetGlobalOrigin() const
+const TVector CBaseEntity::GetGlobalOrigin() const
 {
 	return GetGlobalTransform().GetTranslation();
 }
 
-EAngle CBaseEntity::GetGlobalAngles() const
+const EAngle CBaseEntity::GetGlobalAngles() const
 {
 	return GetGlobalTransform().GetAngles();
 }
@@ -508,7 +512,7 @@ void CBaseEntity::SetGlobalAngles(const EAngle& angAngles)
 	}
 }
 
-TVector CBaseEntity::GetGlobalVelocity()
+const TVector CBaseEntity::GetGlobalVelocity()
 {
 	if (IsInPhysics())
 		return GamePhysics()->GetEntityVelocity(this);
@@ -516,7 +520,7 @@ TVector CBaseEntity::GetGlobalVelocity()
 	return GetParentGlobalTransform().TransformVector(GetLocalVelocity());
 }
 
-TVector CBaseEntity::GetGlobalVelocity() const
+const TVector CBaseEntity::GetGlobalVelocity() const
 {
 	return GetParentGlobalTransform().TransformVector(GetLocalVelocity());
 }
@@ -617,7 +621,7 @@ void CBaseEntity::SetLocalOrigin(const TVector& vecOrigin)
 	InvalidateGlobalTransforms();
 };
 
-TVector CBaseEntity::GetLastGlobalOrigin() const
+const TVector CBaseEntity::GetLastGlobalOrigin() const
 {
 	return GetParentGlobalTransform() * GetLastLocalOrigin();
 }
@@ -1078,7 +1082,7 @@ void CEntityOutput::Clear()
 	m_aTargets.clear();
 }
 
-tstring CEntityOutput::FormatArgs(tstring sArgs)
+const tstring CEntityOutput::FormatArgs(tstring sArgs)
 {
 	size_t iArg = 0;
 
@@ -1137,7 +1141,7 @@ void CBaseEntity::SetSoundVolume(const tstring& sFilename, float flVolume)
 	CSoundLibrary::SetSoundVolume(this, sFilename, flVolume);
 }
 
-TFloat CBaseEntity::Distance(const TVector& vecSpot) const
+const TFloat CBaseEntity::Distance(const TVector& vecSpot) const
 {
 	TFloat flDistance = (GetGlobalCenter() - vecSpot).Length();
 	if (flDistance < GetBoundingRadius())
@@ -1845,7 +1849,7 @@ bool CanUnserializeString_TVector(const tstring& sData)
 	return asTokens.size() == 3;
 }
 
-TVector UnserializeString_TVector(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+const TVector UnserializeString_TVector(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
 	eastl::vector<tstring> asTokens;
 	tstrtok(sData, asTokens);
@@ -1868,7 +1872,7 @@ bool CanUnserializeString_Vector2D(const tstring& sData)
 	return asTokens.size() == 2;
 }
 
-TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+const TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
 	eastl::vector<tstring> asTokens;
 	tstrtok(sData, asTokens);
@@ -1891,7 +1895,7 @@ bool CanUnserializeString_EAngle(const tstring& sData)
 	return asTokens.size() == 3;
 }
 
-EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+const EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
 	eastl::vector<tstring> asTokens;
 	tstrtok(sData, asTokens);
@@ -1914,7 +1918,7 @@ bool CanUnserializeString_AABB(const tstring& sData)
 	return asTokens.size() == 6;
 }
 
-AABB UnserializeString_AABB(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+const AABB UnserializeString_AABB(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
 	eastl::vector<tstring> asTokens;
 	tstrtok(sData, asTokens);
@@ -1937,7 +1941,7 @@ bool CanUnserializeString_Matrix4x4(const tstring& sData)
 	return asTokens.size() == 6;
 }
 
-Matrix4x4 UnserializeString_Matrix4x4(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+const Matrix4x4 UnserializeString_Matrix4x4(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
 	eastl::vector<tstring> asTokens;
 	tstrtok(sData, asTokens);

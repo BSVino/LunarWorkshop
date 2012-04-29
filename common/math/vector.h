@@ -29,27 +29,27 @@ public:
 			TemplateVector(const class TemplateVector2D<double>& v);
 
 public:
-	TemplateVector<unit_t>	operator-(void) const;
+	const TemplateVector<unit_t>	operator-(void) const;
 
-	TemplateVector<unit_t>	operator+(const TemplateVector<unit_t>& v) const;
-	TemplateVector<unit_t>	operator-(const TemplateVector<unit_t>& v) const;
-	TemplateVector<unit_t>	operator*(unit_t s) const;
-	TemplateVector<unit_t>	operator/(unit_t s) const;
+	const TemplateVector<unit_t>	operator+(const TemplateVector<unit_t>& v) const;
+	const TemplateVector<unit_t>	operator-(const TemplateVector<unit_t>& v) const;
+	const TemplateVector<unit_t>	operator*(unit_t s) const;
+	const TemplateVector<unit_t>	operator/(unit_t s) const;
 
 	void	operator+=(const TemplateVector<unit_t> &v);
 	void	operator-=(const TemplateVector<unit_t> &v);
 	void	operator*=(unit_t s);
 	void	operator/=(unit_t s);
 
-	TemplateVector<unit_t>	operator*(const TemplateVector<unit_t>& v) const;
-	TemplateVector<unit_t>	operator/(const TemplateVector<unit_t>& v) const;
+	const TemplateVector<unit_t>	operator*(const TemplateVector<unit_t>& v) const;
+	const TemplateVector<unit_t>	operator/(const TemplateVector<unit_t>& v) const;
 
-	friend TemplateVector<unit_t> operator*( unit_t f, const TemplateVector<unit_t>& v )
+	friend const TemplateVector<unit_t> operator*( unit_t f, const TemplateVector<unit_t>& v )
 	{
 		return TemplateVector( v.x*f, v.y*f, v.z*f );
 	}
 
-	friend TemplateVector<unit_t> operator/( unit_t f, const TemplateVector<unit_t>& v )
+	friend const TemplateVector<unit_t> operator/( unit_t f, const TemplateVector<unit_t>& v )
 	{
 		return TemplateVector( f/v.x, f/v.y, f/v.z );
 	}
@@ -73,14 +73,14 @@ public:
 	unit_t	Length2D() const;
 	unit_t	Length2DSqr() const;
 	void	Normalize();
-	TemplateVector<unit_t>	Normalized() const;
-	TemplateVector<unit_t>	Flattened() const;
+	const TemplateVector<unit_t>	Normalized() const;
+	const TemplateVector<unit_t>	Flattened() const;
 
 	unit_t	Distance(const TemplateVector<unit_t>& v) const;
 	unit_t	DistanceSqr(const TemplateVector<unit_t>& v) const;
 
 	unit_t	Dot(const TemplateVector<unit_t>& v) const;
-	TemplateVector<unit_t>	Cross(const TemplateVector<unit_t>& v) const;
+	const TemplateVector<unit_t>	Cross(const TemplateVector<unit_t>& v) const;
 
 	bool	IsZero() const
 	{
@@ -150,31 +150,31 @@ inline TemplateVector<unit_t>::TemplateVector(const TemplateVector<double>& v)
 }
 
 template <class unit_t>
-inline TemplateVector<unit_t> TemplateVector<unit_t>::operator-() const
+inline const TemplateVector<unit_t> TemplateVector<unit_t>::operator-() const
 {
 	return TemplateVector(-x, -y, -z);
 }
 
 template <class unit_t>
-inline TemplateVector<unit_t> TemplateVector<unit_t>::operator+(const TemplateVector<unit_t>& v) const
+inline const TemplateVector<unit_t> TemplateVector<unit_t>::operator+(const TemplateVector<unit_t>& v) const
 {
 	return TemplateVector(x+v.x, y+v.y, z+v.z);
 }
 
 template <class unit_t>
-inline TemplateVector<unit_t> TemplateVector<unit_t>::operator-(const TemplateVector<unit_t>& v) const
+inline const TemplateVector<unit_t> TemplateVector<unit_t>::operator-(const TemplateVector<unit_t>& v) const
 {
 	return TemplateVector(x-v.x, y-v.y, z-v.z);
 }
 
 template <class unit_t>
-inline TemplateVector<unit_t> TemplateVector<unit_t>::operator*(unit_t s) const
+inline const TemplateVector<unit_t> TemplateVector<unit_t>::operator*(unit_t s) const
 {
 	return TemplateVector(x*s, y*s, z*s);
 }
 
 template <class unit_t>
-inline TemplateVector<unit_t> TemplateVector<unit_t>::operator/(unit_t s) const
+inline const TemplateVector<unit_t> TemplateVector<unit_t>::operator/(unit_t s) const
 {
 	return TemplateVector(x/s, y/s, z/s);
 }
@@ -212,13 +212,13 @@ inline void TemplateVector<unit_t>::operator/=(unit_t s)
 }
 
 template <class unit_t>
-inline TemplateVector<unit_t> TemplateVector<unit_t>::operator*(const TemplateVector<unit_t>& v) const
+inline const TemplateVector<unit_t> TemplateVector<unit_t>::operator*(const TemplateVector<unit_t>& v) const
 {
 	return TemplateVector(x*v.x, y*v.y, z*v.z);
 }
 
 template <class unit_t>
-inline TemplateVector<unit_t> TemplateVector<unit_t>::operator/(const TemplateVector<unit_t>& v) const
+inline const TemplateVector<unit_t> TemplateVector<unit_t>::operator/(const TemplateVector<unit_t>& v) const
 {
 	return TemplateVector(x/v.x, y/v.y, z/v.z);
 }
@@ -258,7 +258,7 @@ inline void TemplateVector<unit_t>::Normalize()
 }
 
 template <class unit_t>
-inline TemplateVector<unit_t> TemplateVector<unit_t>::Normalized() const
+inline const TemplateVector<unit_t> TemplateVector<unit_t>::Normalized() const
 {
 	unit_t flLength = Length();
 	if (!flLength)
@@ -268,7 +268,7 @@ inline TemplateVector<unit_t> TemplateVector<unit_t>::Normalized() const
 }
 
 template <class unit_t>
-inline TemplateVector<unit_t> TemplateVector<unit_t>::Flattened() const
+inline const TemplateVector<unit_t> TemplateVector<unit_t>::Flattened() const
 {
 	TemplateVector<unit_t> vecResult(*this);
 	vecResult.y = 0;
@@ -294,7 +294,7 @@ inline unit_t TemplateVector<unit_t>::Dot(const TemplateVector<unit_t>& v) const
 }
 
 template <class unit_t>
-inline TemplateVector<unit_t> TemplateVector<unit_t>::Cross(const TemplateVector<unit_t>& v) const
+inline const TemplateVector<unit_t> TemplateVector<unit_t>::Cross(const TemplateVector<unit_t>& v) const
 {
 	return TemplateVector(y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x);
 }
@@ -334,11 +334,11 @@ public:
 			EAngle(float p, float y, float r);
 			EAngle(float* pyr);
 
-	EAngle	operator+(const EAngle& v) const;
-	EAngle	operator-(const EAngle& v) const;
+	const EAngle	operator+(const EAngle& v) const;
+	const EAngle	operator-(const EAngle& v) const;
 
-	EAngle	operator*(float f) const;
-	EAngle	operator/(float f) const;
+	const EAngle	operator*(float f) const;
+	const EAngle	operator/(float f) const;
 
 	bool	operator==(const EAngle& v) const
 	{
@@ -377,27 +377,27 @@ inline EAngle::EAngle(float* pyr)
 {
 }
 
-inline EAngle EAngle::operator+(const EAngle& v) const
+inline const EAngle EAngle::operator+(const EAngle& v) const
 {
 	return EAngle(p+v.p, y+v.y, r+v.r);
 }
 
-inline EAngle EAngle::operator-(const EAngle& v) const
+inline const EAngle EAngle::operator-(const EAngle& v) const
 {
 	return EAngle(p-v.p, y-v.y, r-v.r);
 }
 
-inline EAngle EAngle::operator*(float f) const
+inline const EAngle EAngle::operator*(float f) const
 {
 	return EAngle(p*f, y*f, r*f);
 }
 
-inline EAngle EAngle::operator/(float f) const
+inline const EAngle EAngle::operator/(float f) const
 {
 	return EAngle(p/f, y/f, r/f);
 }
 
-inline Vector AngleVector(const EAngle& a)
+inline const Vector AngleVector(const EAngle& a)
 {
 	Vector vecResult;
 
@@ -419,7 +419,7 @@ inline Vector AngleVector(const EAngle& a)
 
 void AngleVectors(const EAngle& a, Vector* pvecF, Vector* pvecU, Vector* pvecR);
 
-inline EAngle VectorAngles( const Vector& vecForward )
+inline const EAngle VectorAngles( const Vector& vecForward )
 {
 	EAngle angReturn(0, 0, 0);
 
@@ -429,10 +429,10 @@ inline EAngle VectorAngles( const Vector& vecForward )
 	return angReturn;
 }
 
-template <class T> T LerpValue(T from, T to, float flLerp);
+template <class T> const T LerpValue(const T& from, const T& to, float flLerp);
 
 template <>
-inline EAngle LerpValue(EAngle from, EAngle to, float flLerp)
+inline const EAngle LerpValue(const EAngle& from, const EAngle& to, float flLerp)
 {
 	float p = from.p + (AngleDifference(to.p, from.p) * flLerp);
 	float y = from.y + (AngleDifference(to.y, from.y) * flLerp);
@@ -456,10 +456,10 @@ public:
 	float	Length() const;
 	float	LengthSqr() const;
 
-	TemplateVector2D<unit_t>	operator+(const TemplateVector2D<unit_t>& v) const;
-	TemplateVector2D<unit_t>	operator-(const TemplateVector2D<unit_t>& v) const;
-	TemplateVector2D<unit_t>	operator*(float s) const;
-	TemplateVector2D<unit_t>	operator/(float s) const;
+	const TemplateVector2D<unit_t>	operator+(const TemplateVector2D<unit_t>& v) const;
+	const TemplateVector2D<unit_t>	operator-(const TemplateVector2D<unit_t>& v) const;
+	const TemplateVector2D<unit_t>	operator*(float s) const;
+	const TemplateVector2D<unit_t>	operator/(float s) const;
 
 	bool	operator==(const TemplateVector2D<unit_t>& v) const
 	{
@@ -540,25 +540,25 @@ inline float TemplateVector2D<unit_t>::LengthSqr() const
 }
 
 template <class unit_t>
-inline TemplateVector2D<unit_t> TemplateVector2D<unit_t>::operator+(const TemplateVector2D<unit_t>& v) const
+inline const TemplateVector2D<unit_t> TemplateVector2D<unit_t>::operator+(const TemplateVector2D<unit_t>& v) const
 {
 	return TemplateVector2D(x+v.x, y+v.y);
 }
 
 template <class unit_t>
-inline TemplateVector2D<unit_t> TemplateVector2D<unit_t>::operator-(const TemplateVector2D<unit_t>& v) const
+inline const TemplateVector2D<unit_t> TemplateVector2D<unit_t>::operator-(const TemplateVector2D<unit_t>& v) const
 {
 	return TemplateVector2D(x-v.x, y-v.y);
 }
 
 template <class unit_t>
-inline TemplateVector2D<unit_t> TemplateVector2D<unit_t>::operator*(float s) const
+inline const TemplateVector2D<unit_t> TemplateVector2D<unit_t>::operator*(float s) const
 {
 	return TemplateVector2D(x*s, y*s);
 }
 
 template <class unit_t>
-inline TemplateVector2D<unit_t> TemplateVector2D<unit_t>::operator/(float s) const
+inline const TemplateVector2D<unit_t> TemplateVector2D<unit_t>::operator/(float s) const
 {
 	return TemplateVector2D(x/s, y/s);
 }
@@ -574,8 +574,8 @@ public:
 				Vector4D(const float* xyzw);
 
 public:
-	Vector4D	operator+(const Vector4D& v) const;
-	Vector4D	operator-(const Vector4D& v) const;
+	const Vector4D	operator+(const Vector4D& v) const;
+	const Vector4D	operator-(const Vector4D& v) const;
 
 	bool	operator==(const Vector4D& v) const
 	{
@@ -628,12 +628,12 @@ inline Vector4D::Vector4D(const float* xyzw)
 {
 }
 
-inline Vector4D Vector4D::operator+(const Vector4D& v) const
+inline const Vector4D Vector4D::operator+(const Vector4D& v) const
 {
 	return Vector4D(x+v.x, y+v.y, z+v.z, w+v.w);
 }
 
-inline Vector4D Vector4D::operator-(const Vector4D& v) const
+inline const Vector4D Vector4D::operator-(const Vector4D& v) const
 {
 	return Vector4D(x-v.x, y-v.y, z-v.z, w-v.w);
 }
