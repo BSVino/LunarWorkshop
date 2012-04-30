@@ -16,6 +16,8 @@ public:
 
 	virtual TVector	GetCameraPosition();
 	virtual TVector	GetCameraDirection();
+
+	virtual bool	ShouldRenderOrthographic() { return false; }
 };
 
 class CWorkbench : public glgui::IEventListener

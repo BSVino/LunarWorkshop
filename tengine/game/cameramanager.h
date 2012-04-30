@@ -21,8 +21,10 @@ public:
 	virtual TVector	GetCameraDirection();
 	virtual TVector	GetCameraUp();
 	virtual float	GetCameraFOV();
+	virtual float	GetCameraOrthoHeight();
 	virtual float	GetCameraNear() { return 1.0f; };
 	virtual float	GetCameraFar() { return 10000.0f; };
+	virtual bool	ShouldRenderOrthographic();
 
 	virtual bool	ShouldTransition();
 	virtual float	GetTransitionLerp();
@@ -47,6 +49,7 @@ public:
 	TVector			m_vecFreeCamera;
 	EAngle			m_angFreeCamera;
 	TVector			m_vecFreeVelocity;
+	float			m_flFreeOrthoHeight;
 
 	int				m_iMouseLastX;
 	int				m_iMouseLastY;

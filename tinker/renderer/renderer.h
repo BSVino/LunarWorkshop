@@ -87,14 +87,18 @@ public:
 	void			SetCameraDirection(Vector vecCameraDirection) { m_vecCameraDirection = vecCameraDirection; };
 	void			SetCameraUp(Vector vecCameraUp) { m_vecCameraUp = vecCameraUp; };
 	void			SetCameraFOV(float flFOV) { m_flCameraFOV = flFOV; };
+	void			SetCameraOrthoHeight(float flOrthoHeight) { m_flCameraOrthoHeight = flOrthoHeight; };
 	void			SetCameraNear(float flNear) { m_flCameraNear = flNear; };
 	void			SetCameraFar(float flFar) { m_flCameraFar = flFar; };
+	void			SetRenderOrthographic(bool bRenderOrtho) { m_bRenderOrthographic = bRenderOrtho; }
 
 	Vector			GetCameraPosition() { return m_vecCameraPosition; };
 	Vector			GetCameraDirection() { return m_vecCameraDirection; };
 	float			GetCameraFOV() { return m_flCameraFOV; };
+	float			GetCameraOrthoHeight() { return m_flCameraOrthoHeight; };
 	float			GetCameraNear() { return m_flCameraNear; };
 	float			GetCameraFar() { return m_flCameraFar; };
+	bool			ShouldRenderOrthographic() { return m_bRenderOrthographic; }
 
 	void			FrustumOverride(Vector vecPosition, Vector vecDirection, float flFOV, float flNear, float flFar);
 	void			CancelFrustumOverride();
@@ -135,8 +139,10 @@ protected:
 	Vector			m_vecCameraDirection;
 	Vector			m_vecCameraUp;
 	float			m_flCameraFOV;
+	float			m_flCameraOrthoHeight;
 	float			m_flCameraNear;
 	float			m_flCameraFar;
+	bool			m_bRenderOrthographic;
 
 	bool			m_bFrustumOverride;
 	Vector			m_vecFrustumPosition;

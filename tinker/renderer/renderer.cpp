@@ -226,12 +226,21 @@ void CRenderer::StartRendering(class CRenderingContext* pContext)
 {
 	TPROF("CRenderer::StartRendering");
 
-	pContext->SetProjection(Matrix4x4::ProjectPerspective(
-			m_flCameraFOV,
-			(float)m_iWidth/(float)m_iHeight,
-			m_flCameraNear,
-			m_flCameraFar
-		));
+	float flAspectRatio = (float)m_iWidth/(float)m_iHeight;
+
+	if (ShouldRenderOrthographic())
+		pContext->SetProjection(Matrix4x4::ProjectOrthographic(
+				-flAspectRatio*m_flCameraOrthoHeight, flAspectRatio*m_flCameraOrthoHeight,
+				-m_flCameraOrthoHeight, m_flCameraOrthoHeight,
+				-100, 100
+			));
+	else
+		pContext->SetProjection(Matrix4x4::ProjectPerspective(
+				m_flCameraFOV,
+				flAspectRatio,
+				m_flCameraNear,
+				m_flCameraFar
+			));
 
 	pContext->SetView(Matrix4x4::ConstructCameraView(m_vecCameraPosition, m_vecCameraDirection, m_vecCameraUp));
 

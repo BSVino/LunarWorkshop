@@ -5,6 +5,7 @@
 #include <renderer/game_renderer.h>
 #include <tinker/cvar.h>
 #include <tinker/application.h>
+#include <tinker/keys.h>
 #include <game/gameserver.h>
 #include <game/entities/camera.h>
 
@@ -29,17 +30,24 @@ void CCameraManager::Think()
 	{
 		m_vecFreeCamera = GetCameraPosition();
 		m_angFreeCamera = VectorAngles((GetCameraDirection()).Normalized());
+		m_flFreeOrthoHeight = 10;
 		m_bFreeMode = bFreeMode;
 		CApplication::Get()->SetMouseCursorEnabled(!m_bFreeMode);
 	}
 
 	if (m_bFreeMode)
 	{
-		Vector vecForward, vecRight;
-		AngleVectors(m_angFreeCamera, &vecForward, NULL, &vecRight);
+		Vector vecForward, vecRight, vecUp;
+		AngleVectors(m_angFreeCamera, &vecForward, &vecUp, &vecRight);
 
-		m_vecFreeCamera += vecForward * m_vecFreeVelocity.x * (float)GameServer()->GetFrameTime() * 20;
-		m_vecFreeCamera += vecRight * m_vecFreeVelocity.z * (float)GameServer()->GetFrameTime() * 20;
+		float flScaleSpeed = 20;
+		if (ShouldRenderOrthographic())
+			flScaleSpeed = m_flFreeOrthoHeight;
+
+		m_vecFreeCamera += vecForward * m_vecFreeVelocity.x * (float)GameServer()->GetFrameTime() * flScaleSpeed;
+		m_vecFreeCamera += vecRight * m_vecFreeVelocity.z * (float)GameServer()->GetFrameTime() * flScaleSpeed;
+		m_vecFreeCamera += vecUp * m_vecFreeVelocity.y * (float)GameServer()->GetFrameTime() * flScaleSpeed;
+		m_flFreeOrthoHeight -= ((float)GameServer()->GetFrameTime() * m_vecFreeVelocity.x * 5);
 	}
 	else
 	{
@@ -132,6 +140,35 @@ float CCameraManager::GetCameraFOV()
 	}
 
 	return pCamera->GetFOV();
+}
+
+float CCameraManager::GetCameraOrthoHeight()
+{
+	if (m_bFreeMode)
+		return m_flFreeOrthoHeight;
+
+	CCamera* pCamera = GetActiveCamera();
+	if (!pCamera)
+		return 10;
+
+	if (ShouldTransition())
+	{
+		CCamera* pFrom = m_ahCameras[m_iLastCamera];
+		CCamera* pTo = m_ahCameras[m_iCurrentCamera];
+		float flLerp = GetTransitionLerp();
+		return RemapVal(flLerp, 0, 1, pFrom->GetOrthoHeight(), pTo->GetOrthoHeight());
+	}
+
+	return pCamera->GetOrthoHeight();
+}
+
+bool CCameraManager::ShouldRenderOrthographic()
+{
+	CCamera* pCamera = GetActiveCamera();
+	if (!pCamera)
+		return false;
+
+	return pCamera->ShouldRenderOrthographic();
 }
 
 bool CCameraManager::ShouldTransition()
@@ -235,6 +272,18 @@ bool CCameraManager::KeyDown(int c)
 			m_vecFreeVelocity.z = -1.0f;
 			return true;
 		}
+
+		if (c == ' ')
+		{
+			m_vecFreeVelocity.y = 1.0f;
+			return true;
+		}
+
+		if (c == 'V')
+		{
+			m_vecFreeVelocity.y = -1.0f;
+			return true;
+		}
 	}
 
 	return false;
@@ -265,6 +314,18 @@ bool CCameraManager::KeyUp(int c)
 		if (c == 'A')
 		{
 			m_vecFreeVelocity.z = 0.0f;
+			return true;
+		}
+
+		if (c == ' ')
+		{
+			m_vecFreeVelocity.y = 0.0f;
+			return true;
+		}
+
+		if (c == 'V')
+		{
+			m_vecFreeVelocity.y = 0.0f;
 			return true;
 		}
 	}

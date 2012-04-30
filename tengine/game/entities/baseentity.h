@@ -408,6 +408,12 @@ void entity::RegisterSaveData() \
 	pSaveData->m_bOverride = true; \
 	pSaveData->m_bShowInEditor = false; \
 	{ \
+		CSaveData* pHandleData = FindSaveDataByHandle(handle); \
+		TAssert(pHandleData); \
+		pSaveData->m_iOffset = pHandleData->m_iOffset; \
+		pSaveData->m_iSizeOfVariable = pHandleData->m_iSizeOfVariable; \
+		pSaveData->m_iSizeOfType = pHandleData->m_iSizeOfType; \
+ \
 		type iDefault = def; \
 		memcpy(pSaveData->m_oDefault, &iDefault, sizeof(def)); \
 		pSaveData->m_bDefault = true; \
@@ -433,6 +439,10 @@ void entity::RegisterSaveData() \
 			pSaveData->m_bShowInEditor = true; \
 			pSaveData->m_bOverride = false; \
 			pSaveData->m_bDefault = pHandleData->m_bDefault; \
+ \
+			pSaveData->m_iOffset = pHandleData->m_iOffset; \
+			pSaveData->m_iSizeOfVariable = pHandleData->m_iSizeOfVariable; \
+			pSaveData->m_iSizeOfType = pHandleData->m_iSizeOfType; \
 			memcpy(pSaveData->m_oDefault, pHandleData->m_oDefault, sizeof(pSaveData->m_oDefault)); \
 		} \
 	} \

@@ -50,8 +50,10 @@ void CGameRenderer::Render()
 	SetCameraDirection(pCamera->GetCameraDirection());
 	SetCameraUp(pCamera->GetCameraUp());
 	SetCameraFOV(pCamera->GetCameraFOV());
+	SetCameraOrthoHeight(pCamera->GetCameraOrthoHeight());
 	SetCameraNear(pCamera->GetCameraNear());
 	SetCameraFar(pCamera->GetCameraFar());
+	SetRenderOrthographic(pCamera->ShouldRenderOrthographic());
 
 	PreRender();
 
@@ -148,6 +150,7 @@ void CGameRenderer::DrawSkybox(class CRenderingContext* pContext)
 	SetCameraDirection(pCamera->GetCameraDirection());
 	SetCameraUp(pCamera->GetCameraUp());
 	SetCameraFOV(pCamera->GetCameraFOV());
+	SetCameraOrthoHeight(pCamera->GetCameraOrthoHeight());
 	SetCameraNear(pCamera->GetCameraNear());
 	SetCameraFar(pCamera->GetCameraFar());
 

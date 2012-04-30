@@ -210,10 +210,14 @@ void CBaseEntity::SetSaveDataDefaults()
 			if (!pSaveData->m_bDefault)
 				continue;
 
-			if (pSaveData->m_bShowInEditor)
+			if (pSaveData->m_bOverride)
 				continue;
 
 			if (!pSaveData->m_pszHandle || pSaveData->m_pszHandle[0] == '\0')
+				continue;
+
+			TAssert(pSaveData->m_iOffset);
+			if (!pSaveData->m_iOffset)
 				continue;
 
 			char* pData = (char*)this + pSaveData->m_iOffset;

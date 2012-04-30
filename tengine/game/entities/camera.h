@@ -18,6 +18,8 @@ public:
 	virtual void	OnActivated();
 
 	virtual float	GetFOV() { return m_flFOV; }
+	virtual float	GetOrthoHeight() { return m_flOrthoHeight; }
+	virtual bool	ShouldRenderOrthographic() { return false; }
 
 protected:
 	CEntityHandle<CBaseEntity>	m_hCameraTarget;
@@ -29,4 +31,5 @@ protected:
 	CEntityHandle<CBaseEntity>	m_hTargetEnd;
 
 	float			m_flFOV;
+	float			m_flOrthoHeight;
 };
