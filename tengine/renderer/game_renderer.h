@@ -32,6 +32,7 @@ public:
 	virtual void	SetupFrame(class CRenderingContext* pContext);
 	virtual void	DrawSkybox(class CRenderingContext* pContext);
 	virtual void	ModifySkyboxContext(class CRenderingContext* c) {};
+	virtual void	ModifyShader(const class CBaseEntity* pEntity, class CRenderingContext* c) {};
 	virtual void	FinishRendering(class CRenderingContext* pContext);
 
 	void			SetSkybox(const CTextureHandle& ft, const CTextureHandle& bk, const CTextureHandle& lf, const CTextureHandle& rt, const CTextureHandle& up, const CTextureHandle& dn);

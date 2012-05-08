@@ -63,6 +63,8 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 
 			UseMaterial(hMaterial);
 
+			pEntity->ModifyShader(this);
+			m_pRenderer->ModifyShader(pEntity, this);
 			RenderModel(pModel, m);
 		}
 
@@ -104,7 +106,6 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 
 void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 {
-	UseProgram("model");
 	SetUniform("vecColor", m_clrRender);
 
 	TAssert(m_pShader);
@@ -126,7 +127,7 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	EndRenderVertexArray(pModel->m_aiVertexBufferSizes[iMaterial]);
 }
 
-void CGameRenderingContext::RenderMaterialModel(const CMaterialHandle& hMaterial)
+void CGameRenderingContext::RenderMaterialModel(const CMaterialHandle& hMaterial, const class CBaseEntity* pEntity)
 {
 	TAssert(hMaterial.IsValid());
 	if (!hMaterial.IsValid())
@@ -144,6 +145,7 @@ void CGameRenderingContext::RenderMaterialModel(const CMaterialHandle& hMaterial
 	Vector vecRight = Vector(0, 0, 0.5f) * (float)hBaseTexture->m_iWidth/100;
 
 	UseMaterial(hMaterial);
+	m_pRenderer->ModifyShader(pEntity, this);
 
 	SetUniform("vecColor", m_clrRender);
 

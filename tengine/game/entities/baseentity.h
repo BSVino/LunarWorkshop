@@ -614,6 +614,7 @@ public:
 	virtual bool							ShouldRenderModel() const { return true; };
 	virtual void							PreRender() const;
 	virtual void							ModifyContext(class CRenderingContext* pContext) const {};
+	virtual void							ModifyShader(class CRenderingContext* pContext) const {};
 	void									Render() const;
 	virtual void							OnRender(class CRenderingContext* pContext) const {};
 	virtual void							PostRender() const {};

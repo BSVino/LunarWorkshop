@@ -904,7 +904,7 @@ void CBaseEntity::Render() const
 						TPROF("CRenderingContext::RenderModel(Material)");
 						r.SetBlend(BLEND_ALPHA);
 						r.Scale(0, m_vecScale.Get().y, m_vecScale.Get().x);
-						r.RenderMaterialModel(m_hMaterialModel);
+						r.RenderMaterialModel(m_hMaterialModel, this);
 					}
 				}
 			}

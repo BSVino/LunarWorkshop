@@ -346,6 +346,8 @@ void CGameRenderer::RenderBatches()
 			c.SetColor(pBatch->clrRender);
 
 			m_pRendering = pBatch->pEntity;
+			m_pRendering->ModifyShader(&c);
+			ModifyShader(m_pRendering, &c);
 			c.RenderModel(pBatch->pModel, pBatch->iMaterial);
 			m_pRendering = nullptr;
 		}
