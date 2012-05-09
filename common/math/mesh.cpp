@@ -6,7 +6,7 @@
 
 #include <tinker/shell.h>
 
-CConvexHullGenerator::CConvexHullGenerator(const eastl::vector<Vector>& avecPoints)
+CConvexHullGenerator::CConvexHullGenerator(const tvector<Vector>& avecPoints)
 	: m_avecPoints(avecPoints)
 {
 	// Reserve memory up front to avoid costly allocations
@@ -104,7 +104,7 @@ size_t CConvexHullGenerator::FindNextPoint(size_t p1, size_t p2)
 		break;
 	}
 
-	eastl::vector<size_t> aZeros;
+	tvector<size_t> aZeros;
 	for (size_t i = 0; i < m_avecPoints.size(); i++)
 	{
 		if (i == p1 || i == p2 || i == iHighest)
@@ -143,7 +143,7 @@ size_t CConvexHullGenerator::FindNextPoint(size_t p1, size_t p2)
 	return iHighest;
 }
 
-const eastl::vector<size_t>& CConvexHullGenerator::GetConvexTriangles()
+const tvector<size_t>& CConvexHullGenerator::GetConvexTriangles()
 {
 	if (!m_aiTriangles.size())
 		CreateConvex();
@@ -164,12 +164,12 @@ void CConvexHullGenerator::AddEdge(size_t p1, size_t p2)
 		m_aOpenEdges.push_back(EdgePair(p2, p1));
 }
 
-void CCoplanarPointOptimizer::OptimizeMesh(const eastl::vector<Vector>& avecPoints, eastl::vector<size_t>& aiTriangles, float flTolerance)
+void CCoplanarPointOptimizer::OptimizeMesh(const tvector<Vector>& avecPoints, tvector<size_t>& aiTriangles, float flTolerance)
 {
 	TAssert(aiTriangles.size() % 3 == 0);
 
-	eastl::vector<size_t> aiPointTriangles;
-	eastl::vector<size_t> aiRemoveTriangles;
+	tvector<size_t> aiPointTriangles;
+	tvector<size_t> aiRemoveTriangles;
 
 	bool bFound;
 	do
@@ -314,13 +314,13 @@ void CCoplanarPointOptimizer::OptimizeMesh(const eastl::vector<Vector>& avecPoin
 	while (bFound);
 }
 
-void CUnusedPointOptimizer::OptimizeMesh(eastl::vector<Vector>& avecPoints, eastl::vector<size_t>& aiTriangles)
+void CUnusedPointOptimizer::OptimizeMesh(tvector<Vector>& avecPoints, tvector<size_t>& aiTriangles)
 {
 	TAssert(aiTriangles.size() % 3 == 0);
 
 	eastl::map<size_t, size_t> aiUsedVertsMap; // Maps input vertices to the optimized mesh. eg aiUsedVerts[aiUsedVertsMap[aiTriangles[x]]]
-	eastl::vector<size_t> aiUsedVerts;
-	eastl::vector<size_t> aiUsedVertTriangles;
+	tvector<size_t> aiUsedVerts;
+	tvector<size_t> aiUsedVertTriangles;
 	aiUsedVertTriangles.reserve(aiTriangles.size());
 	aiUsedVerts.reserve(aiTriangles.size()*3);
 
@@ -363,7 +363,7 @@ void CUnusedPointOptimizer::OptimizeMesh(eastl::vector<Vector>& avecPoints, east
 		aiUsedVertTriangles.push_back(iV3);
 	}
 
-	eastl::vector<Vector> avecUsedPoints;
+	tvector<Vector> avecUsedPoints;
 	for (size_t v = 0; v < aiUsedVerts.size(); v++)
 		avecUsedPoints.push_back(avecPoints[aiUsedVerts[v]]);
 

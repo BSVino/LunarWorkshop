@@ -64,7 +64,7 @@ CLIENT_COMMAND(CONNECTION_UNDEFINED, ClientChatSay)
 	ServerChatSay.RunCommand(iConnection, sName + ": " + sParameters + "\n");
 }
 
-void ChatSay(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+void ChatSay(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	if (sCommand.find(' ') == ~0)
 		return;
@@ -78,7 +78,7 @@ void ChatSay(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const t
 CCommand chat_say("say", ::ChatSay);
 CCommand chat_say2("chat_say", ::ChatSay);
 
-void ChatOpen(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+void ChatOpen(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	GameWindow()->OpenChat();
 }

@@ -1,7 +1,7 @@
 #include <EASTL/string.h>
-#include <EASTL/vector.h>
-#include <string.h>
 
+#include <tvector.h>
+#include <string.h>
 #include <tstring.h>
 #include <tinker_platform.h>
 #include <mtrand.h>
@@ -11,7 +11,7 @@ bool GenerateKey(eastl::string sProductCode, eastl::string& sKey)
 	if (!sProductCode.size())
 		return false;
 
-	eastl::vector<eastl::string> sTokens;
+	tvector<eastl::string> sTokens;
 	strtok(sProductCode, sTokens, "-");
 
 	int iProductCode = atoi(sTokens[0].c_str());

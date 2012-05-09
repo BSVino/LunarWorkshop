@@ -36,12 +36,12 @@ public:
 	void				SetBuffer(size_t i) { m_iBuffer = i; }
 	size_t				GetBuffer() const { return m_iBuffer; }
 
-	static size_t		GetNumMirrors() { return m_ahMirrors.size(); };
-	static CMirror*		GetMirror(size_t i) { return m_ahMirrors[i]; };
+	static size_t		GetNumMirrors() { return s_ahMirrors.size(); };
+	static CMirror*		GetMirror(size_t i) { return s_ahMirrors[i]; };
 
 protected:
 	mirror_t			m_eMirrorType;
 	size_t				m_iBuffer;
 
-	static eastl::vector<CEntityHandle<CMirror> >	m_ahMirrors;
+	static tvector<CEntityHandle<CMirror> >	s_ahMirrors;
 };

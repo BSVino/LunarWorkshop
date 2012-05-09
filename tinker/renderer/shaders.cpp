@@ -523,7 +523,7 @@ void CShader::Destroy()
 	glDeleteProgram((GLuint)m_iProgram);
 }
 
-void ReloadShaders(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+void ReloadShaders(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	CShaderLibrary::CompileShaders();
 	if (CShaderLibrary::Get()->IsCompiled())

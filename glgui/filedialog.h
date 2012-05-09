@@ -40,7 +40,7 @@ namespace glgui
 		CButton*					m_pCancel;
 
 		tstring						m_sDirectory;
-		eastl::vector<tstring>		m_asExtensions;
+		tvector<tstring>			m_asExtensions;
 		bool						m_bSave;
 
 		IEventListener*				m_pSelectListener;

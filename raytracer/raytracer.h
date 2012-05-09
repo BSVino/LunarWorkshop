@@ -65,7 +65,7 @@ protected:
 
 	size_t						m_iDepth;
 
-	eastl::vector<CKDTri>		m_aTris;
+	tvector<CKDTri>				m_aTris;
 	size_t						m_iTriangles;	// This node and all child nodes
 
 	AABB						m_oBounds;

@@ -2,6 +2,7 @@
 
 #include <strutils.h>
 #include <mtrand.h>
+#include <tvector.h>
 
 #include <models/models.h>
 #include <renderer/renderingcontext.h>
@@ -53,7 +54,7 @@ public:
 	}
 } g_AutoImport = CAutoImport();
 
-eastl::vector<CBaseEntity*> CBaseEntity::s_apEntityList;
+tvector<CBaseEntity*> CBaseEntity::s_apEntityList;
 size_t CBaseEntity::s_iEntities = 0;
 size_t CBaseEntity::s_iOverrideEntityListIndex = ~0;
 size_t CBaseEntity::s_iNextEntityListIndex = 0;
@@ -681,7 +682,7 @@ void CBaseEntity::SetLocalAngles(const EAngle& angAngles)
 	InvalidateGlobalTransforms();
 }
 
-void CBaseEntity::SetLocalOrigin(const eastl::vector<tstring>& asArgs)
+void CBaseEntity::SetLocalOrigin(const tvector<tstring>& asArgs)
 {
 	if (asArgs.size() != 3)
 	{
@@ -692,7 +693,7 @@ void CBaseEntity::SetLocalOrigin(const eastl::vector<tstring>& asArgs)
 	SetLocalOrigin(Vector((float)stof(asArgs[0]), (float)stof(asArgs[1]), (float)stof(asArgs[2])));
 }
 
-void CBaseEntity::SetLocalAngles(const eastl::vector<tstring>& asArgs)
+void CBaseEntity::SetLocalAngles(const tvector<tstring>& asArgs)
 {
 	if (asArgs.size() != 3)
 	{
@@ -716,7 +717,7 @@ size_t CBaseEntity::GetNumEntities()
 	return s_iEntities;
 }
 
-void CBaseEntity::SetVisible(const eastl::vector<tstring>& sArgs)
+void CBaseEntity::SetVisible(const tvector<tstring>& sArgs)
 {
 	TAssert(sArgs.size());
 	if (!sArgs.size())
@@ -824,22 +825,22 @@ void CBaseEntity::SetActive(bool bActive)
 	m_bActive = bActive;
 }
 
-void CBaseEntity::Activate(const eastl::vector<tstring>& sArgs)
+void CBaseEntity::Activate(const tvector<tstring>& sArgs)
 {
 	SetActive(true);
 }
 
-void CBaseEntity::Deactivate(const eastl::vector<tstring>& sArgs)
+void CBaseEntity::Deactivate(const tvector<tstring>& sArgs)
 {
 	SetActive(false);
 }
 
-void CBaseEntity::ToggleActive(const eastl::vector<tstring>& sArgs)
+void CBaseEntity::ToggleActive(const tvector<tstring>& sArgs)
 {
 	SetActive(!IsActive());
 }
 
-void CBaseEntity::SetActive(const eastl::vector<tstring>& sArgs)
+void CBaseEntity::SetActive(const tvector<tstring>& sArgs)
 {
 	TAssert(sArgs.size());
 	if (!sArgs.size())
@@ -941,7 +942,7 @@ void CBaseEntity::Delete()
 	GameServer()->Delete(this);
 }
 
-void CBaseEntity::Delete(const eastl::vector<tstring>& sArgs)
+void CBaseEntity::Delete(const tvector<tstring>& sArgs)
 {
 	Delete();
 }
@@ -957,7 +958,7 @@ void CBaseEntity::CallInput(const eastl::string& sName, const tstring& sArgs)
 		return;
 	}
 
-	eastl::vector<tstring> asArgs;
+	tvector<tstring> asArgs;
 	tstrtok(sArgs, asArgs);
 	pInput->m_pfnCallback(this, asArgs);
 }
@@ -1009,7 +1010,7 @@ void CBaseEntity::RemoveOutputs(const eastl::string& sName)
 	pOutput->Clear();
 }
 
-void CBaseEntity::RemoveOutput(const eastl::vector<tstring>& sArgs)
+void CBaseEntity::RemoveOutput(const tvector<tstring>& sArgs)
 {
 	if (sArgs.size() == 0)
 	{
@@ -1042,7 +1043,7 @@ void CEntityOutput::Call()
 		if (pTarget->m_sInput.length() == 0)
 			continue;
 
-		eastl::vector<CBaseEntity*> apEntities;
+		tvector<CBaseEntity*> apEntities;
 		CBaseEntity::FindEntitiesByName(pTarget->m_sTargetName, apEntities);
 
 		for (size_t i = 0; i < apEntities.size(); i++)
@@ -1309,7 +1310,7 @@ void CBaseEntity::CheckTables(const char* pszEntity)
 
 	CEntityRegistration* pRegistration = GetRegisteredEntity(pszEntity);
 
-	eastl::vector<CSaveData>& aSaveData = pRegistration->m_aSaveData;
+	tvector<CSaveData>& aSaveData = pRegistration->m_aSaveData;
 
 	for (size_t i = 0; i < aSaveData.size(); i++)
 	{
@@ -1402,7 +1403,7 @@ void CBaseEntity::Serialize(std::ostream& o, const char* pszClassName, void* pEn
 
 		case CSaveData::DATA_COPYVECTOR:
 		{
-			eastl::vector<size_t>* pVector = (eastl::vector<size_t>*)pData;
+			tvector<size_t>* pVector = (tvector<size_t>*)pData;
 			size_t iSize = pVector->size();
 			o.write((char*)&iSize, sizeof(iSize));
 			if (iSize)
@@ -1476,7 +1477,7 @@ bool CBaseEntity::Unserialize(std::istream& i, const char* pszClassName, void* p
 
 		case CSaveData::DATA_COPYVECTOR:
 		{
-			eastl::vector<size_t>* pVector = (eastl::vector<size_t>*)pData;
+			tvector<size_t>* pVector = (tvector<size_t>*)pData;
 			size_t iSize;
 			i.read((char*)&iSize, sizeof(iSize));
 			if (iSize)
@@ -1701,7 +1702,7 @@ CSaveData* CBaseEntity::FindSaveDataByHandle(const char* pszClassName, const cha
 
 CSaveData* CBaseEntity::FindSaveDataValuesByHandle(const char* pszClassName, const char* pszHandle, CSaveData* pSaveData)
 {
-	eastl::vector<tstring> asParents;
+	tvector<tstring> asParents;
 	CEntityRegistration* pRegistration;
 
 	while (pszClassName)
@@ -1795,7 +1796,7 @@ CBaseEntity* CBaseEntity::GetEntityByName(const eastl::string& sName)
 	return NULL;
 }
 
-void CBaseEntity::FindEntitiesByName(const eastl::string& sName, eastl::vector<CBaseEntity*>& apEntities)
+void CBaseEntity::FindEntitiesByName(const eastl::string& sName, tvector<CBaseEntity*>& apEntities)
 {
 	if (sName.length() == 0)
 		return;
@@ -1847,7 +1848,7 @@ size_t UnserializeString_size_t(const tstring& sData, const tstring& sName, cons
 
 bool CanUnserializeString_TVector(const tstring& sData)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
 
 	return asTokens.size() == 3;
@@ -1855,7 +1856,7 @@ bool CanUnserializeString_TVector(const tstring& sData)
 
 const TVector UnserializeString_TVector(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
 
 	TAssert(asTokens.size() == 3);
@@ -1870,7 +1871,7 @@ const TVector UnserializeString_TVector(const tstring& sData, const tstring& sNa
 
 bool CanUnserializeString_Vector2D(const tstring& sData)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
 
 	return asTokens.size() == 2;
@@ -1878,7 +1879,7 @@ bool CanUnserializeString_Vector2D(const tstring& sData)
 
 const TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
 
 	TAssert(asTokens.size() == 2);
@@ -1893,7 +1894,7 @@ const TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sN
 
 bool CanUnserializeString_EAngle(const tstring& sData)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
 
 	return asTokens.size() == 3;
@@ -1901,7 +1902,7 @@ bool CanUnserializeString_EAngle(const tstring& sData)
 
 const EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
 
 	TAssert(asTokens.size() == 3);
@@ -1916,7 +1917,7 @@ const EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName
 
 bool CanUnserializeString_AABB(const tstring& sData)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
 
 	return asTokens.size() == 6;
@@ -1924,7 +1925,7 @@ bool CanUnserializeString_AABB(const tstring& sData)
 
 const AABB UnserializeString_AABB(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
 
 	TAssert(asTokens.size() == 6);
@@ -1939,7 +1940,7 @@ const AABB UnserializeString_AABB(const tstring& sData, const tstring& sName, co
 
 bool CanUnserializeString_Matrix4x4(const tstring& sData)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
 
 	return asTokens.size() == 6;
@@ -1947,7 +1948,7 @@ bool CanUnserializeString_Matrix4x4(const tstring& sData)
 
 const Matrix4x4 UnserializeString_Matrix4x4(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
 
 	TAssert(asTokens.size() == 6);
@@ -2210,7 +2211,7 @@ void UnserializeString_Matrix4x4(const tstring& sData, CSaveData* pSaveData, CBa
 
 void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
 
 	TAssert(asTokens.size() == 6);
@@ -2317,7 +2318,7 @@ void UnserializeString_LocalOrigin(const tstring& sData, CSaveData* pSaveData, C
 
 void UnserializeString_LocalAngles(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
 
 	TAssert(asTokens.size() == 3);

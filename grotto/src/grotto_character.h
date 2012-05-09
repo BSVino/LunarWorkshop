@@ -51,5 +51,5 @@ protected:
 	Matrix4x4					m_mVerticalReflection;	// For rendering
 	CEntityHandle<CMirror>		m_hMirrorInside;
 
-	eastl::vector<CEntityHandle<CDepthTransitionArea>>	m_ahTouchingDepthTransitionArea;
+	tvector<CEntityHandle<CDepthTransitionArea>>	m_ahTouchingDepthTransitionArea;
 };

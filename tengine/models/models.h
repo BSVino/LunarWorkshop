@@ -1,9 +1,9 @@
 #ifndef DT_MODELS_H
 #define DT_MODELS_H
 
-#include <EASTL/vector.h>
 #include <EASTL/string.h>
 
+#include <tvector.h>
 #include <color.h>
 #include <geometry.h>
 #include <tstring.h>
@@ -34,9 +34,9 @@ public:
 	tstring					m_sFilename;
 	CToy*					m_pToy;
 
-	eastl::vector<CMaterialHandle>	m_ahMaterials;
-	eastl::vector<size_t>	m_aiVertexBuffers;
-	eastl::vector<size_t>	m_aiVertexBufferSizes;	// How many vertices in this vertex buffer?
+	tvector<CMaterialHandle>	m_ahMaterials;
+	tvector<size_t>			m_aiVertexBuffers;
+	tvector<size_t>			m_aiVertexBufferSizes;	// How many vertices in this vertex buffer?
 
 	AABB					m_aabbBoundingBox;
 };
@@ -65,7 +65,7 @@ public:
 	static CModelLibrary*	Get() { return s_pModelLibrary; };
 
 protected:
-	eastl::vector<CModel*>	m_apModels;
+	tvector<CModel*>		m_apModels;
 	size_t					m_iModelsLoaded;
 
 private:

@@ -2,6 +2,7 @@
 
 #include <tinker_platform.h>
 #include <files.h>
+#include <tvector.h>
 
 #include <tinker/cvar.h>
 #include <glgui/rootpanel.h>
@@ -121,7 +122,7 @@ void CWorkbench::SetActiveTool(int iTool)
 
 void CWorkbench::MenuSelectedCallback(const tstring& sArgs)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	strtok(sArgs, asTokens);
 
 	if (!asTokens.size())

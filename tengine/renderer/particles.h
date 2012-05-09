@@ -1,7 +1,7 @@
 #ifndef DT_PARTICLES_H
 #define DT_PARTICLES_H
 
-#include <EASTL/vector.h>
+#include <tvector.h>
 #include <vector.h>
 #include <color.h>
 #include <geometry.h>
@@ -59,7 +59,7 @@ public:
 
 protected:
 	CParticleSystem*				m_pSystem;
-	eastl::vector<CSystemInstance*>	m_apChildren;
+	tvector<CSystemInstance*>		m_apChildren;
 
 	Vector							m_vecOrigin;
 	Vector							m_vecInheritedVelocity;
@@ -68,7 +68,7 @@ protected:
 
 	bool							m_bStopped;
 
-	eastl::vector<CParticle>		m_aParticles;
+	tvector<CParticle>				m_aParticles;
 	size_t							m_iNumParticlesAlive;
 
 	double							m_flLastEmission;
@@ -212,7 +212,7 @@ protected:
 	bool							m_bRandomModelRoll;
 	bool							m_bRandomAngleVelocity;
 
-	eastl::vector<size_t>			m_aiChildren;
+	tvector<size_t>					m_aiChildren;
 };
 
 class CParticleSystemLibrary
@@ -256,7 +256,7 @@ private:
 	static void						InitSystems();
 
 protected:
-	eastl::vector<CParticleSystem*>	m_apParticleSystems;
+	tvector<CParticleSystem*>		m_apParticleSystems;
 	size_t							m_iParticleSystemsLoaded;
 	eastl::map<size_t, CSystemInstance*>	m_apInstances;
 	size_t							m_iSystemInstanceIndex;

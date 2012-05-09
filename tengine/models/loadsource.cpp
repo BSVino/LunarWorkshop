@@ -11,9 +11,9 @@
 #include <tinker/application.h>
 #include <datamanager/data.h>
 
-eastl::vector<tstring>					g_asTextures;
-eastl::vector<eastl::vector<float> >	g_aaflData;
-AABB									g_aabbBounds;
+tvector<tstring>			g_asTextures;
+tvector<tvector<float> >	g_aaflData;
+AABB						g_aabbBounds;
 
 void AddVertex(size_t iMaterial, const Vector& v, const Vector2D& vt)
 {

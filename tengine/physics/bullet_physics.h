@@ -47,8 +47,8 @@ public:
 
 public:
 	btRigidBody*						m_pRigidBody;
-	eastl::vector<btRigidBody*>			m_apAreaBodies;
-	eastl::vector<btRigidBody*>			m_apPhysicsShapes;
+	tvector<btRigidBody*>				m_apAreaBodies;
+	tvector<btRigidBody*>				m_apPhysicsShapes;
 	class btPairCachingGhostObject*		m_pGhostObject;
 	CCharacterController*				m_pCharacterController;
 	CTriggerController*					m_pTriggerController;
@@ -95,7 +95,7 @@ public:
 	virtual CPhysicsEntity*	GetPhysicsEntity(class CBaseEntity* pEnt);
 
 protected:
-	eastl::vector<CPhysicsEntity>			m_aEntityList;
+	tvector<CPhysicsEntity>					m_aEntityList;
 
 	btDefaultCollisionConfiguration*		m_pCollisionConfiguration;
 	btCollisionDispatcher*					m_pDispatcher;

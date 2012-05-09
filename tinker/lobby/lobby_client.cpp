@@ -64,7 +64,7 @@ SERVER_COMMAND(CONNECTION_LOBBY, BeginGame)
 }
 
 bool CGameLobbyClient::s_bInLobby = false;
-eastl::vector<CLobbyPlayer> CGameLobbyClient::s_aClients;
+tvector<CLobbyPlayer> CGameLobbyClient::s_aClients;
 eastl::map<tstring, tstring> CGameLobbyClient::s_asInfo;
 INetworkListener::Callback CGameLobbyClient::s_pfnLobbyUpdateCallback = NULL;
 INetworkListener::Callback CGameLobbyClient::s_pfnLobbyJoinCallback = NULL;

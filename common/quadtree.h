@@ -1,8 +1,7 @@
 #ifndef LW_QUADTREE_H
 #define LW_QUADTREE_H
 
-#include <EASTL/vector.h>
-
+#include <tvector.h>
 #include <vector.h>
 
 template <class T, typename F> class CQuadTree;
@@ -54,7 +53,7 @@ public:
 	void						BuildBranch(bool bAndChildren = true);
 
 	void						InitPathfinding();
-	void						FindNeighbors(const CQuadTreeBranch<T, F>* pLeaf, eastl::vector<CQuadTreeBranch<T, F>*>& apNeighbors);
+	void						FindNeighbors(const CQuadTreeBranch<T, F>* pLeaf, tvector<CQuadTreeBranch<T, F>*>& apNeighbors);
 	CQuadTreeBranch<T, F>*		FindLeaf(const TemplateVector<F>& vecPoint);
 	void						SetGScore(float flGScore);
 	float						GetFScore();
@@ -123,7 +122,7 @@ public:
 	void						Init(CQuadTreeDataSource<T, F>* pSource, const T& oData);
 
 	class CQuadTreeBranch<T, F>*FindLeaf(const TemplateVector<F>& vecPoint);
-	void						FindNeighbors(const CQuadTreeBranch<T, F>* pLeaf, eastl::vector<CQuadTreeBranch<T, F>*>& apNeighbors);
+	void						FindNeighbors(const CQuadTreeBranch<T, F>* pLeaf, tvector<CQuadTreeBranch<T, F>*>& apNeighbors);
 
 protected:
 	CQuadTreeDataSource<T, F>*	m_pDataSource;
@@ -199,7 +198,7 @@ CQuadTreeBranch<T, F>* CQuadTree<T, F>::FindLeaf(const TemplateVector<F>& vecPoi
 }
 
 template <class T, typename F>
-void CQuadTree<T, F>::FindNeighbors(const CQuadTreeBranch<T, F>* pLeaf, eastl::vector<CQuadTreeBranch<T, F>*>& apNeighbors)
+void CQuadTree<T, F>::FindNeighbors(const CQuadTreeBranch<T, F>* pLeaf, tvector<CQuadTreeBranch<T, F>*>& apNeighbors)
 {
 	if (!pLeaf)
 		return;
@@ -265,7 +264,7 @@ void CQuadTreeBranch<T, F>::InitPathfinding()
 }
 
 template <class T, typename F>
-void CQuadTreeBranch<T, F>::FindNeighbors(const CQuadTreeBranch<T, F>* pLeaf, eastl::vector<CQuadTreeBranch<T, F>*>& apNeighbors)
+void CQuadTreeBranch<T, F>::FindNeighbors(const CQuadTreeBranch<T, F>* pLeaf, tvector<CQuadTreeBranch<T, F>*>& apNeighbors)
 {
 	if (!pLeaf)
 		return;

@@ -44,7 +44,7 @@ protected:
 	mirror_t			m_eMirrorType;
 	size_t				m_iBuffer;
 
-	static eastl::vector<CEntityHandle<CMirror> >	m_ahMirrors;
+	static tvector<CEntityHandle<CMirror> >	m_ahMirrors;
 };
 
 #endif

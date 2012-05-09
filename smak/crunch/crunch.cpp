@@ -16,7 +16,7 @@
 #include "ui/modelwindow.h"
 #endif
 
-CTexelGenerator::CTexelGenerator(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+CTexelGenerator::CTexelGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
 {
 	m_pScene = pScene;
 	m_paoMaterials = paoMaterials;
@@ -54,7 +54,7 @@ void CTexelGenerator::SetSize(size_t iWidth, size_t iHeight)
 		m_apMethods[i]->SetSize(iWidth, iHeight);
 }
 
-void CTexelGenerator::SetModels(const eastl::vector<CConversionMeshInstance*>& apHiRes, const eastl::vector<CConversionMeshInstance*>& apLoRes)
+void CTexelGenerator::SetModels(const tvector<CConversionMeshInstance*>& apHiRes, const tvector<CConversionMeshInstance*>& apLoRes)
 {
 	m_apLoRes = apLoRes;
 	m_apHiRes = apHiRes;
@@ -160,8 +160,8 @@ void CTexelGenerator::Generate()
 
 	size_t iRendered = 0;
 
-	eastl::vector<Vector> avecPoints;
-	eastl::vector<size_t> aiPoints;
+	tvector<Vector> avecPoints;
+	tvector<size_t> aiPoints;
 
 	for (size_t i = 0; i < m_apLoRes.size(); i++)
 	{
@@ -568,7 +568,7 @@ void CTexelDiffuseMethod::SetSize(size_t iWidth, size_t iHeight)
 
 void CTexelDiffuseMethod::PreGenerate()
 {
-	const eastl::vector<CConversionMeshInstance*>& apHiRes = m_pGenerator->GetHiResMeshInstances();
+	const tvector<CConversionMeshInstance*>& apHiRes = m_pGenerator->GetHiResMeshInstances();
 
 	m_aiTextures.resize(m_pGenerator->GetScene()->GetNumMaterials());
 	for (size_t i = 0; i < m_aiTextures.size(); i++)
@@ -1378,7 +1378,7 @@ void CTexelNormalMethod::SaveToFile(const tstring& sFilename)
 {
 	tstring sRealFilename = sFilename.substr(0, sFilename.length()-4) + "-" + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
 
-	eastl::vector<bool> abMaterialSaved((bool)false);
+	tvector<bool> abMaterialSaved((bool)false);
 	abMaterialSaved.resize(m_pGenerator->GetScene()->GetNumMaterials());
 
 	for (size_t i = 0; i < m_pGenerator->GetLoResMeshInstances().size(); i++)

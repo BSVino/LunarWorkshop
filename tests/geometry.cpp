@@ -3,6 +3,7 @@
 #include <common.h>
 #include <tstring.h>
 #include <mesh.h>
+#include <tvector.h>
 
 #include <tinker/shell.h>
 
@@ -10,7 +11,7 @@ void test_mesh()
 {
 	{
 		// Triangular base
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, 0));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
@@ -24,7 +25,7 @@ void test_mesh()
 
 	{
 		// Square base
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
@@ -39,7 +40,7 @@ void test_mesh()
 
 	{
 		// Extra vert on the inside
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
@@ -55,7 +56,7 @@ void test_mesh()
 
 	{
 		// Adding an extra vert
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
@@ -71,12 +72,12 @@ void test_mesh()
 
 	{
 		// Single tri. Nothing to remove.
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(0);
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(2);
@@ -91,13 +92,13 @@ void test_mesh()
 
 	{
 		// Single quad. Nothing to remove.
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
 		avecPoints.push_back(Vector(-1, -1, 1));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(0);
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(2);
@@ -119,14 +120,14 @@ void test_mesh()
 
 	{
 		// Three tri strip. Nothing to remove.
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
 		avecPoints.push_back(Vector(-1, -1, 1));
 		avecPoints.push_back(Vector(-1, -1, 2));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(0);
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(2);
@@ -152,7 +153,7 @@ void test_mesh()
 
 	{
 		// Four tri strip. Nothing to remove.
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
@@ -160,7 +161,7 @@ void test_mesh()
 		avecPoints.push_back(Vector(-1, -1, 2));
 		avecPoints.push_back(Vector(1, -1, 2));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(0);
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(2);
@@ -190,7 +191,7 @@ void test_mesh()
 
 	{
 		// Four tri fan, not continuous. Nothing to remove.
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
@@ -198,7 +199,7 @@ void test_mesh()
 		avecPoints.push_back(Vector(-1, -1, 2));
 		avecPoints.push_back(Vector(1, -1, 2));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(3);
 		aiTriangles.push_back(0);
 		aiTriangles.push_back(1);
@@ -228,13 +229,13 @@ void test_mesh()
 
 	{
 		// Three tris, one removable coplanar point #1 (Removable point third in winding)
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(0, -1, 1));
 		avecPoints.push_back(Vector(0, -1, 0));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(0);
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(3);
@@ -260,13 +261,13 @@ void test_mesh()
 
 	{
 		// Three tris, one removable coplanar point #2 (Removable point first in winding)
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(0, -1, 1));
 		avecPoints.push_back(Vector(0, -1, 0));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(3);
 		aiTriangles.push_back(0);
 		aiTriangles.push_back(1);
@@ -292,13 +293,13 @@ void test_mesh()
 
 	{
 		// Three tris, one removable coplanar point #3 (Removable point second in winding)
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(0, -1, 1));
 		avecPoints.push_back(Vector(0, -1, 0));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(3);
 		aiTriangles.push_back(0);
@@ -324,13 +325,13 @@ void test_mesh()
 
 	{
 		// Three tris, one removable coplanar point #4 (Removable point altenating in winding)
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(0, -1, 1));
 		avecPoints.push_back(Vector(0, -1, 0));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(3);
 		aiTriangles.push_back(0);
@@ -356,14 +357,14 @@ void test_mesh()
 
 	{
 		// One removable coplanar point
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
 		avecPoints.push_back(Vector(-1, -1, 1));
 		avecPoints.push_back(Vector(0, -1, 0));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(0);
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(4);
@@ -393,14 +394,14 @@ void test_mesh()
 
 	{
 		// One non-coplanar point, none removable
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
 		avecPoints.push_back(Vector(-1, -1, 1));
 		avecPoints.push_back(Vector(0, 1, 0));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(0);
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(2);
@@ -438,7 +439,7 @@ void test_mesh()
 
 	{
 		// One coplanar and one non coplanar point, one removable
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
@@ -446,7 +447,7 @@ void test_mesh()
 		avecPoints.push_back(Vector(0, -1, 0));
 		avecPoints.push_back(Vector(0, 1, 0));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(0);
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(4);
@@ -492,14 +493,14 @@ void test_mesh()
 
 	{
 		// Five tris, two removable coplanar points
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(0, -1, 1));
 		avecPoints.push_back(Vector(0, -1, 0));
 		avecPoints.push_back(Vector(0, -1, 0.5f));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(3);
 		aiTriangles.push_back(0);
@@ -533,13 +534,13 @@ void test_mesh()
 
 	{
 		// One unused vertex
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
 		avecPoints.push_back(Vector(0, -1, 0));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(0);
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(2);
@@ -558,13 +559,13 @@ void test_mesh()
 
 	{
 		// One unused vertex
-		eastl::vector<Vector> avecPoints;
+		tvector<Vector> avecPoints;
 		avecPoints.push_back(Vector(-1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, -1));
 		avecPoints.push_back(Vector(1, -1, 1));
 		avecPoints.push_back(Vector(0, -1, 0));
 
-		eastl::vector<size_t> aiTriangles;
+		tvector<size_t> aiTriangles;
 		aiTriangles.push_back(1);
 		aiTriangles.push_back(2);
 		aiTriangles.push_back(3);

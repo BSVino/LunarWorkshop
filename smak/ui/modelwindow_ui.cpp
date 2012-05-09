@@ -661,7 +661,7 @@ void CMovablePanel::MinimizeWindowCallback(const tstring& sArgs)
 CAOPanel* CAOPanel::s_pAOPanel = NULL;
 CAOPanel* CAOPanel::s_pColorAOPanel = NULL;
 
-CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
 	: CMovablePanel(bColor?"Color AO generator":"AO generator"), m_oGenerator(pScene, paoMaterials)
 {
 	m_bColor = bColor;
@@ -1117,7 +1117,7 @@ void CAOPanel::FindBestRayFalloff()
 		m_pFalloffSelector->SetSelection(m_pFalloffSelector->FindClosestSelectionValue(m_pScene->m_oExtends.Size().Length()/2));
 }
 
-void CAOPanel::Open(bool bColor, CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+void CAOPanel::Open(bool bColor, CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
 {
 	CAOPanel* pPanel = Get(bColor);
 
@@ -1216,7 +1216,7 @@ void COptionsButton::COptionsPanel::Paint(float x, float y, float w, float h)
 
 CComboGeneratorPanel* CComboGeneratorPanel::s_pComboGeneratorPanel = NULL;
 
-CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
 	: CMovablePanel("Combo map generator"), m_oGenerator(pScene, paoMaterials)
 {
 	m_pScene = pScene;
@@ -1976,7 +1976,7 @@ void CComboGeneratorPanel::DroppedHiResMeshCallback(const tstring& sArgs)
 	Layout();
 }
 
-void CComboGeneratorPanel::Open(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+void CComboGeneratorPanel::Open(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
 {
 	CComboGeneratorPanel* pPanel = s_pComboGeneratorPanel;
 
@@ -2004,7 +2004,7 @@ void CComboGeneratorPanel::SetVisible(bool bVisible)
 
 CNormalPanel* CNormalPanel::s_pNormalPanel = NULL;
 
-CNormalPanel::CNormalPanel(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+CNormalPanel::CNormalPanel(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
 	: CMovablePanel("Normal map generator"), m_oGenerator(pScene, paoMaterials)
 {
 	m_pScene = pScene;
@@ -2350,7 +2350,7 @@ void CNormalPanel::UpdateNormal2Callback(const tstring& sArgs)
 	m_oGenerator.UpdateNormal2();
 }
 
-void CNormalPanel::Open(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+void CNormalPanel::Open(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
 {
 	CNormalPanel* pPanel = s_pNormalPanel;
 

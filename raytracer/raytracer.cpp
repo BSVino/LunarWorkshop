@@ -140,7 +140,7 @@ void CRaytracer::AddMeshInstance(CConversionMeshInstance* pMeshInstance)
 	if (!m_pTree)
 		m_pTree = new CKDTree(m_iMaxDepth);
 
-	eastl::vector<Vector> avecPoints;
+	tvector<Vector> avecPoints;
 
 	size_t iFaces = pMeshInstance->GetMesh()->GetNumFaces();
 
@@ -773,7 +773,7 @@ float CKDNode::Closest(const Vector& vecPoint)
 	{
 		CKDTri oTri = m_aTris[i];
 
-		eastl::vector<Vector> avecTri;
+		tvector<Vector> avecTri;
 		avecTri.push_back(oTri.v[0]);
 		avecTri.push_back(oTri.v[1]);
 		avecTri.push_back(oTri.v[2]);

@@ -30,7 +30,7 @@ public:
 	virtual bool	ShouldRenderPhysicsDebug() const;
 
 protected:
-	eastl::vector<CFrameBuffer>	m_aoReflectionBuffers;
+	tvector<CFrameBuffer>		m_aoReflectionBuffers;
 
 	bool						m_bRenderingReflection;
 };

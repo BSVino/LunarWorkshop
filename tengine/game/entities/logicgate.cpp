@@ -36,7 +36,7 @@ void CLogicGate::Spawn()
 	m_bXOr = false;
 }
 
-void CLogicGate::InputLeft(const eastl::vector<tstring>& sArgs)
+void CLogicGate::InputLeft(const tvector<tstring>& sArgs)
 {
 	TAssert(sArgs.size() == 1);
 
@@ -57,7 +57,7 @@ void CLogicGate::InputLeft(const eastl::vector<tstring>& sArgs)
 	SetXOrGate(m_bLeft ^ m_bRight);
 }
 
-void CLogicGate::InputRight(const eastl::vector<tstring>& sArgs)
+void CLogicGate::InputRight(const tvector<tstring>& sArgs)
 {
 	TAssert(sArgs.size() == 1);
 

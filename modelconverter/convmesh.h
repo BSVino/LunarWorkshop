@@ -1,10 +1,10 @@
 #ifndef LW_CONVMESH_H
 #define LW_CONVMESH_H
 
-#include <EASTL/vector.h>
 #include <EASTL/map.h>
 #include <EASTL/string.h>
 
+#include <tvector.h>
 #include <worklistener.h>
 #include <vector.h>
 #include <matrix.h>
@@ -29,7 +29,7 @@ public:
 	size_t							vt;	// Tangent
 	size_t							vb;	// Bitangent
 
-	eastl::vector<size_t>			m_aEdges;	// Index into parent's edge list
+	tvector<size_t>					m_aEdges;	// Index into parent's edge list
 };
 
 class CConversionFace
@@ -42,8 +42,8 @@ public:
 	float							GetArea();
 	float							GetUVArea();
 
-	void							FindAdjacentFaces(eastl::vector<size_t>& aResult, size_t iVert = (size_t)~0, bool bIgnoreCreased = false);
-	void							FindAdjacentFacesInternal(eastl::vector<size_t>& aResult, size_t iVert, bool bIgnoreCreased);
+	void							FindAdjacentFaces(tvector<size_t>& aResult, size_t iVert = (size_t)~0, bool bIgnoreCreased = false);
+	void							FindAdjacentFacesInternal(tvector<size_t>& aResult, size_t iVert, bool bIgnoreCreased);
 
 	size_t							GetNumVertices() { return m_aVertices.size(); }
 	CConversionVertex*				GetVertex(size_t i) { return &m_aVertices[i]; }
@@ -53,7 +53,7 @@ public:
 	size_t							GetEdge(size_t i) { return m_aEdges[i]; }
 	bool							HasEdge(size_t i);
 
-	eastl::vector<Vector>&			GetVertices(eastl::vector<Vector>& avecVertices);
+	tvector<Vector>&				GetVertices(tvector<Vector>& avecVertices);
 
 	Vector							GetBaseVector(Vector vecPoint, int iVector, class CConversionMeshInstance* pMeshInstance = NULL);
 	Vector							GetTangent(Vector vecPoint, class CConversionMeshInstance* pMeshInstance = NULL);
@@ -64,8 +64,8 @@ public:
 	size_t							m_iMesh;
 	size_t							m_iFaceIndex;
 
-	eastl::vector<CConversionVertex>	m_aVertices;
-	eastl::vector<size_t>			m_aEdges;	// Index into parent's vertex edge list
+	tvector<CConversionVertex>		m_aVertices;
+	tvector<size_t>					m_aEdges;	// Index into parent's vertex edge list
 
 	size_t							m;
 
@@ -88,7 +88,7 @@ public:
 	size_t							v1, v2;
 	bool							m_bCreased;
 
-	eastl::vector<size_t>			m_aiFaces;	// Index into parent's face list
+	tvector<size_t>					m_aiFaces;	// Index into parent's face list
 };
 
 class CConversionBone
@@ -224,18 +224,18 @@ public:
 	class CConversionScene*			m_pScene;
 
 	// A vector of Vectors? Holy crap!
-	eastl::vector<Vector>			m_aVertices;
-	eastl::vector<Vector>			m_aNormals;
-	eastl::vector<Vector>			m_aTangents;
-	eastl::vector<Vector>			m_aBitangents;	// Binormals can kiss my ass.
-	eastl::vector<Vector>			m_aUVs;		// Really don't feel like making a 2d vector just for this.
-	eastl::vector<CConversionBone>	m_aBones;
-	eastl::vector<CConversionEdge>	m_aEdges;
-	eastl::vector<CConversionFace>	m_aFaces;
+	tvector<Vector>					m_aVertices;
+	tvector<Vector>					m_aNormals;
+	tvector<Vector>					m_aTangents;
+	tvector<Vector>					m_aBitangents;	// Binormals can kiss my ass.
+	tvector<Vector>					m_aUVs;		// Really don't feel like making a 2d vector just for this.
+	tvector<CConversionBone>		m_aBones;
+	tvector<CConversionEdge>		m_aEdges;
+	tvector<CConversionFace>		m_aFaces;
 
-	eastl::vector<eastl::vector<size_t> >	m_aaVertexFaceMap;
+	tvector<tvector<size_t> >		m_aaVertexFaceMap;
 
-	eastl::vector<CConversionMaterialStub>	m_aMaterialStubs;
+	tvector<CConversionMaterialStub>	m_aMaterialStubs;
 
 	AABB							m_oExtends;
 
@@ -328,9 +328,9 @@ public:
 	CConversionScene*					m_pScene;
 	CConversionSceneNode*				m_pParent;
 
-	eastl::vector<CConversionSceneNode*>	m_apChildren;
+	tvector<CConversionSceneNode*>		m_apChildren;
 
-	eastl::vector<CConversionMeshInstance>	m_aMeshInstances;
+	tvector<CConversionMeshInstance>	m_aMeshInstances;
 
 	Matrix4x4							m_mTransformations;
 
@@ -382,10 +382,10 @@ public:
 
 	void								SetWorkListener(IWorkListener* pWorkListener) { m_pWorkListener = pWorkListener; }
 
-	eastl::vector<CConversionMesh>		m_aMeshes;
-	eastl::vector<CConversionMaterial>	m_aMaterials;
+	tvector<CConversionMesh>			m_aMeshes;
+	tvector<CConversionMaterial>		m_aMaterials;
 
-	eastl::vector<CConversionSceneNode*>	m_apScenes;
+	tvector<CConversionSceneNode*>		m_apScenes;
 
 	AABB								m_oExtends;
 

@@ -2,7 +2,7 @@
 #define TINKER_RENDERER_H
 
 #include <EASTL/map.h>
-#include <EASTL/vector.h>
+#include <tvector.h>
 
 #include <tstring.h>
 #include <vector.h>

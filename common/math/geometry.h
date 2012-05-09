@@ -4,7 +4,7 @@
 #include "../common.h"
 #include "../tstring.h"
 #include "vector.h"
-#include <EASTL/vector.h>
+#include <tvector.h>
 
 template <class T>
 class TRect
@@ -334,7 +334,7 @@ inline float DistanceToPlane(const Vector& p, const Vector& v, const Vector& n)
 	return (p - b).Length();
 }
 
-inline float DistanceToPolygon(const Vector& p, eastl::vector<Vector>& v, Vector n)
+inline float DistanceToPolygon(const Vector& p, tvector<Vector>& v, Vector n)
 {
 	float flPlaneDistance = DistanceToPlane(p, v[0], n);
 
@@ -796,7 +796,7 @@ inline bool	TriangleIntersectsAABB(const AABB& oBox, const Vector& v0, const Vec
 	return false;
 }
 
-inline bool	ConvexHullIntersectsAABB(const AABB& oBox, const eastl::vector<Vector>& avecPoints, const eastl::vector<size_t>& aiTriangles)
+inline bool	ConvexHullIntersectsAABB(const AABB& oBox, const tvector<Vector>& avecPoints, const tvector<size_t>& aiTriangles)
 {
 	TAssertNoMsg(aiTriangles.size()%3 == 0);
 
@@ -821,7 +821,7 @@ inline bool	ConvexHullIntersectsAABB(const AABB& oBox, const eastl::vector<Vecto
 	return true;
 }
 
-inline size_t FindEar(const eastl::vector<Vector>& avecPoints)
+inline size_t FindEar(const tvector<Vector>& avecPoints)
 {
 	size_t iPoints = avecPoints.size();
 

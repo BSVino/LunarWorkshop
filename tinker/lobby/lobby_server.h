@@ -1,7 +1,7 @@
 #ifndef _TINKER_LOBBY_SERVER_H
 #define _TINKER_LOBBY_SERVER_H
 
-#include <EASTL/vector.h>
+#include <tvector.h>
 
 #include "lobby.h"
 
@@ -35,7 +35,7 @@ public:
 protected:
 	bool								m_bActive;
 	size_t								m_iLobbyID;
-	eastl::vector<CLobbyPlayer>			m_aClients;
+	tvector<CLobbyPlayer>				m_aClients;
 	eastl::map<tstring, tstring> m_asInfo;
 };
 
@@ -77,7 +77,7 @@ public:
 	static size_t						GetNextPlayerID();
 
 protected:
-	static eastl::vector<CGameLobby>	s_aLobbies;
+	static tvector<CGameLobby>			s_aLobbies;
 	static eastl::map<size_t, size_t>	s_aiPlayerLobbies;
 	static eastl::map<size_t, size_t>	s_aiClientPlayerIDs;
 	static ILobbyListener*				s_pListener;

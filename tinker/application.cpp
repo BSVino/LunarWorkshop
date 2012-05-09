@@ -9,6 +9,8 @@
 #include <strutils.h>
 #include <tinker_platform.h>
 #include <mtrand.h>
+#include <tvector.h>
+
 #include <tinker/keys.h>
 #include <tinker/portals/portal.h>
 #include <tinker/cvar.h>
@@ -234,7 +236,7 @@ void CApplication::DumpGLInfo()
 	eastl::string sExtensions;
 	if (pszExtensions)
 		sExtensions = pszExtensions;
-	eastl::vector<eastl::string> asExtensions;
+	tvector<eastl::string> asExtensions;
 	strtok(sExtensions, asExtensions);
 	o << "Extensions:" << std::endl;
 	for (size_t i = 0; i < asExtensions.size(); i++)
@@ -326,7 +328,7 @@ bool CApplication::IsOpen()
 	return !!glfwIsWindow((GLFWwindow)m_pWindow) && m_bIsOpen;
 }
 
-void Quit(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+void Quit(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	CApplication::Get()->Close();
 }
@@ -704,12 +706,12 @@ public:
 
 public:
 	bool					m_bPresent;
-	eastl::vector<float>	m_aflAxis;
+	tvector<float>			m_aflAxis;
 	unsigned char			m_iButtons;
 	unsigned long long		m_aiButtonStates;
 };
 
-static eastl::vector<CJoystick> g_aJoysticks;
+static tvector<CJoystick> g_aJoysticks;
 static const size_t MAX_JOYSTICKS = 16; // This is how many GLFW supports.
 
 void CApplication::InitJoystickInput()
@@ -746,7 +748,7 @@ void CApplication::ProcessJoystickInput()
 		if (!oJoystick.m_bPresent)
 			continue;
 
-		static eastl::vector<float> aflAxis;
+		static tvector<float> aflAxis;
 		aflAxis.resize(oJoystick.m_aflAxis.size());
 		glfwGetJoystickPos(i, &aflAxis[0], oJoystick.m_aflAxis.size());
 
@@ -758,7 +760,7 @@ void CApplication::ProcessJoystickInput()
 
 		oJoystick.m_aflAxis = aflAxis;
 
-		static eastl::vector<unsigned char> aiButtons;
+		static tvector<unsigned char> aiButtons;
 		aiButtons.resize(oJoystick.m_iButtons);
 		glfwGetJoystickButtons(i, &aiButtons[0], oJoystick.m_iButtons);
 

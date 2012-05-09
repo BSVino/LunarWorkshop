@@ -107,7 +107,7 @@ public:
 		return dynamic_cast<T*>(Create(pszEntityName).GetPointer());
 	}
 
-	void										DestroyAllEntities(const eastl::vector<eastl::string>& asSpare = eastl::vector<eastl::string>(), bool bRemakeGame = false);
+	void										DestroyAllEntities(const tvector<eastl::string>& asSpare = tvector<eastl::string>(), bool bRemakeGame = false);
 
 	NET_CALLBACK(CGameServer,					UpdateValue);
 	NET_CALLBACK(CGameServer,					ClientInfo);
@@ -137,7 +137,7 @@ protected:
 
 	tstring										m_sNickname;
 
-	eastl::vector<CEntityHandle<CBaseEntity> >	m_ahDeletedEntities;
+	tvector<CEntityHandle<CBaseEntity> >		m_ahDeletedEntities;
 
 	static CGameServer*							s_pGameServer;
 
@@ -165,7 +165,7 @@ protected:
 
 	bool										m_bHalting;
 
-	eastl::vector<CResource<CLevel>>			m_apLevels;
+	tvector<CResource<CLevel>>					m_apLevels;
 
 	size_t										m_iMaxEnts;
 

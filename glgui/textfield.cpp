@@ -425,7 +425,7 @@ void CTextField::ClearAutoCompleteCommands()
 	m_asAutoCompleteCommands.clear();
 }
 
-void CTextField::SetAutoCompleteCommands(const eastl::vector<tstring>& asCommands, bool bSlashInsensitive)
+void CTextField::SetAutoCompleteCommands(const tvector<tstring>& asCommands, bool bSlashInsensitive)
 {
 	m_bSlashInsensitive = bSlashInsensitive;
 
@@ -451,7 +451,7 @@ void CTextField::SetAutoCompleteCommands(const eastl::vector<tstring>& asCommand
 	m_iAutoComplete = -1;
 }
 
-void CTextField::SetAutoCompleteFiles(const tstring& sBaseDirectory, const eastl::vector<tstring>& asExtensions, const eastl::vector<tstring>& asExtensionsExclude)
+void CTextField::SetAutoCompleteFiles(const tstring& sBaseDirectory, const tvector<tstring>& asExtensions, const tvector<tstring>& asExtensionsExclude)
 {
 	tstring sSourceFolder = FindAbsolutePath(sBaseDirectory);
 	tstring sInputFolder = FindAbsolutePath(sBaseDirectory + "/" + GetText());
@@ -473,8 +473,8 @@ void CTextField::SetAutoCompleteFiles(const tstring& sBaseDirectory, const eastl
 	if (sPrefix.length())
 		sPrefix = sPrefix + '/';
 
-	eastl::vector<tstring> asFiles = ListDirectory(sSearchDirectory);
-	eastl::vector<tstring> asCompletions;
+	tvector<tstring> asFiles = ListDirectory(sSearchDirectory);
+	tvector<tstring> asCompletions;
 
 	for (size_t i = 0; i < asFiles.size(); i++)
 	{

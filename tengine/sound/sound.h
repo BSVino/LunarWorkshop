@@ -1,9 +1,10 @@
 #ifndef DT_SOUND_H
 #define DT_SOUND_H
 
-#include <EASTL/vector.h>
 #include <EASTL/map.h>
 #include <EASTL/string.h>
+
+#include <tvector.h>
 
 #include <game/entities/baseentity.h>
 
@@ -63,7 +64,7 @@ protected:
 		float flVolume;
 	};
 
-	eastl::vector<CSound*>	m_apSounds;
+	tvector<CSound*>		m_apSounds;
 	size_t					m_iSoundsLoaded;
 	eastl::map<CBaseEntity*, eastl::map<tstring, CSoundInstance> >	m_aiActiveSounds;
 

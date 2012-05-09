@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <EASTL/vector.h>
+#include <tvector.h>
 
 #include <network/replication.h>
 #include <game/gameserver.h>
@@ -45,7 +45,7 @@ public:
 	CPlayer*									GetPlayer(size_t i) const;
 	bool										IsTeamControlledByMe(const class CTeam* pTeam);
 
-	const eastl::vector<CEntityHandle<CPlayer> >&	GetLocalPlayers();
+	const tvector<CEntityHandle<CPlayer> >&		GetLocalPlayers();
 	size_t										GetNumLocalPlayers();
 	CPlayer*									GetLocalPlayer(size_t i);
 	CPlayer*									GetLocalPlayer();
@@ -57,7 +57,7 @@ public:
 protected:
 	CNetworkedSTLVector<CEntityHandle<CPlayer> >	m_ahPlayers;
 
-	eastl::vector<CEntityHandle<CPlayer> >		m_ahLocalPlayers;
+	tvector<CEntityHandle<CPlayer> >			m_ahLocalPlayers;
 };
 
 inline class CGame* Game()

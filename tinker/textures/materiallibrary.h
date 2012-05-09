@@ -57,8 +57,8 @@ public:
 		tstring		m_sValue;
 	};
 
-	eastl::vector<CParameter>		m_aParameters;
-	eastl::vector<CTextureHandle>	m_ahTextures;
+	tvector<CParameter>		m_aParameters;
+	tvector<CTextureHandle>	m_ahTextures;
 };
 
 class CMaterialLibrary

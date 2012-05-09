@@ -2,6 +2,7 @@
 
 #include <tinker_platform.h>
 #include <files.h>
+#include <tvector.h>
 
 #include <tinker/cvar.h>
 #include <glgui/rootpanel.h>
@@ -228,8 +229,8 @@ void CEntityPropertiesPanel::Layout()
 
 void CEntityPropertiesPanel::ModelChangedCallback(const tstring& sArgs)
 {
-	eastl::vector<tstring> asExtensions;
-	eastl::vector<tstring> asExtensionsExclude;
+	tvector<tstring> asExtensions;
+	tvector<tstring> asExtensionsExclude;
 
 	asExtensions.push_back(".toy");
 	asExtensions.push_back(".mat");
@@ -250,14 +251,14 @@ void CEntityPropertiesPanel::TargetChangedCallback(const tstring& sArgs)
 	if (!pLevel)
 		return;
 
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sArgs, asTokens, "<>");
 
 	TAssert(asTokens.size() == 2);
 	if (asTokens.size() != 2)
 		return;
 
-	eastl::vector<tstring> asTargets;
+	tvector<tstring> asTargets;
 
 	for (size_t i = 0; i < pLevel->GetEntityData().size(); i++)
 	{
@@ -394,7 +395,7 @@ void CCreateEntityPanel::Layout()
 
 void CCreateEntityPanel::ChooseClassCallback(const tstring& sArgs)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	strtok(sArgs, asTokens);
 
 	m_pClass->SetText(asTokens[1]);
@@ -410,8 +411,8 @@ void CCreateEntityPanel::ModelChangedCallback(const tstring& sArgs)
 	if (!m_pModelText->GetText().length())
 		return;
 
-	eastl::vector<tstring> asExtensions;
-	eastl::vector<tstring> asExtensionsExclude;
+	tvector<tstring> asExtensions;
+	tvector<tstring> asExtensionsExclude;
 
 	asExtensions.push_back(".toy");
 	asExtensions.push_back(".mat");
@@ -813,7 +814,7 @@ void CEditorPanel::ChooseOutputCallback(const tstring& sArgs)
 	if (!pOutput)
 		return;
 
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sArgs, asTokens);
 	pOutput->m_sOutput = asTokens[1];
 	m_pOutput->SetText(pOutput->m_sOutput);
@@ -833,7 +834,7 @@ void CEditorPanel::TargetEntityChangedCallback(const tstring& sArgs)
 
 	pOutput->m_sTargetName = m_pOutputEntityNameText->GetText();
 
-	eastl::vector<tstring> asTargets;
+	tvector<tstring> asTargets;
 
 	for (size_t i = 0; i < pLevel->GetEntityData().size(); i++)
 	{
@@ -865,7 +866,7 @@ void CEditorPanel::ChooseInputCallback(const tstring& sArgs)
 	if (!pOutput)
 		return;
 
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sArgs, asTokens);
 	pOutput->m_sInput = asTokens[1];
 	m_pInput->SetText(pOutput->m_sInput);
@@ -1235,7 +1236,7 @@ void CLevelEditor::ManipulatorUpdated(const tstring& sArguments)
 	// Grab this before GetToyToModify since that does a layout and clobbers the list.
 	size_t iSelected = m_pEditorPanel->m_pEntities->GetSelectedNodeId();
 
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	strtok(sArguments, asTokens);
 	TAssert(asTokens.size() == 2);
 	TAssert(stoi(asTokens[1]) == iSelected);

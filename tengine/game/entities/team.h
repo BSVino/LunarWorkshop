@@ -4,7 +4,7 @@
 #include "baseentity.h"
 
 #include "color.h"
-#include <EASTL/vector.h>
+#include <tvector.h>
 
 class CTeam : public CBaseEntity
 {

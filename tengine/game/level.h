@@ -82,7 +82,7 @@ public:
 
 	const CMaterialHandle&				GetMaterialModel() { return m_hMaterialModel; }
 
-	eastl::vector<CLevelEntityOutput>&	GetOutputs() { return m_aOutputs; }
+	tvector<CLevelEntityOutput>&		GetOutputs() { return m_aOutputs; }
 
 	const tstring&						GetParameterValue(const tstring& sKey) const;
 	void								SetParameterValue(const tstring& sKey, const tstring& sValue);
@@ -127,7 +127,7 @@ private:
 	CCachedValue<AABB, CLevelEntity>		m_aabbBounds;
 	CCachedValue<tstring, CLevelEntity>		m_sName;
 
-	eastl::vector<CLevelEntityOutput>	m_aOutputs;
+	tvector<CLevelEntityOutput>			m_aOutputs;
 };
 
 class CLevel
@@ -149,8 +149,8 @@ public:
 	const tstring&			GetGameMode() { return m_sGameMode; }
 
 	void					CreateEntitiesFromData(const CData* pData);
-	eastl::vector<CLevelEntity>& GetEntityData() { return m_aLevelEntities; }
-	const eastl::vector<CLevelEntity>& GetEntityData() const { return m_aLevelEntities; }
+	tvector<CLevelEntity>&	GetEntityData() { return m_aLevelEntities; }
+	const tvector<CLevelEntity>& GetEntityData() const { return m_aLevelEntities; }
 
 protected:
 	tstring					m_sName;
@@ -158,7 +158,7 @@ protected:
 
 	tstring					m_sGameMode;
 
-	eastl::vector<CLevelEntity> m_aLevelEntities;
+	tvector<CLevelEntity>	m_aLevelEntities;
 };
 
 #endif

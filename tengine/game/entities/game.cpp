@@ -139,7 +139,7 @@ bool CGame::IsTeamControlledByMe(const CTeam* pTeam)
 	return false;
 }
 
-const eastl::vector<CEntityHandle<CPlayer> >& CGame::GetLocalPlayers()
+const tvector<CEntityHandle<CPlayer> >& CGame::GetLocalPlayers()
 {
 	if (m_ahLocalPlayers.size() == 0)
 	{

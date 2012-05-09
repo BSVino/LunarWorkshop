@@ -58,7 +58,7 @@ protected:
 	ENetHost*					m_pClient;
 	ENetPeer*					m_pClientPeer;
 	ENetHost*					m_pServer;
-	eastl::vector<CENetClientPeer>	m_aServerPeers;
+	tvector<CENetClientPeer>	m_aServerPeers;
 };
 
 SERVER_COMMAND(CONNECTION_UNDEFINED, SetClientID)
@@ -114,7 +114,7 @@ void CNetwork::Deinitialize()
 	s_bInitialized = false;
 }
 
-eastl::vector<CNetworkConnection*> g_apNetworkConnections;
+tvector<CNetworkConnection*> g_apNetworkConnections;
 
 size_t CNetwork::GetNumConnections()
 {

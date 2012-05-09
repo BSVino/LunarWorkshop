@@ -131,15 +131,15 @@ public:
 	bool					m_bTexCoord;
 	bool					m_bNormal;
 	bool					m_bColor;
-	eastl::vector<Vector2D>	m_avecTexCoord;
-	eastl::vector<eastl::vector<Vector2D> >	m_aavecTexCoords;
+	tvector<Vector2D>		m_avecTexCoord;
+	tvector<tvector<Vector2D> >	m_aavecTexCoords;
 	Vector					m_vecNormal;
-	eastl::vector<Vector>	m_avecNormals;
+	tvector<Vector>	m_avecNormals;
 	::Color					m_clrColor;
-	eastl::vector<::Color>	m_aclrColors;
-	eastl::vector<Vector>	m_avecVertices;
+	tvector<::Color>		m_aclrColors;
+	tvector<Vector>			m_avecVertices;
 
-	static eastl::vector<CRenderContext>	s_aContexts;
+	static tvector<CRenderContext>	s_aContexts;
 };
 
 #endif

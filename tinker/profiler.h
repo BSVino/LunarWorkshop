@@ -2,8 +2,9 @@
 #define TINKER_PROFILER_H
 
 #include <EASTL/string.h>
-#include <EASTL/vector.h>
 #include <EASTL/map.h>
+
+#include <tvector.h>
 
 #define TPROF(name) CProfileScope _TProf(name);
 

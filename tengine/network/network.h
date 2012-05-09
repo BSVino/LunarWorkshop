@@ -4,9 +4,9 @@
 #include <common.h>
 
 #include <EASTL/map.h>
-#include <EASTL/vector.h>
 #include <EASTL/string.h>
 
+#include <tvector.h>
 #include <color.h>
 #include <vector.h>
 #include <strutils.h>
@@ -119,7 +119,7 @@ public:
 	const char*						m_pszFunction;
 	INetworkListener*				m_pListener;
 	INetworkListener::Callback		m_pfnCallback;
-	eastl::vector<size_t>			m_pParameters;
+	tvector<size_t>					m_pParameters;
 };
 
 enum

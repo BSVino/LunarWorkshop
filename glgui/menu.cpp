@@ -141,7 +141,7 @@ void CMenu::Layout()
 {
 	float iHeight = 0;
 	float iWidth = 0;
-	eastl::vector<IControl*> apControls = m_pMenu->GetControls();
+	tvector<IControl*> apControls = m_pMenu->GetControls();
 	for (size_t i = 0; i < apControls.size(); i++)
 	{
 		apControls[i]->SetPos(5, (float)(i*MENU_HEIGHT));

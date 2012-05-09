@@ -35,9 +35,9 @@ public:
 	float								m_bCommonProperties;
 	class CLevelEntity*					m_pEntity;
 
-	eastl::vector<glgui::CLabel*>		m_apPropertyLabels;
-	eastl::vector<glgui::CBaseControl*>	m_apPropertyOptions;
-	eastl::vector<tstring>				m_asPropertyHandle;
+	tvector<glgui::CLabel*>				m_apPropertyLabels;
+	tvector<glgui::CBaseControl*>		m_apPropertyOptions;
+	tvector<tstring>					m_asPropertyHandle;
 
 	glgui::IEventListener::Callback		m_pfnPropertyChangedCallback;
 	glgui::IEventListener*				m_pPropertyChangedListener;

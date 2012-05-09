@@ -1,6 +1,7 @@
 #include "materialeditor.h"
 
 #include <files.h>
+#include <tvector.h>
 
 #include <glgui/rootpanel.h>
 #include <glgui/menu.h>
@@ -84,8 +85,8 @@ void CCreateMaterialPanel::MaterialChangedCallback(const tstring& sArgs)
 	if (!m_pMaterialFileText->GetText().length())
 		return;
 
-	eastl::vector<tstring> asExtensions;
-	eastl::vector<tstring> asExtensionsExclude;
+	tvector<tstring> asExtensions;
+	tvector<tstring> asExtensionsExclude;
 
 	asExtensions.push_back(".mat");
 
@@ -118,7 +119,7 @@ void CCreateMaterialPanel::FileNameChanged()
 
 void CCreateMaterialPanel::ChooseShaderCallback(const tstring& sArgs)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	strtok(sArgs, asTokens);
 
 	m_bShaderChosen = true;
@@ -283,7 +284,7 @@ void CMaterialPanel::Layout()
 
 void CMaterialPanel::ChooseShaderCallback(const tstring& sArgs)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	strtok(sArgs, asTokens);
 
 	m_pShader->SetText(asTokens[1]);
@@ -302,7 +303,7 @@ void CMaterialPanel::TextureParameterChangedCallback(const tstring& sArgs)
 	if (i >= m_apParameterOptions.size())
 		return;
 
-	eastl::vector<tstring> asExtensions;
+	tvector<tstring> asExtensions;
 	asExtensions.push_back(".png");
 
 	m_apParameterOptions[i]->SetAutoCompleteFiles(FindAbsolutePath("."), asExtensions);

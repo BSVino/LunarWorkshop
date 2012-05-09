@@ -65,7 +65,7 @@ void CConversionMesh::CalculateEdgeData()
 					continue;
 
 				// Find the other face with these two vertices!
-				eastl::vector<size_t>& aFaces = m_aaVertexFaceMap[pFace->GetVertex(iVertex)->v];
+				tvector<size_t>& aFaces = m_aaVertexFaceMap[pFace->GetVertex(iVertex)->v];
 				for (size_t iFace2 = 0; iFace2 < aFaces.size(); iFace2++)
 				{
 					if (iFace == aFaces[iFace2])
@@ -172,7 +172,7 @@ void CConversionMesh::CalculateVertexNormals()
 
 	m_aNormals.clear();
 
-	eastl::vector<size_t> aNormalFaces;
+	tvector<size_t> aNormalFaces;
 	aNormalFaces.reserve(6);
 
 	// Got to calculate vertex normals now. We have to do it after we read faces because we need all of the face data loaded first.
@@ -735,7 +735,7 @@ CConversionMaterialMap::CConversionMaterialMap(size_t iStub, size_t iMaterial)
 size_t CConversionMesh::AddVertex(float x, float y, float z)
 {
 	m_aVertices.push_back(Vector(x, y, z));
-	m_aaVertexFaceMap.push_back(eastl::vector<size_t>());
+	m_aaVertexFaceMap.push_back(tvector<size_t>());
 
 	size_t iSize = m_aVertices.size()-1;
 
@@ -879,13 +879,13 @@ float CConversionFace::GetUVArea()
 	return flArea;
 }
 
-void CConversionFace::FindAdjacentFaces(eastl::vector<size_t>& aResult, size_t iVert, bool bIgnoreCreased)
+void CConversionFace::FindAdjacentFaces(tvector<size_t>& aResult, size_t iVert, bool bIgnoreCreased)
 {
 	aResult.push_back(m_iFaceIndex);
 	FindAdjacentFacesInternal(aResult, iVert, bIgnoreCreased);
 }
 
-void CConversionFace::FindAdjacentFacesInternal(eastl::vector<size_t>& aResult, size_t iVert, bool bIgnoreCreased)
+void CConversionFace::FindAdjacentFacesInternal(tvector<size_t>& aResult, size_t iVert, bool bIgnoreCreased)
 {
 	size_t iNumEdges = GetNumEdges();
 	CConversionMesh* pMesh = m_pScene->GetMesh(m_iMesh);
@@ -904,7 +904,7 @@ void CConversionFace::FindAdjacentFacesInternal(eastl::vector<size_t>& aResult, 
 		size_t iFaces = pEdge->m_aiFaces.size();
 		for (size_t iEdgeFace = 0; iEdgeFace < iFaces; iEdgeFace++)
 		{
-			eastl::vector<size_t>::iterator it = eastl::find(aResult.begin(), aResult.end(), pEdge->m_aiFaces[iEdgeFace]);
+			tvector<size_t>::iterator it = eastl::find(aResult.begin(), aResult.end(), pEdge->m_aiFaces[iEdgeFace]);
 			if (it == aResult.end())
 			{
 				aResult.push_back(pEdge->m_aiFaces[iEdgeFace]);
@@ -937,7 +937,7 @@ size_t CConversionFace::FindVertex(size_t i)
 	return ~0;
 }
 
-eastl::vector<Vector>& CConversionFace::GetVertices(eastl::vector<Vector>& avecVertices)
+tvector<Vector>& CConversionFace::GetVertices(tvector<Vector>& avecVertices)
 {
 	avecVertices.clear();
 

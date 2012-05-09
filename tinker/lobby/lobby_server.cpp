@@ -137,7 +137,7 @@ CLIENT_COMMAND(CONNECTION_LOBBY, RemovePlayer)
 	CGameLobbyServer::RemovePlayer(pCmd->ArgAsUInt(0));
 }
 
-eastl::vector<CGameLobby> CGameLobbyServer::s_aLobbies;
+tvector<CGameLobby> CGameLobbyServer::s_aLobbies;
 eastl::map<size_t, size_t> CGameLobbyServer::s_aiPlayerLobbies;
 eastl::map<size_t, size_t> CGameLobbyServer::s_aiClientPlayerIDs;
 ILobbyListener* CGameLobbyServer::s_pListener = NULL;

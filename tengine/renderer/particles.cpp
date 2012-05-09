@@ -2,6 +2,8 @@
 
 #include <maths.h>
 #include <mtrand.h>
+#include <tvector.h>
+
 #include <game/entities/game.h>
 #include <renderer/shaders.h>
 #include <tinker/cvar.h>
@@ -77,7 +79,7 @@ void CParticleSystemLibrary::Simulate()
 
 	eastl::map<size_t, CSystemInstance*>::iterator it = pPSL->m_apInstances.begin();
 
-	eastl::vector<size_t> aiDeleted;
+	tvector<size_t> aiDeleted;
 
 	for (; it != pPSL->m_apInstances.end(); it++)
 	{
@@ -262,7 +264,7 @@ void CParticleSystemLibrary::ClearUnreferenced()
 	}
 }
 
-void ReloadParticles(CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+void ReloadParticles(CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	CParticleSystemLibrary::ReloadSystems();
 }

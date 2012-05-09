@@ -1,6 +1,7 @@
 #include "cvar.h"
 
 #include <strutils.h>
+#include <tvector.h>
 
 #include <tinker/application.h>
 
@@ -14,7 +15,7 @@ CCommand::CCommand(tstring sName, CommandCallback pfnCallback)
 
 void CCommand::Run(tstring sCommand)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(sCommand, asTokens);
 
 	if (asTokens.size() == 0)
@@ -31,9 +32,9 @@ void CCommand::Run(tstring sCommand)
 	pCommand->m_pfnCallback(pCommand, asTokens, sCommand);
 }
 
-eastl::vector<tstring> CCommand::GetCommandsBeginningWith(tstring sFragment)
+tvector<tstring> CCommand::GetCommandsBeginningWith(tstring sFragment)
 {
-	eastl::vector<tstring> sResults;
+	tvector<tstring> sResults;
 
 	size_t iFragLength = sFragment.length();
 
@@ -52,7 +53,7 @@ void CCommand::RegisterCommand(CCommand* pCommand)
 	GetCommands()[pCommand->m_sName] = pCommand;
 }
 
-void SetCVar(CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+void SetCVar(CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	CVar* pCVar = dynamic_cast<CVar*>(pCommand);
 	TAssert(pCVar);

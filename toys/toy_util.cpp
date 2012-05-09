@@ -4,6 +4,7 @@
 #include <files.h>
 #include <tinker_platform.h>
 #include <mesh.h>
+#include <tvector.h>
 
 #include <shell.h>
 
@@ -257,7 +258,7 @@ void CToyUtil::AddVisibleNeighbors(size_t iArea, size_t iVisible)
 	if (iArea == iVisible)
 		return;
 
-	eastl::vector<Vector> avecPoints;
+	tvector<Vector> avecPoints;
 
 	for (size_t i = 0; i < m_asSceneAreas[iVisible].m_aiNeighboringAreas.size(); i++)
 	{
@@ -294,7 +295,7 @@ void CToyUtil::AddVisibleNeighbors(size_t iArea, size_t iVisible)
 
 		CConvexHullGenerator c(avecPoints);
 
-		const eastl::vector<size_t>& avecConvexTriangles = c.GetConvexTriangles();
+		const tvector<size_t>& avecConvexTriangles = c.GetConvexTriangles();
 
 		// Test to see if iVisible intersects that hull
 		AABB aabbShrunkBounds = m_asSceneAreas[iVisible].m_aabbArea + AABB(Vector(0.1f, 0.1f, 0.1f), Vector(-0.1f, -0.1f, -0.1f));	// Shrink the bounds a tad so touching bounds on the far side don't count.

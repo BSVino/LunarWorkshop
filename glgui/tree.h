@@ -61,7 +61,7 @@ namespace glgui
 		EVENT_CALLBACK(CTreeNode, Expand);
 
 	public:
-		eastl::vector<CTreeNode*>			m_apNodes;
+		tvector<CTreeNode*>					m_apNodes;
 		CTreeNode*							m_pParent;
 		class CTree*						m_pTree;
 		class CLabel*						m_pLabel;
@@ -153,8 +153,8 @@ namespace glgui
 		virtual bool						IsVisible() { return BaseClass::IsVisible(); };
 
 	public:
-		eastl::vector<CTreeNode*>			m_apNodes;
-		eastl::vector<CTreeNode*>			m_apAllNodes;
+		tvector<CTreeNode*>					m_apNodes;
+		tvector<CTreeNode*>					m_apAllNodes;
 
 		float								m_flCurrentHeight;
 		float								m_flCurrentDepth;

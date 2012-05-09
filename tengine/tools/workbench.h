@@ -72,7 +72,7 @@ protected:
 
 	CWorkbenchCamera*		m_pCamera;
 
-	eastl::vector<CWorkbenchTool*>	m_apTools;
+	tvector<CWorkbenchTool*>	m_apTools;
 	size_t					m_iActiveTool;
 
 	glgui::CMenu*			m_pFileMenu;

@@ -34,7 +34,7 @@
 void DrawTexture(GLuint iTexture, float flScale = 1.0f);
 #endif
 
-CAOGenerator::CAOGenerator(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+CAOGenerator::CAOGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
 {
 	m_eAOMethod = AOMETHOD_NONE;
 	m_pScene = pScene;
@@ -1000,8 +1000,8 @@ void CAOGenerator::GenerateNodeByTexel(CConversionSceneNode* pNode, raytrace::CR
 					continue;
 			}
 
-			eastl::vector<Vector> avecPoints;
-			eastl::vector<size_t> aiPoints;
+			tvector<Vector> avecPoints;
+			tvector<size_t> aiPoints;
 			for (size_t t = 0; t < pFace->GetNumVertices(); t++)
 			{
 				avecPoints.push_back(pMeshInstance->GetVertex(pFace->GetVertex(t)->v));

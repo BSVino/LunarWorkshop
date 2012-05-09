@@ -22,7 +22,7 @@ SAVEDATA_TABLE_END();
 INPUTS_TABLE_BEGIN(CMirror);
 INPUTS_TABLE_END();
 
-eastl::vector<CEntityHandle<CMirror> > CMirror::m_ahMirrors;
+tvector<CEntityHandle<CMirror> > CMirror::m_ahMirrors;
 
 CMirror::~CMirror()
 {

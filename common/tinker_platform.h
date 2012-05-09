@@ -1,9 +1,8 @@
 #ifndef _LW_PLATFORM
 #define _LW_PLATFORM
 
-#include <EASTL/vector.h>
-
 #include <tstring.h>
+#include <tvector.h>
 
 void GetMACAddresses(unsigned char*& paiAddresses, size_t& iAddresses);
 void GetScreenSize(int& iWidth, int& iHeight);
@@ -16,7 +15,7 @@ void CreateMinidump(void* pInfo, tchar* pszDirectory);
 eastl::string GetClipboard();
 void SetClipboard(const eastl::string& sBuf);
 tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile = "");
-eastl::vector<tstring> ListDirectory(const tstring& sDirectory, bool bDirectories = true);
+tvector<tstring> ListDirectory(const tstring& sDirectory, bool bDirectories = true);
 bool IsFile(const tstring& sPath);
 bool IsDirectory(const tstring& sPath);
 void CreateDirectoryNonRecursive(const tstring& sPath);

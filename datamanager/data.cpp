@@ -159,7 +159,7 @@ float CData::GetValueFloat() const
 
 Vector2D CData::GetValueVector2D() const
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(GetValueTString(), asTokens);
 
 	Vector2D vecResult;
@@ -173,7 +173,7 @@ Vector2D CData::GetValueVector2D() const
 
 Vector CData::GetValueVector() const
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(GetValueTString(), asTokens);
 
 	Vector vecResult;
@@ -189,7 +189,7 @@ Vector CData::GetValueVector() const
 
 Vector4D CData::GetValueVector4D() const
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(GetValueTString(), asTokens);
 
 	Vector4D vecResult;
@@ -207,7 +207,7 @@ Vector4D CData::GetValueVector4D() const
 
 EAngle CData::GetValueEAngle() const
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(GetValueTString(), asTokens);
 
 	EAngle vecResult;
@@ -223,7 +223,7 @@ EAngle CData::GetValueEAngle() const
 
 TRS CData::GetValueTRS() const
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	tstrtok(GetValueTString(), asTokens);
 	TAssertNoMsg(asTokens.size() == 9);
 	if (asTokens.size() != 9)

@@ -5,6 +5,7 @@
 
 #include <tinker_platform.h>
 #include <files.h>
+#include <tvector.h>
 
 #include <glgui/rootpanel.h>
 #include <glgui/movablepanel.h>
@@ -102,8 +103,8 @@ void CCreateToySourcePanel::ToyChangedCallback(const tstring& sArgs)
 	if (!m_pToyFileText->GetText().length())
 		return;
 
-	eastl::vector<tstring> asExtensions;
-	eastl::vector<tstring> asExtensionsExclude;
+	tvector<tstring> asExtensions;
+	tvector<tstring> asExtensionsExclude;
 
 	asExtensions.push_back(".toy");
 	asExtensionsExclude.push_back(".mesh.toy");
@@ -120,7 +121,7 @@ void CCreateToySourcePanel::SourceChangedCallback(const tstring& sArgs)
 	if (!m_pSourceFileText->GetText().length())
 		return;
 
-	eastl::vector<tstring> asExtensions;
+	tvector<tstring> asExtensions;
 	asExtensions.push_back(".txt");
 
 	m_pSourceFileText->SetAutoCompleteFiles("../sources", asExtensions);
@@ -380,7 +381,7 @@ void CSourcePanel::UpdateFields()
 
 void CSourcePanel::SetModelSourcesAutoComplete(glgui::CTextField* pField)
 {
-	eastl::vector<tstring> asExtensions;
+	tvector<tstring> asExtensions;
 	asExtensions.push_back(".obj");
 	asExtensions.push_back(".sia");
 	asExtensions.push_back(".dae");
@@ -396,8 +397,8 @@ void CSourcePanel::ToyFileChangedCallback(const tstring& sArgs)
 	if (!m_pToyFileText->GetText().length())
 		return;
 
-	eastl::vector<tstring> asExtensions;
-	eastl::vector<tstring> asExtensionsExclude;
+	tvector<tstring> asExtensions;
+	tvector<tstring> asExtensionsExclude;
 
 	asExtensions.push_back(".toy");
 	asExtensionsExclude.push_back(".mesh.toy");
@@ -415,7 +416,7 @@ void CSourcePanel::ModelChangedCallback(const tstring& sArgs)
 		SetModelSourcesAutoComplete(m_pMeshText);
 	else
 	{
-		eastl::vector<tstring> asExtensions;
+		tvector<tstring> asExtensions;
 		asExtensions.push_back(".mat");
 
 		m_pMeshText->SetAutoCompleteFiles(FindAbsolutePath("."), asExtensions);
@@ -870,7 +871,7 @@ void CToyEditor::ManipulatorUpdated(const tstring& sArguments)
 	// Grab this before GetToyToModify since that does a layout and clobbers the list.
 	size_t iSelected = m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId();
 
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	strtok(sArguments, asTokens);
 	TAssert(asTokens.size() == 2);
 	TAssert(stoi(asTokens[1]) == iSelected);
@@ -1017,7 +1018,7 @@ void CToySource::Open(const tstring& sFile)
 			if (pChild->GetKey() != "Box")
 				continue;
 
-			eastl::vector<tstring> asTokens;
+			tvector<tstring> asTokens;
 			strtok(pChild->GetValueString(), asTokens);
 			TAssert(asTokens.size() == 9);
 			if (asTokens.size() != 9)

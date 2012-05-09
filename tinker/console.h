@@ -38,7 +38,7 @@ protected:
 
 	bool					m_bBackground;
 
-	eastl::vector<tstring>	m_asHistory;
+	tvector<tstring>		m_asHistory;
 	int						m_iHistory;
 };
 

@@ -49,7 +49,7 @@ namespace glgui
 
 		virtual size_t			AddControl(IControl* pControl, bool bToTail = false);
 		virtual void			RemoveControl(IControl* pControl);
-		virtual eastl::vector<IControl*>&	GetControls() { return m_apControls; };
+		virtual tvector<IControl*>&	GetControls() { return m_apControls; };
 		virtual void			MoveToTop(IControl* pControl);
 
 		virtual void			SetHighlighted(bool bHighlight) { m_bHighlight = bHighlight; };
@@ -67,7 +67,7 @@ namespace glgui
 		bool					ShouldControlOffset(IControl* pControl) const;
 
 	protected:
-		eastl::vector<IControl*>	m_apControls;
+		tvector<IControl*>		m_apControls;
 
 		float					m_flMargin;
 

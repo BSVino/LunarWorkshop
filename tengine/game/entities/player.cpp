@@ -29,7 +29,7 @@ CPlayer::CPlayer()
 	m_iClient = NETWORK_LOCAL;
 }
 
-void NoClip(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+void NoClip(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	if (!CVar::GetCVarBool("cheats"))
 	{

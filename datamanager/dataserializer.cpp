@@ -43,7 +43,7 @@ void CDataSerializer::Read(std::basic_istream<tchar>& sStream, CData* pData)
 			continue;
 		}
 
-		eastl::vector<tstring> asTokens;
+		tvector<tstring> asTokens;
 		explode(sLine, asTokens, ":");
 
 		if (asTokens.size() == 1)

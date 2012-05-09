@@ -275,7 +275,7 @@ namespace glgui
 		}
 
 	protected:
-		eastl::vector<CScrollSelection<T> >	m_aSelections;
+		tvector<CScrollSelection<T> >		m_aSelections;
 
 		CLabel*								m_pOption;
 

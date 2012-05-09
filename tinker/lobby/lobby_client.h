@@ -3,7 +3,7 @@
 
 #include "lobby.h"
 
-#include <EASTL/vector.h>
+#include <tvector.h>
 
 #include <network/network.h>
 
@@ -61,7 +61,7 @@ public:
 
 protected:
 	static bool							s_bInLobby;
-	static eastl::vector<CLobbyPlayer>	s_aClients;
+	static tvector<CLobbyPlayer>		s_aClients;
 	static eastl::map<tstring, tstring> s_asInfo;
 
 	static INetworkListener::Callback	s_pfnLobbyUpdateCallback;

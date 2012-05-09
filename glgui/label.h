@@ -27,7 +27,7 @@ namespace glgui
 		class CLine
 		{
 		public:
-			eastl::vector<CLineSection>	m_aSections;
+			tvector<CLineSection>	m_aSections;
 			float		m_flLineHeight;
 			float		m_flLineWidth;
 		};
@@ -138,7 +138,7 @@ namespace glgui
 
 		TextAlign		m_eAlign;
 
-		eastl::vector<CLine>	m_aLines;
+		tvector<CLine>	m_aLines;
 		float			m_flTotalHeight;
 		bool			m_bNeedsCompute;
 

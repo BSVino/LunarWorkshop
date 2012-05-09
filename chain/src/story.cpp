@@ -239,7 +239,7 @@ void CStory::OnRender(CRenderingContext* pContext, bool bTransparent) const
 
 	for (auto it = m_aflHighlightedSections.begin(); it != m_aflHighlightedSections.end(); it++)
 	{
-		eastl::vector<tstring> asTokens;
+		tvector<tstring> asTokens;
 		strtok(it->first, asTokens);
 
 		TAssert(asTokens.size() == 2);
@@ -319,7 +319,7 @@ void CStory::LinkClickedCallback(const tstring& sLink)
 
 void CStory::SectionHoveredCallback(const tstring& sSection)
 {
-	eastl::vector<tstring> asTokens;
+	tvector<tstring> asTokens;
 	strtok(sSection, asTokens);
 
 	TAssert(asTokens.size() == 2);

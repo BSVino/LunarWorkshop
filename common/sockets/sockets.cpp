@@ -193,7 +193,7 @@ void CHTTPPostSocket::ParseOutput()
 {
 	string sReturn = RecvAll();
 	bool bHTTPOver = false;
-	eastl::vector<string> vTokens;
+	tvector<string> vTokens;
 
 	strtok(sReturn, vTokens, "\n");
 	for (unsigned int i = 1; i < vTokens.size(); i++)

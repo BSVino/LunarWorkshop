@@ -71,7 +71,7 @@ void CRenderer::Initialize()
 
 void CRenderer::LoadShaders()
 {
-	eastl::vector<tstring> asShaders = ListDirectory("shaders", false);
+	tvector<tstring> asShaders = ListDirectory("shaders", false);
 
 	for (size_t i = 0; i < asShaders.size(); i++)
 	{
@@ -789,7 +789,7 @@ void CRenderer::UnloadTextureData(Color* pData)
 	stbi_image_free((char*)pData);
 }
 
-void R_ReadPixels(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+void R_ReadPixels(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	size_t iFBO = 0;
 	if (asTokens.size() > 1)

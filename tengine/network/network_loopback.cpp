@@ -101,7 +101,7 @@ void CNetwork::Deinitialize()
 	s_bInitialized = false;
 }
 
-eastl::vector<CNetworkConnection*> g_apNetworkConnections;
+tvector<CNetworkConnection*> g_apNetworkConnections;
 
 size_t CNetwork::GetNumConnections()
 {

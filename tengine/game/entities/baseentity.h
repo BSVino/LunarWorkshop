@@ -2,8 +2,8 @@
 #define TINKER_BASEENTITY_H
 
 #include <EASTL/map.h>
-#include <EASTL/vector.h>
 
+#include <tvector.h>
 #include <vector.h>
 #include <geometry.h>
 #include <matrix.h>
@@ -42,7 +42,7 @@ size_t NewEntity()
 template <class C>
 void ResizeVectorTmpl(char* pData, size_t iVectorSize)
 {
-	eastl::vector<C>* pVector = (eastl::vector<C>*)pData;
+	tvector<C>* pVector = (tvector<C>*)pData;
 	pVector->resize(iVectorSize);
 }
 
@@ -111,7 +111,7 @@ public:
 	char					m_oDefault[24];
 };
 
-typedef void (*EntityInputCallback)(const class CBaseEntity* pTarget, const eastl::vector<tstring>& sArgs);
+typedef void (*EntityInputCallback)(const class CBaseEntity* pTarget, const tvector<tstring>& sArgs);
 class CEntityInput
 {
 public:
@@ -120,8 +120,8 @@ public:
 };
 
 #define DECLARE_ENTITY_INPUT(name) \
-	virtual void name(const eastl::vector<tstring>& sArgs); \
-	static void name##InputCallback(const class CBaseEntity* pTarget, const eastl::vector<tstring>& sArgs) \
+	virtual void name(const tvector<tstring>& sArgs); \
+	static void name##InputCallback(const class CBaseEntity* pTarget, const tvector<tstring>& sArgs) \
 	{ \
 		((ThisClass*)pTarget)->name(sArgs); \
 	}
@@ -148,7 +148,7 @@ public:
 		bool								m_bKill;
 	};
 
-	eastl::vector<CEntityOutputTarget>		m_aTargets;
+	tvector<CEntityOutputTarget>			m_aTargets;
 	class CBaseEntity*						m_pEnt;
 	eastl::string							m_sOutputName;
 };
@@ -164,11 +164,11 @@ public:
 	EntityRegisterCallback		m_pfnRegisterCallback;
 	EntityPrecacheCallback		m_pfnPrecacheCallback;
 	EntityCreateCallback		m_pfnCreateCallback;
-	eastl::vector<CSaveData>	m_aSaveData;
-	eastl::vector<CNetworkedVariableData>	m_aNetworkVariables;
+	tvector<CSaveData>			m_aSaveData;
+	tvector<CNetworkedVariableData>	m_aNetworkVariables;
 	eastl::map<eastl::string, CEntityInput>		m_aInputs;
-	eastl::vector<tstring>		m_asPrecaches;
-	eastl::vector<CMaterialHandle>	m_ahMaterialPrecaches;
+	tvector<tstring>			m_asPrecaches;
+	tvector<CMaterialHandle>	m_ahMaterialPrecaches;
 	bool						m_bCreatableInEditor;
 };
 
@@ -715,7 +715,7 @@ public:
 	static T*								FindClosest(const TVector& vecPoint, CBaseEntity* pFurther = NULL);
 
 	static CBaseEntity*						GetEntityByName(const eastl::string& sName);
-	static void								FindEntitiesByName(const eastl::string& sName, eastl::vector<CBaseEntity*>& apEntities);
+	static void								FindEntitiesByName(const eastl::string& sName, tvector<CBaseEntity*>& apEntities);
 
 protected:
 	static eastl::map<tstring, CEntityRegistration>& GetEntityRegistration();
@@ -771,7 +771,7 @@ protected:
 	CNetworkedVariable<double>				m_flSpawnTime;
 
 private:
-	static eastl::vector<CBaseEntity*>		s_apEntityList;
+	static tvector<CBaseEntity*>			s_apEntityList;
 	static size_t							s_iEntities;
 	static size_t							s_iOverrideEntityListIndex;
 	static size_t							s_iNextEntityListIndex;

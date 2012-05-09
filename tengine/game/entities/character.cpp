@@ -349,7 +349,7 @@ TFloat CCharacter::CharacterSpeed()
 		return BaseCharacterSpeed();
 }
 
-void CCharacter::SetViewAngles(const eastl::vector<tstring>& asArgs)
+void CCharacter::SetViewAngles(const tvector<tstring>& asArgs)
 {
 	if (asArgs.size() != 3)
 	{

@@ -25,7 +25,7 @@ void CCounter::Spawn()
 	SetCurrentCount(0);
 }
 
-void CCounter::SetCount(const eastl::vector<tstring>& sArgs)
+void CCounter::SetCount(const tvector<tstring>& sArgs)
 {
 	TAssert(sArgs.size());
 
@@ -35,7 +35,7 @@ void CCounter::SetCount(const eastl::vector<tstring>& sArgs)
 	SetGoalCount(stoi(sArgs[0]));
 }
 
-void CCounter::Increment(const eastl::vector<tstring>& sArgs)
+void CCounter::Increment(const tvector<tstring>& sArgs)
 {
 	m_iCurrentCount++;
 
@@ -43,7 +43,7 @@ void CCounter::Increment(const eastl::vector<tstring>& sArgs)
 		CallOutput("OnCountReached");
 }
 
-void CCounter::Decrement(const eastl::vector<tstring>& sArgs)
+void CCounter::Decrement(const tvector<tstring>& sArgs)
 {
 	m_iCurrentCount--;
 

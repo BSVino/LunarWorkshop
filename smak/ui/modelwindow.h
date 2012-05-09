@@ -148,7 +148,7 @@ public:
 	static CModelWindow*	Get() { return s_pModelWindow; };
 
 	CConversionScene*		GetScene() { return &m_Scene; };
-	eastl::vector<CMaterial>*	GetMaterials() { return &m_aoMaterials; };
+	tvector<CMaterial>*		GetMaterials() { return &m_aoMaterials; };
 
 	void					ClearDebugLines();
 	void					AddDebugLine(Vector vecStart, Vector vecEnd, Color clrLine = Color(150, 150, 150));
@@ -163,10 +163,10 @@ protected:
 	bool					m_bLoadingFile;
 	tchar					m_szFileLoaded[1024];
 
-	eastl::vector<size_t>		m_aiObjects;
+	tvector<size_t>			m_aiObjects;
 	size_t					m_iObjectsCreated;
 
-	eastl::vector<CMaterial>	m_aoMaterials;
+	tvector<CMaterial>		m_aoMaterials;
 
 	CMaterial*				m_pLightHalo;
 	CMaterial*				m_pLightBeam;
@@ -214,7 +214,7 @@ protected:
 		Vector vecEnd;
 		Color clrLine;
 	} DebugLine;
-	eastl::vector<DebugLine>	m_aDebugLines;
+	tvector<DebugLine>		m_aDebugLines;
 
 	// Options
 	bool					m_bRenderUV;

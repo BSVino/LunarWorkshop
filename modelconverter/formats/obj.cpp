@@ -175,7 +175,7 @@ bool CModelConverter::ReadOBJ(const tstring& sFilename)
 
 			// A vertex normal.
 			float x, y, z;
-			eastl::vector<tstring> asTokens;
+			tvector<tstring> asTokens;
 			tstrtok(pszLine, asTokens, " ");
 			if (asTokens.size() == 4)
 			{
@@ -198,7 +198,7 @@ bool CModelConverter::ReadOBJ(const tstring& sFilename)
 
 			// A UV coordinate for a vertex.
 			float u, v;
-			eastl::vector<tstring> asTokens;
+			tvector<tstring> asTokens;
 			tstrtok(pszLine, asTokens, " ");
 			if (asTokens.size() == 3)
 			{
@@ -241,7 +241,7 @@ bool CModelConverter::ReadOBJ(const tstring& sFilename)
 			else
 			{
 				bSmoothingGroups = true;
-				eastl::vector<tstring> asTokens;
+				tvector<tstring> asTokens;
 				tstrtok(pszLine, asTokens, " ");
 				if (asTokens.size() == 2)
 					iSmoothingGroup = atoi(asTokens[1].c_str());
@@ -392,7 +392,7 @@ void CModelConverter::ReadMTL(const tstring& sFilename)
 		if (sLine[0] == '#')
 			continue;
 
-		eastl::vector<tstring> asTokens;
+		tvector<tstring> asTokens;
 		tstrtok(sLine, asTokens, " ");
 		const tchar* pszToken = NULL;
 		pszToken = asTokens[0].c_str();
@@ -409,7 +409,7 @@ void CModelConverter::ReadMTL(const tstring& sFilename)
 		}
 		else if (tstrncmp(pszToken, "Ka", 2) == 0)
 		{
-			eastl::vector<tstring> asTokens;
+			tvector<tstring> asTokens;
 			tstrtok(sLine, asTokens, " ");
 			if (asTokens.size() == 4)
 			{
@@ -420,7 +420,7 @@ void CModelConverter::ReadMTL(const tstring& sFilename)
 		}
 		else if (tstrncmp(pszToken, "Kd", 2) == 0)
 		{
-			eastl::vector<tstring> asTokens;
+			tvector<tstring> asTokens;
 			tstrtok(sLine, asTokens, " ");
 			if (asTokens.size() == 4)
 			{
@@ -431,7 +431,7 @@ void CModelConverter::ReadMTL(const tstring& sFilename)
 		}
 		else if (tstrncmp(pszToken, "Ks", 2) == 0)
 		{
-			eastl::vector<tstring> asTokens;
+			tvector<tstring> asTokens;
 			tstrtok(sLine, asTokens, " ");
 			if (asTokens.size() == 4)
 			{

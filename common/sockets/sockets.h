@@ -6,7 +6,8 @@
 
 #include <stdio.h>
 #include <EASTL/string.h>
-#include <EASTL/vector.h>
+
+#include <tvector.h>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -100,7 +101,7 @@ public:
 protected:
 	eastl::string	m_sPostContent;
 
-	eastl::vector<CPostReply>	m_aKeys;
+	tvector<CPostReply>	m_aKeys;
 };
 
 #endif

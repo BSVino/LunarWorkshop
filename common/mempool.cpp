@@ -4,7 +4,7 @@
 #include <tinker_platform.h>
 
 size_t CMemPool::s_iMemoryAllocated = 0;
-eastl::vector<CMemPool*> CMemPool::s_apMemPools;
+tvector<CMemPool*> CMemPool::s_apMemPools;
 size_t CMemPool::s_iLastMemPoolHandle = 0;
 
 CMemPool::CMemPool()

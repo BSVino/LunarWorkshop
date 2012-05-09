@@ -22,15 +22,15 @@ SAVEDATA_TABLE_END();
 INPUTS_TABLE_BEGIN(CMirror);
 INPUTS_TABLE_END();
 
-eastl::vector<CEntityHandle<CMirror> > CMirror::m_ahMirrors;
+tvector<CEntityHandle<CMirror> > CMirror::s_ahMirrors;
 
 CMirror::~CMirror()
 {
-	for (size_t i = 0; i < m_ahMirrors.size(); i++)
+	for (size_t i = 0; i < s_ahMirrors.size(); i++)
 	{
-		if (m_ahMirrors[i] == (const CMirror*)this)
+		if (s_ahMirrors[i] == (const CMirror*)this)
 		{
-			m_ahMirrors.erase(m_ahMirrors.begin()+i);
+			s_ahMirrors.erase(s_ahMirrors.begin()+i);
 			break;
 		}
 	}
@@ -46,7 +46,7 @@ void CMirror::Spawn()
 {
 	SetMirrorType(MIRROR_VERTICAL);
 
-	m_ahMirrors.push_back(this);
+	s_ahMirrors.push_back(this);
 }
 
 bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const

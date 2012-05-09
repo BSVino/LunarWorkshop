@@ -205,7 +205,7 @@ if ((x) > (y)) \
 		CReflectionProxy::OnPlayerGravity(IsReflected(REFLECTION_VERTICAL));
 }
 
-void CGrottoCharacter::ReflectVertical(const eastl::vector<tstring>& asArgs)
+void CGrottoCharacter::ReflectVertical(const tvector<tstring>& asArgs)
 {
 	Matrix4x4 mReflection, mTransform;
 	mReflection.SetReflection(Vector(0, 1, 0));
@@ -216,7 +216,7 @@ void CGrottoCharacter::ReflectVertical(const eastl::vector<tstring>& asArgs)
 	SetGlobalTransform(mTransform);
 }
 
-void CGrottoCharacter::ReflectLateral(const eastl::vector<tstring>& asArgs)
+void CGrottoCharacter::ReflectLateral(const tvector<tstring>& asArgs)
 {
 	Matrix4x4 mReflection, mTransform;
 	mReflection.SetReflection(Vector(1, 0, 0));

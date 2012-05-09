@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <EASTL/vector.h>
+#include <tvector.h>
 #include <tstring.h>
 #include <vector.h>
 #include <geometry.h>
@@ -12,8 +12,8 @@ class CSceneArea
 {
 public:
 	AABB					m_aabbArea;
-	eastl::vector<uint32_t>	m_aiNeighboringAreas;
-	eastl::vector<uint32_t>	m_aiVisibleAreas;
+	tvector<uint32_t>		m_aiNeighboringAreas;
+	tvector<uint32_t>		m_aiVisibleAreas;
 	tstring					m_sFileName;
 };
 
@@ -77,14 +77,14 @@ protected:
 	tstring					m_sOutputDirectory;
 	tstring					m_sOutputFile;
 
-	eastl::vector<tstring>					m_asMaterials;
-	//eastl::vector<tstring>					m_asCopyTextures;
-	eastl::vector<eastl::vector<float> >	m_aaflData;
-	AABB									m_aabbBounds;
-	eastl::vector<uint32_t>					m_aiPhysIndices;
-	eastl::vector<Vector>					m_avecPhysVerts;
-	eastl::vector<TRS>						m_atrsPhysBoxes;
-	eastl::vector<CSceneArea>				m_asSceneAreas;
+	tvector<tstring>			m_asMaterials;
+	//tvector<tstring>			m_asCopyTextures;
+	tvector<tvector<float> >	m_aaflData;
+	AABB						m_aabbBounds;
+	tvector<uint32_t>			m_aiPhysIndices;
+	tvector<Vector>				m_avecPhysVerts;
+	tvector<TRS>				m_atrsPhysBoxes;
+	tvector<CSceneArea>			m_asSceneAreas;
 
 	float					m_flNeighborDistance;	// How far can an area be considered a neighbor in the finding neighbors check?
 	bool					m_bUseLocalTransforms;

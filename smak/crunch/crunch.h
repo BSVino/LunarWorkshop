@@ -72,7 +72,7 @@ protected:
 	Vector*					m_avecDiffuseGeneratedValues;
 	size_t*					m_aiDiffuseReads;
 
-	eastl::vector<size_t>	m_aiTextures;
+	tvector<size_t>	m_aiTextures;
 };
 
 class CTexelAOMethod : public CTexelMethod
@@ -144,12 +144,12 @@ protected:
 class CTexelGenerator
 {
 public:
-							CTexelGenerator(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
+							CTexelGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
 							~CTexelGenerator();
 
 public:
 	void					SetSize(size_t iWidth, size_t iHeight);
-	void					SetModels(const eastl::vector<CConversionMeshInstance*>& apHiRes, const eastl::vector<CConversionMeshInstance*>& apLoRes);
+	void					SetModels(const tvector<CConversionMeshInstance*>& apHiRes, const tvector<CConversionMeshInstance*>& apLoRes);
 
 	void					ClearMethods();
 	void					AddDiffuse();
@@ -182,17 +182,17 @@ public:
 	void					StopGenerating() { m_bStopGenerating = true; }
 	bool					IsStopped() { return m_bStopGenerating; }
 
-	const eastl::vector<CConversionMeshInstance*>&	GetHiResMeshInstances() { return m_apHiRes; }
-	const eastl::vector<CConversionMeshInstance*>&	GetLoResMeshInstances() { return m_apLoRes; }
+	const tvector<CConversionMeshInstance*>&	GetHiResMeshInstances() { return m_apHiRes; }
+	const tvector<CConversionMeshInstance*>&	GetLoResMeshInstances() { return m_apLoRes; }
 
 protected:
 	CConversionScene*		m_pScene;
-	eastl::vector<CMaterial>*	m_paoMaterials;
+	tvector<CMaterial>*		m_paoMaterials;
 
-	eastl::vector<CConversionMeshInstance*>	m_apHiRes;
-	eastl::vector<CConversionMeshInstance*>	m_apLoRes;
+	tvector<CConversionMeshInstance*>	m_apHiRes;
+	tvector<CConversionMeshInstance*>	m_apLoRes;
 
-	eastl::vector<CTexelMethod*>	m_apMethods;
+	tvector<CTexelMethod*>	m_apMethods;
 
 	size_t					m_iWidth;
 	size_t					m_iHeight;
@@ -219,7 +219,7 @@ typedef enum
 class CAOGenerator
 {
 public:
-							CAOGenerator(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
+							CAOGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
 							~CAOGenerator();
 
 public:
@@ -269,7 +269,7 @@ public:
 
 protected:
 	CConversionScene*		m_pScene;
-	eastl::vector<CMaterial>*	m_paoMaterials;
+	tvector<CMaterial>*		m_paoMaterials;
 
 	size_t					m_iWidth;
 	size_t					m_iHeight;
@@ -313,7 +313,7 @@ protected:
 class CNormalGenerator
 {
 public:
-							CNormalGenerator(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
+							CNormalGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
 							~CNormalGenerator();
 
 public:
@@ -352,7 +352,7 @@ public:
 
 protected:
 	CConversionScene*		m_pScene;
-	eastl::vector<CMaterial>*	m_paoMaterials;
+	tvector<CMaterial>*		m_paoMaterials;
 
 	IWorkListener*			m_pWorkListener;
 

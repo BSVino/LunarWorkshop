@@ -3,12 +3,12 @@
 
 #include <EASTL/string.h>
 #include <EASTL/map.h>
-#include <EASTL/vector.h>
 
 #include <common.h>
 #include <tstring.h>
+#include <tvector.h>
 
-typedef void (*CommandCallback)(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand);
+typedef void (*CommandCallback)(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand);
 
 class CCommand
 {
@@ -18,14 +18,14 @@ public:
 public:
 	static void			Run(tstring sCommand);
 
-	tstring		GetName() { return m_sName; };
+	tstring				GetName() { return m_sName; };
 
 	virtual void		MakeMePolymorphic() {};	// Can delete if another virtual function is added
 
-	static eastl::vector<tstring> GetCommandsBeginningWith(tstring sFragment);
+	static tvector<tstring> GetCommandsBeginningWith(tstring sFragment);
 
 protected:
-	tstring		m_sName;
+	tstring				m_sName;
 	CommandCallback		m_pfnCallback;
 
 	static void			RegisterCommand(CCommand* pCommand);

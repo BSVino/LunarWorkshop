@@ -56,7 +56,7 @@ namespace glgui
 	private:
 		static CRootPanel*			s_pRootPanel;
 
-		eastl::vector<IDroppable*>	m_apDroppables;
+		tvector<IDroppable*>		m_apDroppables;
 		IDroppable*					m_pDragging;
 
 		IPopup*						m_pPopup;

@@ -496,7 +496,7 @@ void CLabel::ComputeLines(float w, float h)
 
 	tstring sDelimiter = "\n";
 
-	eastl::vector<tstring> aTokens;
+	tvector<tstring> aTokens;
 	explode(m_sText, aTokens, sDelimiter);
 
 	// Remove extra empty stuff at the end, caused by newlines at the end of the input text.
@@ -515,7 +515,7 @@ void CLabel::ComputeLines(float w, float h)
 	// ie [size=20]big[size=20]bigger[/size][/size]
 	// A section is pushed on the section stack on every [size] and popped on every [/size]
 	// Then it's used to push onto m_aLines.m_aSections
-	eastl::vector<CLineSection> aSectionStack;
+	tvector<CLineSection> aSectionStack;
 	aSectionStack.push_back(oSection);
 
 	for (size_t i = 0; i < aTokens.size(); i++)

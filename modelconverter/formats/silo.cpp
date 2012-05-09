@@ -77,7 +77,7 @@ bool CModelConverter::ReadSIA(const tstring& sFilename)
 		if (tstrlen(pszLine) == 0)
 			continue;
 
-		eastl::vector<tstring> aTokens;
+		tvector<tstring> aTokens;
 		tstrtok(pszLine, aTokens, " ");
 		const tchar* pszToken = aTokens[0].c_str();
 
@@ -85,7 +85,7 @@ bool CModelConverter::ReadSIA(const tstring& sFilename)
 		{
 			// Warning if version is later than 1.0, we may not support it
 			int iMajor, iMinor;
-			eastl::vector<tstring> asTokens;
+			tvector<tstring> asTokens;
 			tstrtok(pszLine, asTokens, " .");
 
 			if (asTokens.size() >= 3)
@@ -155,21 +155,21 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 		if (tstrlen(pszLine) == 0)
 			continue;
 
-		eastl::vector<tstring> aTokens;
+		tvector<tstring> aTokens;
 		tstrtok(pszLine, aTokens, " ");
 		const tchar* pszToken = aTokens[0].c_str();
 
 		if (tstrncmp(pszToken, "-name", 5) == 0)
 		{
 			tstring sName = pszLine+6;
-			eastl::vector<tstring> aName;
+			tvector<tstring> aName;
 			tstrtok(sName, aName, "\"");	// Strip out the quotation marks.
 
 			pMaterial->m_sName = aName[0];
 		}
 		else if (tstrncmp(pszToken, "-dif", 4) == 0)
 		{
-			eastl::vector<tstring> asTokens;
+			tvector<tstring> asTokens;
 			tstrtok(pszLine, asTokens, " ");
 			if (asTokens.size() == 4)
 			{
@@ -180,7 +180,7 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 		}
 		else if (tstrncmp(pszToken, "-amb", 4) == 0)
 		{
-			eastl::vector<tstring> asTokens;
+			tvector<tstring> asTokens;
 			tstrtok(pszLine, asTokens, " ");
 			if (asTokens.size() == 4)
 			{
@@ -191,7 +191,7 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 		}
 		else if (tstrncmp(pszToken, "-spec", 5) == 0)
 		{
-			eastl::vector<tstring> asTokens;
+			tvector<tstring> asTokens;
 			tstrtok(pszLine, asTokens, " ");
 			if (asTokens.size() == 4)
 			{
@@ -202,7 +202,7 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 		}
 		else if (tstrncmp(pszToken, "-emis", 5) == 0)
 		{
-			eastl::vector<tstring> asTokens;
+			tvector<tstring> asTokens;
 			tstrtok(pszLine, asTokens, " ");
 			if (asTokens.size() == 4)
 			{
@@ -213,7 +213,7 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 		}
 		else if (tstrncmp(pszToken, "-shin", 5) == 0)
 		{
-			eastl::vector<tstring> asTokens;
+			tvector<tstring> asTokens;
 			tstrtok(pszLine, asTokens, " ");
 			if (asTokens.size() == 2)
 				pMaterial->m_flShininess = (float)stof(asTokens[1]);
@@ -223,7 +223,7 @@ const tchar* CModelConverter::ReadSIAMat(const tchar* pszLine, const tchar* pszE
 			const tchar* pszTexture = pszLine+5;
 
 			tstring sName = pszTexture;
-			eastl::vector<tstring> aName;
+			tvector<tstring> aName;
 			tstrtok(sName, aName, "\"");	// Strip out the quotation marks.
 
 			FILE* fpTest = tfopen(aName[0].c_str(), "r");
@@ -307,7 +307,7 @@ const tchar* CModelConverter::ReadSIAShape(const tchar* pszLine, const tchar* ps
 		{
 			// We name our mesh.
 			tstring sName =pszLine+6;
-			eastl::vector<tstring> aName;
+			tvector<tstring> aName;
 			tstrtok(sName, aName, "\"");	// Strip out the quotation marks.
 
 			if (bCare)
@@ -399,7 +399,7 @@ const tchar* CModelConverter::ReadSIAShape(const tchar* pszLine, const tchar* ps
 		{
 			// An edge. We only need them so we can tell where the creases are, so we can calculate normals properly.
 			tstring sCreases = pszLine+7;
-			eastl::vector<tstring> aCreases;
+			tvector<tstring> aCreases;
 			tstrtok(sCreases, aCreases, " ");
 
 			size_t iCreases = aCreases.size();

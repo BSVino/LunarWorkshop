@@ -34,9 +34,9 @@ public:
 protected:
 	buttonalignment_t		m_eAlign;
 
-	eastl::vector<float>	m_aflSpaces;
-	eastl::vector<glgui::CButton*>	m_apButtons;
-	eastl::vector<glgui::CLabel*>	m_apHints;
+	tvector<float>			m_aflSpaces;
+	tvector<glgui::CButton*>	m_apButtons;
+	tvector<glgui::CLabel*>	m_apHints;
 };
 
 class CProgressBar : public glgui::CPanel
@@ -162,7 +162,7 @@ protected:
 class CComboGeneratorPanel : public CMovablePanel, public IWorkListener
 {
 public:
-								CComboGeneratorPanel(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
+								CComboGeneratorPanel(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
 
 public:
 	virtual void				SetVisible(bool bVisible);
@@ -196,12 +196,12 @@ public:
 	EVENT_CALLBACK(CComboGeneratorPanel,	DroppedLoResMesh);
 	EVENT_CALLBACK(CComboGeneratorPanel,	DroppedHiResMesh);
 
-	static void					Open(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
+	static void					Open(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
 	static CComboGeneratorPanel*	Get() { return s_pComboGeneratorPanel; }
 
 protected:
 	CConversionScene*			m_pScene;
-	eastl::vector<CMaterial>*		m_paoMaterials;
+	tvector<CMaterial>*			m_paoMaterials;
 
 	CTexelGenerator				m_oGenerator;
 
@@ -214,8 +214,8 @@ protected:
 	glgui::CLabel*				m_pHiResLabel;
 	glgui::CTree*				m_pHiRes;
 
-	eastl::vector<CConversionMeshInstance*>	m_apLoResMeshes;
-	eastl::vector<CConversionMeshInstance*>	m_apHiResMeshes;
+	tvector<CConversionMeshInstance*>	m_apLoResMeshes;
+	tvector<CConversionMeshInstance*>	m_apHiResMeshes;
 
 	glgui::CButton*				m_pAddLoRes;
 	glgui::CButton*				m_pAddHiRes;
@@ -260,7 +260,7 @@ protected:
 class CAOPanel : public CMovablePanel, public IWorkListener
 {
 public:
-							CAOPanel(bool bColor, CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
+							CAOPanel(bool bColor, CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
 
 	virtual void			SetVisible(bool bVisible);
 
@@ -283,14 +283,14 @@ public:
 
 	virtual void			FindBestRayFalloff();
 
-	static void				Open(bool bColor, CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
+	static void				Open(bool bColor, CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
 	static CAOPanel*		Get(bool bColor);
 
 protected:
 	bool					m_bColor;
 
 	CConversionScene*		m_pScene;
-	eastl::vector<CMaterial>*	m_paoMaterials;
+	tvector<CMaterial>*		m_paoMaterials;
 
 	CAOGenerator			m_oGenerator;
 
@@ -331,7 +331,7 @@ protected:
 class CNormalPanel : public CMovablePanel
 {
 public:
-								CNormalPanel(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
+								CNormalPanel(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
 
 public:
 	virtual void				SetVisible(bool bVisible);
@@ -354,12 +354,12 @@ public:
 	EVENT_CALLBACK(CNormalPanel,	SetupNormal2);
 	EVENT_CALLBACK(CNormalPanel,	UpdateNormal2);
 
-	static void					Open(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials);
+	static void					Open(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
 	static CNormalPanel*		Get() { return s_pNormalPanel; }
 
 protected:
 	CConversionScene*			m_pScene;
-	eastl::vector<CMaterial>*	m_paoMaterials;
+	tvector<CMaterial>*			m_paoMaterials;
 
 	CNormalGenerator			m_oGenerator;
 

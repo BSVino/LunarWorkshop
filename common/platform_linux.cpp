@@ -126,9 +126,9 @@ tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile)
 	return sReturn;
 }
 
-eastl::vector<tstring> ListDirectory(tstring sDirectory, bool bDirectories)
+tvector<tstring> ListDirectory(tstring sDirectory, bool bDirectories)
 {
-	eastl::vector<tstring> asResult;
+	tvector<tstring> asResult;
 
 	struct dirent *dp;
 

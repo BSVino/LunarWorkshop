@@ -2,9 +2,9 @@
 #define _TINKER_COMMANDS_H
 
 #include <EASTL/map.h>
-#include <EASTL/vector.h>
 #include <EASTL/string.h>
 
+#include <tvector.h>
 #include <color.h>
 #include <vector.h>
 #include <strutils.h>
@@ -58,7 +58,7 @@ protected:
 	tstring			m_sName;
 	CommandServerCallback	m_pfnCallback;
 
-	eastl::vector<tstring> m_asArguments;
+	tvector<tstring>		m_asArguments;
 
 	int						m_iConnection;
 	network_id_t			m_iMessageTarget;

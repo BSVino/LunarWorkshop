@@ -113,7 +113,7 @@ CGameServer::~CGameServer()
 	if (m_pWorkListener)
 		m_pWorkListener->SetAction("Scrubbing database", CBaseEntity::GetEntityRegistration().size());
 
-	DestroyAllEntities(eastl::vector<eastl::string>());
+	DestroyAllEntities(tvector<eastl::string>());
 
 	GamePhysics()->RemoveAllEntities();
 
@@ -236,7 +236,7 @@ void CGameServer::Initialize()
 
 	RegisterNetworkFunctions();
 
-	DestroyAllEntities(eastl::vector<eastl::string>(), true);
+	DestroyAllEntities(tvector<eastl::string>(), true);
 
 	CParticleSystemLibrary::ClearInstances();
 
@@ -371,7 +371,7 @@ void CGameServer::RestartLevel()
 {
 	SetLoading(false);
 	AllowPrecaches();
-	DestroyAllEntities(eastl::vector<eastl::string>(), true);
+	DestroyAllEntities(tvector<eastl::string>(), true);
 	m_bRestartLevel = true;
 	Game()->SetupGame(CVar::GetCVarValue("game_mode"));
 	m_bRestartLevel = false;
@@ -395,7 +395,7 @@ void CGameServer::ReadLevels()
 
 void CGameServer::ReadLevels(tstring sDirectory)
 {
-	eastl::vector<tstring> asFiles = ListDirectory(sDirectory);
+	tvector<tstring> asFiles = ListDirectory(sDirectory);
 
 	for (size_t i = 0; i < asFiles.size(); i++)
 	{
@@ -709,7 +709,7 @@ void CGameServer::SaveToFile(const tchar* pFileName)
 
 	o.write((char*)&pGameServer->m_flGameTime, sizeof(pGameServer->m_flGameTime));
 
-	eastl::vector<CBaseEntity*> apSaveEntities;
+	tvector<CBaseEntity*> apSaveEntities;
 	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
 	{
 		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
@@ -890,7 +890,7 @@ void CGameServer::DestroyEntity(int iConnection, CNetworkParameters* p)
 	m_ahDeletedEntities.push_back(pEntity);
 }
 
-void CGameServer::DestroyAllEntities(const eastl::vector<eastl::string>& asSpare, bool bRemakeGame)
+void CGameServer::DestroyAllEntities(const tvector<eastl::string>& asSpare, bool bRemakeGame)
 {
 	if (!GameNetwork()->IsHost() && !IsLoading())
 		return;
@@ -1007,7 +1007,7 @@ CGame* CGameServer::GetGame()
 	return m_hGame;
 }
 
-void ShowStatus(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+void ShowStatus(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	TMsg(eastl::string("Level: ") + CVar::GetCVarValue("game_level") + "\n");
 	TMsg(convertstring<tchar, char>(sprintf(tstring("Clients: %d Entities: %d/%d\n"), GameNetwork()->GetClientsConnected(), CBaseEntity::GetNumEntities(), GameServer()->GetMaxEntities())));
@@ -1031,7 +1031,7 @@ void ShowStatus(class CCommand* pCommand, eastl::vector<tstring>& asTokens, cons
 
 CCommand status("status", ::ShowStatus);
 
-void KickPlayer(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+void KickPlayer(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	if (!asTokens.size())
 		return;

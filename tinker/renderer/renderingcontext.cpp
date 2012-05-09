@@ -17,7 +17,7 @@
 #include <renderer/renderer.h>
 #include <toys/toy.h>
 
-eastl::vector<CRenderingContext::CRenderContext> CRenderingContext::s_aContexts;
+tvector<CRenderingContext::CRenderContext> CRenderingContext::s_aContexts;
 
 CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 {

@@ -2,7 +2,6 @@
 #define _TINKER_REPLICATION_H
 
 #include <EASTL/map.h>
-#include <EASTL/vector.h>
 #include <EASTL/string.h>
 
 #include <common.h>
@@ -296,13 +295,13 @@ inline void CNetworkedVariable<C>::Set(size_t iDataSize, void* pValue)
 }
 
 template <class C>
-class CNetworkedSTLVector : public CNetworkedVariable<eastl::vector<C> >
+class CNetworkedSTLVector : public CNetworkedVariable<tvector<C> >
 {
 public:
 	// For some reason GCC 4.4.3 won't build without these.
-	using CNetworkedVariable<eastl::vector<C> >::m_bInitialized;
-	using CNetworkedVariable<eastl::vector<C> >::m_bDirty;
-	using CNetworkedVariable<eastl::vector<C> >::m_oVariable;
+	using CNetworkedVariable<tvector<C> >::m_bInitialized;
+	using CNetworkedVariable<tvector<C> >::m_bDirty;
+	using CNetworkedVariable<tvector<C> >::m_oVariable;
 
 	CNetworkedSTLVector()
 	{
@@ -344,7 +343,7 @@ public:
 		return m_oVariable.push_back();
 	}
 
-	inline typename eastl::vector<C>::iterator erase(size_t iPosition)
+	inline typename tvector<C>::iterator erase(size_t iPosition)
 	{
 		m_bDirty = true;
 		return m_oVariable.erase(m_oVariable.begin()+iPosition);

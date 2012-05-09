@@ -71,12 +71,12 @@ protected:
 	Vector			m_avecSkyboxUP[6];
 	Vector			m_avecSkyboxDN[6];
 
-	eastl::vector<CBaseEntity*>	m_apRenderList;
+	tvector<CBaseEntity*>	m_apRenderList;
 	bool			m_bRenderingTransparent;
 
 	bool			m_bBatchThisFrame;
 	bool			m_bBatching;
-	eastl::map<CMaterialHandle, eastl::vector<CRenderBatch> > m_aBatches;
+	eastl::map<CMaterialHandle, tvector<CRenderBatch> > m_aBatches;
 
 	const CBaseEntity*	m_pRendering;
 

@@ -108,7 +108,7 @@ inline void CreateDirectory(const tstring& sPath)
 	if (IsDirectory(sPath))
 		return;
 
-	eastl::vector<tstring> asPaths;
+	tvector<tstring> asPaths;
 	while (true)
 	{
 		sSubPath = GetDirectory(sSubPath);

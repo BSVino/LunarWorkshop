@@ -70,8 +70,8 @@ namespace glgui
 		protected:
 			float					m_flFakeHeight;
 
-			eastl::vector<float>	m_aflControlHighlightGoal;
-			eastl::vector<float>	m_aflControlHighlight;
+			tvector<float>			m_aflControlHighlightGoal;
+			tvector<float>			m_aflControlHighlight;
 
 			CMenu*					m_pMenu;
 		};
@@ -95,7 +95,7 @@ namespace glgui
 
 		CSubmenuPanel*				m_pMenu;
 
-		eastl::vector<CMenu*>		m_apEntries;
+		tvector<CMenu*>				m_apEntries;
 	};
 };
 

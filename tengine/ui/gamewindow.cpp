@@ -67,7 +67,7 @@ CGameWindow::~CGameWindow()
 		delete m_pGameServer;
 }
 
-void LoadLevel(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+void LoadLevel(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	if (asTokens.size() == 1)
 	{
@@ -184,7 +184,7 @@ void CGameWindow::DestroyGame()
 	m_pHUD = NULL;
 }
 
-void ReloadLevel(class CCommand* pCommand, eastl::vector<tstring>& asTokens, const tstring& sCommand)
+void ReloadLevel(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	GameWindow()->ReloadLevel();
 }
@@ -203,7 +203,7 @@ void CGameWindow::ReloadLevel()
 	mtsrand((size_t)time(NULL));
 
 	CParticleSystemLibrary::ClearInstances();
-	GameServer()->DestroyAllEntities(eastl::vector<eastl::string>(), true);
+	GameServer()->DestroyAllEntities(tvector<eastl::string>(), true);
 
 	// Now turn the network on and connect all clients.
 	GameNetwork()->SetLoading(false);

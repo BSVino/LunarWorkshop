@@ -206,7 +206,7 @@ if ((x) > (y)) \
 		CReflectionProxy::OnPlayerGravity(IsReflected(REFLECTION_VERTICAL));
 }
 
-void CReflectionCharacter::ReflectVertical(const eastl::vector<tstring>& asArgs)
+void CReflectionCharacter::ReflectVertical(const tvector<tstring>& asArgs)
 {
 	Matrix4x4 mReflection, mTransform;
 	mReflection.SetReflection(Vector(0, 1, 0));
@@ -217,7 +217,7 @@ void CReflectionCharacter::ReflectVertical(const eastl::vector<tstring>& asArgs)
 	SetGlobalTransform(mTransform);
 }
 
-void CReflectionCharacter::ReflectLateral(const eastl::vector<tstring>& asArgs)
+void CReflectionCharacter::ReflectLateral(const tvector<tstring>& asArgs)
 {
 	Matrix4x4 mReflection, mTransform;
 	mReflection.SetReflection(Vector(1, 0, 0));

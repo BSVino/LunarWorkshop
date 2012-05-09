@@ -17,7 +17,7 @@
 #include "ui/modelwindow.h"
 #endif
 
-CNormalGenerator::CNormalGenerator(CConversionScene* pScene, eastl::vector<CMaterial>* paoMaterials)
+CNormalGenerator::CNormalGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
 {
 	m_pScene = pScene;
 	m_paoMaterials = paoMaterials;
@@ -135,7 +135,7 @@ void CNormalGenerator::NormalizeHeightValue(size_t x, size_t y)
 	size_t iTexel;
 	Texel(x, y, iTexel, m_iNormal2Width, m_iNormal2Height, false);
 
-	eastl::vector<Vector> avecHeights;
+	tvector<Vector> avecHeights;
 
 	float flHeight = (m_aflTextureTexels[iTexel*3]+m_aflTextureTexels[iTexel*3+1]+m_aflTextureTexels[iTexel*3+2])/3 * flHiScale;
 	float flMidPass = m_aflMidPassTexels[iTexel] * flMidScale;

@@ -5,7 +5,6 @@
 #endif
 
 #include <EASTL/string.h>
-#include <EASTL/vector.h>
 #include <functional>
 #include <algorithm>
 #include <cctype>
@@ -16,9 +15,10 @@ template <class F, class T>
 inline eastl::basic_string<T> convertstring(const eastl::basic_string<F>& s);
 
 #include "tstring.h"
+#include "tvector.h"
 
 // It's inline so I don't have to make a strutils.cpp :P
-inline void strtok(const eastl::string& str, eastl::vector<eastl::string>& tokens, const eastl::string& delimiters = " \r\n\t")
+inline void strtok(const eastl::string& str, tvector<eastl::string>& tokens, const eastl::string& delimiters = " \r\n\t")
 {
     // Skip delimiters at beginning.
     eastl::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
@@ -37,7 +37,7 @@ inline void strtok(const eastl::string& str, eastl::vector<eastl::string>& token
 }
 
 // It's inline so I don't have to make a strutils.cpp :P
-inline void tstrtok(const tstring& str, eastl::vector<tstring>& tokens, const tstring& delimiters = " \r\n\t")
+inline void tstrtok(const tstring& str, tvector<tstring>& tokens, const tstring& delimiters = " \r\n\t")
 {
 	tokens.clear();
 
@@ -60,7 +60,7 @@ inline void tstrtok(const tstring& str, eastl::vector<tstring>& tokens, const ts
 // explode is slightly different in that repeated delineators return multiple tokens.
 // ie "a|b||c" returns { "a", "b", "", "c" } whereas strtok will cut out the blank result.
 // Basically it works like PHP's explode.
-inline void explode(const tstring& str, eastl::vector<tstring>& tokens, const tstring& delimiter = " ")
+inline void explode(const tstring& str, tvector<tstring>& tokens, const tstring& delimiter = " ")
 {
     tstring::size_type lastPos = str.find_first_of(delimiter, 0);
     tstring::size_type pos = 0;

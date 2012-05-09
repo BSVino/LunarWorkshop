@@ -35,7 +35,7 @@ namespace glgui
 	protected:
 		bool				m_bGrabbable;
 
-		eastl::vector<IDraggable*>	m_apDraggables;
+		tvector<IDraggable*>	m_apDraggables;
 	};
 };
 

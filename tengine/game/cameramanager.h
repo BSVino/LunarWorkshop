@@ -1,9 +1,8 @@
 #pragma once
 
-#include <EASTL/vector.h>
-
 #include <tengine_config.h>
 #include <vector.h>
+#include <tvector.h>
 
 #include <game/entityhandle.h>
 
@@ -54,7 +53,7 @@ public:
 	int				m_iMouseLastX;
 	int				m_iMouseLastY;
 
-	eastl::vector<CEntityHandle<CCamera>>	m_ahCameras;
+	tvector<CEntityHandle<CCamera>>	m_ahCameras;
 	size_t			m_iCurrentCamera;
 
 	double			m_flTransitionBegin;

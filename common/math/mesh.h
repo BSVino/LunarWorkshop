@@ -1,17 +1,17 @@
 #pragma once
 
-#include <EASTL/vector.h>
 #include <EASTL/map.h>
 
+#include <tvector.h>
 #include "vector.h"
 
 class CConvexHullGenerator
 {
 public:
-	CConvexHullGenerator(const eastl::vector<Vector>& avecPoints);
+	CConvexHullGenerator(const tvector<Vector>& avecPoints);
 
 public:
-	const eastl::vector<size_t>&	GetConvexTriangles();
+	const tvector<size_t>&	GetConvexTriangles();
 
 protected:
 	void			CreateConvex();
@@ -34,10 +34,10 @@ protected:
 		size_t p2;
 	};
 
-	const eastl::vector<Vector>&	m_avecPoints;
-	eastl::vector<size_t>			m_aiTriangles;
+	const tvector<Vector>&		m_avecPoints;
+	tvector<size_t>				m_aiTriangles;
 
-	eastl::vector<EdgePair>			m_aOpenEdges;
+	tvector<EdgePair>			m_aOpenEdges;
 	eastl::map<size_t, eastl::map<size_t, bool> >	m_aaCreatedEdges;
 };
 
@@ -46,12 +46,12 @@ class CCoplanarPointOptimizer
 {
 public:
 	// Does not remove the optimized verts. See CUnusedPointOptimizer
-	static void						OptimizeMesh(const eastl::vector<Vector>& avecPoints, eastl::vector<size_t>& aiTriangles, float flTolerance = 0.001f);
+	static void						OptimizeMesh(const tvector<Vector>& avecPoints, tvector<size_t>& aiTriangles, float flTolerance = 0.001f);
 };
 
 // Removes unused points from a mesh, ie points that are not referred to by any triangle.
 class CUnusedPointOptimizer
 {
 public:
-	static void						OptimizeMesh(eastl::vector<Vector>& avecPoints, eastl::vector<size_t>& aiTriangles);
+	static void						OptimizeMesh(tvector<Vector>& avecPoints, tvector<size_t>& aiTriangles);
 };

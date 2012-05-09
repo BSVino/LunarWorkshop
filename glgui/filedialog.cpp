@@ -85,7 +85,7 @@ void CFileDialog::Layout()
 
 	m_pFileList->ClearTree();
 
-	eastl::vector<tstring> asFiles = ListDirectory(m_sDirectory, true);
+	tvector<tstring> asFiles = ListDirectory(m_sDirectory, true);
 
 	m_pFileList->AddNode("..");
 	for (size_t i = 0; i < asFiles.size(); i++)

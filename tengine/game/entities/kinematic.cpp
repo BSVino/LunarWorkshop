@@ -94,7 +94,7 @@ void CKinematic::OnSetLocalTransform(TMatrix& m)
 	m_flAngleLerpStart = -1;
 }
 
-void CKinematic::LerpTo(const eastl::vector<tstring>& sArgs)
+void CKinematic::LerpTo(const tvector<tstring>& sArgs)
 {
 	TAssert(sArgs.size() == 3);
 
@@ -111,7 +111,7 @@ void CKinematic::LerpTo(const eastl::vector<tstring>& sArgs)
 	m_vecLerpGoal = Vector((float)stof(sArgs[0]), (float)stof(sArgs[1]), (float)stof(sArgs[2]));
 }
 
-void CKinematic::LerpAnglesTo(const eastl::vector<tstring>& sArgs)
+void CKinematic::LerpAnglesTo(const tvector<tstring>& sArgs)
 {
 	TAssert(sArgs.size() == 3);
 

@@ -207,9 +207,9 @@ tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile)
 	return sReturn;
 }
 
-eastl::vector<tstring> ListDirectory(const tstring& sDirectory, bool bDirectories)
+tvector<tstring> ListDirectory(const tstring& sDirectory, bool bDirectories)
 {
-	eastl::vector<tstring> asResult;
+	tvector<tstring> asResult;
 
 	wchar_t szPath[MAX_PATH];
 	_swprintf(szPath, L"%s\\*", convertstring<tchar, wchar_t>(sDirectory).c_str());

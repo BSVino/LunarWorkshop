@@ -1,8 +1,7 @@
 #ifndef LW_DATA_H
 #define LW_DATA_H
 
-#include <EASTL/vector.h>
-
+#include <tvector.h>
 #include <vector.h>
 #include <tstring.h>
 #include <trs.h>
@@ -61,7 +60,7 @@ protected:
 
 	tstring					m_sKey;
 	tstring					m_sValue;
-	eastl::vector<CData*>	m_apChildren;
+	tvector<CData*>			m_apChildren;
 };
 
 #endif

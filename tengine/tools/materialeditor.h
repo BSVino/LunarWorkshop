@@ -64,9 +64,9 @@ public:
 
 	glgui::CPanel*			m_pParameterPanel;
 
-	eastl::vector<glgui::CLabel*>		m_apParameterLabels;
-	eastl::vector<glgui::CTextField*>	m_apParameterOptions;
-	eastl::vector<tstring>				m_asParameterNames;
+	tvector<glgui::CLabel*>		m_apParameterLabels;
+	tvector<glgui::CTextField*>	m_apParameterOptions;
+	tvector<tstring>			m_asParameterNames;
 };
 
 class CMaterialEditor : public CWorkbenchTool, public glgui::IEventListener

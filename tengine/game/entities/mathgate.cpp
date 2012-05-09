@@ -26,7 +26,7 @@ void CMathGate::Spawn()
 	m_flRight = 0;
 }
 
-void CMathGate::InputLeft(const eastl::vector<tstring>& sArgs)
+void CMathGate::InputLeft(const tvector<tstring>& sArgs)
 {
 	TAssert(sArgs.size() == 1);
 
@@ -43,7 +43,7 @@ void CMathGate::InputLeft(const eastl::vector<tstring>& sArgs)
 	CallOutput("OnResult");
 }
 
-void CMathGate::InputRight(const eastl::vector<tstring>& sArgs)
+void CMathGate::InputRight(const tvector<tstring>& sArgs)
 {
 	TAssert(sArgs.size() == 1);
 

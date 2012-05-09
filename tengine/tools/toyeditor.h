@@ -58,7 +58,7 @@ public:
 		TRS					m_trsTransform;
 	};
 
-	eastl::vector<CPhysicsShape>	m_aShapes;
+	tvector<CPhysicsShape>	m_aShapes;
 };
 
 class CSourcePanel : public glgui::CPanel, public glgui::IEventListener

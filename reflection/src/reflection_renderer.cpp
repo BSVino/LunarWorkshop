@@ -32,7 +32,7 @@ void CReflectionRenderer::PreRender()
 {
 	TPROF("CReflectionRenderer::SetupFrame");
 
-	eastl::vector<CEntityHandle<CMirror> > apMirrors;
+	tvector<CEntityHandle<CMirror> > apMirrors;
 	apMirrors.reserve(CMirror::GetNumMirrors());
 
 	// None of these had better get deleted while we're doing this since they're not handles.

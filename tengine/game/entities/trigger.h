@@ -37,8 +37,8 @@ public:
 	virtual bool		ShouldRender() const { return false; };
 
 protected:
-	eastl::vector<CEntityHandle<CBaseEntity> >	m_ahTouching;
-	eastl::vector<CEntityHandle<CBaseEntity> >	m_ahLastTouching;
+	tvector<CEntityHandle<CBaseEntity> >	m_ahTouching;
+	tvector<CEntityHandle<CBaseEntity> >	m_ahLastTouching;
 
 	bool				m_bVisible;
 };

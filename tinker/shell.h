@@ -1,8 +1,8 @@
 #pragma once
 
 #include <EASTL/string.h>
-#include <EASTL/vector.h>
 
+#include <tvector.h>
 #include <common.h>
 #include <vector.h>
 #include <color.h>
@@ -29,7 +29,7 @@ public:
 
 protected:
 	tstring						m_sBinaryName;
-	eastl::vector<const char*>	m_apszCommandLine;
+	tvector<const char*>		m_apszCommandLine;
 
 	static CShell*				s_pShell;
 };

@@ -1,7 +1,7 @@
 #ifndef DT_SHADERS_H
 #define DT_SHADERS_H
 
-#include <EASTL/vector.h>
+#include <tvector.h>
 #include <EASTL/string.h>
 #include <EASTL/map.h>
 
@@ -52,7 +52,7 @@ public:
 			bool			m_bTexture;
 		};
 
-		eastl::vector<CUniform>	m_aActions;
+		tvector<CUniform>	m_aActions;
 
 		tstring				m_sBlend;
 	};
@@ -60,7 +60,7 @@ public:
 	eastl::map<tstring, CParameter>				m_aParameters;	// What the shader.txt has.
 	eastl::map<tstring, tstring>				m_asUniforms;	// What the hardware has. Values are types.
 	eastl::map<tstring, CParameter::CUniform>	m_aDefaults;	// Defaults for each uniform as specified by shader .txt (not GLSL)
-	eastl::vector<tstring>						m_asTextures;	// List of textures for purposes of assigning to channels and whatnot.
+	tvector<tstring>							m_asTextures;	// List of textures for purposes of assigning to channels and whatnot.
 };
 
 class CShaderLibrary
@@ -97,7 +97,7 @@ protected:
 
 protected:
 	eastl::map<tstring, size_t>	m_aShaderNames;
-	eastl::vector<CShader>	m_aShaders;
+	tvector<CShader>		m_aShaders;
 	bool					m_bCompiled;
 
 	bool					m_bLogNeedsClearing;

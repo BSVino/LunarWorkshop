@@ -2,8 +2,8 @@
 #define TINKER_APPLICATION_H
 
 #include <EASTL/string.h>
-#include <EASTL/vector.h>
 
+#include <tvector.h>
 #include <common.h>
 #include <vector.h>
 #include <color.h>

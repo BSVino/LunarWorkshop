@@ -1,11 +1,11 @@
 #ifndef Lw_MODELCONVERTER_H
 #define LW_MODELCONVERTER_H
 
-#include <EASTL/vector.h>
 #include <EASTL/string.h>
 #include <iostream>
 #include <fstream>
 
+#include <tvector.h>
 #include <worklistener.h>
 #include "convmesh.h"
 
