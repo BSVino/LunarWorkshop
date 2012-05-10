@@ -38,8 +38,6 @@ CMirror::~CMirror()
 
 void CMirror::Precache()
 {
-	PrecacheModel("models/mirror.toy");
-	PrecacheModel("models/mirror_horizontal.toy");
 }
 
 void CMirror::Spawn()
@@ -47,6 +45,8 @@ void CMirror::Spawn()
 	SetMirrorType(MIRROR_VERTICAL);
 
 	s_ahMirrors.push_back(this);
+
+	m_bDisableBackCulling = true;
 }
 
 bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const

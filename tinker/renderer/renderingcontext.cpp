@@ -489,6 +489,9 @@ void CRenderingContext::SetupMaterial()
 
 	for (size_t i = 0; i < m_pShader->m_asTextures.size(); i++)
 	{
+		if (!GetContext().m_hMaterial->m_ahTextures[i].IsValid())
+			continue;
+
 		glActiveTexture(GL_TEXTURE0+i);
 		glBindTexture(GL_TEXTURE_2D, (GLuint)GetContext().m_hMaterial->m_ahTextures[i]->m_iGLID);
 		SetUniform(m_pShader->m_asTextures[i].c_str(), (int)i);
@@ -556,9 +559,6 @@ void CRenderingContext::BindTexture(size_t iTexture, int iChannel)
 
 void CRenderingContext::BindBufferTexture(const CFrameBuffer& oBuffer, int iChannel)
 {
-	// Not tested since the move to a stack
-	TAssert(iChannel == 0);
-
 	glActiveTexture(GL_TEXTURE0+iChannel);
 
 	if (oBuffer.m_bMultiSample)

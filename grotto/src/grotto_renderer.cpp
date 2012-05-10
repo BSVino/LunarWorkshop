@@ -104,6 +104,31 @@ void CGrottoRenderer::ModifyContext(class CRenderingContext* pContext)
 		pContext->SetWinding(pPlayerCharacter->IsReflected(REFLECTION_LATERAL) == pPlayerCharacter->IsReflected(REFLECTION_VERTICAL));
 }
 
+void CGrottoRenderer::ModifyShader(const class CBaseEntity* pEntity, class CRenderingContext* c)
+{
+	BaseClass::ModifyShader(pEntity, c);
+
+	if (pEntity && c->GetActiveShader() && c->GetActiveShader()->m_sName == "reflection")
+	{
+		size_t iBuffer = static_cast<const CMirror*>(pEntity)->GetBuffer();
+
+		if (iBuffer != ~0)
+		{
+			c->BindBufferTexture(GetReflectionBuffer(iBuffer), 2);
+
+			c->SetUniform("bReflection", true);
+			c->SetUniform("iReflection", 2);
+
+			c->SetUniform("flScreenWidth", (float)Application()->GetWindowWidth());
+			c->SetUniform("flScreenHeight", (float)Application()->GetWindowHeight());
+
+			c->SetUniform("bDiscardReflection", m_bRenderingReflection);
+		}
+
+		return;
+	}
+}
+
 void CGrottoRenderer::SetupFrame(class CRenderingContext* pContext)
 {
 	m_bDrawBackground = true;

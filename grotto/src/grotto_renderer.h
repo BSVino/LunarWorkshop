@@ -17,6 +17,7 @@ public:
 
 	virtual void	PreRender();
 	virtual void	ModifyContext(class CRenderingContext* pContext);
+	virtual void	ModifyShader(const class CBaseEntity* pEntity, class CRenderingContext* c);
 	virtual void	SetupFrame(class CRenderingContext* pContext);
 	virtual void	StartRendering(class CRenderingContext* pContext);
 	virtual void	FinishRendering(class CRenderingContext* pContext);
