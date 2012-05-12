@@ -4,12 +4,14 @@
 #include <physics/physics.h>
 #include <renderer/game_renderingcontext.h>
 #include <textures/materiallibrary.h>
+#include <game/cameramanager.h>
 
 #include "mirror.h"
 #include "token.h"
 #include "receptacle.h"
 #include "kaleidobeast.h"
 #include "depthtransitionarea.h"
+#include "grotto_camera.h"
 
 REGISTER_ENTITY(CPlayerCharacter);
 
@@ -259,4 +261,38 @@ void CPlayerCharacter::FlipScreen()
 {
 	SetGlobalAngles(GetGlobalAngles() + EAngle(0, 180, 0));
 	SetViewAngles(GetViewAngles() + EAngle(0, 180, 0));
+}
+
+void CPlayerCharacter::GoIntoMirror()
+{
+	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
+	{
+		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
+		if (!pEntity)
+			continue;
+
+		CMirror* pMirror = dynamic_cast<CMirror*>(pEntity);
+		if (!pMirror)
+			continue;
+
+		Vector vecMirror = pMirror->GetGlobalOrigin();
+		Vector vecPlayer = GetGlobalOrigin();
+
+		if (fabs(vecMirror.z - vecPlayer.z) > 0.5f)
+			continue;
+
+		if (fabs(vecMirror.y - vecPlayer.y) > 1)
+			continue;
+
+		Matrix4x4 mNew = GetGlobalTransform();
+		EAngle angView = GetViewAngles();
+		Reflect(pMirror->GetGlobalTransform(), pMirror->GetReflection(), pMirror->GetReflectionType(), mNew, pMirror);
+		mNew.SetTranslation(GetGlobalOrigin());	// Reset translation, stay on the same side of the thing.
+//		SetGlobalTransform(mNew);	// Don't set transformation for this sort of reflection, player isn't actually getting reflected.
+		SetViewAngles(angView);
+
+		// Don't need to reflect any cameras because the camera will stay on the same side of the player in this instance.
+
+		return;
+	}
 }

@@ -116,16 +116,6 @@ void CMirror::SetMirrorType(mirror_t eType)
 	Precache();
 
 	m_eMirrorType = eType;
-	switch(m_eMirrorType)
-	{
-	case MIRROR_VERTICAL:
-		SetModel("models/mirror.toy");
-		break;
-
-	case MIRROR_HORIZONTAL:
-		SetModel("models/mirror_horizontal.toy");
-		break;
-	}
 
 	if (IsInPhysics())
 		RemoveFromPhysics();

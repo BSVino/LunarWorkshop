@@ -43,6 +43,9 @@ public:
 	void			SetActiveCamera(CCamera* pCamera);
 	CCamera*		GetActiveCamera();
 
+	size_t			GetNumCameras() { return m_ahCameras.size(); }
+	class CCamera*	GetCamera(size_t iCamera);
+
 public:
 	bool			m_bFreeMode;
 	TVector			m_vecFreeCamera;

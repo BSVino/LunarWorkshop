@@ -422,6 +422,14 @@ void CCameraManager::SetActiveCamera(CCamera* pCamera)
 	}
 }
 
+CCamera* CCameraManager::GetCamera(size_t iCamera)
+{
+	if (iCamera >= m_ahCameras.size())
+		return nullptr;
+
+	return m_ahCameras[iCamera];
+}
+
 CCameraManager* CameraManager()
 {
 	return GameServer()->GetCameraManager();

@@ -9,6 +9,7 @@
 #include "grotto_character.h"
 #include "grotto_game.h"
 #include "grotto_renderer.h"
+#include "mirror.h"
 
 REGISTER_ENTITY(CGrottoCamera);
 
@@ -98,4 +99,45 @@ bool CGrottoCamera::IsAutoTracking()
 		return true;
 
 	return false;
+}
+
+void CGrottoCamera::Reflect(CMirror* pMirror)
+{
+	TAssert(false);	 // Tested but not currently use, warrants a re-test if you want to use it.
+
+	TAssert(pMirror);
+	if (!pMirror)
+		return;
+
+	Matrix4x4 mNew = GetGlobalTransform();
+
+	Vector vecOrigin = GetGlobalOrigin();
+	Vector vecGlobalOrigin = GetParentGlobalTransform() * vecOrigin;
+	Vector vecOldLocalOrigin = GetLocalOrigin();
+
+	// Write out reflected origin.
+	Vector vecNewReflectedGlobalOrigin = pMirror->GetReflection() * (vecGlobalOrigin - pMirror->GetGlobalOrigin()) + pMirror->GetGlobalOrigin();
+
+	if (HasMoveParent())
+		mNew.SetTranslation(GetMoveParent()->GetGlobalToLocalTransform() * vecNewReflectedGlobalOrigin);
+	else
+		mNew.SetTranslation(vecNewReflectedGlobalOrigin);
+
+	// Reflect orientation.
+	Vector vecForward = GetGlobalTransform().GetForwardVector();
+	Vector vecReflectedForward = pMirror->GetReflection().TransformVector(vecForward);
+	if (HasMoveParent())
+		mNew.SetOrientation(GetMoveParent()->GetGlobalToLocalTransform().TransformVector(vecReflectedForward));
+	else
+		mNew.SetOrientation(vecReflectedForward);
+
+	SetGlobalTransform(mNew);
+
+	Vector vecTarget = AngleVector(m_angTarget);
+	Vector vecReflectedTarget = pMirror->GetReflection().TransformVector(vecTarget);
+	m_angTarget = VectorAngles(vecReflectedTarget);
+
+	Vector vecTargetGoal = AngleVector(m_angTargetGoal);
+	Vector vecReflectedTargetGoal = pMirror->GetReflection().TransformVector(vecTargetGoal);
+	m_angTargetGoal = VectorAngles(vecReflectedTargetGoal);
 }

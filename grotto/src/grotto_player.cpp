@@ -68,12 +68,14 @@ void CGrottoPlayer::KeyPress(int c)
 	if (c == 'W')
 	{
 		GetPlayerCharacter()->GoIntoScreen();
+		GetPlayerCharacter()->GoIntoMirror();
 		return;
 	}
 
 	if (c == 'S')
 	{
 		GetPlayerCharacter()->GoOutOfScreen();
+		GetPlayerCharacter()->GoIntoMirror();
 		return;
 	}
 

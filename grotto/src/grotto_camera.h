@@ -13,6 +13,8 @@ public:
 
 	bool						IsAutoTracking();
 
+	void						Reflect(class CMirror* pMirror);
+
 	bool						ShouldRenderOrthographic() { return true; }
 
 protected:

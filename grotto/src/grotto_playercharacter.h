@@ -36,6 +36,8 @@ public:
 	void						GoOutOfScreen();
 	void						FlipScreen();
 
+	void						GoIntoMirror();
+
 protected:
 	CEntityHandle<CMirror>		m_hMirror;
 	CEntityHandle<CToken>		m_hToken;
