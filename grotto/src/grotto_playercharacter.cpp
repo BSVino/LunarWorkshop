@@ -91,7 +91,7 @@ CMirror* CPlayerCharacter::GetMirror() const
 void CPlayerCharacter::FindItems()
 {
 	CToken* pToken = NULL;
-	float flTokenRadius = 2.5f;
+	float flTokenRadius = 1.5f;
 
 	size_t iMaxEntities = GameServer()->GetMaxEntities();
 	for (size_t j = 0; j < iMaxEntities; j++)

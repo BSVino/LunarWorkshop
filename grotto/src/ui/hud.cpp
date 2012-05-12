@@ -71,9 +71,9 @@ void CGrottoHUD::Paint(float x, float y, float w, float h)
 		float flScale = (1/pPlayerCharacter->GetToken()->GetBoundingBox().Size().Length())/2;
 		c.Scale(flScale, flScale, flScale);
 
-		c.Rotate(85.0f, Vector(0, 0, 1));
-		c.Rotate(15.0f, Vector(0, 1, 0));
-		c.Rotate(75.0f, Vector(1, 0, 0));
+		c.Rotate(90.0f, Vector(0, 0, 1));
+		c.Rotate(90.0f, Vector(0, 1, 0));
+		c.Rotate(90.0f, Vector(1, 0, 0));
 
 		CToken* pToken = pPlayerCharacter->GetToken();
 		if (pToken->IsReflected() ^ (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) ^ pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
@@ -82,12 +82,12 @@ void CGrottoHUD::Paint(float x, float y, float w, float h)
 			c.SetWinding(false);
 		}
 
-		c.RenderModel(pPlayerCharacter->GetToken()->GetModelID());
+		c.RenderMaterialModel(pPlayerCharacter->GetToken()->GetMaterialModel(), pPlayerCharacter->GetToken());
 	}
 
 	int iKey = TranslateKeyFromQwerty('E');
 
-	float flTokenRadius = 2.5f;
+	float flTokenRadius = 1.5f;
 	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
 	{
 		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
