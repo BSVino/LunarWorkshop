@@ -38,9 +38,6 @@
 	} \
 } \
 
-// If you hit this, the code is either incomplete or untested.
-#define TUnimplemented() TAssert(false)
-
 #else
 
 #define TAssert(x) \
@@ -54,5 +51,8 @@
 } \
 
 #endif
+
+// If you hit this, the code is either incomplete or untested.
+#define TUnimplemented() TAssert(false)
 
 #endif
