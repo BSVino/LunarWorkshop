@@ -9,7 +9,7 @@
 #endif
 
 #ifdef NORMAL_DEBUG
-#include "ui/modelwindow.h"
+#include "ui/smakwindow.h"
 #endif
 
 CTexelGenerator::CTexelGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
@@ -117,8 +117,8 @@ void CTexelGenerator::Generate()
 	}
 
 #ifdef _DEBUG
-	if (CModelWindow::Get())
-		CModelWindow::Get()->ClearDebugLines();
+	if (CSMAKWindow::Get())
+		CSMAKWindow::Get()->ClearDebugLines();
 #endif
 
 	memset(&m_abTexelMask[0], 0, m_iWidth*m_iHeight*sizeof(bool));
@@ -386,9 +386,9 @@ void CTexelGenerator::FindHiResMeshLocation(CConversionMeshInstance* pMeshInstan
 
 #ifdef NORMAL_DEBUG
 	if (bHitFront && (vecUVPosition - trFront.m_vecHit).LengthSqr() > 0.001f)
-		CModelWindow::Get()->AddDebugLine(vecUVPosition, trFront.m_vecHit);
+		CSMAKWindow::Get()->AddDebugLine(vecUVPosition, trFront.m_vecHit);
 	if (bHitBack && (vecUVPosition - trBack.m_vecHit).LengthSqr() > 0.001f)
-		CModelWindow::Get()->AddDebugLine(vecUVPosition, trBack.m_vecHit);
+		CSMAKWindow::Get()->AddDebugLine(vecUVPosition, trBack.m_vecHit);
 #endif
 
 	if (!bHitBack && !bHitFront)
@@ -412,11 +412,11 @@ void CTexelGenerator::FindHiResMeshLocation(CConversionMeshInstance* pMeshInstan
 	}
 
 #ifdef NORMAL_DEBUG
-//	CModelWindow::Get()->AddDebugLine(vecUVPosition, vecUVPosition+vecHitNormal);
+//	CSMAKWindow::Get()->AddDebugLine(vecUVPosition, vecUVPosition+vecHitNormal);
 	if (bHitFront && (vecUVPosition - trFront.m_vecHit).LengthSqr() > 0.001f)
-		CModelWindow::Get()->AddDebugLine(trFront.m_vecHit, trFront.m_vecHit + trFront.m_pFace->GetNormal(trFront.m_vecHit, trFront.m_pMeshInstance));
+		CSMAKWindow::Get()->AddDebugLine(trFront.m_vecHit, trFront.m_vecHit + trFront.m_pFace->GetNormal(trFront.m_vecHit, trFront.m_pMeshInstance));
 	if (bHitBack && (vecUVPosition - trBack.m_vecHit).LengthSqr() > 0.001f)
-		CModelWindow::Get()->AddDebugLine(trBack.m_vecHit, trBack.m_vecHit + trBack.m_pFace->GetNormal(trBack.m_vecHit, trBack.m_pMeshInstance));
+		CSMAKWindow::Get()->AddDebugLine(trBack.m_vecHit, trBack.m_vecHit + trBack.m_pFace->GetNormal(trBack.m_vecHit, trBack.m_pMeshInstance));
 #endif
 
 	for (size_t i = 0; i < m_apMethods.size(); i++)
@@ -517,12 +517,6 @@ void CTexelMethod::SaveToFile(const tstring& sFilename)
 	// Formats like PNG and VTF don't work unless it's in integer format.
 	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
 
-	if (!ModelWindow()->IsRegistered() && (m_iWidth > 128 || m_iHeight > 128))
-	{
-		iluImageParameter(ILU_FILTER, ILU_BILINEAR);
-		iluScale(128, 128, 1);
-	}
-
 	ilSaveImage(convertstring<tchar, ILchar>(sRealFilename).c_str());
 
 	ilDeleteImages(1,&iDevILId);
@@ -587,7 +581,7 @@ void CTexelDiffuseMethod::PreGenerate()
 
 			CConversionMaterial* pMaterial = m_pGenerator->GetScene()->GetMaterial(iMaterial);
 
-			m_aiTextures[iMaterial] = CModelWindow::LoadTexture(pMaterial->GetDiffuseTexture());
+			m_aiTextures[iMaterial] = CSMAKWindow::LoadTexture(pMaterial->GetDiffuseTexture());
 		}
 	}
 }
@@ -898,7 +892,7 @@ void CTexelAOMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* pMesh
 
 	m *= m2;
 
-	//ModelWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecNormal*0.5f, Color(0, 0, 255));
+	//SMAKWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecNormal*0.5f, Color(0, 0, 255));
 
 	float flHits = 0;
 	float flTotalHits = 0;
@@ -928,7 +922,7 @@ void CTexelAOMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* pMesh
 
 			flTotalHits += flWeight;
 
-			//ModelWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecRay.Normalized()*0.1f, vecDir);
+			//SMAKWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecRay.Normalized()*0.1f, vecDir);
 
 			raytrace::CTraceResult tr2;
 			if (pTracer->Raytrace(Ray(tr->m_vecHit + vecHitNormal*0.01f, vecRay), &tr2))
@@ -969,7 +963,7 @@ void CTexelAOMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* pMesh
 
 	flTotalHits++;
 
-	//ModelWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecRay.Normalized()*0.2f, vecDir);
+	//SMAKWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecRay.Normalized()*0.2f, vecDir);
 
 	raytrace::CTraceResult tr2;
 	if (pTracer->Raytrace(Ray(tr->m_vecHit + vecHitNormal*0.01f, vecRay), &tr2))
@@ -1403,7 +1397,7 @@ void CTexelNormalMethod::SaveToFile(const tstring& sFilename)
 			if (abMaterialSaved[iMaterial])
 				continue;
 
-			ModelWindow()->SaveNormal(iMaterial, sRealFilename);
+			SMAKWindow()->SaveNormal(iMaterial, sRealFilename);
 
 			abMaterialSaved[iMaterial] = true;
 		}

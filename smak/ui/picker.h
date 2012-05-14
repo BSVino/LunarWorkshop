@@ -3,7 +3,7 @@
 
 #include <glgui/movablepanel.h>
 
-#include "modelwindow_ui.h"
+#include "smakwindow_ui.h"
 
 class CPicker : public glgui::CMovablePanel
 {

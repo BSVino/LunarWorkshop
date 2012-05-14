@@ -8,7 +8,7 @@
 #include <strutils.h>
 
 #include <modelconverter/modelconverter.h>
-#include "ui/modelwindow.h"
+#include "ui/smakwindow.h"
 #include "crunch/crunch.h"
 
 typedef enum
@@ -250,7 +250,7 @@ int CreateApplication(int argc, char** argv)
 
 					TAssert(aMaterials.size()-1 == i);
 
-					size_t iTexture = CModelWindow::LoadTextureIntoGL(pMaterial->GetDiffuseTexture());
+					size_t iTexture = CSMAKWindow::LoadTextureIntoGL(pMaterial->GetDiffuseTexture());
 
 					if (iTexture)
 						aMaterials[i].m_iBase = iTexture;
@@ -292,7 +292,7 @@ int CreateApplication(int argc, char** argv)
 		}
 	}
 
-	CModelWindow oWindow(argc, argv);
+	CSMAKWindow oWindow(argc, argv);
 
 	if (sFile.length())
 		oWindow.ReadFile(sFile.c_str());

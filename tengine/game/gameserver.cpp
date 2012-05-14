@@ -684,7 +684,7 @@ void CGameServer::Render()
 
 	GetCameraManager()->Think();
 
-	GameWindow()->GetRenderer()->Render();
+	GameWindow()->GetGameRenderer()->Render();
 }
 
 void CGameServer::GenerateSaveCRC(size_t iInput)

@@ -3,7 +3,7 @@
 #include <modelconverter/convmesh.h>
 #include <glgui/tree.h>
 
-#include "modelwindow.h"
+#include "smakwindow.h"
 
 using namespace glgui;
 
@@ -77,7 +77,7 @@ CMeshInstancePicker::CMeshInstancePicker(IEventListener* pCallback, IEventListen
 
 void CMeshInstancePicker::PopulateTree()
 {
-	CConversionScene* pScene = CModelWindow::Get()->GetScene();
+	CConversionScene* pScene = CSMAKWindow::Get()->GetScene();
 
 	for (size_t i = 0; i < pScene->GetNumScenes(); i++)
 		PopulateTreeNode(NULL, pScene->GetScene(i));

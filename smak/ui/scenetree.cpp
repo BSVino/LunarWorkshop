@@ -14,7 +14,7 @@ CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
 {
 	m_pScene = pScene;
 #ifdef OPENGL2
-	m_pTree = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
+	m_pTree = new CTree(CSMAKWindow::Get()->GetArrowTexture(), CSMAKWindow::Get()->GetEditTexture(), CSMAKWindow::Get()->GetVisibilityTexture());
 #else
 	m_pTree = new CTree();
 #endif
@@ -23,8 +23,6 @@ CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
 	HasCloseButton(false);
 	SetClearBackground(true);
 
-	// Infinite height so that scene objects are always clickable.
-	SetSize(GetWidth(), 10000);
 	SetPos(50, 150);
 
 	m_pMaterialEditor = NULL;
@@ -65,7 +63,7 @@ void CSceneTreePanel::AddAllToTree()
 	size_t iMaterialsNode = m_pTree->AddNode("Materials");
 	CTreeNode* pMaterialsNode = m_pTree->GetNode(iMaterialsNode);
 #ifdef OPENGL2
-	pMaterialsNode->SetIcon(CModelWindow::Get()->GetMaterialsNodeTexture());
+	pMaterialsNode->SetIcon(CSMAKWindow::Get()->GetMaterialsNodeTexture());
 #endif
 
 	size_t i;
@@ -84,7 +82,7 @@ void CSceneTreePanel::AddAllToTree()
 	size_t iMeshesNode = m_pTree->AddNode("Meshes");
 	CTreeNode* pMeshesNode = m_pTree->GetNode(iMeshesNode);
 #ifdef OPENGL2
-	pMeshesNode->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
+	pMeshesNode->SetIcon(CSMAKWindow::Get()->GetMeshesNodeTexture());
 #endif
 
 	for (i = 0; i < m_pScene->GetNumMeshes(); i++)
@@ -96,7 +94,7 @@ void CSceneTreePanel::AddAllToTree()
 	size_t iScenesNode = m_pTree->AddNode("Scenes");
 	CTreeNode* pScenesNode = m_pTree->GetNode(iScenesNode);
 #ifdef OPENGL2
-	pScenesNode->SetIcon(CModelWindow::Get()->GetScenesNodeTexture());
+	pScenesNode->SetIcon(CSMAKWindow::Get()->GetScenesNodeTexture());
 #endif
 
 	for (i = 0; i < m_pScene->GetNumScenes(); i++)
@@ -117,7 +115,7 @@ void CSceneTreePanel::AddNodeToTree(glgui::CTreeNode* pTreeNode, CConversionScen
 		size_t iMeshInstanceNode = pTreeNode->GetNode(iNode)->AddNode<CConversionMeshInstance>(pSceneNode->GetMeshInstance(m)->GetMesh()->GetName(), pSceneNode->GetMeshInstance(m));
 		CTreeNode* pMeshInstanceNode = pTreeNode->GetNode(iNode)->GetNode(iMeshInstanceNode);
 #ifdef OPENGL2
-		pMeshInstanceNode->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
+		pMeshInstanceNode->SetIcon(CSMAKWindow::Get()->GetMeshesNodeTexture());
 #endif
 		pMeshInstanceNode->AddVisibilityButton();
 		pMeshInstanceNode->SetDraggable(true);
@@ -183,7 +181,7 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 	m_pMaterial = pMaterial;
 	m_pSceneTree = pSceneTree;
 
-	m_pScene = CModelWindow::Get()->GetScene();
+	m_pScene = CSMAKWindow::Get()->GetScene();
 
 	for (size_t i = 0; i < m_pScene->GetNumMaterials(); i++)
 	{
@@ -489,12 +487,12 @@ void CMaterialEditor::OpenDiffuseCallback(const tstring& sArgs)
 	if (!sOpen.length())
 		return;
 
-	size_t iTexture = CModelWindow::LoadTextureIntoGL(sOpen);
+	size_t iTexture = CSMAKWindow::LoadTextureIntoGL(sOpen);
 
 	if (!iTexture)
 		return;
 
-	CMaterial* pMaterial = &(*CModelWindow::Get()->GetMaterials())[m_iMaterial];
+	CMaterial* pMaterial = &(*CSMAKWindow::Get()->GetMaterials())[m_iMaterial];
 
 #ifdef OPENGL2
 	if (pMaterial->m_iBase)
@@ -519,12 +517,12 @@ void CMaterialEditor::OpenNormalCallback(const tstring& sArgs)
 	if (!sOpen.length())
 		return;
 
-	size_t iTexture = CModelWindow::LoadTextureIntoGL(sOpen);
+	size_t iTexture = CSMAKWindow::LoadTextureIntoGL(sOpen);
 
 	if (!iTexture)
 		return;
 
-	CMaterial* pMaterial = &(*CModelWindow::Get()->GetMaterials())[m_iMaterial];
+	CMaterial* pMaterial = &(*CSMAKWindow::Get()->GetMaterials())[m_iMaterial];
 
 #ifdef OPENGL2
 	if (pMaterial->m_iNormal)
@@ -553,7 +551,7 @@ void CMaterialEditor::OpenNormalCallback(const tstring& sArgs)
 
 void CMaterialEditor::RemoveDiffuseCallback(const tstring& sArgs)
 {
-	CMaterial* pMaterial = &(*CModelWindow::Get()->GetMaterials())[m_iMaterial];
+	CMaterial* pMaterial = &(*CSMAKWindow::Get()->GetMaterials())[m_iMaterial];
 
 #ifdef OPENGL2
 	if (pMaterial->m_iBase)
@@ -568,7 +566,7 @@ void CMaterialEditor::RemoveDiffuseCallback(const tstring& sArgs)
 
 void CMaterialEditor::RemoveNormalCallback(const tstring& sArgs)
 {
-	CMaterial* pMaterial = &(*CModelWindow::Get()->GetMaterials())[m_iMaterial];
+	CMaterial* pMaterial = &(*CSMAKWindow::Get()->GetMaterials())[m_iMaterial];
 
 #ifdef OPENGL2
 	if (pMaterial->m_iNormal)

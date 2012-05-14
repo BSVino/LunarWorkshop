@@ -42,9 +42,6 @@ void CGameWindow::OpenWindow()
 
 	m_pGameServer = new CGameServer();
 
-	m_pRenderer = CreateRenderer();
-	m_pRenderer->Initialize();
-
 	mtsrand((size_t)time(NULL));
 
 	glgui::CRootPanel::Get()->AddControl(m_pHUD = CreateHUD());
@@ -477,4 +474,9 @@ void CGameWindow::JoystickAxis(int iJoystick, int iAxis, float flValue, float fl
 			pPlayer->JoystickAxis(iJoystick, iAxis, flValue, flChange);
 		}
 	}
+}
+
+CGameRenderer* CGameWindow::GetGameRenderer()
+{
+	return static_cast<CGameRenderer*>(m_pRenderer);
 }

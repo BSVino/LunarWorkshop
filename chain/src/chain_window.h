@@ -15,6 +15,7 @@ public:
 	virtual tstring				AppDirectory() { return "Chain"; }
 
 	void						OpenWindow();
+	class CRenderer*			CreateRenderer();
 
 	void						SetupEngine();
 	void						SetupChain();

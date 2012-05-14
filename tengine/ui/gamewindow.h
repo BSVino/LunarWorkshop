@@ -40,7 +40,7 @@ public:
 	virtual void				JoystickAxis(int iJoystick, int iAxis, float flValue, float flChange);
 
 	class CGameServer*			GetGameServer() { return m_pGameServer; };
-	class CGameRenderer*		GetRenderer() { return m_pRenderer; };
+	class CGameRenderer*		GetGameRenderer();
 
 	void						OpenChat();
 	void						CloseChat();
@@ -51,7 +51,6 @@ public:
 
 protected:
 	class CGameServer*			m_pGameServer;
-	class CGameRenderer*		m_pRenderer;
 
 	class CChatBox*				m_pChatBox;
 

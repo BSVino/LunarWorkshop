@@ -20,11 +20,6 @@ CGame* CreateGame()
 	return GameServer()->Create<CGrottoGame>("CGrottoGame");
 }
 
-CGameRenderer* CreateRenderer()
-{
-	return new CGrottoRenderer();
-}
-
 CResource<CLevel> CreateLevel()
 {
 	return new CLevel();

@@ -16,11 +16,6 @@ CGame* CreateGame()
 	return GameServer()->Create<CChainGame>("CChainGame");
 }
 
-CGameRenderer* CreateRenderer()
-{
-	return new CChainRenderer();
-}
-
 CCamera* CreateCamera()
 {
 	CCamera* pCamera = new CChainCamera();

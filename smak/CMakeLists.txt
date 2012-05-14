@@ -22,9 +22,10 @@ set (SMAK_SOURCES
 	crunch/crunch.cpp
 	crunch/normal.cpp
 	shaders/shaders.cpp
-	ui/modelwindow.cpp
-	ui/modelwindow_input.cpp
-	ui/modelwindow_ui.cpp
+	ui/smakwindow.cpp
+	ui/smakwindow_input.cpp
+	ui/smakwindow_ui.cpp
+	ui/smak_renderer.cpp
 	ui/picker.cpp
 	ui/scenetree.cpp
 )

@@ -24,6 +24,11 @@ void CGrottoWindow::RenderLoading()
 	SwapBuffers();
 }
 
+CRenderer* CGrottoWindow::CreateRenderer()
+{
+	return new CGrottoRenderer();
+}
+
 CGrottoRenderer* CGrottoWindow::GetRenderer()
 {
 	return static_cast<CGrottoRenderer*>(GameServer()->GetRenderer());

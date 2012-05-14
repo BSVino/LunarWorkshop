@@ -3,7 +3,7 @@
 
 #include <modelconverter/convmesh.h>
 #include <parallelize.h>
-#include "ui/modelwindow.h"
+#include "ui/smakwindow.h"
 #include <worklistener.h>
 #include <common.h>
 

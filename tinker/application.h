@@ -92,6 +92,9 @@ public:
 
 	virtual void				OnClientDisconnect(int iClient) {};
 
+	virtual class CRenderer*	CreateRenderer()=0 { return nullptr; }
+	class CRenderer*			GetRenderer() { return m_pRenderer; }
+
 	static void					OpenConsole();
 	static void					CloseConsole();
 	static void					ToggleConsole();
@@ -117,6 +120,8 @@ protected:
 
 	bool						m_bMouseEnabled;
 	bool						m_bMouseDownInGUI;
+
+	class CRenderer*			m_pRenderer;
 
 	class CConsole*				m_pConsole;
 

@@ -25,7 +25,7 @@
 #endif
 
 #ifdef AO_DEBUG
-#include "ui/modelwindow.h"
+#include "ui/smakwindow.h"
 
 void DrawTexture(GLuint iTexture, float flScale = 1.0f);
 #endif
@@ -388,8 +388,8 @@ void CAOGenerator::Generate()
 	m_flHighestValue = 0;
 
 #ifdef _DEBUG
-	if (CModelWindow::Get())
-		CModelWindow::Get()->ClearDebugLines();
+	if (CSMAKWindow::Get())
+		CSMAKWindow::Get()->ClearDebugLines();
 #endif
 
 	memset(&m_bPixelMask[0], 0, m_iWidth*m_iHeight*sizeof(bool));
@@ -679,7 +679,7 @@ void CAOGenerator::GenerateShadowMaps()
 			Vector vecLightPosition = vecDir*flSize + vecCenter;	// Puts us twice as far from the closest vertex
 
 #ifdef AO_DEBUG
-//			CModelWindow::Get()->AddDebugLine(vecLightPosition, vecLightPosition-vecDir);
+//			CSMAKWindow::Get()->AddDebugLine(vecLightPosition, vecLightPosition-vecDir);
 #endif
 
 			glMatrixMode(GL_PROJECTION);
@@ -778,7 +778,7 @@ void CAOGenerator::GenerateShadowMaps()
 			glFinish();
 #endif
 
-			float flTimeBefore = CModelWindow::Get()->GetTime();
+			float flTimeBefore = CSMAKWindow::Get()->GetTime();
 
 			glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 			glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)m_iAOFB);
@@ -797,13 +797,13 @@ void CAOGenerator::GenerateShadowMaps()
 			glFinish();
 #endif
 
-			flProcessSceneRead += (CModelWindow::Get()->GetTime() - flTimeBefore);
-			flTimeBefore = CModelWindow::Get()->GetTime();
+			flProcessSceneRead += (CSMAKWindow::Get()->GetTime() - flTimeBefore);
+			flTimeBefore = CSMAKWindow::Get()->GetTime();
 
 			if (m_pWorkListener)
 				m_pWorkListener->WorkProgress(x*iSamples + y);
 
-			flProgress += (CModelWindow::Get()->GetTime() - flTimeBefore);
+			flProgress += (CSMAKWindow::Get()->GetTime() - flTimeBefore);
 
 			if (m_bStopGenerating)
 				break;
@@ -1159,7 +1159,7 @@ void CAOGenerator::GenerateTriangleByTexel(CConversionMeshInstance* pMeshInstanc
 			}
 
 #ifdef AO_DEBUG
-			//						CModelWindow::Get()->AddDebugLine(vecUVPosition, vecUVPosition + vecNormal/2);
+			//						CSMAKWindow::Get()->AddDebugLine(vecUVPosition, vecUVPosition + vecNormal/2);
 #endif
 
 			size_t iTexel;
@@ -1560,12 +1560,6 @@ void CAOGenerator::SaveToFile(const tchar *pszFilename)
 	// Formats like PNG and VTF don't work unless it's in integer format.
 	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
 
-	if (!ModelWindow()->IsRegistered() && (m_iWidth > 128 || m_iHeight > 128))
-	{
-		iluImageParameter(ILU_FILTER, ILU_BILINEAR);
-		iluScale(128, 128, 1);
-	}
-
 	ilSaveImage(convertstring<tchar, ILchar>(pszFilename).c_str());
 
 	ilDeleteImages(1,&iDevILId);
@@ -1609,10 +1603,10 @@ void DrawSplit(const raytrace::CKDNode* pNode)
 	Vector v3 = v0;
 	v3[(iSplitAxis+2)%3] = oBox.m_vecMaxs[(iSplitAxis+2)%3];
 
-	CModelWindow::Get()->AddDebugLine(v0, v1);
-	CModelWindow::Get()->AddDebugLine(v1, v2);
-	CModelWindow::Get()->AddDebugLine(v2, v3);
-	CModelWindow::Get()->AddDebugLine(v3, v0);
+	CSMAKWindow::Get()->AddDebugLine(v0, v1);
+	CSMAKWindow::Get()->AddDebugLine(v1, v2);
+	CSMAKWindow::Get()->AddDebugLine(v2, v3);
+	CSMAKWindow::Get()->AddDebugLine(v3, v0);
 
 	if (pNode->GetLeftChild())
 		DrawSplit(pNode->GetLeftChild());

@@ -20,7 +20,7 @@ CGame* CreateGame()
 	return GameServer()->Create<CReflectionGame>("CReflectionGame");
 }
 
-CGameRenderer* CreateRenderer()
+CRenderer* CreateRenderer()
 {
 	return new CReflectionRenderer();
 }

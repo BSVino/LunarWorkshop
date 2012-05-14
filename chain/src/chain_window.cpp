@@ -41,6 +41,11 @@ void CChainWindow::RenderLoading()
 	SwapBuffers();
 }
 
+CRenderer* CChainWindow::CreateRenderer()
+{
+	return new CChainRenderer();
+}
+
 CChainRenderer* CChainWindow::GetRenderer()
 {
 	return static_cast<CChainRenderer*>(GameServer()->GetRenderer());

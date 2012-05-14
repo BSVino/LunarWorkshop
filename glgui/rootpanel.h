@@ -78,6 +78,11 @@ namespace glgui
 
 		::CRenderingContext*		m_pRenderingContext;
 	};
+
+	inline CRootPanel* RootPanel()
+	{
+		return CRootPanel::Get();
+	}
 };
 
 #endif

@@ -15,6 +15,7 @@
 #include <tinker/portals/portal.h>
 #include <tinker/cvar.h>
 #include <glgui/rootpanel.h>
+#include <tinker/renderer/renderer.h>
 
 #include "console.h"
 
@@ -199,6 +200,9 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 	glLineWidth(1.0);
 
 	m_bIsOpen = true;
+
+	m_pRenderer = CreateRenderer();
+	m_pRenderer->Initialize();
 }
 
 CApplication::~CApplication()

@@ -14,7 +14,7 @@ CGame* CreateGame()
 	return GameServer()->Create<CTackGame>("CTackGame");
 }
 
-CGameRenderer* CreateRenderer()
+CRenderer* CreateRenderer()
 {
 	return new CTackRenderer();
 }

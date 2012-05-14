@@ -1,0 +1,2379 @@
+#include "smakwindow_ui.h"
+
+#include <maths.h>
+#include <strutils.h>
+#include <tinker_platform.h>
+#include <tinker/keys.h>
+#include <glgui/menu.h>
+#include <glgui/rootpanel.h>
+#include <glgui/picturebutton.h>
+#include <glgui/checkbox.h>
+#include <glgui/tree.h>
+#include <glgui/textfield.h>
+#include <glgui/filedialog.h>
+
+#include "smakwindow.h"
+#include "scenetree.h"
+#include "../smak_version.h"
+#include "picker.h"
+
+using namespace glgui;
+
+void CSMAKWindow::InitUI()
+{
+	CMenu* pFile = CRootPanel::Get()->AddMenu("File");
+	CMenu* pView = CRootPanel::Get()->AddMenu("View");
+	CMenu* pTools = CRootPanel::Get()->AddMenu("Tools");
+	CMenu* pHelp = CRootPanel::Get()->AddMenu("Help");
+
+	pFile->AddSubmenu("Open...", this, OpenDialog);
+	pFile->AddSubmenu("Open Into...", this, OpenIntoDialog);
+	pFile->AddSubmenu("Reload", this, Reload);
+	pFile->AddSubmenu("Save As...", this, SaveDialog);
+	pFile->AddSubmenu("Close", this, Close);
+	pFile->AddSubmenu("Exit", this, Exit);
+
+	pView->AddSubmenu("3D view", this, Render3D);
+	pView->AddSubmenu("UV view", this, RenderUV);
+	pView->AddSubmenu("View wireframe", this, Wireframe);
+	pView->AddSubmenu("Toggle light", this, LightToggle);
+	pView->AddSubmenu("Toggle texture", this, TextureToggle);
+	pView->AddSubmenu("Toggle normal map", this, NormalToggle);
+	pView->AddSubmenu("Toggle AO map", this, AOToggle);
+	pView->AddSubmenu("Toggle color AO map", this, ColorAOToggle);
+
+	pTools->AddSubmenu("Generate all maps", this, GenerateCombo);
+	pTools->AddSubmenu("Generate AO map", this, GenerateAO);
+	pTools->AddSubmenu("Generate color AO map", this, GenerateColorAO);
+	pTools->AddSubmenu("Generate normal from texture", this, GenerateNormal);
+
+	pHelp->AddSubmenu("Help", this, Help);
+	pHelp->AddSubmenu("About SMAK", this, About);
+
+	CButtonPanel* pTopButtons = new CButtonPanel(BA_TOP);
+
+	m_pRender3D = new CButton(0, 0, 100, 100, "3D", true);
+	m_pRenderUV = new CButton(0, 0, 100, 100, "UV", true);
+
+	pTopButtons->AddButton(m_pRender3D, "Render 3D View", false, this, Render3D);
+	pTopButtons->AddButton(m_pRenderUV, "Render UV View", false, this, RenderUV);
+
+	CRootPanel::Get()->AddControl(pTopButtons);
+
+	CButtonPanel* pBottomButtons = new CButtonPanel(BA_BOTTOM);
+
+#ifdef OPENGL2
+	m_pWireframe = new CPictureButton("Wire", m_iWireframeTexture, true);
+	m_pUVWireframe = new CPictureButton("Wire", m_iUVTexture, true);
+	m_pLight = new CPictureButton("Lght", m_iLightTexture, true);
+	m_pTexture = new CPictureButton("Tex", m_iTextureTexture, true);
+	m_pNormal = new CPictureButton("Nrml", m_iNormalTexture, true);
+	m_pAO = new CPictureButton("AO", m_iAOTexture, true);
+	m_pColorAO = new CPictureButton("C AO", m_iCAOTexture, true);
+#else
+	m_pWireframe = new CPictureButton("Wire", CMaterialHandle(), true);
+	m_pUVWireframe = new CPictureButton("Wire", CMaterialHandle(), true);
+	m_pLight = new CPictureButton("Lght", CMaterialHandle(), true);
+	m_pTexture = new CPictureButton("Tex", CMaterialHandle(), true);
+	m_pNormal = new CPictureButton("Nrml", CMaterialHandle(), true);
+	m_pAO = new CPictureButton("AO", CMaterialHandle(), true);
+	m_pColorAO = new CPictureButton("C AO", CMaterialHandle(), true);
+#endif
+
+	pBottomButtons->AddButton(m_pWireframe, "Toggle Wireframe", true, this, Wireframe);
+	pBottomButtons->AddButton(m_pUVWireframe, "Toggle UVs", true, this, UVWireframe);
+	pBottomButtons->AddButton(m_pLight, "Toggle Light", false, this, Light);
+	pBottomButtons->AddButton(m_pTexture, "Toggle Texture", false, this, Texture);
+	pBottomButtons->AddButton(m_pNormal, "Toggle Normal Map", false, this, Normal);
+	pBottomButtons->AddButton(m_pAO, "Toggle AO Map", false, this, AO);
+	pBottomButtons->AddButton(m_pColorAO, "Toggle Color AO", false, this, ColorAO);
+
+	CRootPanel::Get()->AddControl(pBottomButtons);
+
+	CSceneTreePanel::Open(&m_Scene);
+
+	CRootPanel::Get()->Layout();
+}
+
+void CSMAKWindow::Layout()
+{
+	CRootPanel::Get()->Layout();
+}
+
+void CSMAKWindow::OpenDialogCallback(const tstring& sArgs)
+{
+	if (m_bLoadingFile)
+		return;
+
+	CFileDialog::ShowOpenDialog("", ".obj;.sia;.dae", this, OpenFile);
+}
+
+void CSMAKWindow::OpenFileCallback(const tstring& sArgs)
+{
+	ReadFile(sArgs.c_str());
+}
+
+void CSMAKWindow::OpenIntoDialogCallback(const tstring& sArgs)
+{
+	if (m_bLoadingFile)
+		return;
+
+	CFileDialog::ShowOpenDialog("", ".obj;.sia;.dae", this, OpenIntoFile);
+}
+
+void CSMAKWindow::OpenIntoFileCallback(const tstring& sArgs)
+{
+	ReadFileIntoScene(sArgs.c_str());
+}
+
+void CSMAKWindow::ReloadCallback(const tstring& sArgs)
+{
+	if (m_bLoadingFile)
+		return;
+
+	ReloadFromFile();
+}
+
+void CSMAKWindow::SaveDialogCallback(const tstring& sArgs)
+{
+	CFileDialog::ShowSaveDialog("", ".obj;.sia;.dae", this, SaveFile);
+}
+
+void CSMAKWindow::SaveFileCallback(const tstring& sArgs)
+{
+	SaveFile(sArgs.c_str());
+}
+
+void CSMAKWindow::CloseCallback(const tstring& sArgs)
+{
+	if (m_bLoadingFile)
+		return;
+
+	DestroyAll();
+}
+
+void CSMAKWindow::ExitCallback(const tstring& sArgs)
+{
+	exit(0);
+}
+
+void CSMAKWindow::Render3DCallback(const tstring& sArgs)
+{
+	SetRenderMode(false);
+}
+
+void CSMAKWindow::RenderUVCallback(const tstring& sArgs)
+{
+	SetRenderMode(true);
+}
+
+void CSMAKWindow::SceneTreeCallback(const tstring& sArgs)
+{
+	CSceneTreePanel::Open(&m_Scene);
+}
+
+void CSMAKWindow::WireframeCallback(const tstring& sArgs)
+{
+	SetDisplayWireframe(m_pWireframe->GetState());
+}
+
+void CSMAKWindow::UVWireframeCallback(const tstring& sArgs)
+{
+	m_bDisplayUV = m_pUVWireframe->GetState();
+}
+
+void CSMAKWindow::LightCallback(const tstring& sArgs)
+{
+	SetDisplayLight(m_pLight->GetState());
+}
+
+void CSMAKWindow::TextureCallback(const tstring& sArgs)
+{
+	SetDisplayTexture(m_pTexture->GetState());
+}
+
+void CSMAKWindow::NormalCallback(const tstring& sArgs)
+{
+	SetDisplayNormal(m_pNormal->GetState());
+}
+
+void CSMAKWindow::AOCallback(const tstring& sArgs)
+{
+	SetDisplayAO(m_pAO->GetState());
+}
+
+void CSMAKWindow::ColorAOCallback(const tstring& sArgs)
+{
+	if (CAOPanel::Get(true) && CAOPanel::Get(true)->IsGenerating() && !CAOPanel::Get(true)->DoneGenerating())
+	{
+		m_pColorAO->SetState(true, false);
+		return;
+	}
+
+	if (!CAOPanel::Get(true) || !CAOPanel::Get(true)->DoneGenerating())
+	{
+		CAOPanel::Open(true, &m_Scene, &m_aoMaterials);
+		m_pColorAO->SetState(false, false);
+		return;
+	}
+
+	SetDisplayColorAO(m_pColorAO->GetState());
+}
+
+void CSMAKWindow::LightToggleCallback(const tstring& sArgs)
+{
+	SetDisplayLight(!m_bDisplayLight);
+}
+
+void CSMAKWindow::TextureToggleCallback(const tstring& sArgs)
+{
+	SetDisplayTexture(!m_bDisplayTexture);
+}
+
+void CSMAKWindow::NormalToggleCallback(const tstring& sArgs)
+{
+	SetDisplayNormal(!m_bDisplayNormal);
+}
+
+void CSMAKWindow::AOToggleCallback(const tstring& sArgs)
+{
+	SetDisplayAO(!m_bDisplayAO);
+}
+
+void CSMAKWindow::ColorAOToggleCallback(const tstring& sArgs)
+{
+	SetDisplayColorAO(!m_bDisplayColorAO);
+}
+
+void CSMAKWindow::GenerateComboCallback(const tstring& sArgs)
+{
+	CComboGeneratorPanel::Open(&m_Scene, &m_aoMaterials);
+}
+
+void CSMAKWindow::GenerateAOCallback(const tstring& sArgs)
+{
+	CAOPanel::Open(false, &m_Scene, &m_aoMaterials);
+}
+
+void CSMAKWindow::GenerateColorAOCallback(const tstring& sArgs)
+{
+	CAOPanel::Open(true, &m_Scene, &m_aoMaterials);
+}
+
+void CSMAKWindow::GenerateNormalCallback(const tstring& sArgs)
+{
+	CNormalPanel::Open(&m_Scene, &m_aoMaterials);
+}
+
+void CSMAKWindow::HelpCallback(const tstring& sArgs)
+{
+	OpenHelpPanel();
+}
+
+void CSMAKWindow::AboutCallback(const tstring& sArgs)
+{
+	OpenAboutPanel();
+}
+
+void CSMAKWindow::OpenHelpPanel()
+{
+	CHelpPanel::Open();
+}
+
+void CSMAKWindow::OpenAboutPanel()
+{
+	CAboutPanel::Open();
+}
+
+void CSMAKWindow::BeginProgress()
+{
+	CProgressBar::Get()->SetVisible(true);
+}
+
+void CSMAKWindow::SetAction(const tstring& sAction, size_t iTotalProgress)
+{
+	CProgressBar::Get()->SetTotalProgress(iTotalProgress);
+	CProgressBar::Get()->SetAction(sAction);
+	WorkProgress(0, true);
+}
+
+void CSMAKWindow::WorkProgress(size_t iProgress, bool bForceDraw)
+{
+	static double flLastTime = 0;
+
+	// Don't update too often or it'll slow us down just because of the updates.
+	if (!bForceDraw && GetTime() - flLastTime < 0.3f)
+		return;
+
+	CProgressBar::Get()->SetProgress(iProgress);
+
+	CSMAKWindow::Get()->Render();
+	CRootPanel::Get()->Think(GetTime());
+	CRootPanel::Get()->Paint(0, 0, (float)m_iWindowWidth, (float)m_iWindowHeight);
+#ifdef OPENGL2
+	glfwSwapBuffers();
+#endif
+
+	flLastTime = GetTime();
+}
+
+void CSMAKWindow::EndProgress()
+{
+	CProgressBar::Get()->SetVisible(false);
+}
+
+#define BTN_HEIGHT 32
+#define BTN_SPACE 8
+#define BTN_SECTION 18
+
+CButtonPanel::CButtonPanel(buttonalignment_t eAlign)
+: CPanel(0, 0, BTN_HEIGHT, BTN_HEIGHT)
+{
+	m_eAlign = eAlign;
+}
+
+void CButtonPanel::Layout()
+{
+	float flX = 0;
+
+	for (size_t i = 0; i < m_apButtons.size(); i++)
+	{
+		IControl* pButton = m_apButtons[i];
+
+		if (!pButton->IsVisible())
+			continue;
+
+		pButton->SetSize(BTN_HEIGHT, BTN_HEIGHT);
+		pButton->SetPos(flX, 0);
+
+		IControl* pHint = m_apHints[i];
+		pHint->SetPos(flX + BTN_HEIGHT/2 - pHint->GetWidth()/2, -18);
+
+		flX += BTN_HEIGHT + m_aflSpaces[i];
+	}
+
+	SetSize(flX - m_aflSpaces[m_aflSpaces.size()-1], BTN_HEIGHT);
+	if (m_eAlign == BA_TOP)
+		SetPos(CRootPanel::Get()->GetWidth()/2 - GetWidth()/2, BTN_HEIGHT + BTN_SPACE);
+	else
+		SetPos(CRootPanel::Get()->GetWidth()/2 - GetWidth()/2, CRootPanel::Get()->GetHeight() - BTN_HEIGHT*2 - BTN_SPACE);
+
+	CPanel::Layout();
+}
+
+void CButtonPanel::AddButton(CButton* pButton, const tstring& sHints, bool bNewSection, IEventListener* pListener, IEventListener::Callback pfnCallback)
+{
+	AddControl(pButton);
+	m_apButtons.push_back(pButton);
+
+	m_aflSpaces.push_back((float)(bNewSection?BTN_SECTION:BTN_SPACE));
+
+	CLabel* pHint = new CLabel(0, 0, 0, 0, sHints);
+	pHint->SetAlpha(0);
+	pHint->EnsureTextFits();
+	AddControl(pHint);
+	m_apHints.push_back(pHint);
+
+	if (pListener)
+	{
+		pButton->SetClickedListener(pListener, pfnCallback);
+		pButton->SetUnclickedListener(pListener, pfnCallback);
+	}
+}
+
+void CButtonPanel::Think()
+{
+	int mx, my;
+	CRootPanel::GetFullscreenMousePos(mx, my);
+
+	for (size_t i = 0; i < m_apButtons.size(); i++)
+	{
+		if (!m_apButtons[i]->IsVisible())
+		{
+			m_apHints[i]->SetAlpha((int)Approach(0.0f, (float)m_apHints[i]->GetAlpha(), 30.0f));
+			continue;
+		}
+
+		float x = 0, y = 0, w = 0, h = 0;
+		m_apButtons[i]->GetAbsDimensions(x, y, w, h);
+
+		float flAlpha = (float)m_apHints[i]->GetAlpha();
+
+		if (mx >= x && my >= y && mx < x + w && my < y + h)
+			m_apHints[i]->SetAlpha((int)Approach(255.0f, flAlpha, 30.0f));
+		else
+			m_apHints[i]->SetAlpha((int)Approach(0.0f, flAlpha, 30.0f));
+	}
+
+	CPanel::Think();
+}
+
+void CButtonPanel::Paint(float x, float y, float w, float h)
+{
+	CPanel::Paint(x, y, w, h);
+}
+
+CProgressBar* CProgressBar::s_pProgressBar = NULL;
+
+CProgressBar::CProgressBar()
+	: CPanel(0, 0, 100, 100)
+{
+	CRootPanel::Get()->AddControl(this);
+	SetVisible(false);
+
+	m_pAction = new CLabel(0, 0, 200, BTN_HEIGHT, "");
+	AddControl(m_pAction);
+	m_pAction->SetWrap(false);
+
+	Layout();
+}
+
+void CProgressBar::Layout()
+{
+	SetSize(GetParent()->GetWidth()/2, BTN_HEIGHT);
+	SetPos(GetParent()->GetWidth()/4, GetParent()->GetHeight()/5);
+
+	m_pAction->SetSize(GetWidth(), BTN_HEIGHT);
+}
+
+void CProgressBar::Paint(float x, float y, float w, float h)
+{
+	float flTotalProgress = (float)m_iCurrentProgress/(float)m_iTotalProgress;
+
+	if (flTotalProgress > 1)
+		flTotalProgress = 1;
+
+	CPanel::PaintRect(x, y, w, h);
+	CPanel::PaintRect(x+10, y+10, (w-20)*flTotalProgress, h-20, g_clrBoxHi);
+
+	m_pAction->Paint();
+}
+
+void CProgressBar::SetTotalProgress(size_t iProgress)
+{
+	m_iTotalProgress = iProgress;
+	SetProgress(0);
+}
+
+void CProgressBar::SetProgress(size_t iProgress, const tstring& sAction)
+{
+	m_iCurrentProgress = iProgress;
+
+	SetAction(sAction);
+}
+
+void CProgressBar::SetAction(const tstring& sAction)
+{
+	if (sAction.length())
+		m_sAction = sAction;
+
+	m_pAction->SetText(m_sAction);
+
+	if (m_iTotalProgress)
+	{
+		tstring sProgress;
+		sProgress = sprintf(" %d%%", m_iCurrentProgress*100/m_iTotalProgress);
+		m_pAction->AppendText(sProgress);
+	}
+}
+
+CProgressBar* CProgressBar::Get()
+{
+	if (!s_pProgressBar)
+		s_pProgressBar = new CProgressBar();
+
+	return s_pProgressBar;
+}
+
+CAOPanel* CAOPanel::s_pAOPanel = NULL;
+CAOPanel* CAOPanel::s_pColorAOPanel = NULL;
+
+CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
+	: CMovablePanel(bColor?"Color AO generator":"AO generator"), m_oGenerator(pScene, paoMaterials)
+{
+	m_bColor = bColor;
+
+	m_pScene = pScene;
+	m_paoMaterials = paoMaterials;
+
+	if (m_bColor)
+		SetPos(GetParent()->GetWidth() - GetWidth() - 50, GetParent()->GetHeight() - GetHeight() - 150);
+	else
+		SetPos(GetParent()->GetWidth() - GetWidth() - 200, GetParent()->GetHeight() - GetHeight() - 100);
+
+	m_pSizeLabel = new CLabel(0, 0, 32, 32, "Size");
+	AddControl(m_pSizeLabel);
+
+	m_pSizeSelector = new CScrollSelector<int>();
+#ifdef _DEBUG
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(16, "16x16"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(32, "32x32"));
+#endif
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(64, "64x64"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(128, "128x128"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(256, "256x256"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(512, "512x512"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(1024, "1024x1024"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(2048, "2048x2048"));
+	//m_pSizeSelector->AddSelection(CScrollSelection<int>(4096, "4096x4096"));
+	m_pSizeSelector->SetSelection(2);
+	AddControl(m_pSizeSelector);
+
+	m_pEdgeBleedLabel = new CLabel(0, 0, 32, 32, "Edge Bleed");
+	AddControl(m_pEdgeBleedLabel);
+
+	m_pEdgeBleedSelector = new CScrollSelector<int>();
+	m_pEdgeBleedSelector->AddSelection(CScrollSelection<int>(0, "0"));
+	m_pEdgeBleedSelector->AddSelection(CScrollSelection<int>(1, "1"));
+	m_pEdgeBleedSelector->AddSelection(CScrollSelection<int>(2, "2"));
+	m_pEdgeBleedSelector->AddSelection(CScrollSelection<int>(3, "3"));
+	m_pEdgeBleedSelector->AddSelection(CScrollSelection<int>(4, "4"));
+	m_pEdgeBleedSelector->AddSelection(CScrollSelection<int>(5, "5"));
+	m_pEdgeBleedSelector->AddSelection(CScrollSelection<int>(6, "6"));
+	m_pEdgeBleedSelector->AddSelection(CScrollSelection<int>(7, "7"));
+	m_pEdgeBleedSelector->AddSelection(CScrollSelection<int>(8, "8"));
+	m_pEdgeBleedSelector->AddSelection(CScrollSelection<int>(9, "9"));
+	m_pEdgeBleedSelector->AddSelection(CScrollSelection<int>(10, "10"));
+	m_pEdgeBleedSelector->SetSelection(1);
+	AddControl(m_pEdgeBleedSelector);
+
+	if (!m_bColor)
+	{
+		m_pAOMethodLabel = new CLabel(0, 0, 32, 32, "Method");
+		AddControl(m_pAOMethodLabel);
+
+		m_pAOMethodSelector = new CScrollSelector<int>();
+		m_pAOMethodSelector->AddSelection(CScrollSelection<int>(AOMETHOD_SHADOWMAP, "Shadow map (fast!)"));
+		m_pAOMethodSelector->AddSelection(CScrollSelection<int>(AOMETHOD_RAYTRACE, "Raytraced (slow!)"));
+		m_pAOMethodSelector->SetSelectedListener(this, AOMethod);
+		AddControl(m_pAOMethodSelector);
+
+		m_pRayDensityLabel = new CLabel(0, 0, 32, 32, "Ray Density");
+		AddControl(m_pRayDensityLabel);
+
+		m_pRayDensitySelector = new CScrollSelector<int>();
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(5, "5"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(6, "6"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(7, "7"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(8, "8"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(9, "9"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(10, "10"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(11, "11"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(12, "12"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(13, "13"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(14, "14"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(15, "15"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(16, "16"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(17, "17"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(18, "18"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(19, "19"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(20, "20"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(21, "21"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(22, "22"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(23, "23"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(24, "24"));
+		m_pRayDensitySelector->AddSelection(CScrollSelection<int>(25, "25"));
+		m_pRayDensitySelector->SetSelection(15);
+		AddControl(m_pRayDensitySelector);
+
+		m_pFalloffLabel = new CLabel(0, 0, 32, 32, "Ray Falloff");
+		AddControl(m_pFalloffLabel);
+
+		m_pFalloffSelector = new CScrollSelector<float>();
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.01f, "0.01"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.05f, "0.05"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.1f, "0.1"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.25f, "0.25"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.5f, "0.5"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.75f, "0.75"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(1.0f, "1.0"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(1.25f, "1.25"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(1.5f, "1.5"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(1.75f, "1.75"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(2.0f, "2.0"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(2.5f, "2.5"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(3.0f, "3.0"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(4.0f, "4.0"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(5.0f, "5.0"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(6.0f, "6.0"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(7.5f, "7.5"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(10.0f, "10"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(25.0f, "25"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(50.0f, "50"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(100.0f, "100"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(250.0f, "250"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(500.0f, "500"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(1000.0f, "1000"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(2500.0f, "2500"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(5000.0f, "5000"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(10000.0f, "10000"));
+		m_pFalloffSelector->AddSelection(CScrollSelection<float>(-1.0f, "No falloff"));
+		m_pFalloffSelector->SetSelection(6);
+		AddControl(m_pFalloffSelector);
+
+		m_pLightsLabel = new CLabel(0, 0, 32, 32, "Lights");
+		AddControl(m_pLightsLabel);
+
+		m_pLightsSelector = new CScrollSelector<int>();
+		m_pLightsSelector->AddSelection(CScrollSelection<int>(500, "500"));
+		m_pLightsSelector->AddSelection(CScrollSelection<int>(1000, "1000"));
+		m_pLightsSelector->AddSelection(CScrollSelection<int>(1500, "1500"));
+		m_pLightsSelector->AddSelection(CScrollSelection<int>(2000, "2000"));
+		m_pLightsSelector->AddSelection(CScrollSelection<int>(2500, "2500"));
+		m_pLightsSelector->AddSelection(CScrollSelection<int>(3000, "3000"));
+		m_pLightsSelector->SetSelection(3);
+		AddControl(m_pLightsSelector);
+
+		m_pRandomLabel = new CLabel(0, 0, 32, 32, "Randomize rays");
+		AddControl(m_pRandomLabel);
+
+		m_pRandomCheckBox = new CCheckBox();
+		AddControl(m_pRandomCheckBox);
+
+		m_pCreaseLabel = new CLabel(0, 0, 32, 32, "Crease edges");
+		AddControl(m_pCreaseLabel);
+
+		m_pCreaseCheckBox = new CCheckBox();
+		AddControl(m_pCreaseCheckBox);
+
+		m_pGroundOcclusionLabel = new CLabel(0, 0, 32, 32, "Ground occlusion");
+		AddControl(m_pGroundOcclusionLabel);
+
+		m_pGroundOcclusionCheckBox = new CCheckBox();
+		AddControl(m_pGroundOcclusionCheckBox);
+	}
+
+	m_pGenerate = new CButton(0, 0, 100, 100, "Generate");
+	AddControl(m_pGenerate);
+
+	m_pGenerate->SetClickedListener(this, Generate);
+
+	m_pSave = new CButton(0, 0, 100, 100, "Save Map");
+	AddControl(m_pSave);
+
+	m_pSave->SetClickedListener(this, SaveMapDialog);
+	m_pSave->SetVisible(false);
+
+	Layout();
+}
+
+void CAOPanel::Layout()
+{
+	float flSpace = 20;
+
+	m_pSizeLabel->EnsureTextFits();
+
+	float flSelectorSize = m_pSizeLabel->GetHeight() - 4;
+
+	m_pSizeSelector->SetSize(GetWidth() - m_pSizeLabel->GetWidth() - flSpace, flSelectorSize);
+
+	float flControlY = HEADER_HEIGHT;
+
+	m_pSizeSelector->SetPos(GetWidth() - m_pSizeSelector->GetWidth() - flSpace/2, flControlY);
+	m_pSizeLabel->SetPos(5, flControlY);
+
+	flControlY += 30;
+
+	m_pEdgeBleedLabel->EnsureTextFits();
+	m_pEdgeBleedLabel->SetPos(5, flControlY);
+
+	m_pEdgeBleedSelector->SetSize(GetWidth() - m_pEdgeBleedLabel->GetWidth() - flSpace, flSelectorSize);
+	m_pEdgeBleedSelector->SetPos(GetWidth() - m_pEdgeBleedSelector->GetWidth() - flSpace/2, flControlY);
+
+	if (!m_bColor)
+	{
+		flControlY += 30;
+
+		m_pAOMethodLabel->EnsureTextFits();
+		m_pAOMethodLabel->SetPos(5, flControlY);
+
+		m_pAOMethodSelector->SetSize(GetWidth() - m_pAOMethodLabel->GetWidth() - flSpace, flSelectorSize);
+		m_pAOMethodSelector->SetPos(GetWidth() - m_pAOMethodSelector->GetWidth() - flSpace/2, flControlY);
+
+		bool bRaytracing = (m_pAOMethodSelector->GetSelectionValue() == AOMETHOD_RAYTRACE);
+		m_pRayDensityLabel->SetVisible(bRaytracing);
+		m_pRayDensitySelector->SetVisible(bRaytracing);
+
+		m_pFalloffSelector->SetVisible(bRaytracing);
+		m_pFalloffLabel->SetVisible(bRaytracing);
+
+		m_pRandomCheckBox->SetVisible(bRaytracing);
+		m_pRandomLabel->SetVisible(bRaytracing);
+
+		if (bRaytracing)
+		{
+			flControlY += 30;
+
+			m_pRayDensityLabel->EnsureTextFits();
+			m_pRayDensityLabel->SetPos(5, flControlY);
+
+			m_pRayDensitySelector->SetSize(GetWidth() - m_pRayDensityLabel->GetWidth() - flSpace, flSelectorSize);
+			m_pRayDensitySelector->SetPos(GetWidth() - m_pRayDensitySelector->GetWidth() - flSpace/2, flControlY);
+
+			flControlY += 30;
+
+			m_pFalloffLabel->EnsureTextFits();
+			m_pFalloffLabel->SetPos(5, flControlY);
+
+			m_pFalloffSelector->SetSize(GetWidth() - m_pFalloffLabel->GetWidth() - flSpace, flSelectorSize);
+			m_pFalloffSelector->SetPos(GetWidth() - m_pFalloffSelector->GetWidth() - flSpace/2, flControlY);
+
+			flControlY += 30;
+
+			m_pRandomLabel->EnsureTextFits();
+			m_pRandomLabel->SetPos(25, flControlY);
+
+			m_pRandomCheckBox->SetPos(10, flControlY + m_pRandomLabel->GetHeight()/2 - m_pRandomCheckBox->GetHeight()/2);
+		}
+
+		bool bShadowmapping = (m_pAOMethodSelector->GetSelectionValue() == AOMETHOD_SHADOWMAP);
+		m_pLightsLabel->SetVisible(bShadowmapping);
+		m_pLightsSelector->SetVisible(bShadowmapping);
+
+		if (bShadowmapping)
+		{
+			flControlY += 30;
+
+			m_pLightsLabel->EnsureTextFits();
+			m_pLightsLabel->SetPos(5, flControlY);
+
+			m_pLightsSelector->SetSize(GetWidth() - m_pLightsLabel->GetWidth() - flSpace, flSelectorSize);
+			m_pLightsSelector->SetPos(GetWidth() - m_pLightsSelector->GetWidth() - flSpace/2, flControlY);
+		}
+
+		m_pGroundOcclusionLabel->SetVisible(bShadowmapping || bRaytracing);
+		m_pGroundOcclusionCheckBox->SetVisible(bShadowmapping || bRaytracing);
+
+		if (bShadowmapping || bRaytracing)
+		{
+			// If we're on the raytracing screen there was already the Randomize rays checkbox
+			// so keep the spacing smaller.
+			if (bRaytracing)
+				flControlY += 20;
+			else
+				flControlY += 30;
+
+			m_pGroundOcclusionLabel->EnsureTextFits();
+			m_pGroundOcclusionLabel->SetPos(25, flControlY);
+
+			m_pGroundOcclusionCheckBox->SetPos(10, flControlY + m_pGroundOcclusionLabel->GetHeight()/2 - m_pGroundOcclusionCheckBox->GetHeight()/2);
+		}
+
+		if (bShadowmapping || bRaytracing)
+			flControlY += 20;
+		else
+			flControlY += 30;
+
+		m_pCreaseLabel->EnsureTextFits();
+		m_pCreaseLabel->SetPos(25, flControlY);
+
+		m_pCreaseCheckBox->SetPos(10, flControlY + m_pCreaseLabel->GetHeight()/2 - m_pCreaseCheckBox->GetHeight()/2);
+	}
+
+	m_pSave->SetSize(GetWidth()/2, GetWidth()/6);
+	m_pSave->SetPos(GetWidth()/4, GetHeight() - (int)(m_pSave->GetHeight()*1.5f));
+	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
+
+	m_pGenerate->SetSize(GetWidth()/2, GetWidth()/6);
+	m_pGenerate->SetPos(GetWidth()/4, GetHeight() - (int)(m_pSave->GetHeight()*1.5f) - (int)(m_pGenerate->GetHeight()*1.5f));
+
+	CMovablePanel::Layout();
+}
+
+bool CAOPanel::KeyPressed(int iKey)
+{
+	if (iKey == 27 && m_oGenerator.IsGenerating())
+	{
+		m_pSave->SetVisible(false);
+		m_oGenerator.StopGenerating();
+		return true;
+	}
+	else
+		return CMovablePanel::KeyPressed(iKey);
+}
+
+void CAOPanel::GenerateCallback(const tstring& sArgs)
+{
+	if (m_oGenerator.IsGenerating())
+	{
+		m_pSave->SetVisible(false);
+		m_oGenerator.StopGenerating();
+		return;
+	}
+
+	m_pSave->SetVisible(false);
+
+	// Switch over to UV mode so we can see our progress.
+	CSMAKWindow::Get()->SetRenderMode(true);
+
+	// If the 3d model was there get rid of it.
+	CSMAKWindow::Get()->Render();
+	CRootPanel::Get()->Paint(0, 0, (float)CSMAKWindow::Get()->GetWindowWidth(), (float)CSMAKWindow::Get()->GetWindowHeight());
+#ifdef OPENGL2
+	glfwSwapBuffers();
+#endif
+	CSMAKWindow::Get()->Render();
+	CRootPanel::Get()->Paint(0, 0, (float)CSMAKWindow::Get()->GetWindowWidth(), (float)CSMAKWindow::Get()->GetWindowHeight());
+#ifdef OPENGL2
+	glfwSwapBuffers();
+#endif
+
+	if (m_bColor)
+		CSMAKWindow::Get()->SetDisplayColorAO(true);
+	else
+		CSMAKWindow::Get()->SetDisplayAO(true);
+
+	m_pGenerate->SetText("Cancel");
+
+	int iSize = m_pSizeSelector->GetSelectionValue();
+	m_oGenerator.SetMethod(m_bColor?AOMETHOD_RENDER:(aomethod_t)m_pAOMethodSelector->GetSelectionValue());
+	m_oGenerator.SetSize(iSize, iSize);
+	m_oGenerator.SetBleed(m_pEdgeBleedSelector->GetSelectionValue());
+	m_oGenerator.SetUseTexture(true);
+	m_oGenerator.SetWorkListener(this);
+	if (!m_bColor)
+	{
+		if (m_pAOMethodSelector->GetSelectionValue() == AOMETHOD_SHADOWMAP)
+			m_oGenerator.SetSamples(m_pLightsSelector->GetSelectionValue());
+		else
+			m_oGenerator.SetSamples(m_pRayDensitySelector->GetSelectionValue());
+		m_oGenerator.SetRandomize(m_pRandomCheckBox->GetToggleState());
+		m_oGenerator.SetCreaseEdges(m_pCreaseCheckBox->GetToggleState());
+		m_oGenerator.SetGroundOcclusion(m_pGroundOcclusionCheckBox->GetToggleState());
+		m_oGenerator.SetRayFalloff(m_pFalloffSelector->GetSelectionValue());
+	}
+	m_oGenerator.Generate();
+
+	size_t iAO;
+	if (m_oGenerator.DoneGenerating())
+		iAO = m_oGenerator.GenerateTexture();
+
+	for (size_t i = 0; i < m_paoMaterials->size(); i++)
+	{
+		size_t& iAOTexture = m_bColor?(*m_paoMaterials)[i].m_iColorAO:(*m_paoMaterials)[i].m_iAO;
+
+		if (!m_pScene->GetMaterial(i)->IsVisible())
+			continue;
+
+#ifdef OPENGL2
+		if (iAOTexture)
+			glDeleteTextures(1, &iAOTexture);
+#endif
+
+		if (m_oGenerator.DoneGenerating())
+			iAOTexture = iAO;
+		else
+			iAOTexture = 0;
+	}
+
+	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
+
+	m_pGenerate->SetText("Generate");
+}
+
+void CAOPanel::SaveMapDialogCallback(const tstring& sArgs)
+{
+	if (!m_oGenerator.DoneGenerating())
+		return;
+
+	CFileDialog::ShowSaveDialog("", ".png;.bmp;.jpg;.tga;.psd", this, SaveMapFile);
+}
+
+void CAOPanel::SaveMapFileCallback(const tstring& sArgs)
+{
+	m_oGenerator.SaveToFile(sArgs.c_str());
+}
+
+void CAOPanel::BeginProgress()
+{
+	CProgressBar::Get()->SetVisible(true);
+}
+
+void CAOPanel::SetAction(const tstring& sAction, size_t iTotalProgress)
+{
+	CProgressBar::Get()->SetTotalProgress(iTotalProgress);
+	CProgressBar::Get()->SetAction(sAction);
+	WorkProgress(0, true);
+}
+
+void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
+{
+	static double flLastTime = 0;
+	static double flLastGenerate = 0;
+
+	// Don't update too often or it'll slow us down just because of the updates.
+	if (!bForceDraw && CSMAKWindow::Get()->GetTime() - flLastTime < 0.01f)
+		return;
+
+	CProgressBar::Get()->SetProgress(iProgress);
+
+	// We need to correct the viewport size before we push any events, or else any Layout() commands during
+	// button presses and the line will use the wrong viewport size.
+#ifdef OPENGL2
+	glViewport(0, 0, CSMAKWindow::Get()->GetWindowWidth(), CSMAKWindow::Get()->GetWindowHeight());
+#endif
+
+	if (m_oGenerator.IsGenerating() && flLastTime - flLastGenerate > 0.5f)
+	{
+		size_t iAO = m_oGenerator.GenerateTexture(true);
+
+		for (size_t i = 0; i < m_paoMaterials->size(); i++)
+		{
+			size_t& iAOTexture = m_bColor?(*m_paoMaterials)[i].m_iColorAO:(*m_paoMaterials)[i].m_iAO;
+
+#ifdef OPENGL2
+			if (iAOTexture)
+				glDeleteTextures(1, &iAOTexture);
+#endif
+
+			iAOTexture = iAO;
+		}
+
+		flLastGenerate = CSMAKWindow::Get()->GetTime();
+	}
+
+	CSMAKWindow::Get()->Render();
+	CRootPanel::Get()->Think(CSMAKWindow::Get()->GetTime());
+	CRootPanel::Get()->Paint(0, 0, (float)CSMAKWindow::Get()->GetWindowWidth(), (float)CSMAKWindow::Get()->GetWindowHeight());
+#ifdef OPENGL2
+	glfwSwapBuffers();
+#endif
+
+	flLastTime = CSMAKWindow::Get()->GetTime();
+}
+
+void CAOPanel::EndProgress()
+{
+	CProgressBar::Get()->SetVisible(false);
+}
+
+void CAOPanel::FindBestRayFalloff()
+{
+	if (!m_pScene->GetNumMeshes())
+		return;
+
+	if (!m_bColor)
+		m_pFalloffSelector->SetSelection(m_pFalloffSelector->FindClosestSelectionValue(m_pScene->m_oExtends.Size().Length()/2));
+}
+
+void CAOPanel::Open(bool bColor, CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
+{
+	CAOPanel* pPanel = Get(bColor);
+
+	// Get rid of the last one, in case we've changed the scene.
+	if (pPanel)
+		delete pPanel;
+
+	if (bColor)
+		s_pColorAOPanel = new CAOPanel(true, pScene, paoMaterials);
+	else
+		s_pAOPanel = new CAOPanel(false, pScene, paoMaterials);
+
+	pPanel = Get(bColor);
+
+	if (!pPanel)
+		return;
+
+	pPanel->SetVisible(true);
+	pPanel->Layout();
+
+	pPanel->FindBestRayFalloff();
+}
+
+CAOPanel* CAOPanel::Get(bool bColor)
+{
+	return bColor?s_pColorAOPanel:s_pAOPanel;
+}
+
+void CAOPanel::SetVisible(bool bVisible)
+{
+	m_oGenerator.StopGenerating();
+
+	CMovablePanel::SetVisible(bVisible);
+}
+
+void CAOPanel::AOMethodCallback(const tstring& sArgs)
+{
+	// So we can appear/disappear the ray density bar if the AO method has changed.
+	Layout();
+}
+
+COptionsButton::COptionsButton()
+	: CButton(0, 0, 100, 100, "", true)
+{
+	m_pPanel = new COptionsPanel(this);
+	m_pPanel->SetVisible(false);
+
+	SetClickedListener(this, Open);
+	SetUnclickedListener(this, Close);
+}
+
+void COptionsButton::OpenCallback(const tstring& sArgs)
+{
+	CRootPanel::Get()->AddControl(m_pPanel, true);
+
+	float flPanelWidth = m_pPanel->GetWidth();
+	float flButtonWidth = GetWidth();
+	float x, y, w, h;
+	GetAbsDimensions(x, y, w, h);
+	m_pPanel->SetPos(x + flButtonWidth/2 - flPanelWidth/2, y+h+3);
+
+	m_pPanel->Layout();
+	m_pPanel->SetVisible(true);
+}
+
+void COptionsButton::CloseCallback(const tstring& sArgs)
+{
+	CRootPanel::Get()->RemoveControl(m_pPanel);
+	m_pPanel->SetVisible(false);
+
+	SetState(false, false);
+}
+
+COptionsButton::COptionsPanel::COptionsPanel(COptionsButton* pButton)
+	: CPanel(0, 0, 200, 350)
+{
+	m_pOkay = new CButton(0, 0, 100, 100, "Okay");
+	m_pOkay->SetClickedListener(pButton, Close);
+	AddControl(m_pOkay);
+}
+
+void COptionsButton::COptionsPanel::Layout()
+{
+	BaseClass::Layout();
+
+	m_pOkay->SetSize(40, 20);
+	m_pOkay->SetPos(GetWidth()/2 - 20, GetHeight() - 30);
+}
+
+void COptionsButton::COptionsPanel::Paint(float x, float y, float w, float h)
+{
+	CRootPanel::PaintRect(x, y, w, h, g_clrBox);
+
+	BaseClass::Paint(x, y, w, h);
+}
+
+CComboGeneratorPanel* CComboGeneratorPanel::s_pComboGeneratorPanel = NULL;
+
+CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
+	: CMovablePanel("Combo map generator"), m_oGenerator(pScene, paoMaterials)
+{
+	m_pScene = pScene;
+	m_paoMaterials = paoMaterials;
+
+	m_pMeshInstancePicker = NULL;
+
+	SetSize(400, 450);
+	SetPos(GetParent()->GetWidth() - GetWidth() - 50, GetParent()->GetHeight() - GetHeight() - 100);
+
+	m_pSizeLabel = new CLabel(0, 0, 32, 32, "Size");
+	AddControl(m_pSizeLabel);
+
+	m_pSizeSelector = new CScrollSelector<int>();
+#ifdef _DEBUG
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(16, "16x16"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(32, "32x32"));
+#endif
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(64, "64x64"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(128, "128x128"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(256, "256x256"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(512, "512x512"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(1024, "1024x1024"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(2048, "2048x2048"));
+	m_pSizeSelector->AddSelection(CScrollSelection<int>(4096, "4096x4096"));
+	m_pSizeSelector->SetSelection(4);
+	AddControl(m_pSizeSelector);
+
+	m_pLoResLabel = new CLabel(0, 0, 32, 32, "Low Resolution Meshes");
+	AddControl(m_pLoResLabel);
+
+#ifdef OPENGL2
+	m_pLoRes = new CTree(CSMAKWindow::Get()->GetArrowTexture(), CSMAKWindow::Get()->GetEditTexture(), CSMAKWindow::Get()->GetVisibilityTexture());
+#else
+	m_pLoRes = new CTree();
+#endif
+	m_pLoRes->SetBackgroundColor(g_clrBox);
+	m_pLoRes->SetDroppedListener(this, DroppedLoResMesh);
+	AddControl(m_pLoRes);
+
+	m_pHiResLabel = new CLabel(0, 0, 32, 32, "High Resolution Meshes");
+	AddControl(m_pHiResLabel);
+
+#ifdef OPENGL2
+	m_pHiRes = new CTree(CSMAKWindow::Get()->GetArrowTexture(), CSMAKWindow::Get()->GetEditTexture(), CSMAKWindow::Get()->GetVisibilityTexture());
+#else
+	m_pHiRes = new CTree();
+#endif
+	m_pHiRes->SetBackgroundColor(g_clrBox);
+	m_pHiRes->SetDroppedListener(this, DroppedHiResMesh);
+	AddControl(m_pHiRes);
+
+	m_pAddLoRes = new CButton(0, 0, 100, 100, "Add");
+	m_pAddLoRes->SetClickedListener(this, AddLoRes);
+	AddControl(m_pAddLoRes);
+
+	m_pAddHiRes = new CButton(0, 0, 100, 100, "Add");
+	m_pAddHiRes->SetClickedListener(this, AddHiRes);
+	AddControl(m_pAddHiRes);
+
+	m_pRemoveLoRes = new CButton(0, 0, 100, 100, "Remove");
+	m_pRemoveLoRes->SetClickedListener(this, RemoveLoRes);
+	AddControl(m_pRemoveLoRes);
+
+	m_pRemoveHiRes = new CButton(0, 0, 100, 100, "Remove");
+	m_pRemoveHiRes->SetClickedListener(this, RemoveHiRes);
+	AddControl(m_pRemoveHiRes);
+
+	m_pDiffuseCheckBox = new CCheckBox();
+	m_pDiffuseCheckBox->SetState(true, false);
+	AddControl(m_pDiffuseCheckBox);
+
+	m_pDiffuseLabel = new CLabel(0, 0, 100, 100, "Diffuse");
+	AddControl(m_pDiffuseLabel);
+
+	m_pAOCheckBox = new CCheckBox();
+	m_pAOCheckBox->SetState(true, false);
+	AddControl(m_pAOCheckBox);
+
+	m_pAOLabel = new CLabel(0, 0, 100, 100, "Ambient Occlusion");
+	AddControl(m_pAOLabel);
+
+	m_pAOOptions = new COptionsButton();
+	AddControl(m_pAOOptions);
+
+	m_pBleedLabel = new CLabel(0, 0, 100, 100, "Edge Bleed");
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pBleedLabel);
+
+	m_pBleedSelector = new CScrollSelector<int>();
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(0, "0"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(1, "1"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(2, "2"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(3, "3"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(4, "4"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(5, "5"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(6, "6"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(7, "7"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(8, "8"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(9, "9"));
+	m_pBleedSelector->AddSelection(CScrollSelection<int>(10, "10"));
+	m_pBleedSelector->SetSelection(1);
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pBleedSelector);
+
+	m_pSamplesLabel = new CLabel(0, 0, 100, 100, "Samples");
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pSamplesLabel);
+
+	m_pSamplesSelector = new CScrollSelector<int>();
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(5, "5"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(6, "6"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(7, "7"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(8, "8"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(9, "9"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(10, "10"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(11, "11"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(12, "12"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(13, "13"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(14, "14"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(15, "15"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(16, "16"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(17, "17"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(18, "18"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(19, "19"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(20, "20"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(21, "21"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(22, "22"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(23, "23"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(24, "24"));
+	m_pSamplesSelector->AddSelection(CScrollSelection<int>(25, "25"));
+	m_pSamplesSelector->SetSelection(15);
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pSamplesSelector);
+
+	m_pFalloffLabel = new CLabel(0, 0, 100, 100, "Ray Falloff");
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pFalloffLabel);
+
+	m_pFalloffSelector = new CScrollSelector<float>();
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.01f, "0.01"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.05f, "0.05"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.1f, "0.1"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.25f, "0.25"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.5f, "0.5"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(0.75f, "0.75"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(1.0f, "1.0"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(1.25f, "1.25"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(1.5f, "1.5"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(1.75f, "1.75"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(2.0f, "2.0"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(2.5f, "2.5"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(3.0f, "3.0"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(4.0f, "4.0"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(5.0f, "5.0"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(6.0f, "6.0"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(7.5f, "7.5"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(10.0f, "10"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(25.0f, "25"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(50.0f, "50"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(100.0f, "100"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(250.0f, "250"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(500.0f, "500"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(1000.0f, "1000"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(2500.0f, "2500"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(5000.0f, "5000"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(10000.0f, "10000"));
+	m_pFalloffSelector->AddSelection(CScrollSelection<float>(-1.0f, "No falloff"));
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pFalloffSelector);
+
+	m_pRandomCheckBox = new CCheckBox();
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pRandomCheckBox);
+
+	m_pRandomLabel = new CLabel(0, 0, 100, 100, "Randomize rays");
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pRandomLabel);
+
+	m_pGroundOcclusionCheckBox = new CCheckBox();
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pGroundOcclusionCheckBox);
+
+	m_pGroundOcclusionLabel = new CLabel(0, 0, 100, 100, "Ground occlusion");
+	m_pAOOptions->GetOptionsPanel()->AddControl(m_pGroundOcclusionLabel);
+
+	m_pNormalCheckBox = new CCheckBox();
+	m_pNormalCheckBox->SetState(true, false);
+	AddControl(m_pNormalCheckBox);
+
+	m_pNormalLabel = new CLabel(0, 0, 100, 100, "Normal Map");
+	AddControl(m_pNormalLabel);
+
+	m_pGenerate = new CButton(0, 0, 100, 100, "Generate");
+	m_pGenerate->SetClickedListener(this, Generate);
+	AddControl(m_pGenerate);
+
+	m_pSave = new CButton(0, 0, 100, 100, "Save Map");
+	AddControl(m_pSave);
+
+	m_pSave->SetClickedListener(this, SaveMapDialog);
+	m_pSave->SetVisible(false);
+
+	Layout();
+}
+
+void CComboGeneratorPanel::Layout()
+{
+	float flSpace = 20;
+
+	m_pSizeLabel->EnsureTextFits();
+
+	float flSelectorSize = m_pSizeLabel->GetHeight() - 4;
+
+	m_pSizeSelector->SetSize(GetWidth() - m_pSizeLabel->GetWidth() - flSpace, flSelectorSize);
+
+	float flControlY = HEADER_HEIGHT;
+
+	m_pSizeSelector->SetPos(GetWidth() - m_pSizeSelector->GetWidth() - flSpace/2, flControlY);
+	m_pSizeLabel->SetPos(5, flControlY);
+
+	float flTreeWidth = GetWidth()/2-15;
+
+	m_pLoResLabel->EnsureTextFits();
+	m_pLoResLabel->SetPos(10, 40);
+
+	m_pLoRes->SetSize(flTreeWidth, 150);
+	m_pLoRes->SetPos(10, 70);
+
+	m_pAddLoRes->SetSize(40, 20);
+	m_pAddLoRes->SetPos(10, 225);
+
+	m_pRemoveLoRes->SetSize(60, 20);
+	m_pRemoveLoRes->SetPos(60, 225);
+
+	m_pHiResLabel->EnsureTextFits();
+	m_pHiResLabel->SetPos(flTreeWidth+20, 40);
+
+	m_pHiRes->SetSize(flTreeWidth, 150);
+	m_pHiRes->SetPos(flTreeWidth+20, 70);
+
+	m_pAddHiRes->SetSize(40, 20);
+	m_pAddHiRes->SetPos(flTreeWidth+20, 225);
+
+	m_pRemoveHiRes->SetSize(60, 20);
+	m_pRemoveHiRes->SetPos(flTreeWidth+70, 225);
+
+	m_pDiffuseLabel->SetPos(35, 220);
+	m_pDiffuseLabel->EnsureTextFits();
+	m_pDiffuseLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pDiffuseLabel->SetWrap(false);
+	m_pDiffuseCheckBox->SetPos(20, 220 + m_pDiffuseLabel->GetHeight()/2 - m_pDiffuseCheckBox->GetHeight()/2);
+
+	m_pAOLabel->SetPos(35, 250);
+	m_pAOLabel->EnsureTextFits();
+	m_pAOLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pAOLabel->SetWrap(false);
+	m_pAOCheckBox->SetPos(20, 250 + m_pAOLabel->GetHeight()/2 - m_pAOCheckBox->GetHeight()/2);
+
+	m_pAOOptions->SetPos(250, 250 + m_pAOLabel->GetHeight()/2 - m_pAOOptions->GetHeight()/2);
+	m_pAOOptions->SetSize(60, 20);
+	m_pAOOptions->SetText("Options...");
+
+	float flControl = 3;
+
+	m_pAOOptions->GetOptionsPanel()->SetSize(200, 200);
+
+	flControlY = 10;
+
+	m_pBleedLabel->SetSize(10, 10);
+	m_pBleedLabel->EnsureTextFits();
+	m_pBleedLabel->SetPos(5, flControlY);
+
+	m_pBleedSelector->SetSize(m_pAOOptions->GetOptionsPanel()->GetWidth() - m_pBleedLabel->GetWidth() - flSpace, flSelectorSize);
+	m_pBleedSelector->SetPos(m_pAOOptions->GetOptionsPanel()->GetWidth() - m_pBleedSelector->GetWidth() - flSpace/2, flControlY);
+
+	flControlY += 30;
+
+	m_pSamplesLabel->SetSize(10, 10);
+	m_pSamplesLabel->EnsureTextFits();
+	m_pSamplesLabel->SetPos(5, flControlY);
+
+	m_pSamplesSelector->SetSize(m_pAOOptions->GetOptionsPanel()->GetWidth() - m_pSamplesLabel->GetWidth() - flSpace, flSelectorSize);
+	m_pSamplesSelector->SetPos(m_pAOOptions->GetOptionsPanel()->GetWidth() - m_pSamplesSelector->GetWidth() - flSpace/2, flControlY);
+
+	flControlY += 30;
+
+	m_pFalloffLabel->SetSize(10, 10);
+	m_pFalloffLabel->EnsureTextFits();
+	m_pFalloffLabel->SetPos(5, flControlY);
+
+	m_pFalloffSelector->SetSize(m_pAOOptions->GetOptionsPanel()->GetWidth() - m_pFalloffLabel->GetWidth() - flSpace, flSelectorSize);
+	m_pFalloffSelector->SetPos(m_pAOOptions->GetOptionsPanel()->GetWidth() - m_pFalloffSelector->GetWidth() - flSpace/2, flControlY);
+
+	flControlY += 30;
+
+	m_pRandomLabel->SetSize(10, 10);
+	m_pRandomLabel->EnsureTextFits();
+	m_pRandomLabel->SetPos(25, flControlY);
+
+	m_pRandomCheckBox->SetPos(10, flControlY + m_pRandomLabel->GetHeight()/2 - m_pRandomCheckBox->GetHeight()/2);
+
+	flControlY += 30;
+
+	m_pGroundOcclusionLabel->SetSize(10, 10);
+	m_pGroundOcclusionLabel->EnsureTextFits();
+	m_pGroundOcclusionLabel->SetPos(25, flControlY);
+
+	m_pGroundOcclusionCheckBox->SetPos(10, flControlY + m_pGroundOcclusionLabel->GetHeight()/2 - m_pGroundOcclusionCheckBox->GetHeight()/2);
+
+	m_pNormalLabel->SetPos(35, 280);
+	m_pNormalLabel->EnsureTextFits();
+	m_pNormalLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pNormalLabel->SetWrap(false);
+	m_pNormalCheckBox->SetPos(20, 280 + m_pNormalLabel->GetHeight()/2 - m_pNormalCheckBox->GetHeight()/2);
+
+	m_pGenerate->SetSize(100, 33);
+	m_pGenerate->SetPos(GetWidth()/2 - m_pGenerate->GetWidth()/2, GetHeight() - (int)(m_pGenerate->GetHeight()*3));
+
+	m_pSave->SetSize(100, 33);
+	m_pSave->SetPos(GetWidth()/2 - m_pSave->GetWidth()/2, GetHeight() - (int)(m_pSave->GetHeight()*1.5f));
+	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
+
+	size_t i;
+	m_pLoRes->ClearTree();
+	if (!m_apLoResMeshes.size())
+		m_pLoRes->AddNode("No meshes. Click 'Add'");
+	else
+	{
+		for (i = 0; i < m_apLoResMeshes.size(); i++)
+		{
+			m_pLoRes->AddNode<CConversionMeshInstance>(m_apLoResMeshes[i]->GetMesh()->GetName(), m_apLoResMeshes[i]);
+#ifdef OPENGL2
+			m_pLoRes->GetNode(i)->SetIcon(CSMAKWindow::Get()->GetMeshesNodeTexture());
+#endif
+		}
+	}
+
+	m_pHiRes->ClearTree();
+	if (!m_apHiResMeshes.size())
+		m_pHiRes->AddNode("No meshes. Click 'Add'");
+	else
+	{
+		for (i = 0; i < m_apHiResMeshes.size(); i++)
+		{
+			m_pHiRes->AddNode<CConversionMeshInstance>(m_apHiResMeshes[i]->GetMesh()->GetName(), m_apHiResMeshes[i]);
+#ifdef OPENGL2
+			m_pHiRes->GetNode(i)->SetIcon(CSMAKWindow::Get()->GetMeshesNodeTexture());
+#endif
+		}
+	}
+
+	CMovablePanel::Layout();
+}
+
+void CComboGeneratorPanel::UpdateScene()
+{
+	m_apLoResMeshes.clear();
+	m_apHiResMeshes.clear();
+
+	if (m_pScene->GetNumMeshes())
+		m_pFalloffSelector->SetSelection(m_pFalloffSelector->FindClosestSelectionValue(m_pScene->m_oExtends.Size().Length()/2));
+}
+
+void CComboGeneratorPanel::Think()
+{
+	bool bFoundMaterial = false;
+	for (size_t iMesh = 0; iMesh < m_apLoResMeshes.size(); iMesh++)
+	{
+		CConversionMeshInstance* pMeshInstance = m_apLoResMeshes[iMesh];
+
+		for (size_t iMaterialStub = 0; iMaterialStub < pMeshInstance->GetMesh()->GetNumMaterialStubs(); iMaterialStub++)
+		{
+			size_t iMaterial = pMeshInstance->GetMappedMaterial(iMaterialStub)->m_iMaterial;
+
+			// Materials not loaded yet?
+			if (!m_paoMaterials->size())
+				continue;
+
+			bFoundMaterial = true;
+			break;
+		}
+	}
+
+	CMovablePanel::Think();
+}
+
+void CComboGeneratorPanel::Paint(float x, float y, float w, float h)
+{
+	CMovablePanel::Paint(x, y, w, h);
+
+	if (!m_bMinimized)
+	{
+		CRootPanel::PaintRect(x+10, y+250, w-20, 1, g_clrBoxHi);
+		CRootPanel::PaintRect(x+10, y+h-110, w-20, 1, g_clrBoxHi);
+	}
+}
+
+bool CComboGeneratorPanel::KeyPressed(int iKey)
+{
+	if (iKey == 27 && m_oGenerator.IsGenerating())
+	{
+		m_pSave->SetVisible(false);
+		m_oGenerator.StopGenerating();
+		return true;
+	}
+	else
+		return CMovablePanel::KeyPressed(iKey);
+}
+
+void CComboGeneratorPanel::GenerateCallback(const tstring& sArgs)
+{
+	if (m_oGenerator.IsGenerating())
+	{
+		m_pSave->SetVisible(false);
+		m_oGenerator.StopGenerating();
+		return;
+	}
+
+	m_pSave->SetVisible(false);
+
+	m_pGenerate->SetText("Cancel");
+
+	CSMAKWindow::Get()->SetDisplayNormal(true);
+
+	// Disappear all of the hi-res meshes so we can see the lo res better.
+	for (size_t m = 0; m < m_apHiResMeshes.size(); m++)
+		m_apHiResMeshes[m]->SetVisible(false);
+
+	for (size_t m = 0; m < m_apLoResMeshes.size(); m++)
+	{
+		if (m_apLoResMeshes[m]->GetMesh()->GetNumFaces() > 10000)
+			continue;
+
+		m_apLoResMeshes[m]->SetVisible(true);
+	}
+
+	int iSize = m_pSizeSelector->GetSelectionValue();
+	m_oGenerator.SetSize(iSize, iSize);
+	m_oGenerator.ClearMethods();
+
+	if (m_pDiffuseCheckBox->GetState())
+	{
+		m_oGenerator.AddDiffuse();
+		CSMAKWindow::Get()->SetDisplayTexture(true);
+	}
+
+	if (m_pAOCheckBox->GetState())
+	{
+		m_oGenerator.AddAO(
+			m_pSamplesSelector->GetSelectionValue(),
+			m_pRandomCheckBox->GetState(),
+			m_pFalloffSelector->GetSelectionValue(),
+			m_pGroundOcclusionCheckBox->GetState(),
+			m_pBleedSelector->GetSelectionValue());
+		CSMAKWindow::Get()->SetDisplayAO(true);
+	}
+
+	if (m_pNormalCheckBox->GetState())
+	{
+		m_oGenerator.AddNormal();
+		CSMAKWindow::Get()->SetDisplayNormal(true);
+	}
+
+	m_oGenerator.SetModels(m_apHiResMeshes, m_apLoResMeshes);
+	m_oGenerator.SetWorkListener(this);
+	m_oGenerator.Generate();
+
+	size_t iDiffuse = 0;
+	size_t iAO = 0;
+	size_t iNormalGL = 0;
+	size_t iNormalIL = 0;
+	if (m_oGenerator.DoneGenerating())
+	{
+		iDiffuse = m_oGenerator.GenerateDiffuse();
+		iAO = m_oGenerator.GenerateAO();
+		m_oGenerator.GenerateNormal(iNormalGL, iNormalIL);
+	}
+
+	for (size_t i = 0; i < m_paoMaterials->size(); i++)
+	{
+		size_t& iDiffuseTexture = (*m_paoMaterials)[i].m_iBase;
+		size_t& iAOTexture = (*m_paoMaterials)[i].m_iAO;
+		size_t& iNormalGLTexture = (*m_paoMaterials)[i].m_iNormal;
+		size_t& iNormalILTexture = (*m_paoMaterials)[i].m_iNormalIL;
+
+		if (!m_pScene->GetMaterial(i)->IsVisible())
+			continue;
+
+#ifdef OPENGL2
+		if (iDiffuseTexture)
+			glDeleteTextures(1, &iDiffuseTexture);
+
+		if (m_oGenerator.DoneGenerating())
+			iDiffuseTexture = iDiffuse;
+		else
+			iDiffuseTexture = 0;
+
+		if (iAOTexture)
+			glDeleteTextures(1, &iAOTexture);
+
+		if (m_oGenerator.DoneGenerating())
+			iAOTexture = iAO;
+		else
+			iAOTexture = 0;
+
+		if (iNormalGLTexture)
+			glDeleteTextures(1, &iNormalGLTexture);
+
+		if (m_oGenerator.DoneGenerating())
+			iNormalGLTexture = iNormalGL;
+		else
+			iNormalGLTexture = 0;
+
+		if (iNormalILTexture)
+			glDeleteTextures(1, &iNormalILTexture);
+#endif
+
+		if (m_oGenerator.DoneGenerating())
+			iNormalILTexture = iNormalIL;
+		else
+			iNormalILTexture = 0;
+	}
+
+	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
+
+	m_pGenerate->SetText("Generate");
+}
+
+void CComboGeneratorPanel::SaveMapDialogCallback(const tstring& sArgs)
+{
+	if (!m_oGenerator.DoneGenerating())
+		return;
+
+	CFileDialog::ShowSaveDialog("", ".png;.bmp;.jpg;.tga;.psd", this, SaveMapFile);
+}
+
+void CComboGeneratorPanel::SaveMapFileCallback(const tstring& sArgs)
+{
+	tstring sFilename = sArgs;
+
+	if (!sFilename.length())
+		return;
+
+	m_oGenerator.SaveAll(sFilename);
+
+	for (size_t i = 0; i < m_paoMaterials->size(); i++)
+	{
+		if (!m_pScene->GetMaterial(i)->IsVisible())
+			continue;
+
+		m_pScene->GetMaterial(i)->m_sNormalTexture = sFilename;
+	}
+
+	CRootPanel::Get()->Layout();
+}
+
+void CComboGeneratorPanel::BeginProgress()
+{
+	CProgressBar::Get()->SetVisible(true);
+}
+
+void CComboGeneratorPanel::SetAction(const tstring& sAction, size_t iTotalProgress)
+{
+	CProgressBar::Get()->SetTotalProgress(iTotalProgress);
+	CProgressBar::Get()->SetAction(sAction);
+	WorkProgress(0, true);
+}
+
+void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
+{
+	static double flLastTime = 0;
+	static double flLastGenerate = 0;
+
+	// Don't update too often or it'll slow us down just because of the updates.
+	if (!bForceDraw && CSMAKWindow::Get()->GetTime() - flLastTime < 0.01f)
+		return;
+
+	CProgressBar::Get()->SetProgress(iProgress);
+
+	// We need to correct the viewport size before we push any events, or else any Layout() commands during
+	// button presses and the line will use the wrong viewport size.
+#ifdef OPENGL2
+	glViewport(0, 0, CSMAKWindow::Get()->GetWindowWidth(), CSMAKWindow::Get()->GetWindowHeight());
+#endif
+
+	if (m_oGenerator.IsGenerating() && CSMAKWindow::Get()->GetTime() - flLastGenerate > 0.5f)
+	{
+		size_t iDiffuse = m_oGenerator.GenerateDiffuse(true);
+		size_t iAO = m_oGenerator.GenerateAO(true);
+		size_t iNormal, iNormalIL;
+		m_oGenerator.GenerateNormal(iNormal, iNormalIL, true);
+
+		for (size_t i = 0; i < m_paoMaterials->size(); i++)
+		{
+			size_t& iDiffuseTexture = (*m_paoMaterials)[i].m_iBase;
+			size_t& iAOTexture = (*m_paoMaterials)[i].m_iAO;
+			size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal;
+
+#ifdef OPENGL2
+			if (iDiffuseTexture)
+				glDeleteTextures(1, &iDiffuseTexture);
+
+			iDiffuseTexture = iDiffuse;
+
+			if (iAOTexture)
+				glDeleteTextures(1, &iAOTexture);
+
+			iAOTexture = iAO;
+
+			if (iNormalTexture)
+				glDeleteTextures(1, &iNormalTexture);
+#endif
+
+			iNormalTexture = iNormal;
+		}
+
+		flLastGenerate = CSMAKWindow::Get()->GetTime();
+	}
+
+	CSMAKWindow::Get()->Render();
+	CRootPanel::Get()->Think(CSMAKWindow::Get()->GetTime());
+	CRootPanel::Get()->Paint(0, 0, (float)CSMAKWindow::Get()->GetWindowWidth(), (float)CSMAKWindow::Get()->GetWindowHeight());
+#ifdef OPENGL2
+	glfwSwapBuffers();
+#endif
+
+	flLastTime = CSMAKWindow::Get()->GetTime();
+}
+
+void CComboGeneratorPanel::EndProgress()
+{
+	CProgressBar::Get()->SetVisible(false);
+}
+
+void CComboGeneratorPanel::AddLoResCallback(const tstring& sArgs)
+{
+	if (m_pMeshInstancePicker)
+		delete m_pMeshInstancePicker;
+
+	m_pMeshInstancePicker = new CMeshInstancePicker(this, AddLoResMesh);
+
+	float x, y, w, h, pw, ph;
+	GetAbsDimensions(x, y, w, h);
+	m_pMeshInstancePicker->GetSize(pw, ph);
+	m_pMeshInstancePicker->SetPos(x + w/2 - pw/2, y + h/2 - ph/2);
+}
+
+void CComboGeneratorPanel::AddHiResCallback(const tstring& sArgs)
+{
+	if (m_pMeshInstancePicker)
+		delete m_pMeshInstancePicker;
+
+	m_pMeshInstancePicker = new CMeshInstancePicker(this, AddHiResMesh);
+
+	float x, y, w, h, pw, ph;
+	GetAbsDimensions(x, y, w, h);
+	m_pMeshInstancePicker->GetSize(pw, ph);
+	m_pMeshInstancePicker->SetPos(x + w/2 - pw/2, y + h/2 - ph/2);
+}
+
+void CComboGeneratorPanel::AddLoResMeshCallback(const tstring& sArgs)
+{
+	CConversionMeshInstance* pMeshInstance = m_pMeshInstancePicker->GetPickedMeshInstance();
+	if (!pMeshInstance)
+		return;
+
+	size_t i;
+	for (i = 0; i < m_apLoResMeshes.size(); i++)
+		if (m_apLoResMeshes[i] == pMeshInstance)
+			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
+
+	for (i = 0; i < m_apHiResMeshes.size(); i++)
+		if (m_apHiResMeshes[i] == pMeshInstance)
+			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
+
+	m_apLoResMeshes.push_back(pMeshInstance);
+
+	delete m_pMeshInstancePicker;
+	m_pMeshInstancePicker = NULL;
+
+	Layout();
+}
+
+void CComboGeneratorPanel::AddHiResMeshCallback(const tstring& sArgs)
+{
+	CConversionMeshInstance* pMeshInstance = m_pMeshInstancePicker->GetPickedMeshInstance();
+	if (!pMeshInstance)
+		return;
+
+	size_t i;
+	for (i = 0; i < m_apLoResMeshes.size(); i++)
+		if (m_apLoResMeshes[i] == pMeshInstance)
+			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
+
+	for (i = 0; i < m_apHiResMeshes.size(); i++)
+		if (m_apHiResMeshes[i] == pMeshInstance)
+			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
+
+	m_apHiResMeshes.push_back(pMeshInstance);
+
+	delete m_pMeshInstancePicker;
+	m_pMeshInstancePicker = NULL;
+
+	Layout();
+}
+
+void CComboGeneratorPanel::RemoveLoResCallback(const tstring& sArgs)
+{
+	CTreeNode* pNode = m_pLoRes->GetSelectedNode();
+	if (!pNode)
+		return;
+
+	CTreeNodeObject<CConversionMeshInstance>* pMeshNode = dynamic_cast<CTreeNodeObject<CConversionMeshInstance>*>(pNode);
+	if (!pMeshNode)
+		return;
+
+	for (size_t i = 0; i < m_apLoResMeshes.size(); i++)
+		if (m_apLoResMeshes[i] == pMeshNode->GetObject())
+			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
+
+	Layout();
+}
+
+void CComboGeneratorPanel::RemoveHiResCallback(const tstring& sArgs)
+{
+	CTreeNode* pNode = m_pHiRes->GetSelectedNode();
+	if (!pNode)
+		return;
+
+	CTreeNodeObject<CConversionMeshInstance>* pMeshNode = dynamic_cast<CTreeNodeObject<CConversionMeshInstance>*>(pNode);
+	if (!pMeshNode)
+		return;
+
+	for (size_t i = 0; i < m_apHiResMeshes.size(); i++)
+		if (m_apHiResMeshes[i] == pMeshNode->GetObject())
+			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
+
+	Layout();
+}
+
+void CComboGeneratorPanel::DroppedLoResMeshCallback(const tstring& sArgs)
+{
+	IDraggable* pDraggable = CRootPanel::Get()->GetCurrentDraggable();
+	CConversionMeshInstance* pMeshInstance = dynamic_cast<CTreeNodeObject<CConversionMeshInstance>*>(pDraggable)->GetObject();
+
+	if (!pMeshInstance)
+		return;
+
+	size_t i;
+	for (i = 0; i < m_apLoResMeshes.size(); i++)
+		if (m_apLoResMeshes[i] == pMeshInstance)
+			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
+
+	for (i = 0; i < m_apHiResMeshes.size(); i++)
+		if (m_apHiResMeshes[i] == pMeshInstance)
+			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
+
+	m_apLoResMeshes.push_back(pMeshInstance);
+
+	Layout();
+}
+
+void CComboGeneratorPanel::DroppedHiResMeshCallback(const tstring& sArgs)
+{
+	IDraggable* pDraggable = CRootPanel::Get()->GetCurrentDraggable();
+	CConversionMeshInstance* pMeshInstance = dynamic_cast<CTreeNodeObject<CConversionMeshInstance>*>(pDraggable)->GetObject();
+
+	if (!pMeshInstance)
+		return;
+
+	size_t i;
+	for (i = 0; i < m_apLoResMeshes.size(); i++)
+		if (m_apLoResMeshes[i] == pMeshInstance)
+			m_apLoResMeshes.erase(m_apLoResMeshes.begin()+i);
+
+	for (i = 0; i < m_apHiResMeshes.size(); i++)
+		if (m_apHiResMeshes[i] == pMeshInstance)
+			m_apHiResMeshes.erase(m_apHiResMeshes.begin()+i);
+
+	m_apHiResMeshes.push_back(pMeshInstance);
+
+	delete m_pMeshInstancePicker;
+	m_pMeshInstancePicker = NULL;
+
+	Layout();
+}
+
+void CComboGeneratorPanel::Open(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
+{
+	CComboGeneratorPanel* pPanel = s_pComboGeneratorPanel;
+
+	if (pPanel)
+		delete pPanel;
+
+	pPanel = s_pComboGeneratorPanel = new CComboGeneratorPanel(pScene, paoMaterials);
+
+	if (!pPanel)
+		return;
+
+	pPanel->SetVisible(true);
+	pPanel->Layout();
+
+	if (pScene->GetNumMeshes())
+		pPanel->m_pFalloffSelector->SetSelection(pPanel->m_pFalloffSelector->FindClosestSelectionValue(pScene->m_oExtends.Size().Length()/2));
+}
+
+void CComboGeneratorPanel::SetVisible(bool bVisible)
+{
+	m_oGenerator.StopGenerating();
+
+	CMovablePanel::SetVisible(bVisible);
+}
+
+CNormalPanel* CNormalPanel::s_pNormalPanel = NULL;
+
+CNormalPanel::CNormalPanel(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
+	: CMovablePanel("Normal map generator"), m_oGenerator(pScene, paoMaterials)
+{
+	m_pScene = pScene;
+	m_paoMaterials = paoMaterials;
+
+	SetSize(400, 450);
+	SetPos(GetParent()->GetWidth() - GetWidth() - 50, GetParent()->GetHeight() - GetHeight() - 100);
+
+	m_pMaterialsLabel = new CLabel(0, 0, 32, 32, "Choose A Material To Generate From:");
+	AddControl(m_pMaterialsLabel);
+
+#ifdef OPENGL2
+	m_pMaterials = new CTree(CSMAKWindow::Get()->GetArrowTexture(), CSMAKWindow::Get()->GetEditTexture(), CSMAKWindow::Get()->GetVisibilityTexture());
+#else
+	m_pMaterials = new CTree();
+#endif
+	m_pMaterials->SetBackgroundColor(g_clrBox);
+	AddControl(m_pMaterials);
+
+	m_pProgressLabel = new CLabel(0, 0, 100, 100, "");
+	AddControl(m_pProgressLabel);
+
+	m_pDepthLabel = new CLabel(0, 0, 32, 32, "Overall Depth");
+	AddControl(m_pDepthLabel);
+
+	m_pDepthSelector = new CScrollSelector<float>();
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.0f, "0%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.025f, "2.5%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.05f, "5%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.075f, "7.5%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.1f, "10%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.2f, "20%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.3f, "30%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.4f, "40%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.5f, "50%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.6f, "60%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.7f, "70%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.8f, "80%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(0.9f, "90%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.0f, "100%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.1f, "110%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.2f, "120%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.3f, "130%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.4f, "140%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.5f, "150%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.6f, "160%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.7f, "170%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.8f, "180%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(1.9f, "190%"));
+	m_pDepthSelector->AddSelection(CScrollSelection<float>(2.0f, "200%"));
+	m_pDepthSelector->SetSelection(13);
+	m_pDepthSelector->SetSelectedListener(this, UpdateNormal2);
+	AddControl(m_pDepthSelector);
+
+	m_pHiDepthLabel = new CLabel(0, 0, 32, 32, "Texture Hi-Freq Depth");
+	AddControl(m_pHiDepthLabel);
+
+	m_pHiDepthSelector = new CScrollSelector<float>();
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.0f, "0%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.025f, "2.5%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.05f, "5%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.075f, "7.5%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.1f, "10%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.2f, "20%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.3f, "30%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.4f, "40%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.5f, "50%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.6f, "60%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.7f, "70%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.8f, "80%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(0.9f, "90%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(1.0f, "100%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(1.1f, "110%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(1.2f, "120%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(1.3f, "130%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(1.4f, "140%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(1.5f, "150%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(1.6f, "160%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(1.7f, "170%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(1.8f, "180%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(1.9f, "190%"));
+	m_pHiDepthSelector->AddSelection(CScrollSelection<float>(2.0f, "200%"));
+	m_pHiDepthSelector->SetSelection(13);
+	m_pHiDepthSelector->SetSelectedListener(this, UpdateNormal2);
+	AddControl(m_pHiDepthSelector);
+
+	m_pMidDepthLabel = new CLabel(0, 0, 32, 32, "Texture Mid-Freq Depth");
+	AddControl(m_pMidDepthLabel);
+
+	m_pMidDepthSelector = new CScrollSelector<float>();
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.0f, "0%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.025f, "2.5%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.05f, "5%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.075f, "7.5%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.1f, "10%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.2f, "20%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.3f, "30%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.4f, "40%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.5f, "50%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.6f, "60%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.7f, "70%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.8f, "80%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(0.9f, "90%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.0f, "100%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.1f, "110%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.2f, "120%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.3f, "130%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.4f, "140%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.5f, "150%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.6f, "160%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.7f, "170%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.8f, "180%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(1.9f, "190%"));
+	m_pMidDepthSelector->AddSelection(CScrollSelection<float>(2.0f, "200%"));
+	m_pMidDepthSelector->SetSelection(13);
+	m_pMidDepthSelector->SetSelectedListener(this, UpdateNormal2);
+	AddControl(m_pMidDepthSelector);
+
+	m_pLoDepthLabel = new CLabel(0, 0, 32, 32, "Texture Lo-Freq Depth");
+	AddControl(m_pLoDepthLabel);
+
+	m_pLoDepthSelector = new CScrollSelector<float>();
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.0f, "0%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.025f, "2.5%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.05f, "5%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.075f, "7.5%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.1f, "10%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.2f, "20%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.3f, "30%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.4f, "40%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.5f, "50%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.6f, "60%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.7f, "70%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.8f, "80%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(0.9f, "90%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(1.0f, "100%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(1.1f, "110%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(1.2f, "120%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(1.3f, "130%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(1.4f, "140%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(1.5f, "150%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(1.6f, "160%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(1.7f, "170%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(1.8f, "180%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(1.9f, "190%"));
+	m_pLoDepthSelector->AddSelection(CScrollSelection<float>(2.0f, "200%"));
+	m_pLoDepthSelector->SetSelection(13);
+	m_pLoDepthSelector->SetSelectedListener(this, UpdateNormal2);
+	AddControl(m_pLoDepthSelector);
+
+	m_pSave = new CButton(0, 0, 100, 100, "Save Map");
+	AddControl(m_pSave);
+
+	m_pSave->SetClickedListener(this, SaveMapDialog);
+	m_pSave->SetVisible(false);
+
+	Layout();
+}
+
+void CNormalPanel::Layout()
+{
+	float flSpace = 20;
+
+	m_pMaterialsLabel->EnsureTextFits();
+
+	float flSelectorSize = m_pMaterialsLabel->GetHeight() - 4;
+	float flControlY = HEADER_HEIGHT;
+
+	m_pMaterialsLabel->SetPos(5, flControlY);
+
+	float flTreeWidth = GetWidth()/2-15;
+
+	m_pMaterials->ClearTree();
+	for (size_t i = 0; i < m_pScene->GetNumMaterials(); i++)
+	{
+		m_pMaterials->AddNode<CConversionMaterial>(m_pScene->GetMaterial(i)->GetName(), m_pScene->GetMaterial(i));
+
+		if (m_paoMaterials->size() > i && !m_paoMaterials->at(i).m_iBase)
+			m_pMaterials->GetNode(i)->m_pLabel->SetAlpha(100);
+
+		m_pMaterials->SetSelectedListener(this, SetupNormal2);
+	}
+
+	m_pMaterials->SetSize(flTreeWidth, 150);
+	m_pMaterials->SetPos(GetWidth()/2-flTreeWidth/2, 50);
+
+	m_pProgressLabel->SetSize(1, 1);
+	m_pProgressLabel->SetPos(35, 220);
+	m_pProgressLabel->EnsureTextFits();
+	m_pProgressLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pProgressLabel->SetWrap(false);
+
+	m_pDepthLabel->SetPos(10, 290);
+	m_pDepthLabel->EnsureTextFits();
+	m_pDepthLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pDepthLabel->SetWrap(false);
+	m_pDepthSelector->SetPos(m_pDepthLabel->GetRight() + 10, 290 + m_pDepthLabel->GetHeight()/2 - m_pDepthSelector->GetHeight()/2);
+	m_pDepthSelector->SetRight(GetWidth() - 10);
+
+	m_pHiDepthLabel->SetPos(10, 310);
+	m_pHiDepthLabel->EnsureTextFits();
+	m_pHiDepthLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pHiDepthLabel->SetWrap(false);
+	m_pHiDepthSelector->SetPos(m_pHiDepthLabel->GetRight() + 10, 310 + m_pHiDepthLabel->GetHeight()/2 - m_pHiDepthSelector->GetHeight()/2);
+	m_pHiDepthSelector->SetRight(GetWidth() - 10);
+
+	m_pMidDepthLabel->SetPos(10, 330);
+	m_pMidDepthLabel->EnsureTextFits();
+	m_pMidDepthLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pMidDepthLabel->SetWrap(false);
+	m_pMidDepthSelector->SetPos(m_pMidDepthLabel->GetRight() + 10, 330 + m_pMidDepthLabel->GetHeight()/2 - m_pMidDepthSelector->GetHeight()/2);
+	m_pMidDepthSelector->SetRight(GetWidth() - 10);
+
+	m_pLoDepthLabel->SetPos(10, 350);
+	m_pLoDepthLabel->EnsureTextFits();
+	m_pLoDepthLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_pLoDepthLabel->SetWrap(false);
+	m_pLoDepthSelector->SetPos(m_pLoDepthLabel->GetRight() + 10, 350 + m_pLoDepthLabel->GetHeight()/2 - m_pLoDepthSelector->GetHeight()/2);
+	m_pLoDepthSelector->SetRight(GetWidth() - 10);
+
+	m_pSave->SetSize(100, 33);
+	m_pSave->SetPos(GetWidth()/2 - m_pSave->GetWidth()/2, GetHeight() - (int)(m_pSave->GetHeight()*1.5f));
+	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
+
+	CMovablePanel::Layout();
+}
+
+void CNormalPanel::UpdateScene()
+{
+	Layout();
+}
+
+void CNormalPanel::Think()
+{
+	if (m_oGenerator.IsNewNormal2Available())
+	{
+		size_t iNormal2, iNormal2IL;
+		m_oGenerator.GetNormalMap2(iNormal2, iNormal2IL);
+
+		for (size_t i = 0; i < m_paoMaterials->size(); i++)
+		{
+			size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal2;
+			size_t& iNormalIL = (*m_paoMaterials)[i].m_iNormal2IL;
+
+			if (!m_pScene->GetMaterial(i)->IsVisible())
+				continue;
+
+#ifdef OPENGL2
+			if (iNormalTexture)
+				glDeleteTextures(1, &iNormalTexture);
+
+			if (iNormalIL)
+				ilDeleteImages(1, &iNormalIL);
+#endif
+
+			iNormalTexture = iNormal2;
+			iNormalIL = iNormal2IL;
+			break;
+		}
+
+		m_pSave->SetVisible(!!iNormal2);
+
+		if (!!iNormal2)
+			CSMAKWindow::Get()->SetDisplayNormal(true);
+	}
+
+	if (m_oGenerator.IsSettingUp())
+	{
+		tstring s;
+		s = sprintf("Setting up... %d%%", (int)(m_oGenerator.GetSetupProgress()*100));
+		m_pProgressLabel->SetText(s);
+		m_pSave->SetVisible(false);
+	}
+	else if (m_oGenerator.IsGeneratingNewNormal2())
+	{
+		tstring s;
+		s = sprintf("Generating... %d%%", (int)(m_oGenerator.GetNormal2GenerationProgress()*100));
+		m_pProgressLabel->SetText(s);
+		m_pSave->SetVisible(false);
+	}
+	else
+		m_pProgressLabel->SetText("");
+
+	m_oGenerator.Think();
+
+	CMovablePanel::Think();
+}
+
+void CNormalPanel::Paint(float x, float y, float w, float h)
+{
+	CMovablePanel::Paint(x, y, w, h);
+
+	if (!m_bMinimized)
+	{
+		CRootPanel::PaintRect(x+10, y+295, w-20, 1, g_clrBoxHi);
+		CRootPanel::PaintRect(x+10, y+385, w-20, 1, g_clrBoxHi);
+	}
+}
+
+bool CNormalPanel::KeyPressed(int iKey)
+{
+	if (iKey == 27 && m_oGenerator.IsGenerating())
+	{
+		m_pSave->SetVisible(false);
+		m_oGenerator.StopGenerating();
+		return true;
+	}
+	else
+		return CMovablePanel::KeyPressed(iKey);
+}
+
+void CNormalPanel::SaveMapDialogCallback(const tstring& sArgs)
+{
+	if (!m_oGenerator.DoneGenerating())
+		return;
+
+	CFileDialog::ShowSaveDialog("", ".png;.bmp;.jpg;.tga;.psd", this, SaveMapFile);
+}
+
+void CNormalPanel::SaveMapFileCallback(const tstring& sArgs)
+{
+	tstring sFilename = sArgs;
+
+	if (!sFilename.length())
+		return;
+
+	SMAKWindow()->SaveNormal(m_oGenerator.GetGenerationMaterial(), sFilename);
+
+	CRootPanel::Get()->Layout();
+}
+
+void CNormalPanel::SetupNormal2Callback(const tstring& sArgs)
+{
+	m_oGenerator.SetNormalTextureDepth(m_pDepthSelector->GetSelectionValue());
+	m_oGenerator.SetNormalTextureHiDepth(m_pHiDepthSelector->GetSelectionValue());
+	m_oGenerator.SetNormalTextureMidDepth(m_pMidDepthSelector->GetSelectionValue());
+	m_oGenerator.SetNormalTextureLoDepth(m_pLoDepthSelector->GetSelectionValue());
+	m_oGenerator.SetNormalTexture(true, m_pMaterials->GetSelectedNodeId());
+
+	CSMAKWindow::Get()->SetDisplayNormal(true);
+}
+
+void CNormalPanel::UpdateNormal2Callback(const tstring& sArgs)
+{
+	m_oGenerator.SetNormalTextureDepth(m_pDepthSelector->GetSelectionValue());
+	m_oGenerator.SetNormalTextureHiDepth(m_pHiDepthSelector->GetSelectionValue());
+	m_oGenerator.SetNormalTextureMidDepth(m_pMidDepthSelector->GetSelectionValue());
+	m_oGenerator.SetNormalTextureLoDepth(m_pLoDepthSelector->GetSelectionValue());
+	m_oGenerator.UpdateNormal2();
+}
+
+void CNormalPanel::Open(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
+{
+	CNormalPanel* pPanel = s_pNormalPanel;
+
+	if (pPanel)
+		delete pPanel;
+
+	pPanel = s_pNormalPanel = new CNormalPanel(pScene, paoMaterials);
+
+	if (!pPanel)
+		return;
+
+	pPanel->SetVisible(true);
+	pPanel->Layout();
+}
+
+void CNormalPanel::SetVisible(bool bVisible)
+{
+	m_oGenerator.StopGenerating();
+
+	CMovablePanel::SetVisible(bVisible);
+}
+
+CHelpPanel* CHelpPanel::s_pHelpPanel = NULL;
+
+CHelpPanel::CHelpPanel()
+	: CMovablePanel("Help")
+{
+	m_pInfo = new CLabel(0, 0, 100, 100, "");
+	AddControl(m_pInfo);
+	Layout();
+}
+
+void CHelpPanel::Layout()
+{
+	if (GetParent())
+	{
+		float px, py, pw, ph;
+		GetParent()->GetAbsDimensions(px, py, pw, ph);
+
+		SetSize(600, 200);
+		SetPos(pw/2 - GetWidth()/2, ph/2 - GetHeight()/2);
+	}
+
+	m_pInfo->SetAlign(CLabel::TA_TOPCENTER);
+	m_pInfo->SetSize(GetWidth(), GetHeight());
+	m_pInfo->SetPos(0, 30);
+
+	m_pInfo->SetText("CONTROLS:\n");
+	m_pInfo->AppendText("Left Mouse Button - Move the camera\n");
+	m_pInfo->AppendText("Right Mouse Button - Zoom in and out\n");
+	m_pInfo->AppendText("Ctrl-LMB - Rotate the light\n");
+	m_pInfo->AppendText(" \n");
+	m_pInfo->AppendText("For in-depth help information please visit our website, http://www.getsmak.net/\n");
+
+	CMovablePanel::Layout();
+}
+
+void CHelpPanel::Paint(float x, float y, float w, float h)
+{
+	CMovablePanel::Paint(x, y, w, h);
+}
+
+bool CHelpPanel::MousePressed(int iButton, int mx, int my)
+{
+	if (CMovablePanel::MousePressed(iButton, mx, my))
+		return true;
+
+	Close();
+
+	return false;
+}
+
+void CHelpPanel::Open()
+{
+	if (!s_pHelpPanel)
+		s_pHelpPanel = new CHelpPanel();
+
+	s_pHelpPanel->SetVisible(true);
+	s_pHelpPanel->Layout();
+}
+
+void CHelpPanel::Close()
+{
+	if (!s_pHelpPanel)
+		return;
+
+	s_pHelpPanel->SetVisible(false);
+}
+
+CAboutPanel* CAboutPanel::s_pAboutPanel = NULL;
+
+CAboutPanel::CAboutPanel()
+	: CMovablePanel("About SMAK")
+{
+	m_pInfo = new CLabel(0, 0, 100, 100, "");
+	AddControl(m_pInfo);
+	Layout();
+}
+
+void CAboutPanel::Layout()
+{
+	if (GetParent())
+	{
+		float px, py, pw, ph;
+		GetParent()->GetAbsDimensions(px, py, pw, ph);
+
+		SetSize(600, 250);
+		SetPos(pw/2 - GetWidth()/2, ph/2 - GetHeight()/2);
+	}
+
+	m_pInfo->SetAlign(CLabel::TA_TOPCENTER);
+	m_pInfo->SetSize(GetWidth(), GetHeight());
+	m_pInfo->SetPos(0, 30);
+
+	m_pInfo->SetText("SMAK - The Super Model Army Knife\n");
+	m_pInfo->AppendText("Version " SMAK_VERSION "\n");
+	m_pInfo->AppendText("Copyright © 2010, Jorge Rodriguez <jorge@lunarworkshop.com>\n");
+	m_pInfo->AppendText(" \n");
+	m_pInfo->AppendText("FCollada copyright © 2006, Feeling Software\n");
+	m_pInfo->AppendText("DevIL copyright © 2001-2009, Denton Woods\n");
+	m_pInfo->AppendText("FTGL copyright © 2001-2003, Henry Maddocks\n");
+	m_pInfo->AppendText("GLFW copyright © 2002-2007, Camilla Berglund\n");
+	m_pInfo->AppendText("pthreads-win32 copyright © 2001, 2006 Ross P. Johnson\n");
+	m_pInfo->AppendText("GLEW copyright © 2002-2007, Milan Ikits, Marcelo E. Magallon, Lev Povalahev\n");
+	m_pInfo->AppendText("Freetype copyright © 1996-2002, 2006 by David Turner, Robert Wilhelm, and Werner Lemberg\n");
+
+	CMovablePanel::Layout();
+}
+
+void CAboutPanel::Paint(float x, float y, float w, float h)
+{
+	CMovablePanel::Paint(x, y, w, h);
+}
+
+bool CAboutPanel::MousePressed(int iButton, int mx, int my)
+{
+	if (CMovablePanel::MousePressed(iButton, mx, my))
+		return true;
+
+	Close();
+
+	return false;
+}
+
+void CAboutPanel::Open()
+{
+	if (!s_pAboutPanel)
+		s_pAboutPanel = new CAboutPanel();
+
+	s_pAboutPanel->SetVisible(true);
+	s_pAboutPanel->Layout();
+}
+
+void CAboutPanel::Close()
+{
+	if (!s_pAboutPanel)
+		return;
+
+	s_pAboutPanel->SetVisible(false);
+}
+

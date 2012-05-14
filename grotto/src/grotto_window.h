@@ -13,6 +13,8 @@ public:
 	virtual eastl::string		WindowTitle() { return "Grotto"; }
 	virtual tstring				AppDirectory() { return "Grotto"; }
 
+	class CRenderer*			CreateRenderer();
+
 	void						SetupReflection();
 
 	virtual void				RenderLoading();
