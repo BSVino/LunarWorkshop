@@ -75,7 +75,7 @@ public:
 
 	virtual void			WindowResize(int x, int y);
 	virtual void			MouseMotion(int x, int y);
-	virtual void			MouseInput(int iButton, int iState);
+	virtual bool			MouseInput(int iButton, int iState);
 	virtual void			MouseWheel(int x, int y);
 	virtual bool			DoCharPress(int c);
 	virtual bool			DoKeyPress(int c);

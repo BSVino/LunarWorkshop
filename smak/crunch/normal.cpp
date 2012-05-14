@@ -1,9 +1,5 @@
 #include "crunch.h"
 
-#include <IL/il.h>
-#include <IL/ilu.h>
-#include <GL/glew.h>
-
 #include <raytracer/raytracer.h>
 #include <maths.h>
 
@@ -46,8 +42,10 @@ CNormalGenerator::~CNormalGenerator()
 {
 	free(m_bPixelMask);
 
+#ifdef OPENGL2
 	if (m_iNormal2GLId)
 		glDeleteTextures(1, &m_iNormal2GLId);
+#endif
 
 	if (m_aflNormal2Texels)
 	{
@@ -71,6 +69,7 @@ void CNormalGenerator::SaveToFile(const tchar *pszFilename)
 	if (!pszFilename)
 		return;
 
+#ifdef OPENGL2
 	ilEnable(IL_FILE_OVERWRITE);
 
 	ILuint iDevILId;
@@ -92,6 +91,7 @@ void CNormalGenerator::SaveToFile(const tchar *pszFilename)
 	ilSaveImage(convertstring<tchar, ILchar>(pszFilename).c_str());
 
 	ilDeleteImages(1,&iDevILId);
+#endif
 }
 
 bool CNormalGenerator::Texel(size_t w, size_t h, size_t& iTexel, size_t tw, size_t th, bool* abMask)
@@ -324,8 +324,10 @@ void CNormalGenerator::SetNormalTexture(bool bNormalTexture, size_t iMaterial)
 
 	m_iMaterial = iMaterial;
 
+#ifdef OPENGL2
 	if (m_iNormal2GLId)
 		glDeleteTextures(1, &m_iNormal2GLId);
+#endif
 	m_iNormal2GLId = 0;
 
 	// Don't let the listeners know yet, we want to generate the new one first so there is no lapse in displaying.
@@ -355,6 +357,8 @@ void CNormalGenerator::SetNormalTexture(bool bNormalTexture, size_t iMaterial)
 		return;
 	}
 
+	size_t iWidth=1, iHeight=1;
+#ifdef OPENGL2
 	glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iBase);
 
 	GLint iWidth, iHeight;
@@ -365,6 +369,7 @@ void CNormalGenerator::SetNormalTexture(bool bNormalTexture, size_t iMaterial)
 		m_aflTextureTexels = new float[iWidth*iHeight*3];
 
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, &m_aflTextureTexels[0]);
+#endif
 
 	m_iNormal2Width = iWidth;
 	m_iNormal2Height = iHeight;
@@ -423,6 +428,8 @@ void CNormalGenerator::RegenerateNormal2Texture()
 	if (!m_aflNormal2Texels)
 		return;
 
+	size_t iILId = 0;
+#ifdef OPENGL2
 	if (m_iNormal2GLId)
 		glDeleteTextures(1, &m_iNormal2GLId);
 
@@ -443,6 +450,7 @@ void CNormalGenerator::RegenerateNormal2Texture()
 	ilBindImage(iILId);
 	ilTexImage((ILint)m_iNormal2Width, (ILint)m_iNormal2Height, 1, 3, IL_RGB, IL_FLOAT, &m_aflNormal2Texels[0]);
 	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
+#endif
 
 	m_iNormal2ILId = iILId;
 

@@ -48,7 +48,6 @@ set (TINKER_SOURCES
 	console.cpp
 	cvar.cpp
 	portals/portal_stubs.cpp
-	register.cpp
 	profiler.cpp
 
 	${CMAKE_SOURCE_DIR}/../ext-deps/gl3w/src/gl3w.c

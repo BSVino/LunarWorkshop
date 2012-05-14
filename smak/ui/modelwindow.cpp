@@ -4,10 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <maths.h>
-#include <GL/glew.h>
-#include <GL/glfw3.h>
-#include <IL/il.h>
-#include <IL/ilu.h>
 
 #include <tinker_platform.h>
 
@@ -34,11 +30,13 @@ using namespace glgui;
 #endif
 #endif
 
+#ifdef OPENGL2
 extern "C" {
 static void CALLBACK RenderTesselateBegin(GLenum ePrim);
 static void CALLBACK RenderTesselateVertex(void* pVertexData, void* pPolygonData);
 static void CALLBACK RenderTesselateEnd();
 }
+#endif
 
 CModelWindow* CModelWindow::s_pModelWindow = NULL;
 
@@ -113,8 +111,6 @@ void CModelWindow::OpenWindow()
 
 	CompileShaders();
 
-	ilInit();
-
 	size_t iTexture = LoadTextureIntoGL("lighthalo.png");
 	if (iTexture)
 		m_pLightHalo = new CMaterial(iTexture);
@@ -146,6 +142,7 @@ void CModelWindow::OpenWindow()
 	SetDisplayAO(false);
 	SetDisplayColorAO(false);
 
+#ifdef OPENGL2
 	m_pTesselator = gluNewTess();
 	gluTessCallback(m_pTesselator, GLU_TESS_BEGIN, (void(CALLBACK*)())RenderTesselateBegin);
 	gluTessCallback(m_pTesselator, GLU_TESS_VERTEX_DATA, (void(CALLBACK*)())RenderTesselateVertex);
@@ -169,6 +166,7 @@ void CModelWindow::OpenWindow()
 	glLightfv(GL_LIGHT0, GL_SPECULAR, flLightSpecular);
 	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.1f);
 	glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.05f);
+#endif
 
 	CSceneTreePanel::Get()->UpdateTree();
 }
@@ -181,11 +179,14 @@ CModelWindow::~CModelWindow()
 	if (m_pLightBeam)
 		delete m_pLightBeam;
 
+#ifdef OPENGL2
 	gluDeleteTess(m_pTesselator);
+#endif
 }
 
 void CModelWindow::CompileShaders()
 {
+#ifdef OPENGL2
 	GLuint iVertexShader = glCreateShader(GL_VERTEX_SHADER);
 	const char* pszShaderSource = GetVSModelShader();
 	glShaderSource(iVertexShader, 1, &pszShaderSource, NULL);
@@ -216,6 +217,7 @@ void CModelWindow::CompileShaders()
 #endif
 
 	m_iShaderProgram = (size_t)iShaderProgram;
+#endif
 }
 
 void CModelWindow::Run()
@@ -311,6 +313,7 @@ size_t CModelWindow::LoadTexture(tstring sFilename)
 	if (!sFilename.length())
 		return 0;
 
+#ifdef OPENGL2
 	ILuint iDevILId;
 	ilGenImages(1, &iDevILId);
 	ilBindImage(iDevILId);
@@ -336,8 +339,9 @@ size_t CModelWindow::LoadTexture(tstring sFilename)
 		iluFlipImage();
 
 	ilBindImage(0);
+#endif
 
-	return iDevILId;
+	return 0;
 }
 
 size_t CModelWindow::LoadTextureIntoGL(tstring sFilename)
@@ -347,6 +351,7 @@ size_t CModelWindow::LoadTextureIntoGL(tstring sFilename)
 	if (!iDevILId)
 		return 0;
 
+#ifdef OPENGL2
 	ilBindImage(iDevILId);
 
 	GLuint iGLId;
@@ -363,8 +368,9 @@ size_t CModelWindow::LoadTextureIntoGL(tstring sFilename)
 		ilGetData());
 
 	ilDeleteImages(1, &iDevILId);
+#endif
 
-	return iGLId;
+	return 0;
 }
 
 void CModelWindow::LoadTexturesIntoGL()
@@ -404,6 +410,7 @@ void CModelWindow::SaveFile(const tchar* pszFile)
 
 void CModelWindow::Render()
 {
+#ifdef OPENGL2
 	glReadBuffer(GL_BACK);
 	glDrawBuffer(GL_BACK);
 	glViewport(0, 0, (GLsizei)m_iWindowWidth, (GLsizei)m_iWindowHeight);
@@ -445,6 +452,7 @@ void CModelWindow::Render()
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
+#endif
 
 	if (m_bRenderUV)
 		RenderUV();
@@ -457,12 +465,15 @@ void CModelWindow::Render()
 
 void CModelWindow::Render3D()
 {
+#ifdef OPENGL2
 	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT);
+#endif
 
 	float flSceneSize = m_Scene.m_oExtends.Size().Length()/2;
 	if (flSceneSize < 150)
 		flSceneSize = 150;
 
+#ifdef OPENGL2
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -477,20 +488,24 @@ void CModelWindow::Render3D()
 
 	glPushMatrix();
 	glLoadIdentity();
+#endif
 
 	Vector vecSceneCenter = m_Scene.m_oExtends.Center();
 
 	Vector vecCameraVector = AngleVector(EAngle(m_flCameraPitch, m_flCameraYaw, 0)) * -m_flCameraDistance + vecSceneCenter;
 
+#ifdef OPENGL2
 	gluLookAt(vecCameraVector.x, vecCameraVector.y, vecCameraVector.z,
 		vecSceneCenter.x, vecSceneCenter.y, vecSceneCenter.z,
 		0.0, 1.0, 0.0);
+#endif
 
 	// Reposition the light source.
 	Vector vecLightDirection = AngleVector(EAngle(m_flLightPitch, m_flLightYaw, 0));
 
 	m_vecLightPosition = vecLightDirection * -m_flCameraDistance/2;
 
+#ifdef OPENGL2
 	GLfloat flLightPosition[4];
 	flLightPosition[0] = m_vecLightPosition.x;
 	flLightPosition[1] = m_vecLightPosition.y;
@@ -499,6 +514,7 @@ void CModelWindow::Render3D()
 
 	// Tell GL new light source position.
     glLightfv(GL_LIGHT0, GL_POSITION, flLightPosition);
+#endif
 
 	RenderGround();
 
@@ -509,6 +525,7 @@ void CModelWindow::Render3D()
 
 	if (m_aDebugLines.size())
 	{
+#ifdef OPENGL2
 		glLineWidth(1);
 		glDisable(GL_COLOR_MATERIAL);
 		glDisable(GL_LIGHTING);
@@ -529,6 +546,7 @@ void CModelWindow::Render3D()
 				glVertex3fv(m_aDebugLines[i].vecEnd);
 			}
 		glEnd();
+#endif
 	}
 
 #ifdef RAYTRACE_DEBUG
@@ -546,21 +564,25 @@ void CModelWindow::Render3D()
 		pTracer->Raytrace(Ray(vecStart, vecDirection));
 #endif
 
+#ifdef OPENGL2
 	glPopMatrix();
 	glPopAttrib();
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
+#endif
 }
 
 void CModelWindow::RenderGround(void)
 {
+#ifdef OPENGL2
 	glDisable(GL_LIGHTING);
 	glDisable(GL_TEXTURE_2D);
 
 	glPushMatrix();
 
 	glTranslatef(m_Scene.m_oExtends.Center().x, m_Scene.m_oExtends.Center().y, m_Scene.m_oExtends.Center().z);
+#endif
 
 	int i;
 
@@ -573,11 +595,12 @@ void CModelWindow::RenderGround(void)
 
 		for (int j = 0; j <= 20; j++)
 		{
-			GLfloat aflBorderLineBright[3] = { 0.7f, 0.7f, 0.7f };
-			GLfloat aflBorderLineDarker[3] = { 0.6f, 0.6f, 0.6f };
-			GLfloat aflInsideLineBright[3] = { 0.5f, 0.5f, 0.5f };
-			GLfloat aflInsideLineDarker[3] = { 0.4f, 0.4f, 0.4f };
+			float aflBorderLineBright[3] = { 0.7f, 0.7f, 0.7f };
+			float aflBorderLineDarker[3] = { 0.6f, 0.6f, 0.6f };
+			float aflInsideLineBright[3] = { 0.5f, 0.5f, 0.5f };
+			float aflInsideLineDarker[3] = { 0.4f, 0.4f, 0.4f };
 
+#ifdef OPENGL2
 			glBegin(GL_LINES);
 
 				if (j == 0 || j == 20 || j == 10)
@@ -633,6 +656,7 @@ void CModelWindow::RenderGround(void)
 				}
 
 			glEnd();
+#endif
 
 			vecStartX.x += 10;
 			vecEndX.x += 10;
@@ -641,7 +665,9 @@ void CModelWindow::RenderGround(void)
 		}
 	}
 
+#ifdef OPENGL2
 	glPopMatrix();
+#endif
 }
 
 void CModelWindow::RenderLightSource()
@@ -651,6 +677,7 @@ void CModelWindow::RenderLightSource()
 
 	float flScale = m_flCameraDistance/60;
 
+#ifdef OPENGL2
 	glPushMatrix();
 	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT);
 
@@ -761,10 +788,12 @@ void CModelWindow::RenderLightSource()
 		}
 	glPopAttrib();
 	glPopMatrix();
+#endif
 }
 
 void CModelWindow::RenderObjects()
 {
+#ifdef OPENGL2
 	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT);
 
 	if (m_bDisplayLight)
@@ -775,10 +804,12 @@ void CModelWindow::RenderObjects()
 	glEnable(GL_CULL_FACE);
 	glDisable(GL_COLOR_MATERIAL);
 	glEnable(GL_TEXTURE_2D);
+#endif
 
 	for (size_t i = 0; i < m_Scene.GetNumScenes(); i++)
 		RenderSceneNode(m_Scene.GetScene(i));
 
+#ifdef OPENGL2
 	if (GLEW_VERSION_1_3)
 	{
 		// Disable the multi-texture stuff now that object drawing is done.
@@ -794,6 +825,7 @@ void CModelWindow::RenderObjects()
 	}
 
 	glPopAttrib();
+#endif
 }
 
 void CModelWindow::RenderSceneNode(CConversionSceneNode* pNode)
@@ -804,9 +836,11 @@ void CModelWindow::RenderSceneNode(CConversionSceneNode* pNode)
 	if (!pNode->IsVisible())
 		return;
 
+#ifdef OPENGL2
 	glPushMatrix();
 
 	glMultMatrixf(pNode->m_mTransformations.Transposed());	// GL uses column major.
+#endif
 
 	for (size_t i = 0; i < pNode->GetNumChildren(); i++)
 		RenderSceneNode(pNode->GetChild(i));
@@ -814,14 +848,17 @@ void CModelWindow::RenderSceneNode(CConversionSceneNode* pNode)
 	for (size_t m = 0; m < pNode->GetNumMeshInstances(); m++)
 		RenderMeshInstance(pNode->GetMeshInstance(m));
 
+#ifdef OPENGL2
 	glPopMatrix();
+#endif
 }
 
 // Ew!
-GLuint g_iTangentAttrib;
-GLuint g_iBitangentAttrib;
+int g_iTangentAttrib;
+int g_iBitangentAttrib;
 bool g_bNormalMap;
 
+#ifdef OPENGL2
 extern "C" {
 static void CALLBACK RenderTesselateBegin(GLenum ePrim)
 {
@@ -864,6 +901,7 @@ static void CALLBACK RenderTesselateEnd()
 	glEnd();
 }
 }
+#endif
 
 void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 {
@@ -871,10 +909,12 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 		return;
 
 	// It uses this color if the texture is missing.
-	GLfloat flMaterialColor[] = {0.7f, 0.7f, 0.7f, 1.0f};
+	float flMaterialColor[] = {0.7f, 0.7f, 0.7f, 1.0f};
 
+#ifdef OPENGL2
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, flMaterialColor);
 	glColor4fv(flMaterialColor);
+#endif
 
 	bool bMultiTexture = false;
 
@@ -883,7 +923,7 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 	size_t iFaces = pMesh->GetNumFaces();
 	for (size_t j = 0; j < iFaces; j++)
 	{
-		size_t k;
+//		size_t k;
 		CConversionFace* pFace = pMesh->GetFace(j);
 
 		CConversionMaterialMap* pMappedMaterial = pMeshInstance->GetMappedMaterial(pFace->m);
@@ -909,7 +949,9 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 
 			if (!m_Scene.DoesFaceHaveValidMaterial(pFace, pMeshInstance) || pMappedMaterial->m_iMaterial >= m_aoMaterials.size())
 			{
+#ifdef OPENGL2
 				glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 				bTexture = false;
 				bNormal = false;
 				bNormal2 = false;
@@ -934,6 +976,7 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 				if (!pMaterial->m_iColorAO)
 					bCAO = false;
 
+#ifdef OPENGL2
 				if (GLEW_VERSION_1_3)
 				{
 					bMultiTexture = true;
@@ -1003,8 +1046,10 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 					glEnable(GL_TEXTURE_2D);
 					glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iBase);
 				}
+#endif
 			}
 
+#ifdef OPENGL2
 			if (m_Scene.DoesFaceHaveValidMaterial(pFace, pMeshInstance))
 			{
 				CConversionMaterial* pMaterial = m_Scene.GetMaterial(pMappedMaterial->m_iMaterial);
@@ -1067,8 +1112,10 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			gluTessEndPolygon(m_pTesselator);
 
 			glUseProgram(0);
+#endif
 		}
 
+#ifdef OPENGL2
 		if (m_bDisplayWireframe)
 		{
 			glBindTexture(GL_TEXTURE_2D, (GLuint)0);
@@ -1097,6 +1144,7 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 				glVertex3fv(pMesh->GetVertex(pFace->GetVertex(0)->v));
 			glEnd();
 		}
+#endif
 
 #if 0
 		glDisable(GL_LIGHTING);
@@ -1147,6 +1195,7 @@ void CModelWindow::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 
 void CModelWindow::RenderUV()
 {
+#ifdef OPENGL2
 	glViewport(0, 0, (int)m_iWindowWidth, (int)m_iWindowHeight);
 
 	// Switch GL to 2d drawing mode.
@@ -1512,6 +1561,7 @@ void CModelWindow::RenderUV()
 	glPopMatrix();
 
 	glPopAttrib();
+#endif
 }
 
 void CModelWindow::WindowResize(int w, int h)
@@ -1520,6 +1570,7 @@ void CModelWindow::WindowResize(int w, int h)
 	if (flSceneSize < 150)
 		flSceneSize = 150;
 
+#ifdef OPENGL2
 	glViewport(0, 0, (GLsizei)w, (GLsizei)h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -1531,6 +1582,7 @@ void CModelWindow::WindowResize(int w, int h)
 		);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+#endif
 
 	if (!IsOpen())
 		return;
@@ -1612,6 +1664,7 @@ void CModelWindow::SaveNormal(size_t iMaterial, const tstring& sFilename)
 	if (pMaterial->m_iNormalIL == 0 && pMaterial->m_iNormal2IL == 0)
 		return;
 
+#ifdef OPENGL2
 	ilEnable(IL_FILE_OVERWRITE);
 
 	if (pMaterial->m_iNormalIL == 0 || pMaterial->m_iNormal2IL == 0)
@@ -1719,6 +1772,7 @@ void CModelWindow::SaveNormal(size_t iMaterial, const tstring& sFilename)
 	ilDeleteImages(1, &iNormalId);
 
 	delete[] avecMergedNormalValues;
+#endif
 }
 
 void CModelWindow::ClearDebugLines()

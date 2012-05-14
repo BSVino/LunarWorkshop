@@ -92,15 +92,6 @@ public:
 
 	virtual void				OnClientDisconnect(int iClient) {};
 
-	void						InitRegistrationFile();
-	virtual bool				IsRegistered();
-	void						ReadProductCode();
-	eastl::string				GetProductCode();
-	void						SetLicenseKey(eastl::string sKey);
-	bool						QueryRegistrationKey(tstring sServer, tstring sURI, tstring sKey, eastl::string sProduct, tstring& sError);
-	void						SaveProductCode();
-	eastl::string				GenerateCode();
-
 	static void					OpenConsole();
 	static void					CloseConsole();
 	static void					ToggleConsole();

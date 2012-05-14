@@ -1,15 +1,11 @@
 #ifndef SMAK_PICKER_H
 #define SMAK_PICKER_H
 
+#include <glgui/movablepanel.h>
+
 #include "modelwindow_ui.h"
 
-namespace glgui
-{
-	class CTree;
-	class CTreeNode;
-}
-
-class CPicker : public CMovablePanel
+class CPicker : public glgui::CMovablePanel
 {
 public:
 								CPicker(const tstring& sName, IEventListener* pCallback, IEventListener::Callback pfnCallback);

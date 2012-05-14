@@ -1,9 +1,5 @@
 #include "crunch.h"
 
-#include <IL/il.h>
-#include <IL/ilu.h>
-#include <GL/glew.h>
-
 #include <raytracer/raytracer.h>
 
 #if 0
@@ -484,7 +480,9 @@ void CTexelGenerator::GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedia
 
 void CTexelGenerator::SaveAll(const tstring& sFilename)
 {
+#ifdef OPENGL2
 	ilEnable(IL_FILE_OVERWRITE);
+#endif
 
 	for (size_t i = 0; i < m_apMethods.size(); i++)
 		m_apMethods[i]->SaveToFile(sFilename);
@@ -509,6 +507,7 @@ void CTexelMethod::SaveToFile(const tstring& sFilename)
 {
 	tstring sRealFilename = sFilename.substr(0, sFilename.length()-4) + "-" + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
 
+#ifdef OPENGL2
 	ILuint iDevILId;
 	ilGenImages(1, &iDevILId);
 	ilBindImage(iDevILId);
@@ -527,6 +526,7 @@ void CTexelMethod::SaveToFile(const tstring& sFilename)
 	ilSaveImage(convertstring<tchar, ILchar>(sRealFilename).c_str());
 
 	ilDeleteImages(1,&iDevILId);
+#endif
 }
 
 CTexelDiffuseMethod::CTexelDiffuseMethod(CTexelGenerator* pGenerator)
@@ -658,6 +658,7 @@ void CTexelDiffuseMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* 
 	// Lock for il texture access so multiple threads don't bind different textures and confuse each other.
 	m_pGenerator->GetParallelizer()->LockData();
 
+#ifdef OPENGL2
 	ilBindImage(iTexture);
 
 	size_t iU = (size_t)((vecWorldPosition.x * ilGetInteger(IL_IMAGE_WIDTH)) - 0.5f);
@@ -671,6 +672,9 @@ void CTexelDiffuseMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* 
 	Color clrData = pclrData[iColorTexel];
 
 	ilBindImage(0);
+#else
+	Color clrData;
+#endif
 
 	m_avecDiffuseValues[iTexel] += Vector(clrData);
 	m_aiDiffuseReads[iTexel]++;
@@ -681,11 +685,13 @@ void CTexelDiffuseMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* 
 
 void CTexelDiffuseMethod::PostGenerate()
 {
+#ifdef OPENGL2
 	for (size_t i = 0; i < m_aiTextures.size(); i++)
 	{
 		if (m_aiTextures[i])
 			ilDeleteImages(1, &m_aiTextures[i]);
 	}
+#endif
 
 	if (m_pGenerator->GetWorkListener())
 		m_pGenerator->GetWorkListener()->SetAction("Averaging reads", m_iWidth*m_iHeight);
@@ -818,12 +824,14 @@ size_t CTexelDiffuseMethod::GenerateDiffuse(bool bInMedias)
 		}
 	}
 
-	GLuint iGLId;
+	size_t iGLId = 0;
+#ifdef OPENGL2
 	glGenTextures(1, &iGLId);
 	glBindTexture(GL_TEXTURE_2D, iGLId);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, (GLint)m_iWidth, (GLint)m_iHeight, GL_RGB, GL_FLOAT, &avecDiffuseValues[0].x);
+#endif
 
 	return iGLId;
 }
@@ -1161,12 +1169,14 @@ size_t CTexelAOMethod::GenerateAO(bool bInMedias)
 		}
 	}
 
-	GLuint iGLId;
+	size_t iGLId=0;
+#ifdef OPENGL2
 	glGenTextures(1, &iGLId);
 	glBindTexture(GL_TEXTURE_2D, iGLId);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, (GLint)m_iWidth, (GLint)m_iHeight, GL_RGB, GL_FLOAT, &avecShadowValues[0].x);
+#endif
 
 	return iGLId;
 }
@@ -1357,6 +1367,7 @@ bool CTexelNormalMethod::GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMe
 		TexturizeValues(avecNormalValues);
 	}
 
+#ifdef OPENGL2
 	glGenTextures(1, &iGLId);
 	glBindTexture(GL_TEXTURE_2D, iGLId);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1370,6 +1381,7 @@ bool CTexelNormalMethod::GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMe
 		ilTexImage((ILint)m_iWidth, (ILint)m_iHeight, 1, 3, IL_RGB, IL_FLOAT, &avecNormalValues[0].x);
 		ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
 	}
+#endif
 
 	return true;
 }
@@ -1378,7 +1390,7 @@ void CTexelNormalMethod::SaveToFile(const tstring& sFilename)
 {
 	tstring sRealFilename = sFilename.substr(0, sFilename.length()-4) + "-" + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
 
-	tvector<bool> abMaterialSaved((bool)false);
+	tvector<bool> abMaterialSaved;
 	abMaterialSaved.resize(m_pGenerator->GetScene()->GetNumMaterials());
 
 	for (size_t i = 0; i < m_pGenerator->GetLoResMeshInstances().size(); i++)

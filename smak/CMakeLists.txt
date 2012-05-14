@@ -4,6 +4,7 @@ include_directories (
 	../
 	../common
 	../common/math
+	../tinker
 )
 
 if (WIN32)

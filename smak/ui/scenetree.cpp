@@ -1,9 +1,5 @@
 #include "scenetree.h"
 
-#include <GL/glew.h>
-#include <IL/il.h>
-#include <IL/ilu.h>
-
 #include <tinker_platform.h>
 #include <glgui/rootpanel.h>
 #include <glgui/tree.h>
@@ -17,7 +13,11 @@ CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
 	: CMovablePanel("Scene Tree")
 {
 	m_pScene = pScene;
+#ifdef OPENGL2
 	m_pTree = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
+#else
+	m_pTree = new CTree();
+#endif
 	AddControl(m_pTree);
 
 	HasCloseButton(false);
@@ -64,7 +64,9 @@ void CSceneTreePanel::AddAllToTree()
 {
 	size_t iMaterialsNode = m_pTree->AddNode("Materials");
 	CTreeNode* pMaterialsNode = m_pTree->GetNode(iMaterialsNode);
+#ifdef OPENGL2
 	pMaterialsNode->SetIcon(CModelWindow::Get()->GetMaterialsNodeTexture());
+#endif
 
 	size_t i;
 	for (i = 0; i < m_pScene->GetNumMaterials(); i++)
@@ -81,7 +83,9 @@ void CSceneTreePanel::AddAllToTree()
 
 	size_t iMeshesNode = m_pTree->AddNode("Meshes");
 	CTreeNode* pMeshesNode = m_pTree->GetNode(iMeshesNode);
+#ifdef OPENGL2
 	pMeshesNode->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
+#endif
 
 	for (i = 0; i < m_pScene->GetNumMeshes(); i++)
 		pMeshesNode->AddNode<CConversionMesh>(m_pScene->GetMesh(i)->GetName(), m_pScene->GetMesh(i));
@@ -91,7 +95,9 @@ void CSceneTreePanel::AddAllToTree()
 
 	size_t iScenesNode = m_pTree->AddNode("Scenes");
 	CTreeNode* pScenesNode = m_pTree->GetNode(iScenesNode);
+#ifdef OPENGL2
 	pScenesNode->SetIcon(CModelWindow::Get()->GetScenesNodeTexture());
+#endif
 
 	for (i = 0; i < m_pScene->GetNumScenes(); i++)
 		AddNodeToTree(pScenesNode, m_pScene->GetScene(i));
@@ -110,7 +116,9 @@ void CSceneTreePanel::AddNodeToTree(glgui::CTreeNode* pTreeNode, CConversionScen
 	{
 		size_t iMeshInstanceNode = pTreeNode->GetNode(iNode)->AddNode<CConversionMeshInstance>(pSceneNode->GetMeshInstance(m)->GetMesh()->GetName(), pSceneNode->GetMeshInstance(m));
 		CTreeNode* pMeshInstanceNode = pTreeNode->GetNode(iNode)->GetNode(iMeshInstanceNode);
+#ifdef OPENGL2
 		pMeshInstanceNode->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
+#endif
 		pMeshInstanceNode->AddVisibilityButton();
 		pMeshInstanceNode->SetDraggable(true);
 
@@ -488,8 +496,10 @@ void CMaterialEditor::OpenDiffuseCallback(const tstring& sArgs)
 
 	CMaterial* pMaterial = &(*CModelWindow::Get()->GetMaterials())[m_iMaterial];
 
+#ifdef OPENGL2
 	if (pMaterial->m_iBase)
 		glDeleteTextures(1, &pMaterial->m_iBase);
+#endif
 
 	pMaterial->m_iBase = iTexture;
 	m_pMaterial->m_sDiffuseTexture = sOpen;
@@ -516,12 +526,15 @@ void CMaterialEditor::OpenNormalCallback(const tstring& sArgs)
 
 	CMaterial* pMaterial = &(*CModelWindow::Get()->GetMaterials())[m_iMaterial];
 
+#ifdef OPENGL2
 	if (pMaterial->m_iNormal)
 		glDeleteTextures(1, &pMaterial->m_iNormal);
+#endif
 
 	pMaterial->m_iNormal = iTexture;
 	m_pMaterial->m_sNormalTexture = sOpen;
 
+#ifdef OPENGL2
 	if (pMaterial->m_iNormal2)
 		glDeleteTextures(1, &pMaterial->m_iNormal2);
 	pMaterial->m_iNormal2 = 0;
@@ -530,6 +543,7 @@ void CMaterialEditor::OpenNormalCallback(const tstring& sArgs)
 		ilDeleteImages(1, &pMaterial->m_iNormal2IL);
 	if (pMaterial->m_iNormalIL)
 		ilDeleteImages(1, &pMaterial->m_iNormalIL);
+#endif
 
 	pMaterial->m_iNormal2IL = 0;
 	pMaterial->m_iNormalIL = 0;
@@ -541,8 +555,10 @@ void CMaterialEditor::RemoveDiffuseCallback(const tstring& sArgs)
 {
 	CMaterial* pMaterial = &(*CModelWindow::Get()->GetMaterials())[m_iMaterial];
 
+#ifdef OPENGL2
 	if (pMaterial->m_iBase)
 		glDeleteTextures(1, &pMaterial->m_iBase);
+#endif
 
 	pMaterial->m_iBase = 0;
 	m_pMaterial->m_sDiffuseTexture = "";
@@ -554,6 +570,7 @@ void CMaterialEditor::RemoveNormalCallback(const tstring& sArgs)
 {
 	CMaterial* pMaterial = &(*CModelWindow::Get()->GetMaterials())[m_iMaterial];
 
+#ifdef OPENGL2
 	if (pMaterial->m_iNormal)
 		glDeleteTextures(1, &pMaterial->m_iNormal);
 
@@ -568,6 +585,7 @@ void CMaterialEditor::RemoveNormalCallback(const tstring& sArgs)
 		ilDeleteImages(1, &pMaterial->m_iNormal2IL);
 	if (pMaterial->m_iNormalIL)
 		ilDeleteImages(1, &pMaterial->m_iNormalIL);
+#endif
 
 	pMaterial->m_iNormal2IL = 0;
 	pMaterial->m_iNormalIL = 0;

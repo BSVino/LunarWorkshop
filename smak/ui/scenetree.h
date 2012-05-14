@@ -1,15 +1,11 @@
 #ifndef SMAK_SCENETREE_H
 #define SMAK_SCENETREE_H
 
+#include <glgui/movablepanel.h>
+
 #include "modelwindow_ui.h"
 
-namespace glgui
-{
-	class CLabel;
-	class CButton;
-}
-
-class CSceneTreePanel : public CMovablePanel
+class CSceneTreePanel : public glgui::CMovablePanel
 {
 public:
 									CSceneTreePanel(CConversionScene* pScene);
@@ -40,7 +36,7 @@ public:
 
 void OpenMaterialEditor(CConversionMaterial* pMaterial, const tstring& sArgs);
 
-class CMaterialEditor : public CMovablePanel
+class CMaterialEditor : public glgui::CMovablePanel
 {
 public:
 									CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel* pSceneTree);

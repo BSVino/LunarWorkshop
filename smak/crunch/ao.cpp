@@ -1,9 +1,5 @@
 #include "crunch.h"
 
-#include <IL/il.h>
-#include <IL/ilu.h>
-#include <GL/glew.h>
-#include <GL/glfw3.h>
 #include <time.h>
 
 #include <geometry.h>
@@ -119,10 +115,13 @@ void CAOGenerator::SetRenderPreviewViewport(int x, int y, int w, int h)
 
 	// Pixel reading buffer
 	m_iPixelDepth = 4;
-	size_t iBufferSize = m_iRPVW*m_iRPVH*sizeof(GLfloat)*m_iPixelDepth;
-	m_pPixels = (GLfloat*)malloc(iBufferSize);
+	size_t iBufferSize = m_iRPVW*m_iRPVH*sizeof(float)*m_iPixelDepth;
+	m_pPixels = (float*)malloc(iBufferSize);
 }
 
+static bool g_bCreaseEdges = false;
+static size_t g_iCreaseFace = 0;
+#ifdef OPENGL2
 extern "C" {
 static void CALLBACK ShadowMapTesselateBegin(GLenum ePrim)
 {
@@ -130,8 +129,6 @@ static void CALLBACK ShadowMapTesselateBegin(GLenum ePrim)
 }
 
 // I don't like it either.
-static bool g_bCreaseEdges = false;
-static size_t g_iCreaseFace = 0;
 static void CALLBACK ShadowMapTesselateVertex(void* pVertexData, void* pPolygonData)
 {
 	CConversionMeshInstance* pMeshInstance = (CConversionMeshInstance*)pPolygonData;
@@ -158,9 +155,11 @@ static void CALLBACK ShadowMapTesselateEnd()
 	glEnd();
 }
 }
+#endif
 
 void CAOGenerator::ShadowMapSetupScene()
 {
+#ifdef OPENGL2
 	// Tuck away our current stack so we can return to it later.
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -200,6 +199,7 @@ void CAOGenerator::ShadowMapSetupScene()
 	glEndList();
 
 	gluDeleteTess(pTesselator);
+#endif
 }
 
 void CAOGenerator::ShadowMapSetupSceneNode(CConversionSceneNode* pNode, GLUtesselator* pTesselator, bool bDepth)
@@ -235,6 +235,7 @@ void CAOGenerator::ShadowMapSetupSceneNode(CConversionSceneNode* pNode, GLUtesse
 			if (g_bCreaseEdges)
 				g_iCreaseFace = f;
 
+#ifdef OPENGL2
 			gluTessBeginPolygon(pTesselator, pMeshInstance);
 			gluTessBeginContour(pTesselator);
 
@@ -249,10 +250,12 @@ void CAOGenerator::ShadowMapSetupSceneNode(CConversionSceneNode* pNode, GLUtesse
 
 			gluTessEndContour(pTesselator);
 			gluTessEndPolygon(pTesselator);
+#endif
 		}
 	}
 }
 
+#ifdef OPENGL2
 extern "C" {
 static void CALLBACK RenderTesselateBegin(GLenum ePrim)
 {
@@ -279,9 +282,11 @@ static void CALLBACK RenderTesselateEnd()
 	glEnd();
 }
 }
+#endif
 
 void CAOGenerator::RenderSetupScene()
 {
+#ifdef OPENGL2
 	// Tuck away our current stack so we can return to it later.
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -310,6 +315,7 @@ void CAOGenerator::RenderSetupScene()
 	glEndList();
 
 	gluDeleteTess(pTesselator);
+#endif
 }
 
 void CAOGenerator::RenderSetupSceneNode(CConversionSceneNode* pNode, GLUtesselator* pTesselator)
@@ -328,6 +334,7 @@ void CAOGenerator::RenderSetupSceneNode(CConversionSceneNode* pNode, GLUtesselat
 		{
 			CConversionFace* pFace = pMesh->GetFace(f);
 
+#ifdef OPENGL2
 			glBindTexture(GL_TEXTURE_2D, (GLuint)(*m_paoMaterials)[m].m_iBase);
 			glColor3f(1, 1, 1);
 
@@ -356,6 +363,7 @@ void CAOGenerator::RenderSetupSceneNode(CConversionSceneNode* pNode, GLUtesselat
 
 			gluTessEndContour(pTesselator);
 			gluTessEndPolygon(pTesselator);
+#endif
 		}
 	}
 }
@@ -388,7 +396,9 @@ void CAOGenerator::Generate()
 
 	if (m_eAOMethod == AOMETHOD_SHADOWMAP)
 	{
+#ifdef OPENGL2
 		if (!GLEW_ARB_shadow || !GLEW_ARB_depth_texture || !GLEW_ARB_vertex_shader || !GLEW_EXT_framebuffer_object || !(GLEW_ARB_texture_float || GLEW_VERSION_3_0))
+#endif
 		{
 			m_bIsGenerating = false;
 			// Message here?
@@ -437,6 +447,7 @@ void CAOGenerator::Generate()
 
 	if (m_eAOMethod == AOMETHOD_RENDER || m_eAOMethod == AOMETHOD_SHADOWMAP)
 	{
+#ifdef OPENGL2
 		if (m_eAOMethod == AOMETHOD_SHADOWMAP)
 			glDeleteLists(m_iSceneList, 2);
 		else
@@ -448,6 +459,7 @@ void CAOGenerator::Generate()
 
 		glMatrixMode(GL_MODELVIEW);
 		glPopMatrix();
+#endif
 	}
 
 	// Somebody get this ao some clotters and morphine, STAT!
@@ -471,6 +483,7 @@ void CAOGenerator::GenerateShadowMaps()
 	float flProcessSceneRead = 0;
 	float flProgress = 0;
 
+#ifdef OPENGL2
 	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT);
 
 	// Clear red so that we can pick out later what we want when we're reading pixels.
@@ -865,10 +878,12 @@ void CAOGenerator::GenerateShadowMaps()
 	glDepthFunc(GL_LESS);
 
 	glPopAttrib();
+#endif
 }
 
 void CAOGenerator::AccumulateTexture(size_t iTexture)
 {
+#ifdef OPENGL2
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
@@ -919,6 +934,7 @@ void CAOGenerator::AccumulateTexture(size_t iTexture)
 
 	glMatrixMode(GL_TEXTURE);
 	glPopMatrix();
+#endif
 }
 
 void CAOGenerator::GenerateByTexel()
@@ -1176,6 +1192,7 @@ void CAOGenerator::GenerateTriangleByTexel(CConversionMeshInstance* pMeshInstanc
 
 Vector CAOGenerator::RenderSceneFromPosition(Vector vecPosition, Vector vecDirection, CConversionFace* pRenderFace)
 {
+#ifdef OPENGL2
 	GLenum eBuffer = GL_AUX0;
 #ifdef AO_DEBUG
 	eBuffer = GL_FRONT;
@@ -1268,6 +1285,8 @@ Vector CAOGenerator::RenderSceneFromPosition(Vector vecPosition, Vector vecDirec
 	vecShadowColor /= flTotal;
 
 	return vecShadowColor;
+#endif
+	return Vector();
 }
 
 void CAOGenerator::DebugRenderSceneLookAtPosition(Vector vecPosition, Vector vecDirection, CConversionFace* pRenderFace)
@@ -1459,9 +1478,11 @@ size_t CAOGenerator::GenerateTexture(bool bInMedias)
 			}
 			else
 			{
+#ifdef OPENGL2
 				glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)m_iAOFB);
 				glReadPixels(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight, GL_RGBA, GL_FLOAT, m_pPixels);
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
 
 				size_t iBufferSize = m_iWidth*m_iHeight*m_iPixelDepth;
 				for (size_t p = 0; p < iBufferSize; p+=m_iPixelDepth)
@@ -1500,12 +1521,14 @@ size_t CAOGenerator::GenerateTexture(bool bInMedias)
 		}
 	}
 
-	GLuint iGLId;
+	size_t iGLId = 0;
+#ifdef OPENGL2
 	glGenTextures(1, &iGLId);
 	glBindTexture(GL_TEXTURE_2D, iGLId);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, (GLint)m_iWidth, (GLint)m_iHeight, GL_RGB, GL_FLOAT, &avecShadowValues[0].x);
+#endif
 
 	return iGLId;
 }
@@ -1515,6 +1538,7 @@ void CAOGenerator::SaveToFile(const tchar *pszFilename)
 	if (!pszFilename)
 		return;
 
+#ifdef OPENGL2
 	ilEnable(IL_FILE_OVERWRITE);
 
 	ILuint iDevILId;
@@ -1545,6 +1569,7 @@ void CAOGenerator::SaveToFile(const tchar *pszFilename)
 	ilSaveImage(convertstring<tchar, ILchar>(pszFilename).c_str());
 
 	ilDeleteImages(1,&iDevILId);
+#endif
 }
 
 bool CAOGenerator::Texel(size_t w, size_t h, size_t& iTexel, bool bUseMask)
@@ -1595,8 +1620,9 @@ void DrawSplit(const raytrace::CKDNode* pNode)
 		DrawSplit(pNode->GetRightChild());
 }
 
-void DrawTexture(GLuint iTexture, float flScale)
+void DrawTexture(size_t iTexture, float flScale)
 {
+#ifdef OPENGL2
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
@@ -1649,5 +1675,6 @@ void DrawTexture(GLuint iTexture, float flScale)
 
 	glMatrixMode(GL_TEXTURE);
 	glPopMatrix();
+#endif
 }
 #endif

@@ -98,7 +98,7 @@ void CModelWindow::MouseMotion(int x, int y)
 	glgui::CRootPanel::Get()->CursorMoved(x, y);
 }
 
-void CModelWindow::MouseInput(int iButton, int iState)
+bool CModelWindow::MouseInput(int iButton, int iState)
 {
 	int x, y;
 	GetMousePosition(x, y);
@@ -106,12 +106,12 @@ void CModelWindow::MouseInput(int iButton, int iState)
 	if (iState == 1)
 	{
 		if (glgui::CRootPanel::Get()->MousePressed(iButton, x, y))
-			return;
+			return true;
 	}
 	else
 	{
 		if (glgui::CRootPanel::Get()->MouseReleased(iButton, x, y))
-			return;
+			return true;
 	}
 
 	if (m_bRenderUV)
@@ -123,9 +123,13 @@ void CModelWindow::MouseInput(int iButton, int iState)
 				m_bLightRotating = 1;
 				m_iMouseStartX = x;
 				m_iMouseStartY = y;
+				return true;
 			}
-			if (iState == 0)
+			else if (iState == 0)
+			{
 				m_bLightRotating = 0;
+				return true;
+			}
 		}
 		else if (iButton == TINKER_KEY_MOUSE_LEFT)
 		{
@@ -134,9 +138,13 @@ void CModelWindow::MouseInput(int iButton, int iState)
 				m_bCameraPanning = 1;
 				m_iMouseStartX = x;
 				m_iMouseStartY = y;
+				return true;
 			}
-			if (iState == 0)
+			else if (iState == 0)
+			{
 				m_bCameraPanning = 0;
+				return true;
+			}
 		}
 		else
 		{
@@ -145,9 +153,13 @@ void CModelWindow::MouseInput(int iButton, int iState)
 				m_bCameraDollying = 1;
 				m_iMouseStartX = x;
 				m_iMouseStartY = y;
+				return true;
 			}
-			if (iState == 0)
+			else if (iState == 0)
+			{
 				m_bCameraDollying = 0;
+				return true;
+			}
 		}
 	}
 	else
@@ -159,9 +171,13 @@ void CModelWindow::MouseInput(int iButton, int iState)
 				m_bLightRotating = 1;
 				m_iMouseStartX = x;
 				m_iMouseStartY = y;
+				return true;
 			}
-			if (iState == 0)
+			else if (iState == 0)
+			{
 				m_bLightRotating = 0;
+				return true;
+			}
 		}
 		else if (iButton == TINKER_KEY_MOUSE_LEFT)
 		{
@@ -170,9 +186,13 @@ void CModelWindow::MouseInput(int iButton, int iState)
 				m_bCameraRotating = 1;
 				m_iMouseStartX = x;
 				m_iMouseStartY = y;
+				return true;
 			}
-			if (iState == 0)
+			else if (iState == 0)
+			{
 				m_bCameraRotating = 0;
+				return true;
+			}
 		}
 		else if (iButton == TINKER_KEY_MOUSE_RIGHT)
 		{
@@ -181,11 +201,17 @@ void CModelWindow::MouseInput(int iButton, int iState)
 				m_bCameraDollying = 1;
 				m_iMouseStartX = x;
 				m_iMouseStartY = y;
+				return true;
 			}
-			if (iState == 0)
+			else if (iState == 0)
+			{
 				m_bCameraDollying = 0;
+				return true;
+			}
 		}
 	}
+
+	return false;
 }
 
 void CModelWindow::MouseWheel(int x, int y)

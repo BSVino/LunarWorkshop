@@ -1,8 +1,5 @@
 #include "modelwindow_ui.h"
 
-#include <IL/il.h>
-#include <GL/glfw3.h>
-
 #include <maths.h>
 #include <strutils.h>
 #include <tinker_platform.h>
@@ -51,9 +48,6 @@ void CModelWindow::InitUI()
 	pTools->AddSubmenu("Generate normal from texture", this, GenerateNormal);
 
 	pHelp->AddSubmenu("Help", this, Help);
-#if !defined(TINKER_NO_REGISTRATION)
-	pHelp->AddSubmenu("Register...", this, Register);
-#endif
 	pHelp->AddSubmenu("About SMAK", this, About);
 
 	CButtonPanel* pTopButtons = new CButtonPanel(BA_TOP);
@@ -68,6 +62,7 @@ void CModelWindow::InitUI()
 
 	CButtonPanel* pBottomButtons = new CButtonPanel(BA_BOTTOM);
 
+#ifdef OPENGL2
 	m_pWireframe = new CPictureButton("Wire", m_iWireframeTexture, true);
 	m_pUVWireframe = new CPictureButton("Wire", m_iUVTexture, true);
 	m_pLight = new CPictureButton("Lght", m_iLightTexture, true);
@@ -75,6 +70,15 @@ void CModelWindow::InitUI()
 	m_pNormal = new CPictureButton("Nrml", m_iNormalTexture, true);
 	m_pAO = new CPictureButton("AO", m_iAOTexture, true);
 	m_pColorAO = new CPictureButton("C AO", m_iCAOTexture, true);
+#else
+	m_pWireframe = new CPictureButton("Wire", CMaterialHandle(), true);
+	m_pUVWireframe = new CPictureButton("Wire", CMaterialHandle(), true);
+	m_pLight = new CPictureButton("Lght", CMaterialHandle(), true);
+	m_pTexture = new CPictureButton("Tex", CMaterialHandle(), true);
+	m_pNormal = new CPictureButton("Nrml", CMaterialHandle(), true);
+	m_pAO = new CPictureButton("AO", CMaterialHandle(), true);
+	m_pColorAO = new CPictureButton("C AO", CMaterialHandle(), true);
+#endif
 
 	pBottomButtons->AddButton(m_pWireframe, "Toggle Wireframe", true, this, Wireframe);
 	pBottomButtons->AddButton(m_pUVWireframe, "Toggle UVs", true, this, UVWireframe);
@@ -266,11 +270,6 @@ void CModelWindow::HelpCallback(const tstring& sArgs)
 	OpenHelpPanel();
 }
 
-void CModelWindow::RegisterCallback(const tstring& sArgs)
-{
-	OpenRegisterPanel();
-}
-
 void CModelWindow::AboutCallback(const tstring& sArgs)
 {
 	OpenAboutPanel();
@@ -279,11 +278,6 @@ void CModelWindow::AboutCallback(const tstring& sArgs)
 void CModelWindow::OpenHelpPanel()
 {
 	CHelpPanel::Open();
-}
-
-void CModelWindow::OpenRegisterPanel()
-{
-	CRegisterPanel::Open();
 }
 
 void CModelWindow::OpenAboutPanel()
@@ -305,7 +299,7 @@ void CModelWindow::SetAction(const tstring& sAction, size_t iTotalProgress)
 
 void CModelWindow::WorkProgress(size_t iProgress, bool bForceDraw)
 {
-	static float flLastTime = 0;
+	static double flLastTime = 0;
 
 	// Don't update too often or it'll slow us down just because of the updates.
 	if (!bForceDraw && GetTime() - flLastTime < 0.3f)
@@ -316,7 +310,9 @@ void CModelWindow::WorkProgress(size_t iProgress, bool bForceDraw)
 	CModelWindow::Get()->Render();
 	CRootPanel::Get()->Think(GetTime());
 	CRootPanel::Get()->Paint(0, 0, (float)m_iWindowWidth, (float)m_iWindowHeight);
+#ifdef OPENGL2
 	glfwSwapBuffers();
+#endif
 
 	flLastTime = GetTime();
 }
@@ -487,175 +483,6 @@ CProgressBar* CProgressBar::Get()
 		s_pProgressBar = new CProgressBar();
 
 	return s_pProgressBar;
-}
-
-void CCloseButton::Paint(float x, float y, float w, float h)
-{
-	Color c;
-	
-	c.SetRed((int)RemapVal(m_flHighlight, 0.0f, 1.0f, (float)g_clrBox.r() * 2, 255.0f));
-	c.SetGreen((int)RemapVal(m_flHighlight, 0.0f, 1.0f, (float)g_clrBox.g(), (float)g_clrBoxHi.g()));
-	c.SetBlue((int)RemapVal(m_flHighlight, 0.0f, 1.0f, (float)g_clrBox.b(), (float)g_clrBoxHi.b()));
-	c.SetAlpha(255);
-
-	CRootPanel::PaintRect(x, y, w, h, c);
-}
-
-void CMinimizeButton::Paint(float x, float y, float w, float h)
-{
-	Color c;
-	
-	c.SetRed((int)RemapVal(m_flHighlight, 0.0f, 1.0f, (float)g_clrBox.r(), (float)g_clrBox.r()));
-	c.SetGreen((int)RemapVal(m_flHighlight, 0.0f, 1.0f, (float)g_clrBox.g(), (float)g_clrBoxHi.g()));
-	c.SetBlue((int)RemapVal(m_flHighlight, 0.0f, 1.0f, (float)g_clrBox.b() * 2, 255.0f));
-	c.SetAlpha(255);
-
-	CRootPanel::PaintRect(x, y+h/3+1, w, h/3, c);
-}
-
-CMovablePanel::CMovablePanel(const tstring& sName)
-	: CPanel(0, 0, 200, 350)
-{
-	m_bMoving = false;
-
-	m_pName = new CLabel(0, GetHeight()-HEADER_HEIGHT, GetWidth(), HEADER_HEIGHT, sName);
-	AddControl(m_pName);
-
-	m_pCloseButton = new CCloseButton();
-	AddControl(m_pCloseButton);
-
-	m_pCloseButton->SetClickedListener(this, CloseWindow);
-
-	m_pMinimizeButton = new CMinimizeButton();
-	AddControl(m_pMinimizeButton);
-
-	m_pMinimizeButton->SetClickedListener(this, MinimizeWindow);
-
-	CRootPanel::Get()->AddControl(this, true);
-
-	m_bHasCloseButton = true;
-	m_bMinimized = false;
-
-	m_bClearBackground = false;
-}
-
-CMovablePanel::~CMovablePanel()
-{
-	CRootPanel::Get()->RemoveControl(this);
-}
-
-void CMovablePanel::Layout()
-{
-	m_pName->SetDimensions(0, 0, GetWidth(), HEADER_HEIGHT);
-
-	m_pCloseButton->SetVisible(m_bHasCloseButton);
-
-	float flButtonSize = HEADER_HEIGHT*2/3;
-	if (m_bHasCloseButton)
-	{
-		m_pCloseButton->SetDimensions(GetWidth() - HEADER_HEIGHT/2 - flButtonSize/2, HEADER_HEIGHT/2 - flButtonSize/2, flButtonSize, flButtonSize);
-		m_pMinimizeButton->SetDimensions(GetWidth() - HEADER_HEIGHT*3/2 - flButtonSize/2, HEADER_HEIGHT/2 - flButtonSize/2, flButtonSize, flButtonSize);
-	}
-	else
-		m_pMinimizeButton->SetDimensions(GetWidth() - HEADER_HEIGHT/2 - flButtonSize/2, HEADER_HEIGHT/2 - flButtonSize/2, flButtonSize, flButtonSize);
-
-	CPanel::Layout();
-}
-
-void CMovablePanel::Think()
-{
-	if (m_bMoving)
-	{
-		int mx, my;
-		CRootPanel::GetFullscreenMousePos(mx, my);
-
-		SetPos(m_flStartX + mx - m_iMouseStartX, m_flStartY + my - m_iMouseStartY);
-	}
-
-	CPanel::Think();
-}
-
-void CMovablePanel::Paint(float x, float y, float w, float h)
-{
-	if (!m_bMinimized && !m_bClearBackground)
-		CRootPanel::PaintRect(x, y, w, h, g_clrPanel);
-
-	Color clrBox = g_clrBoxHi;
-	if (m_bClearBackground)
-		clrBox.SetAlpha(clrBox.a()*3/2);
-
-	CRootPanel::PaintRect(x, y, w, HEADER_HEIGHT, clrBox);
-
-	if (m_bMinimized)
-	{
-		m_pName->Paint();
-		if (m_bHasCloseButton)
-			m_pCloseButton->Paint();
-		m_pMinimizeButton->Paint();
-	}
-	else
-		CPanel::Paint(x, y, w, h);
-}
-
-bool CMovablePanel::MousePressed(int iButton, int mx, int my)
-{
-	float x, y;
-	GetAbsPos(x, y);
-
-	if (iButton == TINKER_KEY_MOUSE_LEFT && mx > x && mx < x + GetWidth() - HEADER_HEIGHT*2 && my > y && my < y + HEADER_HEIGHT )
-	{
-		m_iMouseStartX = mx;
-		m_iMouseStartY = my;
-		m_bMoving = true;
-
-		GetPos(x, y);
-		m_flStartX = x;
-		m_flStartY = y;
-
-		return true;
-	}
-
-	return CPanel::MousePressed(iButton, mx, my);
-}
-
-bool CMovablePanel::MouseReleased(int iButton, int mx, int my)
-{
-	if (m_bMoving)
-	{
-		m_bMoving = false;
-		return true;
-	}
-
-	CPanel::MouseReleased(iButton, mx, my);
-
-	return false;
-}
-
-void CMovablePanel::Minimize()
-{
-	m_bMinimized = !m_bMinimized;
-
-	if (m_bMinimized)
-	{
-		m_flNonMinimizedHeight = GetHeight();
-		SetSize(GetWidth(), HEADER_HEIGHT);
-	}
-	else
-	{
-		SetSize(GetWidth(), m_flNonMinimizedHeight);
-	}
-
-	Layout();
-}
-
-void CMovablePanel::CloseWindowCallback(const tstring& sArgs)
-{
-	SetVisible(false);
-}
-
-void CMovablePanel::MinimizeWindowCallback(const tstring& sArgs)
-{
-	Minimize();
 }
 
 CAOPanel* CAOPanel::s_pAOPanel = NULL;
@@ -982,10 +809,14 @@ void CAOPanel::GenerateCallback(const tstring& sArgs)
 	// If the 3d model was there get rid of it.
 	CModelWindow::Get()->Render();
 	CRootPanel::Get()->Paint(0, 0, (float)CModelWindow::Get()->GetWindowWidth(), (float)CModelWindow::Get()->GetWindowHeight());
+#ifdef OPENGL2
 	glfwSwapBuffers();
+#endif
 	CModelWindow::Get()->Render();
 	CRootPanel::Get()->Paint(0, 0, (float)CModelWindow::Get()->GetWindowWidth(), (float)CModelWindow::Get()->GetWindowHeight());
+#ifdef OPENGL2
 	glfwSwapBuffers();
+#endif
 
 	if (m_bColor)
 		CModelWindow::Get()->SetDisplayColorAO(true);
@@ -1024,8 +855,10 @@ void CAOPanel::GenerateCallback(const tstring& sArgs)
 		if (!m_pScene->GetMaterial(i)->IsVisible())
 			continue;
 
+#ifdef OPENGL2
 		if (iAOTexture)
 			glDeleteTextures(1, &iAOTexture);
+#endif
 
 		if (m_oGenerator.DoneGenerating())
 			iAOTexture = iAO;
@@ -1065,8 +898,8 @@ void CAOPanel::SetAction(const tstring& sAction, size_t iTotalProgress)
 
 void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 {
-	static float flLastTime = 0;
-	static float flLastGenerate = 0;
+	static double flLastTime = 0;
+	static double flLastGenerate = 0;
 
 	// Don't update too often or it'll slow us down just because of the updates.
 	if (!bForceDraw && CModelWindow::Get()->GetTime() - flLastTime < 0.01f)
@@ -1076,7 +909,9 @@ void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 
 	// We need to correct the viewport size before we push any events, or else any Layout() commands during
 	// button presses and the line will use the wrong viewport size.
+#ifdef OPENGL2
 	glViewport(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
+#endif
 
 	if (m_oGenerator.IsGenerating() && flLastTime - flLastGenerate > 0.5f)
 	{
@@ -1086,8 +921,10 @@ void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 		{
 			size_t& iAOTexture = m_bColor?(*m_paoMaterials)[i].m_iColorAO:(*m_paoMaterials)[i].m_iAO;
 
+#ifdef OPENGL2
 			if (iAOTexture)
 				glDeleteTextures(1, &iAOTexture);
+#endif
 
 			iAOTexture = iAO;
 		}
@@ -1098,7 +935,9 @@ void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 	CModelWindow::Get()->Render();
 	CRootPanel::Get()->Think(CModelWindow::Get()->GetTime());
 	CRootPanel::Get()->Paint(0, 0, (float)CModelWindow::Get()->GetWindowWidth(), (float)CModelWindow::Get()->GetWindowHeight());
+#ifdef OPENGL2
 	glfwSwapBuffers();
+#endif
 
 	flLastTime = CModelWindow::Get()->GetTime();
 }
@@ -1248,7 +1087,11 @@ CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, tvector<CMa
 	m_pLoResLabel = new CLabel(0, 0, 32, 32, "Low Resolution Meshes");
 	AddControl(m_pLoResLabel);
 
+#ifdef OPENGL2
 	m_pLoRes = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
+#else
+	m_pLoRes = new CTree();
+#endif
 	m_pLoRes->SetBackgroundColor(g_clrBox);
 	m_pLoRes->SetDroppedListener(this, DroppedLoResMesh);
 	AddControl(m_pLoRes);
@@ -1256,7 +1099,11 @@ CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, tvector<CMa
 	m_pHiResLabel = new CLabel(0, 0, 32, 32, "High Resolution Meshes");
 	AddControl(m_pHiResLabel);
 
+#ifdef OPENGL2
 	m_pHiRes = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
+#else
+	m_pHiRes = new CTree();
+#endif
 	m_pHiRes->SetBackgroundColor(g_clrBox);
 	m_pHiRes->SetDroppedListener(this, DroppedHiResMesh);
 	AddControl(m_pHiRes);
@@ -1532,7 +1379,9 @@ void CComboGeneratorPanel::Layout()
 		for (i = 0; i < m_apLoResMeshes.size(); i++)
 		{
 			m_pLoRes->AddNode<CConversionMeshInstance>(m_apLoResMeshes[i]->GetMesh()->GetName(), m_apLoResMeshes[i]);
+#ifdef OPENGL2
 			m_pLoRes->GetNode(i)->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
+#endif
 		}
 	}
 
@@ -1544,7 +1393,9 @@ void CComboGeneratorPanel::Layout()
 		for (i = 0; i < m_apHiResMeshes.size(); i++)
 		{
 			m_pHiRes->AddNode<CConversionMeshInstance>(m_apHiResMeshes[i]->GetMesh()->GetName(), m_apHiResMeshes[i]);
+#ifdef OPENGL2
 			m_pHiRes->GetNode(i)->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
+#endif
 		}
 	}
 
@@ -1685,6 +1536,7 @@ void CComboGeneratorPanel::GenerateCallback(const tstring& sArgs)
 		if (!m_pScene->GetMaterial(i)->IsVisible())
 			continue;
 
+#ifdef OPENGL2
 		if (iDiffuseTexture)
 			glDeleteTextures(1, &iDiffuseTexture);
 
@@ -1711,6 +1563,7 @@ void CComboGeneratorPanel::GenerateCallback(const tstring& sArgs)
 
 		if (iNormalILTexture)
 			glDeleteTextures(1, &iNormalILTexture);
+#endif
 
 		if (m_oGenerator.DoneGenerating())
 			iNormalILTexture = iNormalIL;
@@ -1765,8 +1618,8 @@ void CComboGeneratorPanel::SetAction(const tstring& sAction, size_t iTotalProgre
 
 void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 {
-	static float flLastTime = 0;
-	static float flLastGenerate = 0;
+	static double flLastTime = 0;
+	static double flLastGenerate = 0;
 
 	// Don't update too often or it'll slow us down just because of the updates.
 	if (!bForceDraw && CModelWindow::Get()->GetTime() - flLastTime < 0.01f)
@@ -1776,7 +1629,9 @@ void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 
 	// We need to correct the viewport size before we push any events, or else any Layout() commands during
 	// button presses and the line will use the wrong viewport size.
+#ifdef OPENGL2
 	glViewport(0, 0, CModelWindow::Get()->GetWindowWidth(), CModelWindow::Get()->GetWindowHeight());
+#endif
 
 	if (m_oGenerator.IsGenerating() && CModelWindow::Get()->GetTime() - flLastGenerate > 0.5f)
 	{
@@ -1791,6 +1646,7 @@ void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 			size_t& iAOTexture = (*m_paoMaterials)[i].m_iAO;
 			size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal;
 
+#ifdef OPENGL2
 			if (iDiffuseTexture)
 				glDeleteTextures(1, &iDiffuseTexture);
 
@@ -1803,6 +1659,7 @@ void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 
 			if (iNormalTexture)
 				glDeleteTextures(1, &iNormalTexture);
+#endif
 
 			iNormalTexture = iNormal;
 		}
@@ -1813,7 +1670,9 @@ void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 	CModelWindow::Get()->Render();
 	CRootPanel::Get()->Think(CModelWindow::Get()->GetTime());
 	CRootPanel::Get()->Paint(0, 0, (float)CModelWindow::Get()->GetWindowWidth(), (float)CModelWindow::Get()->GetWindowHeight());
+#ifdef OPENGL2
 	glfwSwapBuffers();
+#endif
 
 	flLastTime = CModelWindow::Get()->GetTime();
 }
@@ -2016,7 +1875,11 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, tvector<CMaterial>* paoMate
 	m_pMaterialsLabel = new CLabel(0, 0, 32, 32, "Choose A Material To Generate From:");
 	AddControl(m_pMaterialsLabel);
 
+#ifdef OPENGL2
 	m_pMaterials = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
+#else
+	m_pMaterials = new CTree();
+#endif
 	m_pMaterials->SetBackgroundColor(g_clrBox);
 	AddControl(m_pMaterials);
 
@@ -2248,11 +2111,13 @@ void CNormalPanel::Think()
 			if (!m_pScene->GetMaterial(i)->IsVisible())
 				continue;
 
+#ifdef OPENGL2
 			if (iNormalTexture)
 				glDeleteTextures(1, &iNormalTexture);
 
 			if (iNormalIL)
 				ilDeleteImages(1, &iNormalIL);
+#endif
 
 			iNormalTexture = iNormal2;
 			iNormalIL = iNormal2IL;
@@ -2512,315 +2377,3 @@ void CAboutPanel::Close()
 	s_pAboutPanel->SetVisible(false);
 }
 
-CRegisterPanel* CRegisterPanel::s_pRegisterPanel = NULL;
-
-CRegisterPanel::CRegisterPanel()
-	: CMovablePanel("Register SMAK")
-{
-	m_pWebsiteButton = new CButton(0, 0, 100, 100, "Visit www.getsmak.net");
-	m_pWebsiteButton->SetClickedListener(this, Website);
-	AddControl(m_pWebsiteButton);
-
-	m_pInfo = new CLabel(0, 0, 100, 100, "");
-	AddControl(m_pInfo);
-
-	m_pPirates = new CButton(0, 0, 1, 1, "A message to pirates");
-	m_pPirates->SetClickedListener(this, Pirates);
-	AddControl(m_pPirates);
-
-	m_pRegistrationKey = new CTextField();
-	AddControl(m_pRegistrationKey);
-
-	m_pRegister = new CButton(0, 0, 100, 100, "Register");
-	m_pRegister->SetClickedListener(this, Register);
-	AddControl(m_pRegister);
-
-	m_pRegisterResult = new CLabel(0, 0, 100, 100, "");
-	AddControl(m_pRegisterResult);
-
-	m_pRegisterOffline = new CButton(0, 0, 100, 100, "Register Offline");
-	m_pRegisterOffline->SetFont("sans-serif", 11);
-	m_pRegisterOffline->SetClickedListener(this, RegisterOffline);
-	AddControl(m_pRegisterOffline);
-
-	m_pProductCode = NULL;
-
-	Layout();
-}
-
-void CRegisterPanel::Layout()
-{
-	if (GetParent())
-	{
-		float px, py, pw, ph;
-		GetParent()->GetAbsDimensions(px, py, pw, ph);
-
-		SetSize(600, 400);
-		SetPos(pw/2 - GetWidth()/2, ph/2 - GetHeight()/2);
-	}
-
-	m_pWebsiteButton->SetSize(120, 40);
-	m_pWebsiteButton->SetPos(GetWidth()/2 - m_pWebsiteButton->GetWidth()/2, 40);
-
-	if (m_pProductCode)
-		m_pProductCode->SetVisible(false);
-
-	m_pInfo->SetAlign(CLabel::TA_TOPCENTER);
-	m_pInfo->SetSize(GetWidth(), GetHeight()-100);
-	m_pInfo->SetPos(0, 100);
-	m_pInfo->SetVisible(true);
-
-	if (!ModelWindow()->IsRegistered())
-	{
-		m_pInfo->SetText("Steps to Register SMAK\n");
-		m_pInfo->AppendText(" \n");
-		m_pInfo->AppendText("1. Depress the above button to visit http://www.getsmak.net/ and purchase SMAK in the onsite store.\n");
-		m_pInfo->AppendText("2. You will be sent an registration code in your email. Select it and use the COPY command (Ctrl-c)\n");
-		m_pInfo->AppendText("3. Paste your registration code into the box below (Ctrl-v)\n");
-		m_pInfo->AppendText("4. ...?\n");
-		m_pInfo->AppendText("5. Profit!\n");
-
-		m_pInfo->AppendText(" \n");
-		m_pInfo->AppendText(" \n");
-	}
-	else
-	{
-		m_pInfo->SetText("Your installation of SMAK is now fully registered. Thanks!\n");
-		m_pRegistrationKey->SetVisible(false);
-		m_pRegister->SetVisible(false);
-		m_pRegisterOffline->SetVisible(false);
-	}
-
-	m_pRegistrationKey->SetPos(GetWidth()/2 - m_pRegistrationKey->GetWidth()/2, 250);
-
-	m_pRegister->SetSize(100, 30);
-	m_pRegister->SetPos(GetWidth()/2 - m_pRegister->GetWidth()/2, 290);
-	m_pRegister->SetClickedListener(this, Register);
-
-	m_pRegisterResult->SetPos(10, 330);
-	m_pRegisterResult->SetSize(GetWidth()-20, GetHeight());
-	m_pRegisterResult->SetAlign(CLabel::TA_TOPCENTER);
-
-	m_pRegisterOffline->SetText("Register Offline");
-	m_pRegisterOffline->SetSize(60, 40);
-	m_pRegisterOffline->SetPos(GetWidth()-80, 40);
-	m_pRegisterOffline->SetClickedListener(this, RegisterOffline);
-
-	m_pPirates->EnsureTextFits();
-	m_pPirates->SetDimensions(GetWidth() - m_pPirates->GetWidth() - 5, GetHeight() - m_pPirates->GetHeight() - 5, m_pPirates->GetWidth(), m_pPirates->GetHeight());
-
-	CMovablePanel::Layout();
-}
-
-void CRegisterPanel::Paint(float x, float y, float w, float h)
-{
-	CMovablePanel::Paint(x, y, w, h);
-}
-
-bool CRegisterPanel::MousePressed(int iButton, int mx, int my)
-{
-	if (CMovablePanel::MousePressed(iButton, mx, my))
-		return true;
-
-	return false;
-}
-
-bool CRegisterPanel::KeyPressed(int iKey)
-{
-	if (!ModelWindow()->IsRegistered() && (iKey == 'c' || CModelWindow::Get()->IsCtrlDown() && iKey == 'c'))
-	{
-		SetClipboard(ModelWindow()->GetProductCode());
-		return true;
-	}
-	else
-		return CMovablePanel::KeyPressed(iKey);
-}
-
-void CRegisterPanel::WebsiteCallback(const tstring& sArgs)
-{
-	OpenBrowser("http://getsmak.net/");
-	exit(0);
-}
-
-void CRegisterPanel::RegisterCallback(const tstring& sArgs)
-{
-	tstring sError;
-	bool bSucceeded = ModelWindow()->QueryRegistrationKey("reg.lunarworkshop.com", "/reg/reg.php", m_pRegistrationKey->GetText(), "smak", sError);
-	m_pRegisterResult->SetText(sError.c_str());
-
-	if (bSucceeded)
-	{
-		m_pRegister->SetVisible(false);
-		m_pRegisterOffline->SetVisible(false);
-		m_pRegistrationKey->SetVisible(false);
-	}
-
-	Layout();
-}
-
-void CRegisterPanel::RegisterOfflineCallback(const tstring& sArgs)
-{
-	m_pInfo->SetVisible(false);
-
-	m_pRegistrationKey->SetSize(400, m_pRegister->GetHeight());
-	m_pRegistrationKey->SetPos(GetWidth()/2 - m_pRegistrationKey->GetWidth()/2, 140);
-	m_pRegister->SetPos(GetWidth()/2 - m_pRegister->GetWidth()/2, 180);
-	m_pRegister->SetClickedListener(this, SetKey);
-	m_pRegisterResult->SetPos(10, 220);
-
-	m_pRegisterOffline->SetSize(60, 20);
-	m_pRegisterOffline->SetText("Copy");
-	m_pRegisterOffline->SetPos(GetWidth()-80, 100);
-	m_pRegisterOffline->SetClickedListener(this, CopyProductCode);
-
-	if (!m_pProductCode)
-	{
-		m_pProductCode = new CLabel(0, 110, GetWidth(), GetHeight(), "");
-		AddControl(m_pProductCode);
-	}
-
-	m_pProductCode->SetVisible(true);
-	m_pProductCode->SetAlign(CLabel::TA_TOPCENTER);
-	m_pProductCode->SetText("Product Code: ");
-	m_pProductCode->AppendText(ModelWindow()->GetProductCode().c_str());
-}
-
-void CRegisterPanel::CopyProductCodeCallback(const tstring& sArgs)
-{
-	SetClipboard(ModelWindow()->GetProductCode());
-}
-
-void CRegisterPanel::SetKeyCallback(const tstring& sArgs)
-{
-	eastl::string sKey = convertstring<tchar, char>(m_pRegistrationKey->GetText());
-	// eastl::string has some kind of bug that needs working around.
-	eastl::string sBugKey = sKey.substr(0, 40);
-
-	ModelWindow()->SetLicenseKey(sBugKey);
-
-	if (ModelWindow()->IsRegistered())
-	{
-		m_pRegisterResult->SetText("Thank you for registering SMAK!");
-		m_pRegister->SetVisible(false);
-		m_pRegisterOffline->SetVisible(false);
-		m_pRegistrationKey->SetVisible(false);
-		m_pProductCode->SetVisible(false);
-	}
-	else
-		m_pRegisterResult->SetText("Sorry, that key didn't seem to work. Try again!");
-}
-
-void CRegisterPanel::PiratesCallback(const tstring& sArgs)
-{
-	CPiratesPanel::Open();
-	Close();
-}
-
-void CRegisterPanel::Open()
-{
-	if (!s_pRegisterPanel)
-		s_pRegisterPanel = new CRegisterPanel();
-
-	s_pRegisterPanel->SetVisible(true);
-	s_pRegisterPanel->Layout();
-}
-
-void CRegisterPanel::Close()
-{
-	if (!s_pRegisterPanel)
-		return;
-
-	s_pRegisterPanel->SetVisible(false);
-}
-
-CPiratesPanel* CPiratesPanel::s_pPiratesPanel = NULL;
-
-CPiratesPanel::CPiratesPanel()
-	: CMovablePanel("A Message to Software Pirates")
-{
-	m_pInfo = new CLabel(0, 0, 100, 100, "");
-	AddControl(m_pInfo, true);
-	Layout();
-}
-
-void CPiratesPanel::Layout()
-{
-	if (GetParent())
-	{
-		float px, py, pw, ph;
-		GetParent()->GetAbsDimensions(px, py, pw, ph);
-
-		SetSize(800, 400);
-		SetPos(pw/2 - GetWidth()/2, ph/2 - GetHeight()/2);
-	}
-
-	m_pInfo->SetSize(GetWidth()-275, GetHeight()-10);
-	m_pInfo->SetPos(5, 25);
-	m_pInfo->SetAlign(CLabel::TA_TOPLEFT);
-
-	m_pInfo->SetText("Dear pirates,\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("I know who you are. I know where you live. I'm coming for you.\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("Just kidding.\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("Obviously there's nothing I can do to keep a determined person from pirating my software. I know how these things work, I've pirated plenty of things myself. All I can do is ask you sincerely, if you pirate this software and you are able to use it and enjoy it, please pay for it. It's not a very expensive tool. I worked very hard on this thing (Almost as hard as you did to pirate it!) and all I'm trying to do is exchange a hard day's work for a couple of well-earned bones.\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("I'm not some big corporation trying to screw its customers. I'm not an industry assocation who will come after you if you download one thing. I'm not the man trying to hold you down, bro. I'm just a guy who's trying to make a living doing something that he loves. I don't have a BMW or a Rolex. I'm just a dude trying to feed his dog.\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("So please, when you pirate this software, think of the dog.\n");
-	m_pInfo->AppendText(" \n");
-	m_pInfo->AppendText("Jorge Rodriguez <jorge@lunarworkshop.com>\n");
-
-	CMovablePanel::Layout();
-}
-
-void CPiratesPanel::Paint(float x, float y, float w, float h)
-{
-	CMovablePanel::Paint(x, y, w, h);
-
-	// ACTIVATE OPERATION GUILT TRIP!!!
-	glDisable(GL_LIGHTING);
-	glEnable(GL_TEXTURE_2D);
-
-	glBindTexture(GL_TEXTURE_2D, (GLuint)CModelWindow::Get()->GetBarretTexture());
-	glColor4f(1,1,1,1);
-	glBegin(GL_QUADS);
-		glTexCoord2f(0, 1);
-		glVertex2d(x+w-266, y+h/2-128);
-		glTexCoord2f(0, 0);
-		glVertex2d(x+w-266, y+h/2+128);
-		glTexCoord2f(1, 0);
-		glVertex2d(x+w-10, y+h/2+128);
-		glTexCoord2f(1, 1);
-		glVertex2d(x+w-10, y+h/2-128);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-bool CPiratesPanel::MousePressed(int iButton, int mx, int my)
-{
-	if (CMovablePanel::MousePressed(iButton, mx, my))
-		return true;
-
-	Close();
-
-	return false;
-}
-
-void CPiratesPanel::Open()
-{
-	if (!s_pPiratesPanel)
-		s_pPiratesPanel = new CPiratesPanel();
-
-	s_pPiratesPanel->SetVisible(true);
-	s_pPiratesPanel->Layout();
-}
-
-void CPiratesPanel::Close()
-{
-	if (!s_pPiratesPanel)
-		return;
-
-	s_pPiratesPanel->SetVisible(false);
-}

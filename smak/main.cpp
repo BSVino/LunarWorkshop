@@ -2,9 +2,7 @@
 #include <Windows.h>
 #endif
 
-#include <GL/glew.h>
 #include <GL/glfw3.h>
-#include <IL/il.h>
 
 #include <tinker_platform.h>
 #include <strutils.h>
@@ -160,7 +158,7 @@ int CreateApplication(int argc, char** argv)
 						flRayFalloff = -1.0f;
 					else
 					{
-						flRayFalloff = stof(sToken);
+						flRayFalloff = (float)stof(sToken);
 						if (flRayFalloff < 0.0001f)
 							flRayFalloff = 0.0001f;
 					}
@@ -238,11 +236,7 @@ int CreateApplication(int argc, char** argv)
 				// The easy way to get a "windowless" context.
 				GLFWwindow i = glfwOpenWindow(100, 100, GLFW_WINDOWED, "SMAK a Batch", nullptr);
 				glfwIconifyWindow(i);
-
-				glewInit();
 			}
-
-			ilInit();
 
 			// If this is the color AO method, we need to load the textures.
 			tvector<CMaterial> aMaterials;

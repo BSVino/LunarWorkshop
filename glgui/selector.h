@@ -75,7 +75,7 @@ namespace glgui
 					m_flHandlePositionGoal = ((float)GetWidth()/((float)m_aSelections.size()-1)*(float)m_iSelection)/GetWidth();
 			}
 
-			m_flHandlePosition = Approach(m_flHandlePositionGoal, m_flHandlePosition, CRootPanel::Get()->GetFrameTime()*10);
+			m_flHandlePosition = Approach(m_flHandlePositionGoal, m_flHandlePosition, (float)CRootPanel::Get()->GetFrameTime()*10);
 
 			int iSelection = SelectionByHandle();
 			m_pOption->SetText(m_aSelections[iSelection].m_sLabel.c_str());

@@ -4,6 +4,7 @@
 #include <glgui/panel.h>
 #include <glgui/button.h>
 #include <glgui/selector.h>
+#include <glgui/movablepanel.h>
 #include "crunch/crunch.h"
 
 typedef enum
@@ -64,70 +65,6 @@ protected:
 	static CProgressBar*	s_pProgressBar;
 };
 
-#define HEADER_HEIGHT 16
-
-class CCloseButton : public glgui::CButton
-{
-public:
-							CCloseButton() : glgui::CButton(0, 0, 10, 10, "") {};
-
-public:
-	virtual void			Paint() { glgui::CButton::Paint(); };
-	virtual void			Paint(float x, float y, float w, float h);
-};
-
-class CMinimizeButton : public glgui::CButton
-{
-public:
-							CMinimizeButton() : glgui::CButton(0, 0, 10, 10, "") {};
-
-public:
-	virtual void			Paint() { glgui::CButton::Paint(); };
-	virtual void			Paint(float x, float y, float w, float h);
-};
-
-class CMovablePanel : public glgui::CPanel, public glgui::IEventListener
-{
-public:
-							CMovablePanel(const tstring& sName);
-							~CMovablePanel();
-
-	virtual void			Layout();
-
-	virtual void			Think();
-
-	virtual void			Paint(float x, float y, float w, float h);
-
-	virtual bool			MousePressed(int iButton, int mx, int my);
-	virtual bool			MouseReleased(int iButton, int mx, int my);
-
-	virtual void			HasCloseButton(bool bHasClose) { m_bHasCloseButton = bHasClose; };
-	virtual void			Minimize();
-
-	virtual void			SetClearBackground(bool bClearBackground) { m_bClearBackground = bClearBackground; };
-
-	EVENT_CALLBACK(CMovablePanel, MinimizeWindow);
-	EVENT_CALLBACK(CMovablePanel, CloseWindow);
-
-protected:
-	int						m_iMouseStartX;
-	int						m_iMouseStartY;
-	float					m_flStartX;
-	float					m_flStartY;
-	bool					m_bMoving;
-
-	bool					m_bHasCloseButton;
-	bool					m_bMinimized;
-	float					m_flNonMinimizedHeight;
-
-	bool					m_bClearBackground;
-
-	glgui::CLabel*			m_pName;
-
-	CCloseButton*			m_pCloseButton;
-	CMinimizeButton*		m_pMinimizeButton;
-};
-
 class COptionsButton : public glgui::CButton, public glgui::IEventListener
 {
 public:
@@ -159,7 +96,7 @@ protected:
 	COptionsPanel*		m_pPanel;
 };
 
-class CComboGeneratorPanel : public CMovablePanel, public IWorkListener
+class CComboGeneratorPanel : public glgui::CMovablePanel, public IWorkListener
 {
 public:
 								CComboGeneratorPanel(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
@@ -257,7 +194,7 @@ protected:
 	static CComboGeneratorPanel*	s_pComboGeneratorPanel;
 };
 
-class CAOPanel : public CMovablePanel, public IWorkListener
+class CAOPanel : public glgui::CMovablePanel, public IWorkListener
 {
 public:
 							CAOPanel(bool bColor, CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
@@ -328,7 +265,7 @@ protected:
 	static CAOPanel*		s_pColorAOPanel;
 };
 
-class CNormalPanel : public CMovablePanel
+class CNormalPanel : public glgui::CMovablePanel
 {
 public:
 								CNormalPanel(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
@@ -387,7 +324,7 @@ protected:
 	static CNormalPanel*		s_pNormalPanel;
 };
 
-class CHelpPanel : public CMovablePanel
+class CHelpPanel : public glgui::CMovablePanel
 {
 public:
 							CHelpPanel();
@@ -406,7 +343,7 @@ protected:
 	static CHelpPanel*		s_pHelpPanel;
 };
 
-class CAboutPanel : public CMovablePanel
+class CAboutPanel : public glgui::CMovablePanel
 {
 public:
 							CAboutPanel();
@@ -423,62 +360,6 @@ protected:
 	glgui::CLabel*			m_pInfo;
 
 	static CAboutPanel*		s_pAboutPanel;
-};
-
-class CRegisterPanel : public CMovablePanel
-{
-public:
-							CRegisterPanel();
-
-	virtual void			Layout();
-	virtual void			Paint(float x, float y, float w, float h);
-
-	virtual bool			MousePressed(int iButton, int mx, int my);
-	virtual bool			KeyPressed(int iKey);
-
-	static void				Open();
-	static void				Close();
-
-	EVENT_CALLBACK(CRegisterPanel, Pirates);
-	EVENT_CALLBACK(CRegisterPanel, Website);
-	EVENT_CALLBACK(CRegisterPanel, Register);
-	EVENT_CALLBACK(CRegisterPanel, RegisterOffline);
-	EVENT_CALLBACK(CRegisterPanel, CopyProductCode);
-	EVENT_CALLBACK(CRegisterPanel, SetKey);
-
-protected:
-	glgui::CButton*			m_pWebsiteButton;
-
-	glgui::CLabel*			m_pInfo;
-	glgui::CButton*			m_pPirates;
-
-	glgui::CTextField*		m_pRegistrationKey;
-	glgui::CButton*			m_pRegister;
-	glgui::CLabel*			m_pRegisterResult;
-
-	glgui::CButton*			m_pRegisterOffline;
-	glgui::CLabel*			m_pProductCode;
-
-	static CRegisterPanel*	s_pRegisterPanel;
-};
-
-class CPiratesPanel : public CMovablePanel
-{
-public:
-							CPiratesPanel();
-
-	virtual void			Layout();
-	virtual void			Paint(float x, float y, float w, float h);
-
-	virtual bool			MousePressed(int iButton, int mx, int my);
-
-	static void				Open();
-	static void				Close();
-
-protected:
-	glgui::CLabel*			m_pInfo;
-
-	static CPiratesPanel*	s_pPiratesPanel;
 };
 
 #endif

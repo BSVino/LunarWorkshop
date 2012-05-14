@@ -216,14 +216,22 @@ namespace glgui
 
 		virtual void AddVisibilityButton()
 		{
+#ifdef OPENGL2
 			m_pVisibilityButton = new CPictureButton("@", m_pTree->m_iVisibilityMaterial);
+#else
+			m_pVisibilityButton = new CPictureButton("@");
+#endif
 			m_pVisibilityButton->SetClickedListener(this, Visibility);
 			AddControl(m_pVisibilityButton);
 		}
 
 		virtual void AddEditButton(EditFnCallback pfnCallback)
 		{
+#ifdef OPENGL2
 			m_pEditButton = new CPictureButton("*", m_pTree->m_hEditMaterial);
+#else
+			m_pEditButton = new CPictureButton("*");
+#endif
 			m_pEditButton->SetClickedListener(this, Edit);
 			AddControl(m_pEditButton);
 			m_pfnCallback = pfnCallback;
