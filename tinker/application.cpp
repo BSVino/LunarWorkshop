@@ -203,6 +203,8 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 
 	m_pRenderer = CreateRenderer();
 	m_pRenderer->Initialize();
+
+	glgui::RootPanel()->SetSize((float)m_iWindowWidth, (float)m_iWindowHeight);
 }
 
 CApplication::~CApplication()
