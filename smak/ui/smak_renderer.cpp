@@ -86,14 +86,14 @@ void CSMAKRenderer::DrawBackground(CRenderingContext* r)
 
 void CSMAKRenderer::Render3D()
 {
-#if 0
 	// Reposition the light source.
-	Vector vecLightDirection = AngleVector(EAngle(m_flLightPitch, m_flLightYaw, 0));
+	Vector vecLightDirection = AngleVector(EAngle(SMAKWindow()->GetLightPitch(), SMAKWindow()->GetLightYaw(), 0));
 
-	m_vecLightPosition = vecLightDirection * -m_flCameraDistance/2;
+	m_vecLightPosition = vecLightDirection * -SMAKWindow()->GetCameraDistance()/2;
 
 	RenderGround();
 
+#if 0
 	RenderObjects();
 
 	// Render light source on top of objects, since it doesn't use the depth buffer.
@@ -148,6 +148,98 @@ void CSMAKRenderer::Render3D()
 	glPopMatrix();
 #endif
 #endif
+}
+
+void CSMAKRenderer::RenderGround()
+{
+	CRenderingContext c(this, true);
+
+	c.UseProgram("model");
+	c.Translate(SMAKWindow()->GetScene()->m_oExtends.Center());
+	c.SetUniform("flAlpha", 1.0f);
+
+	int i;
+
+	Color clrBorderLineBright(0.7f, 0.7f, 0.7f);
+	Color clrBorderLineDarker(0.6f, 0.6f, 0.6f);
+	Color clrInsideLineBright(0.5f, 0.5f, 0.5f);
+	Color clrInsideLineDarker(0.4f, 0.4f, 0.4f);
+
+	for (i = 0; i < 20; i++)
+	{
+		Vector vecStartX(-100, 0, -100);
+		Vector vecEndX(-100, 0, 100);
+		Vector vecStartZ(-100, 0, -100);
+		Vector vecEndZ(100, 0, -100);
+
+		for (int j = 0; j <= 20; j++)
+		{
+			c.BeginRenderLines();
+
+				if (j == 0 || j == 20 || j == 10)
+					c.Color(clrBorderLineBright);
+				else
+					c.Color(clrInsideLineBright);
+
+				c.Vertex(vecStartX);
+
+				if (j == 0 || j == 20 || j == 10)
+					c.Color(clrBorderLineDarker);
+				else
+					c.Color(clrInsideLineDarker);
+
+				if (j == 10)
+					c.Vertex(Vector(0, 0, 0));
+				else
+					c.Vertex(vecEndX);
+
+			c.EndRender();
+
+			if (j == 10)
+			{
+				c.BeginRenderLines();
+					c.Color(Color(0.9f, 0.2f, 0.2f));
+					c.Vertex(Vector(0, 0, 0));
+					c.Vertex(Vector(100, 0, 0));
+				c.EndRender();
+			}
+
+			c.BeginRenderLines();
+
+				if (j == 0 || j == 20 || j == 10)
+					c.Color(clrBorderLineBright);
+				else
+					c.Color(clrInsideLineBright);
+
+				c.Vertex(vecStartZ);
+
+				if (j == 0 || j == 20 || j == 10)
+					c.Color(clrBorderLineDarker);
+				else
+					c.Color(clrInsideLineDarker);
+
+				if (j == 10)
+					c.Vertex(Vector(0, 0, 0));
+				else
+					c.Vertex(vecEndZ);
+
+			c.EndRender();
+
+			if (j == 10)
+			{
+				c.BeginRenderLines();
+					c.Color(Color(0.2f, 0.2f, 0.7f));
+					c.Vertex(Vector(0, 0, 0));
+					c.Vertex(Vector(0, 0, 100));
+				c.EndRender();
+			}
+
+			vecStartX.x += 10;
+			vecEndX.x += 10;
+			vecStartZ.z += 10;
+			vecEndZ.z += 10;
+		}
+	}
 }
 
 void CSMAKRenderer::RenderUV()

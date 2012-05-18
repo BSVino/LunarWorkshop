@@ -580,6 +580,7 @@ void CRenderingContext::BeginRenderTris()
 	m_avecTexCoord.clear();
 	m_aavecTexCoords.clear();
 	m_avecNormals.clear();
+	m_aclrColors.clear();
 	m_avecVertices.clear();
 
 	m_bTexCoord = false;
@@ -594,6 +595,7 @@ void CRenderingContext::BeginRenderTriFan()
 	m_avecTexCoord.clear();
 	m_aavecTexCoords.clear();
 	m_avecNormals.clear();
+	m_aclrColors.clear();
 	m_avecVertices.clear();
 
 	m_bTexCoord = false;
@@ -608,6 +610,7 @@ void CRenderingContext::BeginRenderQuads()
 	m_avecTexCoord.clear();
 	m_aavecTexCoords.clear();
 	m_avecNormals.clear();
+	m_aclrColors.clear();
 	m_avecVertices.clear();
 
 	m_bTexCoord = false;
@@ -618,19 +621,25 @@ void CRenderingContext::BeginRenderQuads()
 	//m_iDrawMode = GL_QUADS;
 }
 
-void CRenderingContext::BeginRenderDebugLines()
+void CRenderingContext::BeginRenderLines(float flWidth)
 {
 	m_avecTexCoord.clear();
 	m_aavecTexCoords.clear();
 	m_avecNormals.clear();
+	m_aclrColors.clear();
 	m_avecVertices.clear();
 
 	m_bTexCoord = false;
 	m_bNormal = false;
 	m_bColor = false;
 
-	glLineWidth( 3.0f );
+	glLineWidth( flWidth );
 	m_iDrawMode = GL_LINE_LOOP;
+}
+
+void CRenderingContext::BeginRenderDebugLines()
+{
+	BeginRenderLines(3);
 }
 
 void CRenderingContext::TexCoord(float s, float t, int iChannel)

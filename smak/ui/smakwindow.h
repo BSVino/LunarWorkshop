@@ -63,7 +63,6 @@ public:
 	void					Layout();
 
 	virtual void			Render();
-	void					RenderGround();
 	void					RenderObjects();
 	void					RenderSceneNode(CConversionSceneNode* pNode);
 	void					RenderMeshInstance(CConversionMeshInstance* pMeshInstance);
@@ -146,6 +145,8 @@ public:
 	float					GetCameraUVZoom() { return m_flCameraUVZoom; };
 	float					GetCameraUVX() { return m_flCameraUVX; };
 	float					GetCameraUVY() { return m_flCameraUVY; };
+	float					GetLightYaw() { return m_flLightYaw; };
+	float					GetLightPitch() { return m_flLightPitch; };
 
 	static CSMAKWindow*		Get() { return s_pSMAKWindow; };
 
@@ -206,7 +207,6 @@ protected:
 
 	float					m_flLightYaw;
 	float					m_flLightPitch;
-	Vector					m_vecLightPosition;
 
 	float					m_flCameraUVX;
 	float					m_flCameraUVY;

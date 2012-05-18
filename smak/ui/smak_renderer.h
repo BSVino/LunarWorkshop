@@ -15,11 +15,13 @@ public:
 	void			Render();
 	void			DrawBackground(CRenderingContext* r);
 	void			Render3D();
+	void			RenderGround();
 	void			RenderUV();
 
 	float			BloomBrightnessCutoff() const { return 1.25f; }
 
 protected:
+	Vector			m_vecLightPosition;
 };
 
 CSMAKRenderer* SMAKRenderer();

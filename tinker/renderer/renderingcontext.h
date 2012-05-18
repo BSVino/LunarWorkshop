@@ -94,6 +94,7 @@ public:
 	void					BeginRenderTris();
 	void					BeginRenderTriFan();
 	void					BeginRenderQuads();
+	void					BeginRenderLines(float flWidth=1);
 	void					BeginRenderDebugLines();
 	void					TexCoord(float s, float t, int iChannel = 0);
 	void					TexCoord(const Vector2D& v, int iChannel = 0);
