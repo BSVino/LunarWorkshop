@@ -13,6 +13,7 @@ public:
 
 public:
 	void			Render();
+	void			DrawBackground(CRenderingContext* r);
 	void			Render3D();
 	void			RenderUV();
 

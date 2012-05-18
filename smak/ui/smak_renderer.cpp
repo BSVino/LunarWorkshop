@@ -65,6 +65,25 @@ void CSMAKRenderer::Render()
 	PostRender();
 }
 
+void CSMAKRenderer::DrawBackground(CRenderingContext* r)
+{
+	CRenderingContext c;
+	c.SetWinding(true);
+	c.SetDepthTest(false);
+	c.SetBackCulling(false);
+
+	c.UseFrameBuffer(&m_oSceneBuffer);
+
+	c.UseProgram("background");
+
+	c.BeginRenderVertexArray();
+
+	c.SetTexCoordBuffer(&m_vecFullscreenTexCoords[0][0]);
+	c.SetPositionBuffer(&m_vecFullscreenVertices[0][0]);
+
+	c.EndRenderVertexArray(6);
+}
+
 void CSMAKRenderer::Render3D()
 {
 #if 0
