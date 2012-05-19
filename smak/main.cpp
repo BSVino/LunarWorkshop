@@ -294,10 +294,11 @@ int CreateApplication(int argc, char** argv)
 
 	CSMAKWindow oWindow(argc, argv);
 
+	oWindow.OpenWindow();
+
 	if (sFile.length())
 		oWindow.ReadFile(sFile.c_str());
 
-	oWindow.OpenWindow();
 	oWindow.Run();
 
 	return 0;

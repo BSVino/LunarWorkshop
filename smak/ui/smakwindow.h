@@ -54,6 +54,7 @@ public:
 	void					ReloadFromFile();
 
 	void					LoadIntoGL();
+	void					LoadModelsIntoGL();
 	static size_t			LoadTexture(tstring sFilename);
 	static size_t			LoadTextureIntoGL(tstring sFilename);
 	void					LoadTexturesIntoGL();
@@ -63,9 +64,6 @@ public:
 	void					Layout();
 
 	virtual void			Render();
-	void					RenderObjects();
-	void					RenderSceneNode(CConversionSceneNode* pNode);
-	void					RenderMeshInstance(CConversionMeshInstance* pMeshInstance);
 	void					RenderLightSource();
 
 	virtual void			WindowResize(int x, int y);

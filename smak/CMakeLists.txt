@@ -21,6 +21,8 @@ set (SMAK_SOURCES
 	crunch/ao_raytrace.cpp
 	crunch/crunch.cpp
 	crunch/normal.cpp
+	models/loadsource.cpp
+	models/models.cpp
 	shaders/shaders.cpp
 	ui/smakwindow.cpp
 	ui/smakwindow_input.cpp

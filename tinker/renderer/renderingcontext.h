@@ -109,6 +109,8 @@ public:
 	void					BeginRenderVertexArray(size_t iBuffer=0);
 	void					SetPositionBuffer(float* pflBuffer, size_t iStride=0);
 	void					SetPositionBuffer(size_t iOffset, size_t iStride);
+	void					SetNormalsBuffer(float* pflBuffer, size_t iStride=0);
+	void					SetNormalsBuffer(size_t iOffset, size_t iStride);
 	void					SetTexCoordBuffer(float* pflBuffer, size_t iStride=0);
 	void					SetTexCoordBuffer(size_t iOffset, size_t iStride);
 	void					SetCustomIntBuffer(const char* pszName, size_t iSize, size_t iOffset, size_t iStride);

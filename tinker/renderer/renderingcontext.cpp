@@ -788,6 +788,24 @@ void CRenderingContext::SetPositionBuffer(size_t iOffset, size_t iStride)
 	glVertexAttribPointer(m_pShader->m_iPositionAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
 }
 
+void CRenderingContext::SetNormalsBuffer(float* pflBuffer, size_t iStride)
+{
+	if (m_pShader->m_iNormalAttribute == ~0)
+		return;
+
+	glEnableVertexAttribArray(m_pShader->m_iNormalAttribute);
+	glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, iStride, pflBuffer);
+}
+
+void CRenderingContext::SetNormalsBuffer(size_t iOffset, size_t iStride)
+{
+	if (m_pShader->m_iNormalAttribute == ~0)
+		return;
+
+	glEnableVertexAttribArray(m_pShader->m_iNormalAttribute);
+	glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
+}
+
 void CRenderingContext::SetTexCoordBuffer(float* pflBuffer, size_t iStride)
 {
 	if (m_pShader->m_iTexCoordAttribute == ~0)
