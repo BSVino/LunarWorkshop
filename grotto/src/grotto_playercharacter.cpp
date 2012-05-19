@@ -281,7 +281,7 @@ void CPlayerCharacter::GoIntoMirror()
 		if (fabs(vecMirror.z - vecPlayer.z) > 0.5f)
 			continue;
 
-		if (fabs(vecMirror.y - vecPlayer.y) > 1)
+		if (fabs(vecMirror.y - (vecPlayer.y + GetBoundingBox().Size().y/2)) > 1)
 			continue;
 
 		Matrix4x4 mNew = GetGlobalTransform();

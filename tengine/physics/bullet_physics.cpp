@@ -241,7 +241,7 @@ void CBulletPhysics::AddModel(class CBaseEntity* pEntity, collision_type_t eColl
 
 		if (eCollisionType == CT_KINEMATIC)
 		{
-			pPhysicsEntity->m_apPhysicsShapes.back()->setCollisionFlags(pPhysicsEntity->m_pRigidBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+			pPhysicsEntity->m_apPhysicsShapes.back()->setCollisionFlags((pPhysicsEntity->m_pRigidBody?pPhysicsEntity->m_pRigidBody->getCollisionFlags():0) | btCollisionObject::CF_KINEMATIC_OBJECT);
 			pPhysicsEntity->m_apPhysicsShapes.back()->setActivationState(DISABLE_DEACTIVATION);
 		}
 
@@ -499,6 +499,9 @@ void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4
 			pPhysicsEntity->m_pRigidBody->setCenterOfMassTransform(m);
 		else if (pPhysicsEntity->m_pGhostObject)
 			pPhysicsEntity->m_pGhostObject->setWorldTransform(m);
+
+		for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+			pPhysicsEntity->m_apPhysicsShapes[i]->setCenterOfMassTransform(m);
 	}
 	else
 	{
@@ -509,6 +512,9 @@ void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4
 			pPhysicsEntity->m_pRigidBody->setCenterOfMassTransform(m);
 		else if (pPhysicsEntity->m_pGhostObject)
 			pPhysicsEntity->m_pGhostObject->setWorldTransform(m);
+
+		for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+			pPhysicsEntity->m_apPhysicsShapes[i]->setCenterOfMassTransform(m);
 	}
 }
 

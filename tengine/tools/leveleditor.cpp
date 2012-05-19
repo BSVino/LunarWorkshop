@@ -82,10 +82,10 @@ void CEntityPropertiesPanel::Layout()
 				if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
 					continue;
 
-				if (strcmp(pSaveData->m_pszHandle, "LocalOrigin") == 0)
+				if (strcmp(pSaveData->m_pszHandle, "Origin") == 0)
 					continue;
 
-				if (strcmp(pSaveData->m_pszHandle, "LocalAngles") == 0)
+				if (strcmp(pSaveData->m_pszHandle, "Angles") == 0)
 					continue;
 			}
 
@@ -143,9 +143,9 @@ void CEntityPropertiesPanel::Layout()
 				pTextField->SetTop(flTop+12);
 
 				if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
-					pTextField->SetContentsChangedListener(this, ModelChanged, sprintf("%d", i));
+					pTextField->SetContentsChangedListener(this, ModelChanged, sprintf("%d", m_apPropertyOptions.size()));
 				else if (tstr_startswith(pSaveData->m_pszType, "CEntityHandle"))
-					pTextField->SetContentsChangedListener(this, TargetChanged, sprintf("%d ", i) + pSaveData->m_pszType);
+					pTextField->SetContentsChangedListener(this, TargetChanged, sprintf("%d ", m_apPropertyOptions.size()) + pSaveData->m_pszType);
 				else
 					pTextField->SetContentsChangedListener(this, PropertyChanged);
 
@@ -1053,7 +1053,7 @@ void CLevelEditor::CreateEntityFromPanel(const Vector& vecPosition)
 	oNewEntity.SetParameterValue("Name", m_pCreateEntityPanel->m_pNameText->GetText());
 
 	oNewEntity.SetParameterValue("Model", m_pCreateEntityPanel->m_pModelText->GetText());
-	oNewEntity.SetParameterValue("LocalOrigin", sprintf("%f %f %f", vecPosition.x, vecPosition.y, vecPosition.z));
+	oNewEntity.SetParameterValue("Origin", sprintf("%f %f %f", vecPosition.x, vecPosition.y, vecPosition.z));
 
 	PopulateLevelEntityFromPanel(&oNewEntity, m_pCreateEntityPanel->m_pPropertiesPanel);
 
@@ -1251,8 +1251,8 @@ void CLevelEditor::ManipulatorUpdated(const tstring& sArguments)
 	Vector vecTranslation = Manipulator()->GetTRS().m_vecTranslation;
 	EAngle angRotation = Manipulator()->GetTRS().m_angRotation;
 	Vector vecScaling = Manipulator()->GetTRS().m_vecScaling;
-	GetLevel()->GetEntityData()[iSelected].SetParameterValue("LocalOrigin", pretty_float(vecTranslation.x) + " " + pretty_float(vecTranslation.y) + " " + pretty_float(vecTranslation.z));
-	GetLevel()->GetEntityData()[iSelected].SetParameterValue("LocalAngles", pretty_float(angRotation.p) + " " + pretty_float(angRotation.y) + " " + pretty_float(angRotation.r));
+	GetLevel()->GetEntityData()[iSelected].SetParameterValue("Origin", pretty_float(vecTranslation.x) + " " + pretty_float(vecTranslation.y) + " " + pretty_float(vecTranslation.z));
+	GetLevel()->GetEntityData()[iSelected].SetParameterValue("Angles", pretty_float(angRotation.p) + " " + pretty_float(angRotation.y) + " " + pretty_float(angRotation.r));
 	GetLevel()->GetEntityData()[iSelected].SetParameterValue("Scale", pretty_float(vecScaling.x) + " " + pretty_float(vecScaling.y) + " " + pretty_float(vecScaling.z));
 
 	m_pEditorPanel->LayoutEntity();

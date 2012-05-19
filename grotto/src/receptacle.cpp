@@ -22,6 +22,10 @@ SAVEDATA_TABLE_BEGIN_EDITOR(CReceptacle);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bDesiredReflection, "DesiredReflection");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sDesiredType, "DesiredTokenType");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mTokenOffset, "TokenOffset");
+	SAVEDATA_EDITOR_VARIABLE("DesiredToken");
+	SAVEDATA_EDITOR_VARIABLE("DesiredReflection");
+	SAVEDATA_EDITOR_VARIABLE("DesiredTokenType");
+	SAVEDATA_EDITOR_VARIABLE("TokenOffset");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CReceptacle);
@@ -29,7 +33,6 @@ INPUTS_TABLE_END();
 
 void CReceptacle::Precache()
 {
-	PrecacheModel("models/pedestal.toy");
 }
 
 void CReceptacle::Spawn()
@@ -38,10 +41,9 @@ void CReceptacle::Spawn()
 
 	BaseClass::Spawn();
 
-	SetModel("models/pedestal.toy");
 	AddToPhysics(CT_KINEMATIC);
 
-	m_mTokenOffset = TMatrix(EAngle(40, 0, 0), Vector(0, 0.742105f, 0));
+	m_mTokenOffset = TMatrix(EAngle(0, 0, 0), Vector(0, 0.0f, 0));
 }
 
 bool CReceptacle::IsTokenValid(const CToken* pToken) const

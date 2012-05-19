@@ -173,7 +173,7 @@ void CManipulatorTool::Render()
 	Vector vecBox(0.1f, 0.1f, 0.1f);
 	c.RenderWireBox(AABB(-vecBox, vecBox));
 
-	c.BeginRenderDebugLines();
+	c.BeginRenderLines();
 		c.Vertex(Vector());
 		c.Vertex(Vector(1, 0, 0));
 		c.Vertex(Vector());

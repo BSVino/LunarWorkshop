@@ -239,7 +239,7 @@ void CRenderingContext::RenderSphere()
 
 void CRenderingContext::RenderWireBox(const AABB& aabbBounds)
 {
-	BeginRenderDebugLines();
+	BeginRenderLines();
 		Vertex(aabbBounds.m_vecMaxs);
 		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMaxs.z));
 		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMins.z));
@@ -253,17 +253,17 @@ void CRenderingContext::RenderWireBox(const AABB& aabbBounds)
 		Vertex(Vector(aabbBounds.m_vecMaxs.x, aabbBounds.m_vecMins.y, aabbBounds.m_vecMaxs.z));
 	EndRender();
 
-	BeginRenderDebugLines();
+	BeginRenderLines();
 		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMaxs.z));
 		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMins.y, aabbBounds.m_vecMaxs.z));
 	EndRender();
 
-	BeginRenderDebugLines();
+	BeginRenderLines();
 		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMins.z));
 		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMins.y, aabbBounds.m_vecMins.z));
 	EndRender();
 
-	BeginRenderDebugLines();
+	BeginRenderLines();
 		Vertex(Vector(aabbBounds.m_vecMaxs.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMins.z));
 		Vertex(Vector(aabbBounds.m_vecMaxs.x, aabbBounds.m_vecMins.y, aabbBounds.m_vecMins.z));
 	EndRender();

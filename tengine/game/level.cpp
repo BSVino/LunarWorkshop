@@ -306,15 +306,11 @@ Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)
 {
 	Matrix4x4 mLocal;
 
-	tstring sMoveParent = pThis->GetParameterValue("MoveParent");
-	if (sMoveParent.length())
-		TUnimplemented();
-
-	tstring sLocalOrigin = pThis->GetParameterValue("LocalOrigin");
+	tstring sLocalOrigin = pThis->GetParameterValue("Origin");
 	if (sLocalOrigin.length() && CanUnserializeString_TVector(sLocalOrigin))
 		mLocal.SetTranslation(UnserializeString_TVector(sLocalOrigin));
 
-	tstring sLocalAngles = pThis->GetParameterValue("LocalAngles");
+	tstring sLocalAngles = pThis->GetParameterValue("Angles");
 	if (sLocalAngles.length() && CanUnserializeString_EAngle(sLocalAngles))
 		mLocal.SetAngles(UnserializeString_EAngle(sLocalAngles));
 
@@ -325,15 +321,11 @@ TRS CLevelEntity::CalculateGlobalTRS(CLevelEntity* pThis)
 {
 	TRS trsLocal;
 
-	tstring sMoveParent = pThis->GetParameterValue("MoveParent");
-	if (sMoveParent.length())
-		TUnimplemented();
-
-	tstring sLocalOrigin = pThis->GetParameterValue("LocalOrigin");
+	tstring sLocalOrigin = pThis->GetParameterValue("Origin");
 	if (sLocalOrigin.length() && CanUnserializeString_TVector(sLocalOrigin))
 		trsLocal.m_vecTranslation = UnserializeString_TVector(sLocalOrigin);
 
-	tstring sLocalAngles = pThis->GetParameterValue("LocalAngles");
+	tstring sLocalAngles = pThis->GetParameterValue("Angles");
 	if (sLocalAngles.length() && CanUnserializeString_EAngle(sLocalAngles))
 		trsLocal.m_angRotation = UnserializeString_EAngle(sLocalAngles);
 

@@ -350,6 +350,9 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 			tstring sHandle = it->first;
 			tstring sValue = it->second;
 
+			if (sHandle == "MoveParent")
+				continue;
+
 			CSaveData oSaveDataValues;
 			CSaveData* pSaveData = CBaseEntity::FindSaveDataValuesByHandle(pEntity->GetClassName(), sHandle.c_str(), &oSaveDataValues);
 			TAssert(pSaveData && pSaveData->m_pszHandle);
@@ -363,6 +366,26 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 				continue;
 
 			pSaveData->m_pfnUnserializeString(sValue, pSaveData, pEntity);
+		}
+
+		// Force MoveParent last so that global -> local conversion is performed.
+		if (pLevelEntity->GetParameters().find("MoveParent") != pLevelEntity->GetParameters().end())
+		{
+			tstring sHandle = "MoveParent";
+
+			CSaveData oSaveDataValues;
+			CSaveData* pSaveData = CBaseEntity::FindSaveDataValuesByHandle(pEntity->GetClassName(), sHandle.c_str(), &oSaveDataValues);
+			TAssert(pSaveData && pSaveData->m_pszHandle);
+			if (!pSaveData || !pSaveData->m_pszHandle)
+			{
+				TError("Unknown handle '" + sHandle + "'\n");
+				continue;
+			}
+
+			if (!pSaveData->m_pfnUnserializeString)
+				continue;
+
+			pSaveData->m_pfnUnserializeString(pLevelEntity->GetParameters()["MoveParent"], pSaveData, pEntity);
 		}
 	}
 }
