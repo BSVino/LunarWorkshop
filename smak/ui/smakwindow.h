@@ -40,7 +40,6 @@ public:
 	void					Layout();
 
 	virtual void			Render();
-	void					RenderLightSource();
 
 	virtual void			WindowResize(int x, int y);
 	virtual void			MouseMotion(int x, int y);
@@ -133,6 +132,7 @@ public:
 	void					ClearDebugLines();
 	void					AddDebugLine(Vector vecStart, Vector vecEnd, Color clrLine = Color(150, 150, 150));
 
+	bool					IsRenderingLight() { return m_bDisplayLight; }
 	bool					IsRenderingUV() { return m_bRenderUV; }
 
 	void					BeginProgress();

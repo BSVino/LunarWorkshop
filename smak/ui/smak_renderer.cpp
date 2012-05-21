@@ -5,6 +5,7 @@
 #include <renderer/renderingcontext.h>
 #include <tinker/cvar.h>
 #include <tinker/profiler.h>
+#include <textures/materiallibrary.h>
 
 #include "smakwindow.h"
 #include "models/models.h"
@@ -13,6 +14,14 @@ CSMAKRenderer::CSMAKRenderer()
 	: CRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
 {
 	m_bDrawBackground = true;
+}
+
+void CSMAKRenderer::Initialize()
+{
+	BaseClass::Initialize();
+
+	m_hLightBeam = CMaterialLibrary::AddMaterial("materials/lightbeam.mat");
+	m_hLightHalo = CMaterialLibrary::AddMaterial("materials/lighthalo.mat");
 }
 
 void CSMAKRenderer::Render()
@@ -96,10 +105,10 @@ void CSMAKRenderer::Render3D()
 
 	RenderObjects();
 
-#if 0
 	// Render light source on top of objects, since it doesn't use the depth buffer.
 	RenderLightSource();
 
+#if 0
 	if (m_aDebugLines.size())
 	{
 #ifdef OPENGL2
@@ -984,6 +993,88 @@ void CSMAKRenderer::RenderUV()
 
 	glPopAttrib();
 #endif
+}
+
+void CSMAKRenderer::RenderLightSource()
+{
+	if (!SMAKWindow()->IsRenderingLight())
+		return;
+
+	float flScale = SMAKWindow()->GetCameraDistance()/60;
+
+	CRenderingContext c(this, true);
+
+	c.Translate(SMAKWindow()->GetScene()->m_oExtends.Center());
+	c.Translate(m_vecLightPosition);
+	c.Rotate(-SMAKWindow()->GetLightYaw(), Vector(0, 1, 0));
+	c.Rotate(SMAKWindow()->GetLightPitch(), Vector(0, 0, 1));
+	c.Scale(flScale, flScale, flScale);
+
+	if (m_hLightBeam.IsValid() && m_hLightHalo.IsValid())
+	{
+		Vector vecCameraDirection = AngleVector(EAngle(SMAKWindow()->GetCameraPitch(), SMAKWindow()->GetCameraYaw(), 0));
+
+		c.SetDepthTest(false);
+
+		c.UseMaterial(m_hLightHalo);
+
+		float flDot = vecCameraDirection.Dot(m_vecLightPosition.Normalized());
+
+		if (flDot > 0.2)
+		{
+			float flScale = RemapVal(flDot, 0.2f, 1.0f, 0.0f, 1.0f);
+			c.SetUniform("flAlpha", flScale);
+
+			flScale *= 10;
+
+			c.BeginRenderTriFan();
+				c.TexCoord(Vector(0, 1, 0));
+				c.Vertex(Vector(0, flScale, flScale));
+				c.TexCoord(Vector(1, 1, 0));
+				c.Vertex(Vector(0, -flScale, flScale));
+				c.TexCoord(Vector(1, 0, 0));
+				c.Vertex(Vector(0, -flScale, -flScale));
+				c.TexCoord(Vector(0, 0, 0));
+				c.Vertex(Vector(0, flScale, -flScale));
+			c.EndRender();
+		}
+
+		c.SetBackCulling(false);
+		c.UseMaterial(m_hLightBeam);
+
+		Vector vecLightRight, vecLightUp;
+		Matrix4x4 mLight(EAngle(SMAKWindow()->GetLightPitch(), SMAKWindow()->GetLightYaw(), 0), Vector());
+		vecLightRight = mLight.GetRightVector();
+		vecLightUp = mLight.GetUpVector();
+
+		flDot = vecCameraDirection.Dot(vecLightRight);
+		c.SetUniform("flAlpha", fabs(flDot));
+
+		c.BeginRenderTriFan();
+			c.TexCoord(Vector(1, 1, 0));
+			c.Vertex(Vector(25, -5, 0));
+			c.TexCoord(Vector(0, 1, 0));
+			c.Vertex(Vector(25, 5, 0));
+			c.TexCoord(Vector(0, 0, 0));
+			c.Vertex(Vector(0, 5, 0));
+			c.TexCoord(Vector(1, 0, 0));
+			c.Vertex(Vector(0, -5, 0));
+		c.EndRender();
+
+		flDot = vecCameraDirection.Dot(vecLightUp);
+		c.SetUniform("flAlpha", fabs(flDot));
+
+		c.BeginRenderTriFan();
+			c.TexCoord(Vector(1, 1, 0));
+			c.Vertex(Vector(25, 0, -5));
+			c.TexCoord(Vector(0, 1, 0));
+			c.Vertex(Vector(25, 0, 5));
+			c.TexCoord(Vector(0, 0, 0));
+			c.Vertex(Vector(0, 0, 5));
+			c.TexCoord(Vector(1, 0, 0));
+			c.Vertex(Vector(0, 0, -5));
+		c.EndRender();
+	}
 }
 
 CSMAKRenderer* SMAKRenderer()

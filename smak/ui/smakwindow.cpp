@@ -76,7 +76,7 @@ CSMAKWindow::CSMAKWindow(int argc, char** argv)
 	m_flCameraUVY = 0;
 
 	m_flLightYaw = 100;
-	m_flLightPitch = 45;
+	m_flLightPitch = -45;
 
 	m_vecLightPositionUV = Vector(0.5f, 0.5f, 1.0f);
 
@@ -331,127 +331,6 @@ void CSMAKWindow::Render()
 
 	CRootPanel::Get()->Think(GetTime());
 	CRootPanel::Get()->Paint(0, 0, (float)m_iWindowWidth, (float)m_iWindowHeight);
-}
-
-void CSMAKWindow::RenderLightSource()
-{
-	if (!m_bDisplayLight)
-		return;
-
-	float flScale = m_flCameraDistance/60;
-
-#ifdef OPENGL2
-	glPushMatrix();
-	glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|GL_TEXTURE_BIT);
-
-		glDisable(GL_LIGHTING);
-
-		glTranslatef(m_Scene.m_oExtends.Center().x, m_Scene.m_oExtends.Center().y, m_Scene.m_oExtends.Center().z);
-		glTranslatef(m_vecLightPosition[0], m_vecLightPosition[1], m_vecLightPosition[2]);
-		glRotatef(-m_flLightYaw, 0, 1, 0);
-		glRotatef(m_flLightPitch, 0, 0, 1);
-		glScalef(flScale, flScale, flScale);
-
-		if (m_pLightHalo && m_pLightBeam)
-		{
-			Vector vecCameraDirection = AngleVector(EAngle(m_flCameraPitch, m_flCameraYaw, 0));
-
-			glEnable(GL_CULL_FACE);
-			glEnable(GL_TEXTURE_2D);
-			glEnable(GL_BLEND);
-			glDisable(GL_DEPTH_TEST);
-
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-			glBindTexture(GL_TEXTURE_2D, (GLuint)m_pLightHalo->m_iBase);
-
-			float flDot = vecCameraDirection.Dot(m_vecLightPosition.Normalized());
-
-			if (flDot > 0.2)
-			{
-				float flScale = RemapVal(flDot, 0.2f, 1.0f, 0.0f, 1.0f);
-				glColor4f(1.0, 1.0, 1.0, flScale);
-
-				flScale *= 10;
-
-				glBegin(GL_QUADS);
-					glTexCoord2f(0, 1);
-					glVertex3f(0, flScale, flScale);
-					glTexCoord2f(1, 1);
-					glVertex3f(0, -flScale, flScale);
-					glTexCoord2f(1, 0);
-					glVertex3f(0, -flScale, -flScale);
-					glTexCoord2f(0, 0);
-					glVertex3f(0, flScale, -flScale);
-				glEnd();
-			}
-
-			glDisable(GL_CULL_FACE);
-			glBindTexture(GL_TEXTURE_2D, (GLuint)m_pLightBeam->m_iBase);
-
-			Vector vecLightRight, vecLightUp;
-			Matrix4x4 mLight(EAngle(m_flLightPitch, -m_flLightYaw, 0), Vector());
-			vecLightRight = mLight.GetRightVector();
-			vecLightUp = mLight.GetUpVector();
-
-			flDot = vecCameraDirection.Dot(vecLightRight);
-
-			glColor4f(1.0, 1.0, 1.0, fabs(flDot));
-
-			glBegin(GL_QUADS);
-				glTexCoord2f(1, 1);
-				glVertex3f(25, -5, 0);
-				glTexCoord2f(0, 1);
-				glVertex3f(25, 5, 0);
-				glTexCoord2f(0, 0);
-				glVertex3f(0, 5, 0);
-				glTexCoord2f(1, 0);
-				glVertex3f(0, -5, 0);
-			glEnd();
-
-			flDot = vecCameraDirection.Dot(vecLightUp);
-
-			glColor4f(1.0, 1.0, 1.0, fabs(flDot));
-
-			glBegin(GL_QUADS);
-				glTexCoord2f(1, 1);
-				glVertex3f(25, 0, -5);
-				glTexCoord2f(0, 1);
-				glVertex3f(25, 0, 5);
-				glTexCoord2f(0, 0);
-				glVertex3f(0, 0, 5);
-				glTexCoord2f(1, 0);
-				glVertex3f(0, 0, -5);
-			glEnd();
-
-			glDisable(GL_BLEND);
-			glEnable(GL_DEPTH_TEST);
-		}
-		else
-		{
-			glColor3f(1.0, 1.0, 0.0);
-
-			// Draw an arrowhead.
-			glDisable(GL_CULL_FACE);
-			glBegin(GL_TRIANGLE_FAN);
-				glVertex3f(0, 0, 0);
-				glVertex3f(2, 1, 1);
-				glVertex3f(2, -1, 1);
-				glVertex3f(2, -1, -1);
-				glVertex3f(2, 1, -1);
-				glVertex3f(2, 1, 1);
-			glEnd();
-
-			// Draw a white line from light direction.
-			glColor3f(1.0, 1.0, 1.0);
-			glBegin(GL_LINES);
-				glVertex3f(0, 0, 0);
-				glVertex3f(5, 0, 0);
-			glEnd();
-		}
-	glPopAttrib();
-	glPopMatrix();
-#endif
 }
 
 // Ew!
