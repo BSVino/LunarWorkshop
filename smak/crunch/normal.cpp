@@ -313,6 +313,7 @@ float CNormalGenerator::GetSetupProgress()
 
 void CNormalGenerator::SetNormalTexture(bool bNormalTexture, size_t iMaterial)
 {
+#ifdef OPENGL2
 	// Materials not loaded yet?
 	if (!m_paoMaterials->size())
 		return;
@@ -324,10 +325,8 @@ void CNormalGenerator::SetNormalTexture(bool bNormalTexture, size_t iMaterial)
 
 	m_iMaterial = iMaterial;
 
-#ifdef OPENGL2
 	if (m_iNormal2GLId)
 		glDeleteTextures(1, &m_iNormal2GLId);
-#endif
 	m_iNormal2GLId = 0;
 
 	// Don't let the listeners know yet, we want to generate the new one first so there is no lapse in displaying.
@@ -358,7 +357,6 @@ void CNormalGenerator::SetNormalTexture(bool bNormalTexture, size_t iMaterial)
 	}
 
 	size_t iWidth=1, iHeight=1;
-#ifdef OPENGL2
 	glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iBase);
 
 	GLint iWidth, iHeight;
@@ -369,7 +367,6 @@ void CNormalGenerator::SetNormalTexture(bool bNormalTexture, size_t iMaterial)
 		m_aflTextureTexels = new float[iWidth*iHeight*3];
 
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, &m_aflTextureTexels[0]);
-#endif
 
 	m_iNormal2Width = iWidth;
 	m_iNormal2Height = iHeight;
@@ -385,6 +382,7 @@ void CNormalGenerator::SetNormalTexture(bool bNormalTexture, size_t iMaterial)
 	Setup();
 
 	UpdateNormal2();
+#endif
 }
 
 void CNormalGenerator::UpdateNormal2()

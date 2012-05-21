@@ -15,7 +15,6 @@
 CTexelGenerator::CTexelGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
 {
 	m_pScene = pScene;
-	m_paoMaterials = paoMaterials;
 
 	m_abTexelMask = NULL;
 
@@ -581,7 +580,9 @@ void CTexelDiffuseMethod::PreGenerate()
 
 			CConversionMaterial* pMaterial = m_pGenerator->GetScene()->GetMaterial(iMaterial);
 
+#ifdef OPENGL3
 			m_aiTextures[iMaterial] = CSMAKWindow::LoadTexture(pMaterial->GetDiffuseTexture());
+#endif
 		}
 	}
 }

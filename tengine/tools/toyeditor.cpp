@@ -587,7 +587,7 @@ void CToyEditor::Layout()
 	if (IsFile(sMaterial))
 	{
 		// Don't bother with clearing old ones, they'll get flushed eventually.
-		CMaterialHandle hMaterialPreview = CMaterialLibrary::AddAsset(sMaterial);
+		CMaterialHandle hMaterialPreview = CMaterialLibrary::AddMaterial(sMaterial);
 
 		if (hMaterialPreview.IsValid())
 		{

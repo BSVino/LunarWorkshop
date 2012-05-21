@@ -19,19 +19,24 @@ CTextureLibrary::~CTextureLibrary()
 	s_pTextureLibrary = NULL;
 }
 
-CTextureHandle CTextureLibrary::AddAsset(const tstring& sTexture, int iClamp)
+CTextureHandle CTextureLibrary::AddTexture(const tstring& sTexture, int iClamp)
 {
-	if (!sTexture.length())
-		return CTextureHandle();
-
-	CTextureHandle hTexture = FindTexture(sTexture);
+	CTextureHandle hTexture = FindAsset(sTexture);
 	if (hTexture.IsValid())
 		return hTexture;
+
+	return CTextureHandle(sTexture, AddAsset(sTexture, iClamp));
+}
+
+CTexture* CTextureLibrary::AddAsset(const tstring& sTexture, int iClamp)
+{
+	if (!sTexture.length())
+		return nullptr;
 
 	int w, h;
 	Color* pclrTexture = CRenderer::LoadTextureData(sTexture, w, h);
 	if (!pclrTexture)
-		return CTextureHandle();
+		return nullptr;
 
 	CTexture oTex;
 	
@@ -43,10 +48,10 @@ CTextureHandle CTextureLibrary::AddAsset(const tstring& sTexture, int iClamp)
 
 	Get()->m_aTextures[sTexture] = oTex;
 
-	return CTextureHandle(sTexture, &Get()->m_aTextures[sTexture]);
+	return &Get()->m_aTextures[sTexture];
 }
 
-CTextureHandle CTextureLibrary::FindTexture(const tstring& sTexture)
+CTextureHandle CTextureLibrary::FindAsset(const tstring& sTexture)
 {
 	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
 	if (it == Get()->m_aTextures.end())
@@ -57,7 +62,7 @@ CTextureHandle CTextureLibrary::FindTexture(const tstring& sTexture)
 
 size_t CTextureLibrary::FindTextureID(const tstring& sTexture)
 {
-	return FindTexture(sTexture)->m_iGLID;
+	return FindAsset(sTexture)->m_iGLID;
 }
 
 size_t CTextureLibrary::GetTextureGLID(const tstring& sTexture)

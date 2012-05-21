@@ -238,6 +238,7 @@ int CreateApplication(int argc, char** argv)
 				glfwIconifyWindow(i);
 			}
 
+#ifdef OPENGL3
 			// If this is the color AO method, we need to load the textures.
 			tvector<CMaterial> aMaterials;
 			if (eMethod == AOMETHOD_RENDER)
@@ -287,6 +288,7 @@ int CreateApplication(int argc, char** argv)
 				ao.SaveToFile("ao-output.png");
 
 			printf("Done.\n");
+#endif
 			return 0;
 		}
 		}

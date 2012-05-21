@@ -159,6 +159,7 @@ void CSMAKRenderer::RenderGround()
 	c.Translate(SMAKWindow()->GetScene()->m_oExtends.Center());
 	c.SetUniform("flAlpha", 1.0f);
 	c.SetUniform("flRimLight", 0.0f);
+	c.SetUniform("bDiffuse", false);
 
 	int i;
 
@@ -289,19 +290,31 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 
 	CRenderingContext c(this, true);
 
-	for (size_t i = 0; i < pModel->m_ahMaterials.size(); i++)
+	for (size_t i = 0; i < pModel->m_asMaterialStubs.size(); i++)
 	{
+		auto pMaterialMap = pMeshInstance->GetMappedMaterial(i);
+
+		if (!pMaterialMap)
+			continue;
+
+		if (!pMaterialMap->IsVisible())
+			continue;
+
+		size_t iMaterial = pMaterialMap->m_iMaterial;
+
+		if (!SMAKWindow()->GetScene()->GetMaterial(iMaterial)->IsVisible())
+			continue;
+
 		if (!pModel->m_aiVertexBufferSizes[i])
 			continue;
 
-		c.UseMaterial(pModel->m_ahMaterials[i]);
+		c.UseMaterial(SMAKWindow()->GetMaterials()[iMaterial]);
 
 		if (!c.GetActiveShader())
 			c.UseProgram("model");
 
 		c.SetUniform("flAlpha", 1.0f);
 		c.SetUniform("vecColor", Color(255, 255, 255));
-		c.SetUniform("bDiffuse", false);
 		c.SetUniform("flRimLight", 0.05f);
 
 		c.BeginRenderVertexArray(pModel->m_aiVertexBuffers[i]);

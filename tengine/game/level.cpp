@@ -214,7 +214,7 @@ void CLevelEntity::SetParameterValue(const tstring& sKey, const tstring& sValue)
 	{
 		// Special case.
 		if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
-			m_hMaterialModel = CMaterialLibrary::AddAsset(sValue);
+			m_hMaterialModel = CMaterialLibrary::AddMaterial(sValue);
 
 		if (strcmp(pSaveData->m_pszType, "bool") == 0)
 		{

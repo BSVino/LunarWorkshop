@@ -212,7 +212,7 @@ void CSMAKWindow::ColorAOCallback(const tstring& sArgs)
 
 	if (!CAOPanel::Get(true) || !CAOPanel::Get(true)->DoneGenerating())
 	{
-		CAOPanel::Open(true, &m_Scene, &m_aoMaterials);
+		CAOPanel::Open(true, &m_Scene, nullptr);
 		m_pColorAO->SetState(false, false);
 		return;
 	}
@@ -247,22 +247,22 @@ void CSMAKWindow::ColorAOToggleCallback(const tstring& sArgs)
 
 void CSMAKWindow::GenerateComboCallback(const tstring& sArgs)
 {
-	CComboGeneratorPanel::Open(&m_Scene, &m_aoMaterials);
+	CComboGeneratorPanel::Open(&m_Scene, nullptr);
 }
 
 void CSMAKWindow::GenerateAOCallback(const tstring& sArgs)
 {
-	CAOPanel::Open(false, &m_Scene, &m_aoMaterials);
+	CAOPanel::Open(false, &m_Scene, nullptr);
 }
 
 void CSMAKWindow::GenerateColorAOCallback(const tstring& sArgs)
 {
-	CAOPanel::Open(true, &m_Scene, &m_aoMaterials);
+	CAOPanel::Open(true, &m_Scene, nullptr);
 }
 
 void CSMAKWindow::GenerateNormalCallback(const tstring& sArgs)
 {
-	CNormalPanel::Open(&m_Scene, &m_aoMaterials);
+	CNormalPanel::Open(&m_Scene, nullptr);
 }
 
 void CSMAKWindow::HelpCallback(const tstring& sArgs)
@@ -848,6 +848,7 @@ void CAOPanel::GenerateCallback(const tstring& sArgs)
 	if (m_oGenerator.DoneGenerating())
 		iAO = m_oGenerator.GenerateTexture();
 
+#ifdef OPENGL2
 	for (size_t i = 0; i < m_paoMaterials->size(); i++)
 	{
 		size_t& iAOTexture = m_bColor?(*m_paoMaterials)[i].m_iColorAO:(*m_paoMaterials)[i].m_iAO;
@@ -855,16 +856,15 @@ void CAOPanel::GenerateCallback(const tstring& sArgs)
 		if (!m_pScene->GetMaterial(i)->IsVisible())
 			continue;
 
-#ifdef OPENGL2
 		if (iAOTexture)
 			glDeleteTextures(1, &iAOTexture);
-#endif
 
 		if (m_oGenerator.DoneGenerating())
 			iAOTexture = iAO;
 		else
 			iAOTexture = 0;
 	}
+#endif
 
 	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
 
@@ -917,17 +917,17 @@ void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 	{
 		size_t iAO = m_oGenerator.GenerateTexture(true);
 
+#ifdef OPENGL2
 		for (size_t i = 0; i < m_paoMaterials->size(); i++)
 		{
 			size_t& iAOTexture = m_bColor?(*m_paoMaterials)[i].m_iColorAO:(*m_paoMaterials)[i].m_iAO;
 
-#ifdef OPENGL2
 			if (iAOTexture)
 				glDeleteTextures(1, &iAOTexture);
-#endif
 
 			iAOTexture = iAO;
 		}
+#endif
 
 		flLastGenerate = CSMAKWindow::Get()->GetTime();
 	}
@@ -1422,9 +1422,11 @@ void CComboGeneratorPanel::Think()
 		{
 			size_t iMaterial = pMeshInstance->GetMappedMaterial(iMaterialStub)->m_iMaterial;
 
+#ifdef OPENGL2
 			// Materials not loaded yet?
 			if (!m_paoMaterials->size())
 				continue;
+#endif
 
 			bFoundMaterial = true;
 			break;
@@ -1526,6 +1528,7 @@ void CComboGeneratorPanel::GenerateCallback(const tstring& sArgs)
 		m_oGenerator.GenerateNormal(iNormalGL, iNormalIL);
 	}
 
+#ifdef OPENGL2
 	for (size_t i = 0; i < m_paoMaterials->size(); i++)
 	{
 		size_t& iDiffuseTexture = (*m_paoMaterials)[i].m_iBase;
@@ -1536,7 +1539,6 @@ void CComboGeneratorPanel::GenerateCallback(const tstring& sArgs)
 		if (!m_pScene->GetMaterial(i)->IsVisible())
 			continue;
 
-#ifdef OPENGL2
 		if (iDiffuseTexture)
 			glDeleteTextures(1, &iDiffuseTexture);
 
@@ -1563,13 +1565,13 @@ void CComboGeneratorPanel::GenerateCallback(const tstring& sArgs)
 
 		if (iNormalILTexture)
 			glDeleteTextures(1, &iNormalILTexture);
-#endif
 
 		if (m_oGenerator.DoneGenerating())
 			iNormalILTexture = iNormalIL;
 		else
 			iNormalILTexture = 0;
 	}
+#endif
 
 	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
 
@@ -1593,6 +1595,7 @@ void CComboGeneratorPanel::SaveMapFileCallback(const tstring& sArgs)
 
 	m_oGenerator.SaveAll(sFilename);
 
+#ifdef OPENGL2
 	for (size_t i = 0; i < m_paoMaterials->size(); i++)
 	{
 		if (!m_pScene->GetMaterial(i)->IsVisible())
@@ -1600,6 +1603,7 @@ void CComboGeneratorPanel::SaveMapFileCallback(const tstring& sArgs)
 
 		m_pScene->GetMaterial(i)->m_sNormalTexture = sFilename;
 	}
+#endif
 
 	CRootPanel::Get()->Layout();
 }
@@ -1640,13 +1644,13 @@ void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 		size_t iNormal, iNormalIL;
 		m_oGenerator.GenerateNormal(iNormal, iNormalIL, true);
 
+#ifdef OPENGL2
 		for (size_t i = 0; i < m_paoMaterials->size(); i++)
 		{
 			size_t& iDiffuseTexture = (*m_paoMaterials)[i].m_iBase;
 			size_t& iAOTexture = (*m_paoMaterials)[i].m_iAO;
 			size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal;
 
-#ifdef OPENGL2
 			if (iDiffuseTexture)
 				glDeleteTextures(1, &iDiffuseTexture);
 
@@ -1659,10 +1663,10 @@ void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 
 			if (iNormalTexture)
 				glDeleteTextures(1, &iNormalTexture);
-#endif
 
 			iNormalTexture = iNormal;
 		}
+#endif
 
 		flLastGenerate = CSMAKWindow::Get()->GetTime();
 	}
@@ -2041,8 +2045,10 @@ void CNormalPanel::Layout()
 	{
 		m_pMaterials->AddNode<CConversionMaterial>(m_pScene->GetMaterial(i)->GetName(), m_pScene->GetMaterial(i));
 
+#ifdef OPENGL2
 		if (m_paoMaterials->size() > i && !m_paoMaterials->at(i).m_iBase)
 			m_pMaterials->GetNode(i)->m_pLabel->SetAlpha(100);
+#endif
 
 		m_pMaterials->SetSelectedListener(this, SetupNormal2);
 	}
@@ -2103,6 +2109,7 @@ void CNormalPanel::Think()
 		size_t iNormal2, iNormal2IL;
 		m_oGenerator.GetNormalMap2(iNormal2, iNormal2IL);
 
+#ifdef OPENGL2
 		for (size_t i = 0; i < m_paoMaterials->size(); i++)
 		{
 			size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal2;
@@ -2111,18 +2118,17 @@ void CNormalPanel::Think()
 			if (!m_pScene->GetMaterial(i)->IsVisible())
 				continue;
 
-#ifdef OPENGL2
 			if (iNormalTexture)
 				glDeleteTextures(1, &iNormalTexture);
 
 			if (iNormalIL)
 				ilDeleteImages(1, &iNormalIL);
-#endif
 
 			iNormalTexture = iNormal2;
 			iNormalIL = iNormal2IL;
 			break;
 		}
+#endif
 
 		m_pSave->SetVisible(!!iNormal2);
 

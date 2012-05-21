@@ -237,10 +237,10 @@ bool CModel::Load()
 
 		m_aiVertexBuffers[i] = LoadBufferIntoGL(i);
 		m_aiVertexBufferSizes[i] = m_pToy->GetMaterialNumVerts(i);
-		m_ahMaterials[i] = CMaterialLibrary::AddAsset(m_pToy->GetMaterialName(i));
+		m_ahMaterials[i] = CMaterialLibrary::AddMaterial(m_pToy->GetMaterialName(i));
 
 		if (!m_ahMaterials[i].IsValid())
-			m_ahMaterials[i] = CMaterialLibrary::AddAsset(GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialName(i));
+			m_ahMaterials[i] = CMaterialLibrary::AddMaterial(GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialName(i));
 
 		//TAssert(m_aiMaterials[i]);
 		if (!m_ahMaterials[i].IsValid())

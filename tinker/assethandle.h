@@ -36,6 +36,7 @@ public:
 
 	void Reset();
 	const CAssetHandle& operator=(const CAssetHandle& c);
+	CAssetHandle& operator=(CAssetHandle&& c);
 
 	inline operator const C*() const
 	{

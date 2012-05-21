@@ -35,7 +35,7 @@ void CPlayerCharacter::Spawn()
 {
 	Precache();
 
-	SetMaterialModel(CMaterialLibrary::FindMaterial("models/otto/otto.mat"));
+	SetMaterialModel(CMaterialLibrary::FindAsset("models/otto/otto.mat"));
 
 	SetMass(60);
 	m_aabbBoundingBox = AABB(Vector(-0.35f, 0, -0.35f), Vector(0.35f, 2, 0.35f));

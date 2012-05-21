@@ -1590,7 +1590,7 @@ void CBaseEntity::PrecacheMaterial(const tstring& sMaterial)
 			return;
 	}
 
-	pReg->m_ahMaterialPrecaches.push_back(CMaterialLibrary::AddAsset(sMaterial));
+	pReg->m_ahMaterialPrecaches.push_back(CMaterialLibrary::AddMaterial(sMaterial));
 	pReg->m_asPrecaches.push_back(sMaterial);
 }
 
@@ -2251,7 +2251,7 @@ void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 
 void UnserializeString_ModelID(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
-	CMaterialHandle hMaterial = CMaterialLibrary::AddAsset(sData);
+	CMaterialHandle hMaterial = CMaterialLibrary::AddMaterial(sData);
 
 	if (hMaterial.IsValid())
 	{

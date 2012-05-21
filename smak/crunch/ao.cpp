@@ -34,7 +34,6 @@ CAOGenerator::CAOGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMate
 {
 	m_eAOMethod = AOMETHOD_NONE;
 	m_pScene = pScene;
-	m_paoMaterials = paoMaterials;
 
 	m_avecShadowValues = NULL;
 	m_avecShadowGeneratedValues = NULL;

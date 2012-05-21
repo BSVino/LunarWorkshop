@@ -24,12 +24,12 @@ public:
 	size_t					Stride() { return FloatsPerVertex()*sizeof(float); }
 	size_t					PositionOffset() { return 0; }
 	size_t					NormalsOffset() { return 3*sizeof(float); }
-	size_t					TexCoordOffset() { return 5*sizeof(float); }
+	size_t					TexCoordOffset() { return 6*sizeof(float); }
 
 public:
 	size_t					m_iReferences;
 
-	tvector<CMaterialHandle>	m_ahMaterials;
+	tvector<tstring>		m_asMaterialStubs;
 	tvector<size_t>			m_aiVertexBuffers;
 	tvector<size_t>			m_aiVertexBufferSizes;	// How many vertices in this vertex buffer?
 

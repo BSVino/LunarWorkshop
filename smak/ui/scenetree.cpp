@@ -487,6 +487,7 @@ void CMaterialEditor::OpenDiffuseCallback(const tstring& sArgs)
 	if (!sOpen.length())
 		return;
 
+#ifdef OPENGL3
 	size_t iTexture = CSMAKWindow::LoadTextureIntoGL(sOpen);
 
 	if (!iTexture)
@@ -494,13 +495,12 @@ void CMaterialEditor::OpenDiffuseCallback(const tstring& sArgs)
 
 	CMaterial* pMaterial = &(*CSMAKWindow::Get()->GetMaterials())[m_iMaterial];
 
-#ifdef OPENGL2
 	if (pMaterial->m_iBase)
 		glDeleteTextures(1, &pMaterial->m_iBase);
-#endif
 
 	pMaterial->m_iBase = iTexture;
 	m_pMaterial->m_sDiffuseTexture = sOpen;
+#endif
 
 	Layout();
 }
@@ -517,6 +517,7 @@ void CMaterialEditor::OpenNormalCallback(const tstring& sArgs)
 	if (!sOpen.length())
 		return;
 
+#ifdef OPENGL3
 	size_t iTexture = CSMAKWindow::LoadTextureIntoGL(sOpen);
 
 	if (!iTexture)
@@ -524,15 +525,12 @@ void CMaterialEditor::OpenNormalCallback(const tstring& sArgs)
 
 	CMaterial* pMaterial = &(*CSMAKWindow::Get()->GetMaterials())[m_iMaterial];
 
-#ifdef OPENGL2
 	if (pMaterial->m_iNormal)
 		glDeleteTextures(1, &pMaterial->m_iNormal);
-#endif
 
 	pMaterial->m_iNormal = iTexture;
 	m_pMaterial->m_sNormalTexture = sOpen;
 
-#ifdef OPENGL2
 	if (pMaterial->m_iNormal2)
 		glDeleteTextures(1, &pMaterial->m_iNormal2);
 	pMaterial->m_iNormal2 = 0;
@@ -541,34 +539,34 @@ void CMaterialEditor::OpenNormalCallback(const tstring& sArgs)
 		ilDeleteImages(1, &pMaterial->m_iNormal2IL);
 	if (pMaterial->m_iNormalIL)
 		ilDeleteImages(1, &pMaterial->m_iNormalIL);
-#endif
 
 	pMaterial->m_iNormal2IL = 0;
 	pMaterial->m_iNormalIL = 0;
+#endif
 
 	Layout();
 }
 
 void CMaterialEditor::RemoveDiffuseCallback(const tstring& sArgs)
 {
+#ifdef OPENGL2
 	CMaterial* pMaterial = &(*CSMAKWindow::Get()->GetMaterials())[m_iMaterial];
 
-#ifdef OPENGL2
 	if (pMaterial->m_iBase)
 		glDeleteTextures(1, &pMaterial->m_iBase);
-#endif
 
 	pMaterial->m_iBase = 0;
 	m_pMaterial->m_sDiffuseTexture = "";
+#endif
 
 	Layout();
 }
 
 void CMaterialEditor::RemoveNormalCallback(const tstring& sArgs)
 {
+#ifdef OPENGL2
 	CMaterial* pMaterial = &(*CSMAKWindow::Get()->GetMaterials())[m_iMaterial];
 
-#ifdef OPENGL2
 	if (pMaterial->m_iNormal)
 		glDeleteTextures(1, &pMaterial->m_iNormal);
 
@@ -583,10 +581,10 @@ void CMaterialEditor::RemoveNormalCallback(const tstring& sArgs)
 		ilDeleteImages(1, &pMaterial->m_iNormal2IL);
 	if (pMaterial->m_iNormalIL)
 		ilDeleteImages(1, &pMaterial->m_iNormalIL);
-#endif
 
 	pMaterial->m_iNormal2IL = 0;
 	pMaterial->m_iNormalIL = 0;
+#endif
 
 	Layout();
 }

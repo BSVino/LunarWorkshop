@@ -141,7 +141,7 @@ bool CModel::LoadSourceFile()
 		CData oMaterialData;
 		CData* pShader = oMaterialData.AddChild("Shader", "model");
 		pShader->AddChild("Diffuse", g_asTextures[i]);
-		m_ahMaterials[i] = CMaterialLibrary::CreateMaterial(&oMaterialData);
+		m_ahMaterials[i] = CMaterialLibrary::AddMaterial(&oMaterialData);
 
 		//TAssert(m_aiMaterials[i]);
 		if (!m_ahMaterials[i].IsValid())

@@ -895,7 +895,7 @@ CLevelEditor::CLevelEditor()
 	m_pEditorPanel->SetBorder(glgui::CPanel::BT_SOME);
 	glgui::CRootPanel::Get()->AddControl(m_pEditorPanel);
 
-	m_pCreateEntityButton = new glgui::CPictureButton("Create", CMaterialLibrary::AddAsset("editor/create-entity.mat"));
+	m_pCreateEntityButton = new glgui::CPictureButton("Create", CMaterialLibrary::AddMaterial("editor/create-entity.mat"));
 	m_pCreateEntityButton->SetPos(glgui::CRootPanel::Get()->GetWidth()/2-m_pCreateEntityButton->GetWidth()/2, 20);
 	m_pCreateEntityButton->SetClickedListener(this, CreateEntity);
 	m_pCreateEntityButton->SetTooltip("Create Entity Tool");

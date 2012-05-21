@@ -187,7 +187,6 @@ public:
 
 protected:
 	CConversionScene*		m_pScene;
-	tvector<CMaterial>*		m_paoMaterials;
 
 	tvector<CConversionMeshInstance*>	m_apHiRes;
 	tvector<CConversionMeshInstance*>	m_apLoRes;
@@ -269,7 +268,6 @@ public:
 
 protected:
 	CConversionScene*		m_pScene;
-	tvector<CMaterial>*		m_paoMaterials;
 
 	size_t					m_iWidth;
 	size_t					m_iHeight;

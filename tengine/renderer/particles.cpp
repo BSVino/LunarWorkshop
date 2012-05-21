@@ -311,7 +311,7 @@ void CParticleSystem::Load()
 	m_bLoaded = true;
 
 	if (GetMaterialName().length() > 0)
-		SetMaterial(CMaterialLibrary::AddAsset(GetMaterialName()));
+		SetMaterial(CMaterialLibrary::AddMaterial(GetMaterialName()));
 
 	if (GetModelName().length() > 0)
 		SetModel(CModelLibrary::AddModel(GetModelName()));

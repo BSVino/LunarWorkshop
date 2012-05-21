@@ -35,8 +35,9 @@ public:
 public:
 	static size_t			GetNumTextures() { return Get()->m_aTextures.size(); }
 
-	static CTextureHandle	AddAsset(const tstring& sTexture, int iClamp = 0);
-	static CTextureHandle	FindTexture(const tstring& sTexture);
+	static CTextureHandle	AddTexture(const tstring& sTexture, int iClamp = 0);
+	static CTexture*		AddAsset(const tstring& sTexture, int iClamp = 0);
+	static CTextureHandle	FindAsset(const tstring& sTexture);
 	static size_t			FindTextureID(const tstring& sTexture);
 
 	static size_t			GetTextureGLID(const tstring& sTexture);

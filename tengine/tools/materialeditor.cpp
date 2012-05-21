@@ -135,7 +135,7 @@ void CCreateMaterialPanel::CreateCallback(const tstring& sArgs)
 
 	CData d;
 	d.AddChild("Shader", m_pShader->GetText());
-	MaterialEditor()->SetMaterial(CMaterialLibrary::CreateMaterial(&d, GetMaterialFileName()));
+	MaterialEditor()->SetMaterial(CMaterialLibrary::AddMaterial(&d, GetMaterialFileName()));
 
 	SetVisible(false);
 }
@@ -477,7 +477,7 @@ void CMaterialEditor::OpenMaterialCallback(const tstring& sArgs)
 {
 	tstring sGamePath = GetRelativePath(sArgs, ".");
 
-	m_hMaterial = CMaterialLibrary::AddAsset(sGamePath);
+	m_hMaterial = CMaterialLibrary::AddMaterial(sGamePath);
 
 	m_pMaterialPanel->Layout();
 

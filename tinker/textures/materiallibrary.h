@@ -70,9 +70,11 @@ public:
 public:
 	static size_t			GetNumMaterials() { return Get()->m_aMaterials.size(); }
 
-	static CMaterialHandle	AddAsset(const tstring& sMaterial, int iClamp = 0);
-	static CMaterialHandle	CreateMaterial(const class CData* pData, const tstring& sMaterial="");
-	static CMaterialHandle	FindMaterial(const tstring& sMaterial);
+	static CMaterialHandle	AddMaterial(const tstring& sMaterial, int iClamp = 0);
+	static CMaterialHandle	AddMaterial(const class CData* pData, const tstring& sMaterial="");
+	static CMaterial*		AddAsset(const tstring& sMaterial, int iClamp = 0);
+	static CMaterial*		CreateMaterial(const class CData* pData, const tstring& sMaterial="");
+	static CMaterialHandle	FindAsset(const tstring& sMaterial);
 
 	static size_t			GetNumMaterialsLoaded() { return Get()->m_aMaterials.size(); };
 	static bool				IsAssetLoaded(const tstring& sMaterial);

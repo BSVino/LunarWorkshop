@@ -11,7 +11,6 @@
 #include <tinker/application.h>
 #include <datamanager/data.h>
 
-tvector<tstring>			g_asTextures;
 tvector<tvector<float> >	g_aaflData;
 AABB						g_aabbBounds;
 
@@ -35,111 +34,61 @@ void AddVertex(size_t iMaterial, const Vector& v, const Vector& vn, const Vector
 	}
 }
 
-void LoadMeshInstanceIntoToy(CConversionScene* pScene, CConversionMeshInstance* pMeshInstance, const Matrix4x4& mParentTransformations)
+void LoadMesh(CConversionScene* pScene, size_t iMesh)
 {
-	if (!pMeshInstance->IsVisible())
+	TAssert(iMesh < pScene->GetNumMeshes());
+	if (iMesh >= pScene->GetNumMeshes())
 		return;
 
-	CConversionMesh* pMesh = pMeshInstance->GetMesh();
+	// Reserve space for n+1, the last one represents the default material.
+	g_aaflData.resize(pScene->GetNumMaterials()+1);
 
-	for (size_t m = 0; m < pScene->GetNumMaterials(); m++)
+	CConversionMesh* pMesh = pScene->GetMesh(iMesh);
+
+	for (size_t j = 0; j < pMesh->GetNumFaces(); j++)
 	{
-		for (size_t j = 0; j < pMesh->GetNumFaces(); j++)
+		size_t k;
+		CConversionFace* pFace = pMesh->GetFace(j);
+
+		size_t iMaterial = pFace->m;
+		if (iMaterial == ~0)
+			iMaterial = pScene->GetNumMaterials();
+
+		CConversionVertex* pVertex0 = pFace->GetVertex(0);
+
+		for (k = 2; k < pFace->GetNumVertices(); k++)
 		{
-			size_t k;
-			CConversionFace* pFace = pMesh->GetFace(j);
+			CConversionVertex* pVertex1 = pFace->GetVertex(k-1);
+			CConversionVertex* pVertex2 = pFace->GetVertex(k);
 
-			if (pFace->m == ~0)
-				continue;
-
-			CConversionMaterial* pMaterial = NULL;
-			CConversionMaterialMap* pConversionMaterialMap = pMeshInstance->GetMappedMaterial(pFace->m);
-
-			if (!pConversionMaterialMap)
-				continue;
-
-			if (!pConversionMaterialMap->IsVisible())
-				continue;
-
-			if (pConversionMaterialMap->m_iMaterial != m)
-				continue;
-
-			while (g_asTextures.size() <= pConversionMaterialMap->m_iMaterial)
-			{
-				g_asTextures.push_back(pScene->GetMaterial(pConversionMaterialMap->m_iMaterial)->GetDiffuseTexture());
-				g_aaflData.push_back();
-			}
-
-			size_t iMaterial = pConversionMaterialMap->m_iMaterial;
-
-			CConversionVertex* pVertex0 = pFace->GetVertex(0);
-
-			for (k = 2; k < pFace->GetNumVertices(); k++)
-			{
-				CConversionVertex* pVertex1 = pFace->GetVertex(k-1);
-				CConversionVertex* pVertex2 = pFace->GetVertex(k);
-
-				AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex0->v), pMesh->GetNormal(pVertex0->v), pMesh->GetUV(pVertex0->vu));
-				AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex1->v), pMesh->GetNormal(pVertex1->v), pMesh->GetUV(pVertex1->vu));
-				AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex2->v), pMesh->GetNormal(pVertex2->v), pMesh->GetUV(pVertex2->vu));
-			}
+			AddVertex(iMaterial, pMesh->GetVertex(pVertex0->v), pMesh->GetNormal(pVertex0->v), pMesh->GetUV(pVertex0->vu));
+			AddVertex(iMaterial, pMesh->GetVertex(pVertex1->v), pMesh->GetNormal(pVertex1->v), pMesh->GetUV(pVertex1->vu));
+			AddVertex(iMaterial, pMesh->GetVertex(pVertex2->v), pMesh->GetNormal(pVertex2->v), pMesh->GetUV(pVertex2->vu));
 		}
 	}
 }
 
-void LoadSceneNodeIntoToy(CConversionScene* pScene, CConversionSceneNode* pNode, const Matrix4x4& mParentTransformations)
-{
-	if (!pNode)
-		return;
-
-	if (!pNode->IsVisible())
-		return;
-
-	Matrix4x4 mTransformations = mParentTransformations * pNode->m_mTransformations;
-
-	for (size_t i = 0; i < pNode->GetNumChildren(); i++)
-		LoadSceneNodeIntoToy(pScene, pNode->GetChild(i), mTransformations);
-
-	for (size_t m = 0; m < pNode->GetNumMeshInstances(); m++)
-		LoadMeshInstanceIntoToy(pScene, pNode->GetMeshInstance(m), mTransformations);
-}
-
-void LoadSceneIntoToy(CConversionScene* pScene)
-{
-	for (size_t i = 0; i < pScene->GetNumScenes(); i++)
-		LoadSceneNodeIntoToy(pScene, pScene->GetScene(i), Matrix4x4());
-}
-
 bool CModel::Load(class CConversionScene* pScene, size_t iMesh)
 {
-	g_asTextures.clear();
 	g_aaflData.clear();
 	g_aabbBounds = AABB(Vector(999, 999, 999), Vector(-999, -999, -999));
 
-	LoadSceneIntoToy(pScene);
+	LoadMesh(pScene, iMesh);
 
-	size_t iTextures = g_asTextures.size();
+	size_t iMaterials = g_aaflData.size();
 
-	m_ahMaterials.resize(iTextures);
-	m_aiVertexBuffers.resize(iTextures);
-	m_aiVertexBufferSizes.resize(iTextures);
+	m_asMaterialStubs.resize(iMaterials);
+	m_aiVertexBuffers.resize(iMaterials);
+	m_aiVertexBufferSizes.resize(iMaterials);
 
-	for (size_t i = 0; i < iTextures; i++)
+	for (size_t i = 0; i < iMaterials; i++)
 	{
 		if (g_aaflData[i].size() == 0)
 			continue;
 
 		m_aiVertexBuffers[i] = CRenderer::LoadVertexDataIntoGL(g_aaflData[i].size()*4, &g_aaflData[i][0]);
 		m_aiVertexBufferSizes[i] = g_aaflData[i].size()/5;
-
-		CData oMaterialData;
-		CData* pShader = oMaterialData.AddChild("Shader", "model");
-		pShader->AddChild("Diffuse", g_asTextures[i]);
-		m_ahMaterials[i] = CMaterialLibrary::CreateMaterial(&oMaterialData);
-
-		//TAssert(m_aiMaterials[i]);
-		if (!m_ahMaterials[i].IsValid())
-			TError(tstring("Couldn't create fake material for texture \"") + g_asTextures[i] + "\"\n");
+		m_asMaterialStubs[i] = pScene->GetMesh(iMesh)->GetMaterialStub(i)->GetName();
 	}
 
 	m_aabbBoundingBox = g_aabbBounds;

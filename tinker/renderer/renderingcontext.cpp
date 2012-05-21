@@ -345,7 +345,7 @@ void CRenderingContext::UseMaterial(const CMaterialHandle& hMaterial)
 
 void CRenderingContext::UseMaterial(const tstring& sName)
 {
-	UseMaterial(CMaterialLibrary::FindMaterial(sName));
+	UseMaterial(CMaterialLibrary::FindAsset(sName));
 }
 
 void CRenderingContext::SetupMaterial()

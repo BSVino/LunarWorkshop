@@ -12,6 +12,8 @@
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
 #include <tinker/renderer/renderer.h>
+#include <datamanager/data.h>
+#include <textures/materiallibrary.h>
 
 #include "smak_renderer.h"
 #include "scenetree.h"
@@ -111,6 +113,7 @@ void CSMAKWindow::OpenWindow()
 	SetMultisampling(true);
 	BaseClass::OpenWindow(m_iWindowWidth, m_iWindowHeight, false, true);
 
+#ifdef OPENGL3
 	size_t iTexture = LoadTextureIntoGL("lighthalo.png");
 	if (iTexture)
 		m_pLightHalo = new CMaterial(iTexture);
@@ -130,6 +133,7 @@ void CSMAKWindow::OpenWindow()
 	m_iArrowTexture = LoadTextureIntoGL("arrow.png");
 	m_iEditTexture = LoadTextureIntoGL("pencil.png");
 	m_iVisibilityTexture = LoadTextureIntoGL("eye.png");
+#endif
 
 	InitUI();
 
@@ -207,7 +211,10 @@ void CSMAKWindow::DestroyAll()
 
 	m_aiObjects.clear();
 	m_iObjectsCreated = 0;
-	m_aoMaterials.clear();
+	m_ahMaterials.clear();
+
+	CModelLibrary::ResetReferenceCounts();
+	CModelLibrary::ClearUnreferenced();
 
 	CRootPanel::Get()->UpdateScene();
 	CSceneTreePanel::Get()->UpdateTree();
@@ -274,7 +281,7 @@ void CSMAKWindow::ReloadFromFile()
 void CSMAKWindow::LoadIntoGL()
 {
 	LoadModelsIntoGL();
-	LoadTexturesIntoGL();
+	LoadMaterialsIntoGL();
 
 	ClearDebugLines();
 }
@@ -285,91 +292,24 @@ void CSMAKWindow::LoadModelsIntoGL()
 		CModelLibrary::AddModel(&m_Scene, i);
 }
 
-size_t CSMAKWindow::LoadTexture(tstring sFilename)
+void CSMAKWindow::LoadMaterialsIntoGL()
 {
-	if (!sFilename.length())
-		return 0;
+	m_ahMaterials.clear();
+	m_ahMaterials.resize(m_Scene.GetNumMaterials());
 
-#ifdef OPENGL2
-	ILuint iDevILId;
-	ilGenImages(1, &iDevILId);
-	ilBindImage(iDevILId);
-
-	ILboolean bSuccess = ilLoadImage(convertstring<tchar, ILchar>(sFilename).c_str());
-
-	if (!bSuccess)
-		bSuccess = ilLoadImage(convertstring<tchar, ILchar>(sFilename).c_str());
-
-	ILenum iError = ilGetError();
-
-	if (!bSuccess)
-		return 0;
-
-	bSuccess = ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
-	if (!bSuccess)
-		return 0;
-
-	ILinfo ImageInfo;
-	iluGetImageInfo(&ImageInfo);
-
-	if (ImageInfo.Origin == IL_ORIGIN_UPPER_LEFT)
-		iluFlipImage();
-
-	ilBindImage(0);
-#endif
-
-	return 0;
-}
-
-size_t CSMAKWindow::LoadTextureIntoGL(tstring sFilename)
-{
-	size_t iDevILId = LoadTexture(sFilename);
-
-	if (!iDevILId)
-		return 0;
-
-#ifdef OPENGL2
-	ilBindImage(iDevILId);
-
-	GLuint iGLId;
-	glGenTextures(1, &iGLId);
-	glBindTexture(GL_TEXTURE_2D, iGLId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	gluBuild2DMipmaps(GL_TEXTURE_2D,
-		ilGetInteger(IL_IMAGE_BPP),
-		ilGetInteger(IL_IMAGE_WIDTH),
-		ilGetInteger(IL_IMAGE_HEIGHT),
-		ilGetInteger(IL_IMAGE_FORMAT),
-		GL_UNSIGNED_BYTE,
-		ilGetData());
-
-	ilDeleteImages(1, &iDevILId);
-#endif
-
-	return 0;
-}
-
-void CSMAKWindow::LoadTexturesIntoGL()
-{
 	for (size_t i = 0; i < m_Scene.GetNumMaterials(); i++)
 	{
-		CConversionMaterial* pMaterial = m_Scene.GetMaterial(i);
+		CData oMaterialData;
+		CData* pShader = oMaterialData.AddChild("Shader", "model");
+		if (m_Scene.GetMaterial(i))
+		{
+			pShader->AddChild("Diffuse", m_Scene.GetMaterial(i)->GetDiffuseTexture());
+			m_ahMaterials[i] = CMaterialLibrary::AddMaterial(&oMaterialData);
+		}
 
-		if (i < m_aoMaterials.size())
-			continue;
-
-		m_aoMaterials.push_back(CMaterial(0));
-
-		size_t iTexture = LoadTextureIntoGL(pMaterial->GetDiffuseTexture());
-
-		if (iTexture)
-			m_aoMaterials[i].m_iBase = iTexture;
-	}
-
-	if (!m_aoMaterials.size())
-	{
-		m_aoMaterials.push_back(CMaterial(0));
+		//TAssert(m_aiMaterials[i]);
+		if (!m_ahMaterials[i].IsValid())
+			TError(tstring("Couldn't create material \"") + m_Scene.GetMaterial(i)->GetName() + "\"\n");
 	}
 }
 
@@ -659,12 +599,12 @@ void CSMAKWindow::SetDisplayColorAO(bool bColorAO)
 
 void CSMAKWindow::SaveNormal(size_t iMaterial, const tstring& sFilename)
 {
+#ifdef OPENGL2
 	CMaterial* pMaterial = &m_aoMaterials[iMaterial];
 
 	if (pMaterial->m_iNormalIL == 0 && pMaterial->m_iNormal2IL == 0)
 		return;
 
-#ifdef OPENGL2
 	ilEnable(IL_FILE_OVERWRITE);
 
 	if (pMaterial->m_iNormalIL == 0 || pMaterial->m_iNormal2IL == 0)

@@ -6,29 +6,7 @@
 #include <worklistener.h>
 #include <tinker/application.h>
 #include <common.h>
-
-class CMaterial
-{
-public:
-	CMaterial(size_t iBase)
-	{
-		m_iBase = iBase;
-		m_iNormal = 0;
-		m_iNormalIL = 0;
-		m_iNormal2 = 0;
-		m_iNormal2IL = 0;
-		m_iAO = 0;
-		m_iColorAO = 0;
-	}
-
-	size_t		m_iBase;
-	size_t		m_iNormal;
-	size_t		m_iNormalIL;
-	size_t		m_iNormal2;
-	size_t		m_iNormal2IL;
-	size_t		m_iAO;
-	size_t		m_iColorAO;
-};
+#include <textures/materialhandle.h>
 
 class CSMAKWindow : public CApplication, glgui::IEventListener, IWorkListener
 {
@@ -55,9 +33,7 @@ public:
 
 	void					LoadIntoGL();
 	void					LoadModelsIntoGL();
-	static size_t			LoadTexture(tstring sFilename);
-	static size_t			LoadTextureIntoGL(tstring sFilename);
-	void					LoadTexturesIntoGL();
+	void					LoadMaterialsIntoGL();
 
 	void					SaveFile(const tchar* pszFile);
 
@@ -148,8 +124,8 @@ public:
 
 	static CSMAKWindow*		Get() { return s_pSMAKWindow; };
 
-	CConversionScene*		GetScene() { return &m_Scene; };
-	tvector<CMaterial>*		GetMaterials() { return &m_aoMaterials; };
+	CConversionScene*			GetScene() { return &m_Scene; };
+	tvector<CMaterialHandle>&	GetMaterials() { return m_ahMaterials; };
 
 	class CSMAKRenderer*	GetSMAKRenderer();
 	class CRenderer*		CreateRenderer();
@@ -172,7 +148,7 @@ protected:
 	tvector<size_t>			m_aiObjects;
 	size_t					m_iObjectsCreated;
 
-	tvector<CMaterial>		m_aoMaterials;
+	tvector<CMaterialHandle>	m_ahMaterials;
 
 	CMaterial*				m_pLightHalo;
 	CMaterial*				m_pLightBeam;

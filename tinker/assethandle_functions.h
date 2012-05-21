@@ -7,7 +7,13 @@ CAssetHandle<C, L>::CAssetHandle(const tstring& sName, const C* pAsset = nullptr
 	if (pAsset)
 		m_pAsset = pAsset;
 	else
-		m_pAsset = L::AddAsset(sName).GetAsset();
+	{
+		CAssetHandle<C, L> hAsset = L::FindAsset(sName);
+		if (hAsset.IsValid())
+			m_pAsset = hAsset.m_pAsset;
+		else
+			m_pAsset = L::AddAsset(sName);
+	}
 
 	if (m_pAsset)
 		const_cast<C*>(m_pAsset)->m_iReferences++;
@@ -63,10 +69,10 @@ void CAssetHandle<C, L>::Reset()
 template <class C, class L>
 const CAssetHandle<C, L>& CAssetHandle<C, L>::operator=(const CAssetHandle<C, L>& c)
 {
+	Reset();
+
 	// If c == *this, c.m_pAsset will be clobbered in Reset()
 	const C* pAsset = c.m_pAsset;
-
-	Reset();
 
 	m_sName = c.m_sName;
 	if (pAsset)
@@ -76,6 +82,22 @@ const CAssetHandle<C, L>& CAssetHandle<C, L>::operator=(const CAssetHandle<C, L>
 	}
 	else
 		m_pAsset = nullptr;
+
+	return *this;
+}
+
+template <class C, class L>
+CAssetHandle<C, L>& CAssetHandle<C, L>::operator=(CAssetHandle<C, L>&& c)
+{
+	if (c == *this)
+		return *this;
+
+	Reset();
+
+	m_pAsset = c.m_pAsset;
+	swap(m_sName, c.m_sName);
+
+	c.m_pAsset = nullptr;
 
 	return *this;
 }

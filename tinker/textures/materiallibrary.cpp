@@ -21,22 +21,33 @@ CMaterialLibrary::~CMaterialLibrary()
 	s_pMaterialLibrary = NULL;
 }
 
-CMaterialHandle CMaterialLibrary::AddAsset(const tstring& sMaterial, int iClamp)
+CMaterialHandle CMaterialLibrary::AddMaterial(const tstring& sMaterial, int iClamp)
 {
-	if (!sMaterial.length())
-		return CMaterialHandle();
+	return CMaterialHandle(sMaterial, AddAsset(sMaterial, iClamp));
+}
 
-	if (!tstr_endswith(sMaterial, ".mat"))
-		return CMaterialHandle();
-
-	CMaterialHandle hMaterial = FindMaterial(sMaterial);
+CMaterialHandle CMaterialLibrary::AddMaterial(const class CData* pData, const tstring& sMaterial)
+{
+	CMaterialHandle hMaterial = FindAsset(sMaterial);
 	if (hMaterial.IsValid())
 		return hMaterial;
+
+	CMaterial* pMaterial = CreateMaterial(pData, sMaterial);
+	return CMaterialHandle(pMaterial->m_sFile, pMaterial);
+}
+
+CMaterial* CMaterialLibrary::AddAsset(const tstring& sMaterial, int iClamp)
+{
+	if (!sMaterial.length())
+		return nullptr;
+
+	if (!tstr_endswith(sMaterial, ".mat"))
+		return nullptr;
 
 	std::basic_ifstream<tchar> f(sMaterial.c_str());
 
 	if (!f.is_open())
-		return CMaterialHandle();
+		return nullptr;
 
 	std::shared_ptr<CData> pData(new CData());
 	CDataSerializer::Read(f, pData.get());
@@ -44,17 +55,20 @@ CMaterialHandle CMaterialLibrary::AddAsset(const tstring& sMaterial, int iClamp)
 	return CreateMaterial(pData.get(), sMaterial);
 }
 
-CMaterialHandle CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& sMaterialOutput)
+CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& sMaterialOutput)
 {
 	tstring sMaterial = ToForwardSlashes(sMaterialOutput);
 	if (!sMaterialOutput.length())
-		sMaterial = "[from data]";
+	{
+		static int i = 0;
+		sMaterial = sprintf("[from data %x]", i++);
+	}
 
 	CData* pShaderData = pData->FindChild("Shader");
 	if (!pShaderData)
 	{
 		TError("Material file with no shader: " + sMaterial + "\n");
-		return CMaterialHandle();
+		return nullptr;
 	}
 
 	CShader* pShader = CShaderLibrary::GetShader(pShaderData->GetValueTString());
@@ -63,7 +77,7 @@ CMaterialHandle CMaterialLibrary::CreateMaterial(const CData* pData, const tstri
 	if (!pShader)
 	{
 		TError("Material file with invalid shader: " + sMaterial + "\n");
-		return CMaterialHandle();
+		return nullptr;
 	}
 
 	CMaterial& oMat = Get()->m_aMaterials[sMaterial];
@@ -107,10 +121,10 @@ CMaterialHandle CMaterialLibrary::CreateMaterial(const CData* pData, const tstri
 			TError("Material file '" + oMat.m_sFile + "' has a texture that couldn't be found: " + pShader->m_asTextures[i] + "\n");
 	}
 
-	return CMaterialHandle(sMaterial, &oMat);
+	return &oMat;
 }
 
-CMaterialHandle CMaterialLibrary::FindMaterial(const tstring& sMaterial)
+CMaterialHandle CMaterialLibrary::FindAsset(const tstring& sMaterial)
 {
 	tstring sMaterialForward = ToForwardSlashes(sMaterial);
 	eastl::map<tstring, CMaterial>::iterator it = Get()->m_aMaterials.find(sMaterialForward);
@@ -206,9 +220,9 @@ void CMaterialLibrary::FillParameter(CMaterial& oMat, size_t iPar, CShader* pSha
 
 void CMaterial::Save() const
 {
-	if (m_sFile == "[from data]")
+	if (m_sFile.substr(strlen("[from data ")) == "[from data ")
 	{
-		TAssert(m_sFile != "[from data]");
+		TAssert(m_sFile.substr(strlen("[from data ")) != "[from data ");
 		return;
 	}
 
