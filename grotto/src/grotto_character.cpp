@@ -115,10 +115,19 @@ void CGrottoCharacter::Reflect(const Matrix4x4& mMirror, const Matrix4x4& mRefle
 #ifdef _DEBUG
 	if (pMirror)
 	{
-		// Should be on the same side as the old side, since it was reflected.
-		bool bOldReflectedSide = pMirror->GetSide(vecOldLocalOrigin + GetUpVector() * EyeHeight());
-		bool bNewReflectedSide = pMirror->GetSide(mNew.GetTranslation() + GetUpVector() * EyeHeight());
-		TAssert(bOldReflectedSide == bNewReflectedSide);
+		Matrix4x4 mLocalToGlobal;
+		if (HasMoveParent())
+			mLocalToGlobal = GetMoveParent()->GetGlobalTransform();
+
+		bool bOldOriginalSide = pMirror->GetSide((mLocalToGlobal * vecOldLocalOrigin) + GetUpVector() * EyeHeight());
+		bool bNewOriginalSide = pMirror->GetSide((mLocalToGlobal * vecNewOrigin) + GetUpVector() * EyeHeight());
+		bool bNewReflectedSide = pMirror->GetSide((mLocalToGlobal * mNew.GetTranslation()) + GetUpVector() * EyeHeight());
+
+		if (bOldOriginalSide == bNewOriginalSide)
+			TAssert(bOldOriginalSide != bNewReflectedSide)
+		else
+			// Should be on the same side as the old side, since it was reflected.
+			TAssert(bOldOriginalSide == bNewReflectedSide);
 	}
 #endif
 

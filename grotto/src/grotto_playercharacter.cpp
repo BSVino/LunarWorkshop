@@ -284,7 +284,7 @@ void CPlayerCharacter::GoIntoMirror()
 		if (fabs(vecMirror.y - (vecPlayer.y + GetBoundingBox().Size().y/2)) > 1)
 			continue;
 
-		Matrix4x4 mNew = GetGlobalTransform();
+		Matrix4x4 mNew = GetLocalTransform();
 		EAngle angView = GetViewAngles();
 		Reflect(pMirror->GetGlobalTransform(), pMirror->GetReflection(), pMirror->GetReflectionType(), mNew, pMirror);
 		mNew.SetTranslation(GetGlobalOrigin());	// Reset translation, stay on the same side of the thing.
