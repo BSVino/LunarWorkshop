@@ -1,6 +1,7 @@
 #pragma once
 
 #include <tengine/game/entities/player.h>
+#include <tinker/keys.h>
 
 #include "mirror.h"
 
@@ -12,7 +13,7 @@ public:
 	virtual void					Spawn();
 
 	virtual void					MouseMotion(int x, int y);
-	virtual void					MouseInput(int iButton, int iState);
+	virtual void					MouseInput(int iButton, tinker_mouse_state_t iState);
 	virtual void					KeyPress(int c);
 	virtual void					JoystickButtonPress(int iJoystick, int c);
 	virtual void					JoystickAxis(int iJoystick, int iAxis, float flValue, float flChange);

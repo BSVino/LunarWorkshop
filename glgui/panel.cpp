@@ -168,6 +168,31 @@ bool CPanel::MouseReleased(int code, int mx, int my)
 	return false;
 }
 
+bool CPanel::MouseDoubleClicked(int code, int mx, int my)
+{
+	int iCount = (int)m_apControls.size();
+	// Start at the end of the list so that items drawn last are tested for mouse events first.
+	for (int i = iCount-1; i >= 0; i--)
+	{
+		IControl* pControl = m_apControls[i];
+
+		if (!pControl->IsVisible())
+			continue;
+
+		float x = 0, y = 0, w = 0, h = 0;
+		pControl->GetAbsDimensions(x, y, w, h);
+		if (mx >= x &&
+			my >= y &&
+			mx < x + w &&
+			my < y + h)
+		{
+			if (pControl->MouseDoubleClicked(code, mx, my))
+				return true;
+		}
+	}
+	return false;
+}
+
 void CPanel::CursorMoved(int mx, int my)
 {
 	bool bFoundControlWithCursor = false;

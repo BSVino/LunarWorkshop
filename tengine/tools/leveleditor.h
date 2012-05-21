@@ -144,7 +144,7 @@ public:
 	EVENT_CALLBACK(CLevelEditor, SaveLevel);
 
 	bool					KeyPress(int c);
-	bool					MouseInput(int iButton, int iState);
+	bool					MouseInput(int iButton, tinker_mouse_state_t iState);
 
 	virtual void			CameraThink();
 	virtual TVector			GetCameraPosition();

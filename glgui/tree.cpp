@@ -1,7 +1,5 @@
 #include "tree.h"
 
-#include <GL3/gl3w.h>
-
 #include <tinker/shell.h>
 #include <renderer/renderingcontext.h>
 
@@ -181,6 +179,38 @@ bool CTree::MouseReleased(int code, int mx, int my)
 	return false;
 }
 
+bool CTree::MouseDoubleClicked(int code, int mx, int my)
+{
+	if (CPanel::MouseDoubleClicked(code, mx, my))
+		return true;
+
+	m_iSelected = ~0;
+	for (size_t i = 0; i < m_apAllNodes.size(); i++)
+	{
+		IControl* pNode = m_apAllNodes[i];
+
+		if (!pNode->IsVisible())
+			continue;
+
+		float x, y, w, h;
+		pNode->GetAbsDimensions(x, y, w, h);
+
+		if (mx >= x && my >= y && mx < x+w && my < y+h)
+		{
+			m_iSelected = i;
+			CTreeNode* pTreeNode = dynamic_cast<CTreeNode*>(pNode);
+			pTreeNode->Selected();
+
+			if (m_pfnConfirmedCallback)
+				m_pfnConfirmedCallback(m_pConfirmedListener, sprintf("%d", GetSelectedNodeId()));
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 size_t CTree::AddControl(IControl* pControl, bool bToTail)
 {
 	size_t iControl = BaseClass::AddControl(pControl, bToTail);
@@ -310,6 +340,13 @@ void CTree::SetSelectedListener(IEventListener* pListener, IEventListener::Callb
 	TAssert(pListener && pfnCallback || !pListener && !pfnCallback);
 	m_pSelectedListener = pListener;
 	m_pfnSelectedCallback = pfnCallback;
+}
+
+void CTree::SetConfirmedListener(IEventListener* pListener, IEventListener::Callback pfnCallback)
+{
+	TAssert(pListener && pfnCallback || !pListener && !pfnCallback);
+	m_pConfirmedListener = pListener;
+	m_pfnConfirmedCallback = pfnCallback;
 }
 
 void CTree::SetDroppedListener(IEventListener* pListener, IEventListener::Callback pfnCallback)

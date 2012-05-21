@@ -3,7 +3,8 @@
 #include "trs.h"
 #include "tstring.h"
 
-#include "glgui/glgui.h"
+#include <glgui/glgui.h>
+#include <tinker/keys.h>
 
 class IManipulatorListener
 {
@@ -33,7 +34,7 @@ public:
 	void				SetTransfromType(TransformType eTransform) { m_eTransform = eTransform; }
 	TransformType		GetTransfromType() { return m_eTransform; }
 
-	bool				MouseInput(int iButton, int iState);
+	bool				MouseInput(int iButton, tinker_mouse_state_t iState);
 
 	void				Render();
 

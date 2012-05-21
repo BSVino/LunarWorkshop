@@ -806,11 +806,11 @@ bool CToyEditor::KeyPress(int c)
 	return false;
 }
 
-bool CToyEditor::MouseInput(int iButton, int iState)
+bool CToyEditor::MouseInput(int iButton, tinker_mouse_state_t iState)
 {
 	if (iButton == TINKER_KEY_MOUSE_LEFT)
 	{
-		m_bRotatingPreview = (iState == 1);
+		m_bRotatingPreview = (iState == TINKER_MOUSE_PRESSED);
 		return true;
 	}
 

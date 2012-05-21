@@ -10,6 +10,7 @@
 #include <configfile.h>
 
 #include "shell.h"
+#include "keys.h"
 
 class CApplication : public CShell
 {
@@ -48,7 +49,8 @@ public:
 	virtual void				MouseMotion(int x, int y);
 
 	static void					MouseInputCallback(void*, int iButton, int iState);
-	virtual bool				MouseInput(int iButton, int iState);
+	void						MouseInputCallback(int iButton, tinker_mouse_state_t iState);
+	virtual bool				MouseInput(int iButton, tinker_mouse_state_t iState);
 
 	static void					MouseWheelCallback(void*, int x, int y);
 	virtual void				MouseWheel(int x, int y) {};
@@ -120,6 +122,7 @@ protected:
 
 	bool						m_bMouseEnabled;
 	bool						m_bMouseDownInGUI;
+	double						m_flLastMousePress;
 
 	class CRenderer*			m_pRenderer;
 

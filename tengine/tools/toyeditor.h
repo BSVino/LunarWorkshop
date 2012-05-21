@@ -139,7 +139,7 @@ public:
 	EVENT_CALLBACK(CToyEditor, BuildToy);
 
 	bool					KeyPress(int c);
-	bool					MouseInput(int iButton, int iState);
+	bool					MouseInput(int iButton, tinker_mouse_state_t iState);
 	void					MouseMotion(int x, int y);
 	void					MouseWheel(int x, int y);
 

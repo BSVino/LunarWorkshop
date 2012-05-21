@@ -20,7 +20,7 @@ SAVEDATA_TABLE_END();
 INPUTS_TABLE_BEGIN(CChainPlayer);
 INPUTS_TABLE_END();
 
-void CChainPlayer::MouseInput(int iButton, int iState)
+void CChainPlayer::MouseInput(int iButton, tinker_mouse_state_t iState)
 {
 	BaseClass::MouseInput(iButton, iState);
 

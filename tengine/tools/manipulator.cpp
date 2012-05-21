@@ -63,7 +63,7 @@ void CManipulatorTool::Deactivate()
 	m_pScaleButton->SetVisible(false);
 }
 
-bool CManipulatorTool::MouseInput(int iButton, int iState)
+bool CManipulatorTool::MouseInput(int iButton, tinker_mouse_state_t iState)
 {
 	if (!IsActive())
 		return false;

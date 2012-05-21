@@ -1151,9 +1151,9 @@ bool CLevelEditor::KeyPress(int c)
 	return false;
 }
 
-bool CLevelEditor::MouseInput(int iButton, int iState)
+bool CLevelEditor::MouseInput(int iButton, tinker_mouse_state_t iState)
 {
-	if (iState == 1 && m_pCreateEntityPanel->IsVisible() && m_pCreateEntityPanel->m_bReadyToCreate)
+	if (iState == TINKER_MOUSE_PRESSED && m_pCreateEntityPanel->IsVisible() && m_pCreateEntityPanel->m_bReadyToCreate)
 	{
 		CreateEntityFromPanel(PositionFromMouse());
 		return true;

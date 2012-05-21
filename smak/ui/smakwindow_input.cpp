@@ -98,34 +98,26 @@ void CSMAKWindow::MouseMotion(int x, int y)
 	glgui::CRootPanel::Get()->CursorMoved(x, y);
 }
 
-bool CSMAKWindow::MouseInput(int iButton, int iState)
+bool CSMAKWindow::MouseInput(int iButton, tinker_mouse_state_t iState)
 {
+	if (BaseClass::MouseInput(iButton, iState))
+		return true;
+
 	int x, y;
 	GetMousePosition(x, y);
-
-	if (iState == 1)
-	{
-		if (glgui::CRootPanel::Get()->MousePressed(iButton, x, y))
-			return true;
-	}
-	else
-	{
-		if (glgui::CRootPanel::Get()->MouseReleased(iButton, x, y))
-			return true;
-	}
 
 	if (m_bRenderUV)
 	{
 		if (IsCtrlDown() && iButton == TINKER_KEY_MOUSE_LEFT)
 		{
-			if (iState == 1)
+			if (iState == TINKER_MOUSE_PRESSED)
 			{
 				m_bLightRotating = 1;
 				m_iMouseStartX = x;
 				m_iMouseStartY = y;
 				return true;
 			}
-			else if (iState == 0)
+			else if (iState == TINKER_MOUSE_RELEASED)
 			{
 				m_bLightRotating = 0;
 				return true;
@@ -133,14 +125,14 @@ bool CSMAKWindow::MouseInput(int iButton, int iState)
 		}
 		else if (iButton == TINKER_KEY_MOUSE_LEFT)
 		{
-			if (iState == 1)
+			if (iState == TINKER_MOUSE_PRESSED)
 			{
 				m_bCameraPanning = 1;
 				m_iMouseStartX = x;
 				m_iMouseStartY = y;
 				return true;
 			}
-			else if (iState == 0)
+			else if (iState == TINKER_MOUSE_RELEASED)
 			{
 				m_bCameraPanning = 0;
 				return true;
@@ -148,14 +140,14 @@ bool CSMAKWindow::MouseInput(int iButton, int iState)
 		}
 		else
 		{
-			if (iState == 1)
+			if (iState == TINKER_MOUSE_PRESSED)
 			{
 				m_bCameraDollying = 1;
 				m_iMouseStartX = x;
 				m_iMouseStartY = y;
 				return true;
 			}
-			else if (iState == 0)
+			else if (iState == TINKER_MOUSE_RELEASED)
 			{
 				m_bCameraDollying = 0;
 				return true;
@@ -166,14 +158,14 @@ bool CSMAKWindow::MouseInput(int iButton, int iState)
 	{
 		if (IsCtrlDown() && iButton == TINKER_KEY_MOUSE_LEFT)
 		{
-			if (iState == 1)
+			if (iState == TINKER_MOUSE_PRESSED)
 			{
 				m_bLightRotating = 1;
 				m_iMouseStartX = x;
 				m_iMouseStartY = y;
 				return true;
 			}
-			else if (iState == 0)
+			else if (iState == TINKER_MOUSE_RELEASED)
 			{
 				m_bLightRotating = 0;
 				return true;
@@ -181,14 +173,14 @@ bool CSMAKWindow::MouseInput(int iButton, int iState)
 		}
 		else if (iButton == TINKER_KEY_MOUSE_LEFT)
 		{
-			if (iState == 1)
+			if (iState == TINKER_MOUSE_PRESSED)
 			{
 				m_bCameraRotating = 1;
 				m_iMouseStartX = x;
 				m_iMouseStartY = y;
 				return true;
 			}
-			else if (iState == 0)
+			else if (iState == TINKER_MOUSE_RELEASED)
 			{
 				m_bCameraRotating = 0;
 				return true;
@@ -196,14 +188,14 @@ bool CSMAKWindow::MouseInput(int iButton, int iState)
 		}
 		else if (iButton == TINKER_KEY_MOUSE_RIGHT)
 		{
-			if (iState == 1)
+			if (iState == TINKER_MOUSE_PRESSED)
 			{
 				m_bCameraDollying = 1;
 				m_iMouseStartX = x;
 				m_iMouseStartY = y;
 				return true;
 			}
-			else if (iState == 0)
+			else if (iState == TINKER_MOUSE_RELEASED)
 			{
 				m_bCameraDollying = 0;
 				return true;

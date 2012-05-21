@@ -383,7 +383,7 @@ void CGameWindow::MouseMotion(int x, int y)
 	m_iLastMouseY = y;
 }
 
-bool CGameWindow::MouseInput(int iButton, int iState)
+bool CGameWindow::MouseInput(int iButton, tinker_mouse_state_t iState)
 {
 	if (BaseClass::MouseInput(iButton, iState))
 		return true;

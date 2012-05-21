@@ -21,6 +21,7 @@ namespace glgui
 
 		virtual bool				MousePressed(int code, int mx, int my, bool bInsideControl = false);
 		virtual bool				MouseReleased(int code, int mx, int my);
+		virtual bool				MouseDoubleClicked(int code, int mx, int my);
 		virtual void				CursorMoved(int mx, int my);
 
 		// Dragon Drop stuff is in this class, because this is always the

@@ -40,7 +40,7 @@ void CGrottoPlayer::MouseMotion(int x, int y)
 	return;
 }
 
-void CGrottoPlayer::MouseInput(int iButton, int iState)
+void CGrottoPlayer::MouseInput(int iButton, tinker_mouse_state_t iState)
 {
 	BaseClass::MouseInput(iButton, iState);
 
@@ -48,7 +48,7 @@ void CGrottoPlayer::MouseInput(int iButton, int iState)
 	if (!GetPlayerCharacter())
 		return;
 
-//	if (iButton == TINKER_KEY_MOUSE_LEFT && iState == 1)
+//	if (iButton == TINKER_KEY_MOUSE_LEFT && iState == TINKER_MOUSE_PRESSED)
 //		GetPlayerCharacter()->PlaceMirror(m_eCurrentMirror);
 }
 

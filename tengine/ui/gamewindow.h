@@ -32,7 +32,7 @@ public:
 	virtual void				KeyRelease(int c);
 
 	virtual void				MouseMotion(int x, int y);
-	virtual bool				MouseInput(int iButton, int iState);
+	virtual bool				MouseInput(int iButton, tinker_mouse_state_t iState);
 	bool						GetLastMouse(int& x, int& y);
 	virtual void				MouseWheel(int x, int y);
 	virtual bool				JoystickButtonPress(int iJoystick, int c);

@@ -90,6 +90,7 @@ namespace glgui
 		virtual bool		CharPressed(int iKey)=0;
 		virtual bool		MousePressed(int iButton, int mx, int my)=0;
 		virtual bool		MouseReleased(int iButton, int mx, int my)=0;
+		virtual bool		MouseDoubleClicked(int iButton, int mx, int my)=0;
 		virtual bool		IsCursorListener()=0;
 		virtual void		CursorMoved(int x, int y)=0;
 		virtual void		CursorIn()=0;

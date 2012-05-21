@@ -114,6 +114,7 @@ namespace glgui
 
 		virtual bool						MousePressed(int code, int mx, int my);
 		virtual bool						MouseReleased(int iButton, int mx, int my);
+		virtual bool						MouseDoubleClicked(int iButton, int mx, int my);
 
 		virtual size_t						AddControl(IControl* pControl, bool bToTail = false);
 		virtual void						RemoveControl(IControl* pControl);
@@ -132,6 +133,7 @@ namespace glgui
 		virtual void						Unselect() { m_iSelected = ~0; }
 		virtual void						SetSelectedNode(size_t iNode);
 		virtual void						SetSelectedListener(IEventListener* pListener, IEventListener::Callback pfnCallback);
+		virtual void						SetConfirmedListener(IEventListener* pListener, IEventListener::Callback pfnCallback);
 
 		virtual void						SetDroppedListener(IEventListener* pListener, IEventListener::Callback pfnCallback);
 
@@ -168,6 +170,9 @@ namespace glgui
 
 		IEventListener::Callback			m_pfnSelectedCallback;
 		IEventListener*						m_pSelectedListener;
+
+		IEventListener::Callback			m_pfnConfirmedCallback;
+		IEventListener*						m_pConfirmedListener;
 
 		IEventListener::Callback			m_pfnDroppedCallback;
 		IEventListener*						m_pDroppedListener;

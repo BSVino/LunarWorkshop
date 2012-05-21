@@ -1,6 +1,5 @@
 #include "textfield.h"
 
-#include <GL3/gl3w.h>
 #include <FTGL/ftgl.h>
 
 #include <tinker_platform.h>

@@ -39,6 +39,7 @@ CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, b
 	AddControl(m_pFilesLabel);
 	m_pFileList = new CTree();
 	m_pFileList->SetSelectedListener(this, FileSelected);
+	m_pFileList->SetConfirmedListener(this, FileConfirmed);
 	m_pFileList->SetBackgroundColor(g_clrBox);
 	AddControl(m_pFileList);
 
@@ -175,6 +176,12 @@ void CFileDialog::SelectCallback(const tstring& sArgs)
 void CFileDialog::CloseCallback(const tstring& sArgs)
 {
 	delete this;
+}
+
+void CFileDialog::FileConfirmedCallback(const tstring& sArgs)
+{
+	FileSelectedCallback(sArgs);
+	SelectCallback(sArgs);
 }
 
 void CFileDialog::ShowOpenDialog(const tstring& sDirectory, const tstring& sExtension, IEventListener* pListener, IEventListener::Callback pfnCallback)

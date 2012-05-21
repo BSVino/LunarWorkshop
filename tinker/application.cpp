@@ -39,6 +39,10 @@ CApplication::CApplication(int argc, char** argv)
 
 	m_pConsole = NULL;
 
+	SetMouseCursorEnabled(true);
+	m_bMouseDownInGUI = false;
+	m_flLastMousePress = -1;
+
 	for (int i = 1; i < argc; i++)
 	{
 		if (m_apszCommandLine[i][0] == '+')
@@ -377,11 +381,11 @@ void CApplication::MouseMotion(int x, int y)
 	glgui::CRootPanel::Get()->CursorMoved(x, y);
 }
 
-bool CApplication::MouseInput(int iButton, int iState)
+bool CApplication::MouseInput(int iButton, tinker_mouse_state_t iState)
 {
 	int mx, my;
 	GetMousePosition(mx, my);
-	if (iState == 1)
+	if (iState == TINKER_MOUSE_PRESSED)
 	{
 		if (glgui::CRootPanel::Get()->MousePressed(iButton, mx, my))
 		{
@@ -391,9 +395,20 @@ bool CApplication::MouseInput(int iButton, int iState)
 		else
 			m_bMouseDownInGUI = false;
 	}
-	else
+	else if (iState == TINKER_MOUSE_RELEASED)
 	{
 		if (glgui::CRootPanel::Get()->MouseReleased(iButton, mx, my))
+			return true;
+
+		if (m_bMouseDownInGUI)
+		{
+			m_bMouseDownInGUI = false;
+			return true;
+		}
+	}
+	else if (iState == TINKER_MOUSE_DOUBLECLICK)
+	{
+		if (glgui::CRootPanel::Get()->MouseDoubleClicked(iButton, mx, my))
 			return true;
 
 		if (m_bMouseDownInGUI)
@@ -621,7 +636,21 @@ tinker_keys_t MapJoystickKey(int c)
 
 void CApplication::MouseInputCallback(void*, int iButton, int iState)
 {
-	Get()->MouseInput(MapMouseKey(iButton), iState);
+	Get()->MouseInputCallback(MapMouseKey(iButton), (tinker_mouse_state_t)iState);
+}
+
+void CApplication::MouseInputCallback(int iButton, tinker_mouse_state_t iState)
+{
+	if (iState == 1)
+	{
+		if (m_flLastMousePress < 0 || GetTime() - m_flLastMousePress > 0.25f)
+			MouseInput(iButton, iState);
+		else
+			MouseInput(iButton, TINKER_MOUSE_DOUBLECLICK);
+		m_flLastMousePress = GetTime();
+	}
+	else
+		MouseInput(iButton, iState);
 }
 
 void CApplication::MouseWheelCallback(void*, int x, int y)

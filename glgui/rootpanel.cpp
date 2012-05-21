@@ -194,6 +194,16 @@ bool CRootPanel::MouseReleased(int code, int mx, int my)
 	return bUsed;
 }
 
+bool CRootPanel::MouseDoubleClicked(int code, int mx, int my)
+{
+	TAssert(!m_pDragging);
+
+	if (CPanel::MouseDoubleClicked(code, mx, my))
+		return true;
+
+	return false;
+}
+
 void CRootPanel::CursorMoved(int x, int y)
 {
 	m_iMX = x;

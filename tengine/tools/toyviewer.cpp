@@ -201,11 +201,11 @@ void CToyViewer::OpenToyCallback(const tstring& sArgs)
 	Layout();
 }
 
-bool CToyViewer::MouseInput(int iButton, int iState)
+bool CToyViewer::MouseInput(int iButton, tinker_mouse_state_t iState)
 {
 	if (iButton == TINKER_KEY_MOUSE_LEFT)
 	{
-		m_bRotatingPreview = (iState == 1);
+		m_bRotatingPreview = (iState == TINKER_MOUSE_PRESSED);
 		return true;
 	}
 

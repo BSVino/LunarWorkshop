@@ -8,7 +8,7 @@ class CChainPlayer : public CPlayer
 	REGISTER_ENTITY_CLASS(CChainPlayer, CPlayer);
 
 public:
-	void							MouseInput(int iButton, int iState);
+	void							MouseInput(int iButton, tinker_mouse_state_t iState);
 
 	class CPlayerCharacter*			GetPlayerCharacter();
 };

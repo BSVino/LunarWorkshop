@@ -4,6 +4,8 @@
 #include <vector.h>
 #include <tstring.h>
 
+#include <tinker/keys.h>
+
 namespace glgui
 {
 	class CMenu;
@@ -17,7 +19,7 @@ public:
 
 public:
 	virtual bool			KeyPress(int c) { return false; }
-	virtual bool			MouseInput(int iButton, int iState) { return false; }
+	virtual bool			MouseInput(int iButton, tinker_mouse_state_t iState) { return false; }
 	virtual void			MouseMotion(int x, int y) {};
 	virtual void			MouseWheel(int x, int y) {};
 

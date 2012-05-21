@@ -86,7 +86,7 @@ bool CWorkbench::KeyPress(int c)
 	return GetActiveTool()->KeyPress(c);
 }
 
-bool CWorkbench::MouseInput(int iButton, int iState)
+bool CWorkbench::MouseInput(int iButton, tinker_mouse_state_t iState)
 {
 	if (Manipulator()->MouseInput(iButton, iState))
 		return true;

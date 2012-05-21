@@ -79,4 +79,11 @@ typedef enum
 	TINKER_KEY_JOYSTICK_20,
 } tinker_keys_t;
 
+typedef enum
+{
+	TINKER_MOUSE_RELEASED = 0,
+	TINKER_MOUSE_PRESSED = 1,
+	TINKER_MOUSE_DOUBLECLICK = 2,
+} tinker_mouse_state_t;
+
 #endif
