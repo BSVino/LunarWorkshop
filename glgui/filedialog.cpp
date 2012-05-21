@@ -127,6 +127,18 @@ void CFileDialog::NewDirectoryCallback(const tstring& sArgs)
 	Layout();
 
 	m_pDirectory->SetAutoCompleteFiles("", m_asExtensions);
+
+	if (IsFile(m_sDirectory))
+	{
+		for (size_t i = 0; i < m_asExtensions.size(); i++)
+		{
+			if (tstr_endswith(m_sDirectory, m_asExtensions[i]))
+			{
+				FileConfirmed(m_sDirectory);
+				return;
+			}
+		}
+	}
 }
 
 void CFileDialog::ExploreCallback(const tstring& sArgs)
@@ -165,23 +177,26 @@ void CFileDialog::SelectCallback(const tstring& sArgs)
 		return;
 	}
 
-	SetVisible(false);
-
-	if (m_pSelectListener && m_pfnSelectCallback)
-		m_pfnSelectCallback(m_pSelectListener, sFile);
-
-	delete this;
+	FileConfirmed(sFile);
 }
 
 void CFileDialog::CloseCallback(const tstring& sArgs)
 {
-	delete this;
+	SetVisible(false);
 }
 
 void CFileDialog::FileConfirmedCallback(const tstring& sArgs)
 {
 	FileSelectedCallback(sArgs);
 	SelectCallback(sArgs);
+}
+
+void CFileDialog::FileConfirmed(const tstring& sFile)
+{
+	SetVisible(false);
+
+	if (m_pSelectListener && m_pfnSelectCallback)
+		m_pfnSelectCallback(m_pSelectListener, sFile);
 }
 
 void CFileDialog::ShowOpenDialog(const tstring& sDirectory, const tstring& sExtension, IEventListener* pListener, IEventListener::Callback pfnCallback)

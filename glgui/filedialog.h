@@ -24,6 +24,8 @@ namespace glgui
 		EVENT_CALLBACK(CFileDialog, Close);
 		EVENT_CALLBACK(CFileDialog, FileConfirmed);
 
+		void						FileConfirmed(const tstring& sFile);
+
 		static void					ShowOpenDialog(const tstring& sDirectory, const tstring& sExtension, IEventListener* pListener, IEventListener::Callback pfnCallback);
 		static void					ShowSaveDialog(const tstring& sDirectory, const tstring& sExtension, IEventListener* pListener, IEventListener::Callback pfnCallback);
 		static tstring				GetFile();
