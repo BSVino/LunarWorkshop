@@ -311,10 +311,14 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 		c.UseMaterial(SMAKWindow()->GetMaterials()[iMaterial]);
 
 		if (!c.GetActiveShader())
+		{
 			c.UseProgram("model");
 
-		c.SetUniform("flAlpha", 1.0f);
-		c.SetUniform("vecColor", Color(255, 255, 255));
+			c.SetUniform("flAlpha", 1.0f);
+			c.SetUniform("vecColor", Color(255, 255, 255));
+			c.SetUniform("bDiffuse", false);
+		}
+
 		c.SetUniform("flRimLight", 0.05f);
 
 		c.BeginRenderVertexArray(pModel->m_aiVertexBuffers[i]);
