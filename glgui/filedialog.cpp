@@ -15,7 +15,7 @@ using namespace glgui;
 CFileDialog* CFileDialog::s_pDialog = NULL;
 
 CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, bool bSave)
-	: CPanel(0, 0, 100, 100)
+	: CMovablePanel(bSave?"Save File...":"Open File...")
 {
 	m_sDirectory = FindAbsolutePath(sDirectory.length()?sDirectory:".");
 	m_bSave = bSave;
@@ -53,8 +53,6 @@ CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, b
 	m_pCancel = new CButton(0, 0, 20, 20, "Cancel");
 	m_pCancel->SetClickedListener(this, Close);
 	AddControl(m_pCancel);
-
-	CRootPanel::Get()->AddControl(this, true);
 }
 
 CFileDialog::~CFileDialog()
@@ -73,14 +71,15 @@ void CFileDialog::Layout()
 	m_pDirectoryLabel->EnsureTextFits();
 	m_pFilesLabel->EnsureTextFits();
 
-	m_pDirectory->SetPos(5, m_pDirectoryLabel->GetBottom()+5);
+	m_pDirectoryLabel->SetPos(5, 15);
+	m_pDirectory->SetPos(5, m_pDirectoryLabel->GetBottom());
 	m_pDirectory->SetSize(GetWidth()-55, m_pDirectory->GetHeight());
 
 	m_pOpenInExplorer->SetSize(40, m_pDirectory->GetHeight());
-	m_pOpenInExplorer->SetPos(GetWidth()-45, m_pDirectoryLabel->GetBottom()+5);
+	m_pOpenInExplorer->SetPos(GetWidth()-45, m_pDirectoryLabel->GetBottom());
 
 	m_pFilesLabel->SetPos(5, m_pDirectory->GetBottom()+5);
-	m_pFileList->SetPos(5, m_pFilesLabel->GetBottom()+5);
+	m_pFileList->SetPos(5, m_pFilesLabel->GetBottom());
 	m_pFileList->SetSize(200, 170);
 
 	m_pFileList->ClearTree();
@@ -125,6 +124,8 @@ void CFileDialog::NewDirectoryCallback(const tstring& sArgs)
 {
 	m_sDirectory = m_pDirectory->GetText();
 	Layout();
+
+	m_pDirectory->SetAutoCompleteFiles("", m_asExtensions);
 }
 
 void CFileDialog::ExploreCallback(const tstring& sArgs)

@@ -1,13 +1,13 @@
 #ifndef LW_GLGUI_FILEDIALOG_H
 #define LW_GLGUI_FILEDIALOG_H
 
-#include "panel.h"
+#include "movablepanel.h"
 
 namespace glgui
 {
-	class CFileDialog : public CPanel, public IEventListener
+	class CFileDialog : public CMovablePanel
 	{
-		DECLARE_CLASS(CFileDialog, CPanel);
+		DECLARE_CLASS(CFileDialog, CMovablePanel);
 
 	public:
 									CFileDialog(const tstring& sDirectory, const tstring& sExtension, bool bSave);
