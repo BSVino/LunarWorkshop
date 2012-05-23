@@ -299,75 +299,61 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 
 	CRenderingContext c(this, true);
 
-	for (size_t i = 0; i < pModel->m_asMaterialStubs.size(); i++)
+	if (SMAKWindow()->IsRenderingWireframe())
 	{
-		auto pMaterialMap = pMeshInstance->GetMappedMaterial(i);
+		c.UseProgram("wireframe");
 
-		if (!pMaterialMap)
-			continue;
+		c.SetUniform("flAlpha", 1.0f);
+		c.SetUniform("vecColor", Color(255, 255, 255));
+		c.SetUniform("bDiffuse", false);
 
-		if (!pMaterialMap->IsVisible())
-			continue;
-
-		size_t iMaterial = pMaterialMap->m_iMaterial;
-
-		if (!SMAKWindow()->GetScene()->GetMaterial(iMaterial)->IsVisible())
-			continue;
-
-		if (!pModel->m_aiVertexBufferSizes[i])
-			continue;
-
-		c.UseMaterial(SMAKWindow()->GetMaterials()[iMaterial]);
-
-		if (!c.GetActiveShader())
+		c.BeginRenderVertexArray(pModel->m_iVertexWireframeBuffer);
+		c.SetPositionBuffer(pModel->WireframePositionOffset(), pModel->WireframeStride());
+		c.SetNormalsBuffer(pModel->NormalsOffset(), pModel->WireframeStride());
+		c.EndRenderVertexArray(pModel->m_iVertexWireframeBufferSize, true);
+	}
+	else
+	{
+		for (size_t i = 0; i < pModel->m_asMaterialStubs.size(); i++)
 		{
-			c.UseProgram("model");
+			auto pMaterialMap = pMeshInstance->GetMappedMaterial(i);
 
-			c.SetUniform("flAlpha", 1.0f);
-			c.SetUniform("vecColor", Color(255, 255, 255));
-			c.SetUniform("bDiffuse", false);
+			if (!pMaterialMap)
+				continue;
+
+			if (!pMaterialMap->IsVisible())
+				continue;
+
+			size_t iMaterial = pMaterialMap->m_iMaterial;
+
+			if (!SMAKWindow()->GetScene()->GetMaterial(iMaterial)->IsVisible())
+				continue;
+
+			if (!pModel->m_aiVertexBufferSizes[i])
+				continue;
+
+			c.UseMaterial(SMAKWindow()->GetMaterials()[iMaterial]);
+
+			if (!c.GetActiveShader())
+			{
+				c.UseProgram("model");
+
+				c.SetUniform("flAlpha", 1.0f);
+				c.SetUniform("vecColor", Color(255, 255, 255));
+				c.SetUniform("bDiffuse", false);
+			}
+
+			c.SetUniform("flRimLight", 0.05f);
+
+			c.BeginRenderVertexArray(pModel->m_aiVertexBuffers[i]);
+			c.SetPositionBuffer(pModel->PositionOffset(), pModel->Stride());
+			c.SetNormalsBuffer(pModel->NormalsOffset(), pModel->Stride());
+			c.SetTexCoordBuffer(pModel->TexCoordOffset(), pModel->Stride());
+			c.EndRenderVertexArray(pModel->m_aiVertexBufferSizes[i]);
 		}
-
-		c.SetUniform("flRimLight", 0.05f);
-
-		c.BeginRenderVertexArray(pModel->m_aiVertexBuffers[i]);
-		c.SetPositionBuffer(pModel->PositionOffset(), pModel->Stride());
-		c.SetNormalsBuffer(pModel->NormalsOffset(), pModel->Stride());
-		c.SetTexCoordBuffer(pModel->TexCoordOffset(), pModel->Stride());
-		c.EndRenderVertexArray(pModel->m_aiVertexBufferSizes[i]);
 	}
 
 #if 0
-	// It uses this color if the texture is missing.
-	float flMaterialColor[] = {0.7f, 0.7f, 0.7f, 1.0f};
-
-#ifdef OPENGL2
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, flMaterialColor);
-	glColor4fv(flMaterialColor);
-#endif
-
-	bool bMultiTexture = false;
-
-	CConversionMesh* pMesh = pMeshInstance->GetMesh();
-
-	size_t iFaces = pMesh->GetNumFaces();
-	for (size_t j = 0; j < iFaces; j++)
-	{
-//		size_t k;
-		CConversionFace* pFace = pMesh->GetFace(j);
-
-		CConversionMaterialMap* pMappedMaterial = pMeshInstance->GetMappedMaterial(pFace->m);
-
-		if (pFace->m != ~0 && pMappedMaterial)
-		{
-			if (!pMappedMaterial->IsVisible())
-				continue;
-
-			CConversionMaterial* pMaterial = m_Scene.GetMaterial(pMappedMaterial->m_iMaterial);
-			if (pMaterial && !pMaterial->IsVisible())
-				continue;
-		}
-
 		if (!m_bDisplayWireframe)
 		{
 			bool bTexture = m_bDisplayTexture;

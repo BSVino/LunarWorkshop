@@ -134,6 +134,7 @@ public:
 
 	bool					IsRenderingLight() { return m_bDisplayLight; }
 	bool					IsRenderingUV() { return m_bRenderUV; }
+	bool					IsRenderingWireframe() { return m_bDisplayWireframe; }
 
 	void					BeginProgress();
 	void					SetAction(const tstring& sAction, size_t iTotalProgress);

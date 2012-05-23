@@ -26,12 +26,19 @@ public:
 	size_t					NormalsOffset() { return 3*sizeof(float); }
 	size_t					TexCoordOffset() { return 6*sizeof(float); }
 
+	size_t					FloatsPerWireframeVertex() { return 6; }
+	size_t					WireframeStride() { return FloatsPerWireframeVertex()*sizeof(float); }
+	size_t					WireframePositionOffset() { return 0; }
+	size_t					WireframeNormalsOffset() { return 3*sizeof(float); }
+
 public:
 	size_t					m_iReferences;
 
 	tvector<tstring>		m_asMaterialStubs;
 	tvector<size_t>			m_aiVertexBuffers;
 	tvector<size_t>			m_aiVertexBufferSizes;	// How many vertices in this vertex buffer?
+	size_t					m_iVertexWireframeBuffer;
+	size_t					m_iVertexWireframeBufferSize;
 
 	AABB					m_aabbBoundingBox;
 };

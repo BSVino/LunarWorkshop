@@ -836,13 +836,16 @@ void CRenderingContext::SetCustomIntBuffer(const char* pszName, size_t iSize, si
 	glVertexAttribIPointer(iAttribute, iSize, GL_INT, iStride, BUFFER_OFFSET(iOffset));
 }
 
-void CRenderingContext::EndRenderVertexArray(size_t iVertices)
+void CRenderingContext::EndRenderVertexArray(size_t iVertices, bool bWireframe)
 {
 	SetUniform("mProjection", GetContext().m_mProjection);
 	SetUniform("mView", GetContext().m_mView);
 	SetUniform("mGlobal", GetContext().m_mTransformations);
 
-	glDrawArrays(GL_TRIANGLES, 0, iVertices);
+	if (bWireframe)
+		glDrawArrays(GL_LINES, 0, iVertices);
+	else
+		glDrawArrays(GL_TRIANGLES, 0, iVertices);
 
 	glDisableVertexAttribArray(m_pShader->m_iPositionAttribute);
 	if (m_pShader->m_iTexCoordAttribute != ~0)

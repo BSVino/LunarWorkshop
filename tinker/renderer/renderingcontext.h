@@ -114,7 +114,7 @@ public:
 	void					SetTexCoordBuffer(float* pflBuffer, size_t iStride=0);
 	void					SetTexCoordBuffer(size_t iOffset, size_t iStride);
 	void					SetCustomIntBuffer(const char* pszName, size_t iSize, size_t iOffset, size_t iStride);
-	void					EndRenderVertexArray(size_t iVertices);
+	void					EndRenderVertexArray(size_t iVertices, bool bWireframe = false);
 	void					EndRenderVertexArrayTriangles(size_t iTriangles, int* piIndices);
 
 	void					RenderText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize);
