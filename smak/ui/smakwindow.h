@@ -135,6 +135,7 @@ public:
 	bool					IsRenderingLight() { return m_bDisplayLight; }
 	bool					IsRenderingUV() { return m_bRenderUV; }
 	bool					IsRenderingWireframe() { return m_bDisplayWireframe; }
+	bool					IsRenderingUVWireframe() { return m_bDisplayUV; }
 
 	void					BeginProgress();
 	void					SetAction(const tstring& sAction, size_t iTotalProgress);
@@ -186,8 +187,6 @@ protected:
 	float					m_flCameraUVX;
 	float					m_flCameraUVY;
 	float					m_flCameraUVZoom;
-
-	Vector					m_vecLightPositionUV;
 
 	typedef struct
 	{

@@ -6,6 +6,7 @@
 
 #include "crunch/crunch.h"
 #include "smakwindow_ui.h"
+#include "smak_renderer.h"
 
 using namespace glgui;
 
@@ -26,7 +27,7 @@ void CSMAKWindow::MouseMotion(int x, int y)
 		if (m_bCameraPanning)
 		{
 			m_flCameraUVX += (float)(x - m_iMouseStartX)/500;
-			m_flCameraUVY += (float)(m_iMouseStartY - y)/500;
+			m_flCameraUVY += (float)(y - m_iMouseStartY)/500;
 
 			m_iMouseStartX = x;
 			m_iMouseStartY = y;
@@ -34,17 +35,7 @@ void CSMAKWindow::MouseMotion(int x, int y)
 
 		if (m_bLightRotating)
 		{
-			m_vecLightPositionUV.x += (float)(x - m_iMouseStartX)/100;
-			m_vecLightPositionUV.y += (float)(m_iMouseStartY - y)/100;
-
-			if (m_vecLightPositionUV.x < -3.0f)
-				m_vecLightPositionUV.x = -3.0f;
-			if (m_vecLightPositionUV.x > 3.0f)
-				m_vecLightPositionUV.x = 3.0f;
-			if (m_vecLightPositionUV.y < -3.0f)
-				m_vecLightPositionUV.y = -3.0f;
-			if (m_vecLightPositionUV.y > 3.0f)
-				m_vecLightPositionUV.y = 3.0f;
+			GetSMAKRenderer()->MoveUVLight((float)(m_iMouseStartX - x)/100, (float)(m_iMouseStartY - y)/100);
 
 			m_iMouseStartX = x;
 			m_iMouseStartY = y;

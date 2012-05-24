@@ -78,8 +78,6 @@ CSMAKWindow::CSMAKWindow(int argc, char** argv)
 	m_flLightYaw = -40;
 	m_flLightPitch = -45;
 
-	m_vecLightPositionUV = Vector(0.5f, 0.5f, 1.0f);
-
 	int iScreenWidth;
 	int iScreenHeight;
 

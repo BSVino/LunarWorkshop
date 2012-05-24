@@ -31,6 +31,10 @@ public:
 	size_t					WireframePositionOffset() { return 0; }
 	size_t					WireframeNormalsOffset() { return 3*sizeof(float); }
 
+	size_t					FloatsPerUVVertex() { return 2; }
+	size_t					UVStride() { return FloatsPerUVVertex()*sizeof(float); }
+	size_t					UVPositionOffset() { return 0; }
+
 public:
 	size_t					m_iReferences;
 
@@ -39,6 +43,8 @@ public:
 	tvector<size_t>			m_aiVertexBufferSizes;	// How many vertices in this vertex buffer?
 	size_t					m_iVertexWireframeBuffer;
 	size_t					m_iVertexWireframeBufferSize;
+	size_t					m_iVertexUVBuffer;
+	size_t					m_iVertexUVBufferSize;
 
 	AABB					m_aabbBoundingBox;
 };

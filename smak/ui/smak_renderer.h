@@ -25,10 +25,13 @@ public:
 	void			RenderLightSource();
 	void			RenderUV();
 
+	void			MoveUVLight(float flX, float flY);
+
 	float			BloomBrightnessCutoff() const { return 1.25f; }
 
 protected:
 	Vector			m_vecLightPosition;
+	Vector			m_vecLightPositionUV;
 
 	CMaterialHandle	m_hLightHalo;
 	CMaterialHandle	m_hLightBeam;

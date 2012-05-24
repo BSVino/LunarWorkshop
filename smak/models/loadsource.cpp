@@ -13,6 +13,7 @@
 
 tvector<tvector<float> >	g_aaflData;
 tvector<float>				g_aflWireframeData;
+tvector<float>				g_aflUVData;
 AABB						g_aabbBounds;
 
 void AddVertex(size_t iMaterial, const Vector& v, const Vector& vn, const Vector2D& vt)
@@ -51,6 +52,14 @@ void AddWireframe(const Vector& v1, const Vector& vn1, const Vector& v2, const V
 	g_aflWireframeData.push_back(vn2.z);
 }
 
+void AddUV(const Vector& v1, const Vector& v2)
+{
+	g_aflUVData.push_back(v1.x);
+	g_aflUVData.push_back(v1.y);
+	g_aflUVData.push_back(v2.x);
+	g_aflUVData.push_back(v2.y);
+}
+
 void LoadMesh(CConversionScene* pScene, size_t iMesh)
 {
 	TAssert(iMesh < pScene->GetNumMeshes());
@@ -74,6 +83,7 @@ void LoadMesh(CConversionScene* pScene, size_t iMesh)
 		CConversionVertex* pVertex0 = pFace->GetVertex(0);
 		CConversionVertex* pVertex1 = pFace->GetVertex(1);
 		AddWireframe(pMesh->GetVertex(pVertex0->v), pMesh->GetNormal(pVertex0->v), pMesh->GetVertex(pVertex1->v), pMesh->GetNormal(pVertex1->v));
+		AddUV(pMesh->GetUV(pVertex0->vt), pMesh->GetUV(pVertex1->vt));
 
 		for (k = 2; k < pFace->GetNumVertices(); k++)
 		{
@@ -85,10 +95,12 @@ void LoadMesh(CConversionScene* pScene, size_t iMesh)
 			AddVertex(iMaterial, pMesh->GetVertex(pVertex2->v), pMesh->GetNormal(pVertex2->v), pMesh->GetUV(pVertex2->vu));
 
 			AddWireframe(pMesh->GetVertex(pVertex1->v), pMesh->GetNormal(pVertex1->v), pMesh->GetVertex(pVertex2->v), pMesh->GetNormal(pVertex2->v));
+			AddUV(pMesh->GetUV(pVertex1->vt), pMesh->GetUV(pVertex2->vt));
 		}
 
 		CConversionVertex* pLastVertex = pFace->GetVertex(pFace->GetNumVertices()-1);
 		AddWireframe(pMesh->GetVertex(pLastVertex->v), pMesh->GetNormal(pLastVertex->v), pMesh->GetVertex(pVertex0->v), pMesh->GetNormal(pVertex0->v));
+		AddUV(pMesh->GetUV(pLastVertex->vt), pMesh->GetUV(pVertex0->vt));
 	}
 }
 
@@ -96,6 +108,7 @@ bool CModel::Load(class CConversionScene* pScene, size_t iMesh)
 {
 	g_aaflData.clear();
 	g_aflWireframeData.clear();
+	g_aflUVData.clear();
 	g_aabbBounds = AABB(Vector(999, 999, 999), Vector(-999, -999, -999));
 
 	LoadMesh(pScene, iMesh);
@@ -108,6 +121,9 @@ bool CModel::Load(class CConversionScene* pScene, size_t iMesh)
 
 	m_iVertexWireframeBuffer = CRenderer::LoadVertexDataIntoGL(g_aflWireframeData.size()*4, &g_aflWireframeData[0]);
 	m_iVertexWireframeBufferSize = g_aflWireframeData.size()/FloatsPerWireframeVertex();
+
+	m_iVertexUVBuffer = CRenderer::LoadVertexDataIntoGL(g_aflUVData.size()*4, &g_aflUVData[0]);
+	m_iVertexUVBufferSize = g_aflUVData.size()/FloatsPerUVVertex();
 
 	for (size_t i = 0; i < iMaterials; i++)
 	{
