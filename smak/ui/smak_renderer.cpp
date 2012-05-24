@@ -357,6 +357,9 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			else
 				c.SetUniform("bLight", false);
 
+			if (!hMaterial->m_ahTextures[0].IsValid() && !SMAKWindow()->IsRenderingLight())
+				c.SetUniform("flRimLight", 0.15f);
+
 			c.BeginRenderVertexArray(pModel->m_aiVertexBuffers[i]);
 			c.SetPositionBuffer(pModel->PositionOffset(), pModel->Stride());
 			c.SetNormalsBuffer(pModel->NormalsOffset(), pModel->Stride());
