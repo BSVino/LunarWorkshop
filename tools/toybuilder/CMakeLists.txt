@@ -20,3 +20,13 @@ set (TOYBUILDER_SOURCES
 add_library(geppetto STATIC ${GEPPETTO_SOURCES})
 add_executable (toybuilder ${TOYBUILDER_SOURCES})
 target_link_libraries (toybuilder lwbase tinker modelconverter toys geppetto)
+
+if (WIN32)
+	target_link_libraries(toybuilder debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/fcollada-2010.lib)
+	target_link_libraries(toybuilder debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/farchivexml-2010.lib)
+	target_link_libraries(toybuilder debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/libxml-2010.lib)
+
+	target_link_libraries(toybuilder optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/fcollada-2010.lib)
+	target_link_libraries(toybuilder optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/farchivexml-2010.lib)
+	target_link_libraries(toybuilder optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/libxml-2010.lib)
+endif (WIN32)

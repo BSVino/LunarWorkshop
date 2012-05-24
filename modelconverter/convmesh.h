@@ -199,11 +199,11 @@ public:
 	size_t							GetNumBitangents() { return m_aBitangents.size(); };
 	Vector							GetBitangent(size_t i) { if (i >= m_aBitangents.size()) return Vector(0,0,1); return m_aBitangents[i]; }
 	size_t							GetNumUVs() { return m_aUVs.size(); };
-	Vector							GetUV(size_t i) { if (!GetNumUVs()) return Vector(0,0,0); return m_aUVs[i]; }
+	Vector							GetUV(size_t i) { if (i >= m_aUVs.size()) return Vector(0,0,0); return m_aUVs[i]; }
 	Vector							GetBaseVector(int iVector, CConversionVertex* pVertex);
 
 	size_t							GetNumBones() { return m_aBones.size(); };
-	tstring					GetBoneName(size_t i) { return m_aBones[i].m_sName; };
+	tstring							GetBoneName(size_t i) { return m_aBones[i].m_sName; };
 
 	size_t							GetNumEdges() { return m_aEdges.size(); };
 	CConversionEdge*				GetEdge(size_t i) { return &m_aEdges[i]; };

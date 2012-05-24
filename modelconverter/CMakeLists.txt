@@ -1,10 +1,10 @@
 include_directories (
 	${PROJECT_SOURCE_DIR}/../ext-deps/EASTL/include
+	${PROJECT_SOURCE_DIR}/../ext-deps/fcollada/FCollada
+	${PROJECT_SOURCE_DIR}/../ext-deps/fcollada/FCollada/LibXML/include
 	../common
 	../common/math
 )
-
-add_definitions(-DNO_COLLADA)
 
 add_library (modelconverter
 	convmesh.cpp

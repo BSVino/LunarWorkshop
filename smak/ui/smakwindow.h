@@ -18,7 +18,7 @@ public:
 
 public:
 	virtual eastl::string	WindowTitle() { return "SMAK - Super Model Army Knife"; }
-	virtual tstring	AppDirectory() { return "SMAK"; }
+	virtual tstring			AppDirectory() { return "SMAK"; }
 
 	void					OpenWindow();
 
