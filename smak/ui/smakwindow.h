@@ -105,13 +105,6 @@ public:
 	int						GetWindowWidth() { return (int)m_iWindowWidth; };
 	int						GetWindowHeight() { return (int)m_iWindowHeight; };
 
-	size_t					GetArrowTexture() { return m_iArrowTexture; };
-	size_t					GetEditTexture() { return m_iEditTexture; };
-	size_t					GetVisibilityTexture() { return m_iVisibilityTexture; };
-	size_t					GetMaterialsNodeTexture() { return m_iTextureTexture; };
-	size_t					GetMeshesNodeTexture() { return m_iWireframeTexture; };
-	size_t					GetScenesNodeTexture() { return m_iAOTexture; };
-
 	float					GetCameraDistance() { return m_flCameraDistance; };
 	float					GetCameraYaw() { return m_flCameraYaw; };
 	float					GetCameraPitch() { return m_flCameraPitch; };
@@ -153,22 +146,6 @@ protected:
 
 	tvector<CMaterialHandle>	m_ahMaterials;
 
-	CMaterial*				m_pLightHalo;
-	CMaterial*				m_pLightBeam;
-
-	size_t					m_iWireframeTexture;
-	size_t					m_iFlatTexture;
-	size_t					m_iSmoothTexture;
-	size_t					m_iUVTexture;
-	size_t					m_iLightTexture;
-	size_t					m_iTextureTexture;
-	size_t					m_iNormalTexture;
-	size_t					m_iAOTexture;
-	size_t					m_iCAOTexture;
-	size_t					m_iArrowTexture;
-	size_t					m_iVisibilityTexture;
-	size_t					m_iEditTexture;
-
 	float					m_flCameraDistance;
 
 	bool					m_bCameraRotating;
@@ -206,8 +183,6 @@ protected:
 	bool					m_bDisplayNormal;
 	bool					m_bDisplayAO;
 	bool					m_bDisplayColorAO;
-
-	size_t					m_iShaderProgram;
 
 	// Controls
 	glgui::CButton*			m_pRender3D;

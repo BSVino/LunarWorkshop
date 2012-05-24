@@ -52,9 +52,6 @@ CSMAKWindow::CSMAKWindow(int argc, char** argv)
 
 	m_bLoadingFile = false;
 
-	m_pLightHalo = NULL;
-	m_pLightBeam = NULL;
-
 	m_aiObjects.clear();
 	m_iObjectsCreated = 0;
 
@@ -86,23 +83,6 @@ CSMAKWindow::CSMAKWindow(int argc, char** argv)
 	m_iWindowWidth = iScreenWidth*2/3;
 	m_iWindowHeight = iScreenHeight*2/3;
 
-	m_pLightHalo = NULL;
-	m_pLightBeam = NULL;
-
-	m_iWireframeTexture = 0;
-	m_iSmoothTexture = 0;
-	m_iUVTexture = 0;
-	m_iLightTexture = 0;
-	m_iTextureTexture = 0;
-	m_iNormalTexture = 0;
-	m_iAOTexture = 0;
-	m_iCAOTexture = 0;
-	m_iArrowTexture = 0;
-	m_iEditTexture = 0;
-	m_iVisibilityTexture = 0;
-
-	m_iShaderProgram = 0;
-
 	m_aDebugLines.set_capacity(2);
 }
 
@@ -110,28 +90,6 @@ void CSMAKWindow::OpenWindow()
 {
 	SetMultisampling(true);
 	BaseClass::OpenWindow(m_iWindowWidth, m_iWindowHeight, false, true);
-
-#ifdef OPENGL3
-	size_t iTexture = LoadTextureIntoGL("lighthalo.png");
-	if (iTexture)
-		m_pLightHalo = new CMaterial(iTexture);
-
-	iTexture = LoadTextureIntoGL("lightbeam.png");
-	if (iTexture)
-		m_pLightBeam = new CMaterial(iTexture);
-
-	m_iWireframeTexture = LoadTextureIntoGL("wireframe.png");
-	m_iSmoothTexture = LoadTextureIntoGL("smooth.png");
-	m_iUVTexture = LoadTextureIntoGL("uv.png");
-	m_iLightTexture = LoadTextureIntoGL("light.png");
-	m_iTextureTexture = LoadTextureIntoGL("texture.png");
-	m_iNormalTexture = LoadTextureIntoGL("normal.png");
-	m_iAOTexture = LoadTextureIntoGL("ao.png");
-	m_iCAOTexture = LoadTextureIntoGL("aocolor.png");
-	m_iArrowTexture = LoadTextureIntoGL("arrow.png");
-	m_iEditTexture = LoadTextureIntoGL("pencil.png");
-	m_iVisibilityTexture = LoadTextureIntoGL("eye.png");
-#endif
 
 	InitUI();
 
@@ -143,32 +101,6 @@ void CSMAKWindow::OpenWindow()
 	SetDisplayAO(false);
 	SetDisplayColorAO(false);
 
-#ifdef OPENGL2
-	m_pTesselator = gluNewTess();
-	gluTessCallback(m_pTesselator, GLU_TESS_BEGIN, (void(CALLBACK*)())RenderTesselateBegin);
-	gluTessCallback(m_pTesselator, GLU_TESS_VERTEX_DATA, (void(CALLBACK*)())RenderTesselateVertex);
-	gluTessCallback(m_pTesselator, GLU_TESS_END, (void(CALLBACK*)())RenderTesselateEnd);
-	gluTessProperty(m_pTesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
-
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
-	glLineWidth(1.0);
-
-	GLfloat flLightDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-	GLfloat flLightAmbient[] = {0.2f, 0.2f, 0.2f, 1.0f};
-	GLfloat flLightSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, flLightDiffuse);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, flLightAmbient);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, flLightSpecular);
-	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.1f);
-	glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.05f);
-#endif
-
 	CSceneTreePanel::Get()->UpdateTree();
 
 	RootPanel()->Layout();
@@ -176,15 +108,6 @@ void CSMAKWindow::OpenWindow()
 
 CSMAKWindow::~CSMAKWindow()
 {
-	if (m_pLightHalo)
-		delete m_pLightHalo;
-
-	if (m_pLightBeam)
-		delete m_pLightBeam;
-
-#ifdef OPENGL2
-	gluDeleteTess(m_pTesselator);
-#endif
 }
 
 CRenderer* CSMAKWindow::CreateRenderer()

@@ -24,6 +24,18 @@ void CSMAKRenderer::Initialize()
 
 	m_hLightBeam = CMaterialLibrary::AddMaterial("materials/lightbeam.mat");
 	m_hLightHalo = CMaterialLibrary::AddMaterial("materials/lighthalo.mat");
+
+	m_hWireframe = CMaterialLibrary::AddMaterial("materials/wireframe.mat");
+	m_hSmooth = CMaterialLibrary::AddMaterial("materials/smooth.mat");
+	m_hUV = CMaterialLibrary::AddMaterial("materials/uv.mat");
+	m_hLight = CMaterialLibrary::AddMaterial("materials/light.mat");
+	m_hTexture = CMaterialLibrary::AddMaterial("materials/texture.mat");
+	m_hNormal = CMaterialLibrary::AddMaterial("materials/normal.mat");
+	m_hAO = CMaterialLibrary::AddMaterial("materials/ao.mat");
+	m_hCAO = CMaterialLibrary::AddMaterial("materials/aocolor.mat");
+	m_hArrow = CMaterialLibrary::AddMaterial("materials/arrow.mat");
+	m_hEdit = CMaterialLibrary::AddMaterial("materials/pencil.mat");
+	m_hVisibility = CMaterialLibrary::AddMaterial("materials/eye.mat");
 }
 
 void CSMAKRenderer::Render()

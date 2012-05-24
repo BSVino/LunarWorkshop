@@ -1,6 +1,7 @@
 #include "tree.h"
 
 #include <tinker/shell.h>
+#include <tinker/cvar.h>
 #include <renderer/renderingcontext.h>
 
 #include "rootpanel.h"
@@ -587,29 +588,40 @@ void CTreeNode::CExpandButton::Think()
 	m_flExpandedCurrent = Approach(m_flExpandedGoal, m_flExpandedCurrent, (float)CRootPanel::Get()->GetFrameTime()*10);
 }
 
+CVar glgui_spinnyarrows("glgui_spinnyarrows", "off");
+
 void CTreeNode::CExpandButton::Paint(float x, float y, float w, float h)
 {
-	TUnimplemented();
+	MakeQuad();
 
-/*	glPushAttrib(GL_ENABLE_BIT);
-	glEnablei(GL_BLEND, 0);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_TEXTURE_2D);
+	::CRenderingContext r(nullptr, true);
 
-	glPushMatrix();
+	if ((w < 0) ^ (h < 0))
+		r.SetBackCulling(false);
 
-	glTranslatef((float)x+w/2, (float)y+h/2, 0);
-	glRotatef((m_flExpandedCurrent)*90, 0, 0, 1);
+	r.UseMaterial(m_hMaterial);
+
+	r.SetBlend(BLEND_ALPHA);
+	r.SetUniform("iBorder", 0);
+	r.SetUniform("bHighlight", false);
+	r.SetUniform("vecColor", Color(255, 255, 255));
+	r.SetUniform("bDiffuse", true);
+	r.SetUniform("bTexCoords", false);
+
+	r.SetUniform("vecDimensions", Vector4D(-w/2, -h/2, w, h));
+
+	r.Translate(Vector((float)x+w/2, (float)y+h/2, 0));
+	r.Rotate(m_flExpandedCurrent*90-90, Vector(0, 0, 1));
 
 	// Hehe.
-	// glRotatef((float)(glutGet(GLUT_ELAPSED_TIME)%3600)/5, 0, 0, 1);
+	if (glgui_spinnyarrows.GetBool())
+		r.Rotate((float)RootPanel()->GetTime()*200, Vector(0, 0, 1));
 
-	PaintTexture(m_iTexture, -w/2, -h/2, w, h);
-
-	glPopMatrix();
-
-	glPopAttrib();*/
+	r.BeginRenderVertexArray(s_iQuad);
+	r.SetPositionBuffer(0u, 24);
+	r.SetTexCoordBuffer(12, 24);
+	r.SetCustomIntBuffer("iVertex", 1, 20, 24);
+	r.EndRenderVertexArray(6);
 }
 
 void CTreeNode::CExpandButton::SetExpanded(bool bExpanded)

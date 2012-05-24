@@ -16,6 +16,7 @@
 #include "scenetree.h"
 #include "../smak_version.h"
 #include "picker.h"
+#include "smak_renderer.h"
 
 using namespace glgui;
 
@@ -52,8 +53,8 @@ void CSMAKWindow::InitUI()
 
 	CButtonPanel* pTopButtons = new CButtonPanel(BA_TOP);
 
-	m_pRender3D = new CButton(0, 0, 100, 100, "3D", true);
-	m_pRenderUV = new CButton(0, 0, 100, 100, "UV", true);
+	m_pRender3D = new CPictureButton("3D", GetSMAKRenderer()->GetSmoothTexture(), true);
+	m_pRenderUV = new CPictureButton("UV", GetSMAKRenderer()->GetUVTexture(), true);
 
 	pTopButtons->AddButton(m_pRender3D, "Render 3D View", false, this, Render3D);
 	pTopButtons->AddButton(m_pRenderUV, "Render UV View", false, this, RenderUV);
@@ -62,23 +63,13 @@ void CSMAKWindow::InitUI()
 
 	CButtonPanel* pBottomButtons = new CButtonPanel(BA_BOTTOM);
 
-#ifdef OPENGL2
-	m_pWireframe = new CPictureButton("Wire", m_iWireframeTexture, true);
-	m_pUVWireframe = new CPictureButton("Wire", m_iUVTexture, true);
-	m_pLight = new CPictureButton("Lght", m_iLightTexture, true);
-	m_pTexture = new CPictureButton("Tex", m_iTextureTexture, true);
-	m_pNormal = new CPictureButton("Nrml", m_iNormalTexture, true);
-	m_pAO = new CPictureButton("AO", m_iAOTexture, true);
-	m_pColorAO = new CPictureButton("C AO", m_iCAOTexture, true);
-#else
-	m_pWireframe = new CPictureButton("Wire", CMaterialHandle(), true);
-	m_pUVWireframe = new CPictureButton("Wire", CMaterialHandle(), true);
-	m_pLight = new CPictureButton("Lght", CMaterialHandle(), true);
-	m_pTexture = new CPictureButton("Tex", CMaterialHandle(), true);
-	m_pNormal = new CPictureButton("Nrml", CMaterialHandle(), true);
-	m_pAO = new CPictureButton("AO", CMaterialHandle(), true);
-	m_pColorAO = new CPictureButton("C AO", CMaterialHandle(), true);
-#endif
+	m_pWireframe = new CPictureButton("Wire", GetSMAKRenderer()->GetWireframeTexture(), true);
+	m_pUVWireframe = new CPictureButton("Wire", GetSMAKRenderer()->GetUVTexture(), true);
+	m_pLight = new CPictureButton("Lght", GetSMAKRenderer()->GetLightTexture(), true);
+	m_pTexture = new CPictureButton("Tex", GetSMAKRenderer()->GetTextureTexture(), true);
+	m_pNormal = new CPictureButton("Nrml", GetSMAKRenderer()->GetNormalTexture(), true);
+	m_pAO = new CPictureButton("AO", GetSMAKRenderer()->GetAOTexture(), true);
+	m_pColorAO = new CPictureButton("C AO", GetSMAKRenderer()->GetColorAOTexture(), true);
 
 	pBottomButtons->AddButton(m_pWireframe, "Toggle Wireframe", true, this, Wireframe);
 	pBottomButtons->AddButton(m_pUVWireframe, "Toggle UVs", true, this, UVWireframe);

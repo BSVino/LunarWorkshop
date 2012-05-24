@@ -5,6 +5,8 @@
 #include <glgui/tree.h>
 #include <glgui/filedialog.h>
 
+#include "smak_renderer.h"
+
 using namespace glgui;
 
 CSceneTreePanel* CSceneTreePanel::s_pSceneTreePanel = NULL;
@@ -13,11 +15,7 @@ CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
 	: CMovablePanel("Scene Tree")
 {
 	m_pScene = pScene;
-#ifdef OPENGL2
-	m_pTree = new CTree(CSMAKWindow::Get()->GetArrowTexture(), CSMAKWindow::Get()->GetEditTexture(), CSMAKWindow::Get()->GetVisibilityTexture());
-#else
-	m_pTree = new CTree();
-#endif
+	m_pTree = new CTree(SMAKWindow()->GetSMAKRenderer()->GetArrowTexture(), SMAKWindow()->GetSMAKRenderer()->GetEditTexture(), SMAKWindow()->GetSMAKRenderer()->GetVisibilityTexture());
 	AddControl(m_pTree);
 
 	HasCloseButton(false);
@@ -62,9 +60,7 @@ void CSceneTreePanel::AddAllToTree()
 {
 	size_t iMaterialsNode = m_pTree->AddNode("Materials");
 	CTreeNode* pMaterialsNode = m_pTree->GetNode(iMaterialsNode);
-#ifdef OPENGL2
-	pMaterialsNode->SetIcon(CSMAKWindow::Get()->GetMaterialsNodeTexture());
-#endif
+	pMaterialsNode->SetIcon(SMAKWindow()->GetSMAKRenderer()->GetMaterialsNodeTexture());
 
 	size_t i;
 	for (i = 0; i < m_pScene->GetNumMaterials(); i++)
@@ -81,9 +77,7 @@ void CSceneTreePanel::AddAllToTree()
 
 	size_t iMeshesNode = m_pTree->AddNode("Meshes");
 	CTreeNode* pMeshesNode = m_pTree->GetNode(iMeshesNode);
-#ifdef OPENGL2
-	pMeshesNode->SetIcon(CSMAKWindow::Get()->GetMeshesNodeTexture());
-#endif
+	pMeshesNode->SetIcon(SMAKWindow()->GetSMAKRenderer()->GetMeshesNodeTexture());
 
 	for (i = 0; i < m_pScene->GetNumMeshes(); i++)
 		pMeshesNode->AddNode<CConversionMesh>(m_pScene->GetMesh(i)->GetName(), m_pScene->GetMesh(i));
@@ -93,9 +87,7 @@ void CSceneTreePanel::AddAllToTree()
 
 	size_t iScenesNode = m_pTree->AddNode("Scenes");
 	CTreeNode* pScenesNode = m_pTree->GetNode(iScenesNode);
-#ifdef OPENGL2
-	pScenesNode->SetIcon(CSMAKWindow::Get()->GetScenesNodeTexture());
-#endif
+	pScenesNode->SetIcon(SMAKWindow()->GetSMAKRenderer()->GetScenesNodeTexture());
 
 	for (i = 0; i < m_pScene->GetNumScenes(); i++)
 		AddNodeToTree(pScenesNode, m_pScene->GetScene(i));
@@ -114,9 +106,7 @@ void CSceneTreePanel::AddNodeToTree(glgui::CTreeNode* pTreeNode, CConversionScen
 	{
 		size_t iMeshInstanceNode = pTreeNode->GetNode(iNode)->AddNode<CConversionMeshInstance>(pSceneNode->GetMeshInstance(m)->GetMesh()->GetName(), pSceneNode->GetMeshInstance(m));
 		CTreeNode* pMeshInstanceNode = pTreeNode->GetNode(iNode)->GetNode(iMeshInstanceNode);
-#ifdef OPENGL2
-		pMeshInstanceNode->SetIcon(CSMAKWindow::Get()->GetMeshesNodeTexture());
-#endif
+		pMeshInstanceNode->SetIcon(SMAKWindow()->GetSMAKRenderer()->GetMeshesNodeTexture());
 		pMeshInstanceNode->AddVisibilityButton();
 		pMeshInstanceNode->SetDraggable(true);
 
