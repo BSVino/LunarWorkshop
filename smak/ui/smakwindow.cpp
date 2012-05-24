@@ -68,14 +68,14 @@ CSMAKWindow::CSMAKWindow(int argc, char** argv)
 	m_iMouseStartX = 0;
 	m_iMouseStartY = 0;
 
-	m_flCameraYaw = 45;
-	m_flCameraPitch = -45;
+	m_flCameraYaw = -135;
+	m_flCameraPitch = -25;
 
 	m_flCameraUVZoom = 1;
 	m_flCameraUVX = 0;
 	m_flCameraUVY = 0;
 
-	m_flLightYaw = 100;
+	m_flLightYaw = -40;
 	m_flLightPitch = -45;
 
 	m_vecLightPositionUV = Vector(0.5f, 0.5f, 1.0f);
