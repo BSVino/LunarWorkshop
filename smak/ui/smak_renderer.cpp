@@ -286,6 +286,8 @@ void CSMAKRenderer::RenderSceneNode(CConversionSceneNode* pNode)
 		RenderMeshInstance(pNode->GetMeshInstance(m));
 }
 
+CVar smak_shownormals("smak_shownormals", "0");
+
 void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 {
 	if (!pMeshInstance->IsVisible())
@@ -384,52 +386,54 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 		}
 	}
 
-#if 0
+	if (smak_shownormals.GetBool())
 	{
-		glDisable(GL_LIGHTING);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, (GLuint)0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, (GLuint)0);
+		CRenderingContext c(this, true);
+		c.UseProgram("grid");
 
-		for (k = 0; k < pFace->GetNumVertices(); k++)
+		CConversionMesh* pMesh = pMeshInstance->GetMesh();
+
+		for (size_t j = 0; j < pMesh->GetNumFaces(); j++)
 		{
-			CConversionVertex* pVertex = pFace->GetVertex(k);
+			CConversionFace* pFace = pMesh->GetFace(j);
+			for (size_t k = 0; k < pFace->GetNumVertices(); k++)
+			{
+				CConversionVertex* pVertex = pFace->GetVertex(k);
 
-			Vector vecVertex = pMesh->GetVertex(pVertex->v);
-			Vector vecNormal = pMesh->GetNormal(pVertex->vn);
-			Vector vecTangent = pMesh->GetTangent(pVertex->vt);
-			Vector vecBitangent = pMesh->GetBitangent(pVertex->vb);
-			//vecNormal = Vector(pVertex->m_mInverseTBN.GetColumn(2));
-			//vecTangent = Vector(pVertex->m_mInverseTBN.GetColumn(0));
-			//vecBitangent = Vector(pVertex->m_mInverseTBN.GetColumn(1));
+				Vector vecVertex = pMesh->GetVertex(pVertex->v);
+				Vector vecNormal = pMesh->GetNormal(pVertex->vn);
+				Vector vecTangent = pMesh->GetTangent(pVertex->vt);
+				Vector vecBitangent = pMesh->GetBitangent(pVertex->vb);
+				//vecNormal = Vector(pVertex->m_mInverseTBN.GetColumn(2));
+				//vecTangent = Vector(pVertex->m_mInverseTBN.GetColumn(0));
+				//vecBitangent = Vector(pVertex->m_mInverseTBN.GetColumn(1));
 
-			glColor3f(0.2f, 0.2f, 0.8f);
+				c.BeginRenderLines();
+					c.Color(Color(0.2f, 0.2f, 0.8f));
+					c.Normal(vecNormal);
+					c.Vertex(vecVertex);
+					c.Vertex(vecVertex + vecNormal);
+				c.EndRender();
 
-			glBegin(GL_LINES);
-			glNormal3fv(vecNormal);
-			glVertex3fv(vecVertex);
-			glVertex3fv(vecVertex + vecNormal);
-			glEnd();
+				if (smak_shownormals.GetInt() > 1)
+				{
+					c.BeginRenderLines();
+						c.Color(Color(0.8f, 0.2f, 0.2f));
+						c.Normal(vecTangent);
+						c.Vertex(vecVertex);
+						c.Vertex(vecVertex + vecTangent);
+					c.EndRender();
 
-			glColor3f(0.8f, 0.2f, 0.2f);
-
-			glBegin(GL_LINES);
-			glNormal3fv(vecTangent);
-			glVertex3fv(vecVertex);
-			glVertex3fv(vecVertex + vecTangent);
-			glEnd();
-
-			glColor3f(0.2f, 0.8f, 0.2f);
-
-			glBegin(GL_LINES);
-			glNormal3fv(vecBitangent);
-			glVertex3fv(vecVertex);
-			glVertex3fv(vecVertex + vecBitangent);
-			glEnd();
+					c.BeginRenderLines();
+						c.Color(Color(0.2f, 0.8f, 0.2f));
+						c.Normal(vecBitangent);
+						c.Vertex(vecVertex);
+						c.Vertex(vecVertex + vecBitangent);
+					c.EndRender();
+				}
+			}
 		}
 	}
-#endif
 }
 
 void CSMAKRenderer::RenderUV()

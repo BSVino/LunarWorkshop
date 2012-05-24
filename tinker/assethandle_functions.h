@@ -69,6 +69,9 @@ void CAssetHandle<C, L>::Reset()
 template <class C, class L>
 const CAssetHandle<C, L>& CAssetHandle<C, L>::operator=(const CAssetHandle<C, L>& c)
 {
+	if (c == *this)
+		return *this;
+
 	Reset();
 
 	// If c == *this, c.m_pAsset will be clobbered in Reset()
