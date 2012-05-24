@@ -136,6 +136,7 @@ public:
 	bool					IsRenderingUV() { return m_bRenderUV; }
 	bool					IsRenderingWireframe() { return m_bDisplayWireframe; }
 	bool					IsRenderingUVWireframe() { return m_bDisplayUV; }
+	bool					IsRenderingTexture() { return m_bDisplayTexture; }
 
 	void					BeginProgress();
 	void					SetAction(const tstring& sAction, size_t iTotalProgress);
@@ -205,8 +206,6 @@ protected:
 	bool					m_bDisplayNormal;
 	bool					m_bDisplayAO;
 	bool					m_bDisplayColorAO;
-
-	class GLUtesselator*	m_pTesselator;
 
 	size_t					m_iShaderProgram;
 

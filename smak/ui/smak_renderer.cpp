@@ -341,7 +341,8 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 				c.SetUniform("bDiffuse", false);
 			}
 
-			if (!hMaterial->m_ahTextures[0].IsValid())
+			bool bTexture = SMAKWindow()->IsRenderingTexture() && hMaterial->m_ahTextures[0].IsValid();
+			if (!bTexture)
 				c.SetUniform("bDiffuse", false);
 
 			c.SetUniform("flRimLight", 0.05f);
@@ -360,7 +361,7 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 				c.SetUniform("bShadeBottoms", true);
 			}
 
-			if (!hMaterial->m_ahTextures[0].IsValid() && !SMAKWindow()->IsRenderingLight())
+			if (!bTexture && !SMAKWindow()->IsRenderingLight())
 				c.SetUniform("flRimLight", 0.15f);
 
 			c.BeginRenderVertexArray(pModel->m_aiVertexBuffers[i]);
@@ -428,6 +429,10 @@ void CSMAKRenderer::RenderUV()
 
 	CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[0];
 	c.UseMaterial(hMaterial);
+
+	bool bTexture = SMAKWindow()->IsRenderingTexture() && hMaterial->m_ahTextures[0].IsValid();
+	if (!bTexture)
+		c.SetUniform("bDiffuse", false);
 
 	c.SetUniform("bShadeBottoms", false);//bNormal||bNormal2);
 
