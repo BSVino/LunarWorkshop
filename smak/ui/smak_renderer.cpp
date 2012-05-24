@@ -164,11 +164,8 @@ void CSMAKRenderer::RenderGround()
 {
 	CRenderingContext c(this, true);
 
-	c.UseProgram("model");
+	c.UseProgram("grid");
 	c.Translate(SMAKWindow()->GetScene()->m_oExtends.Center());
-	c.SetUniform("flAlpha", 1.0f);
-	c.SetUniform("flRimLight", 0.0f);
-	c.SetUniform("bDiffuse", false);
 
 	int i;
 
@@ -332,7 +329,8 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			if (!pModel->m_aiVertexBufferSizes[i])
 				continue;
 
-			c.UseMaterial(SMAKWindow()->GetMaterials()[iMaterial]);
+			CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[iMaterial];
+			c.UseMaterial(hMaterial);
 
 			if (!c.GetActiveShader())
 			{
@@ -343,12 +341,18 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 				c.SetUniform("bDiffuse", false);
 			}
 
+			if (!hMaterial->m_ahTextures[0].IsValid())
+				c.SetUniform("bDiffuse", false);
+
 			c.SetUniform("flRimLight", 0.05f);
 
 			if (SMAKWindow()->IsRenderingLight())
 			{
 				c.SetUniform("bLight", true);
 				c.SetUniform("vecLightDirection", -m_vecLightPosition.Normalized());
+				c.SetUniform("clrLightDiffuse", Vector(1, 1, 1));
+				c.SetUniform("clrLightAmbient", Vector(0.2f, 0.2f, 0.2f));
+				c.SetUniform("clrLightSpecular", Vector(1, 1, 1));
 			}
 			else
 				c.SetUniform("bLight", false);

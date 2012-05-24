@@ -303,7 +303,13 @@ void CSMAKWindow::LoadMaterialsIntoGL()
 		CData* pShader = oMaterialData.AddChild("Shader", "model");
 		if (m_Scene.GetMaterial(i))
 		{
-			pShader->AddChild("Diffuse", m_Scene.GetMaterial(i)->GetDiffuseTexture());
+			CConversionMaterial* pMaterial = m_Scene.GetMaterial(i);
+			pShader->AddChild("DiffuseTexture", pMaterial->GetDiffuseTexture());
+			pShader->AddChild("Diffuse", sprintf("%f %f %f", pMaterial->m_vecDiffuse.x, pMaterial->m_vecDiffuse.y, pMaterial->m_vecDiffuse.z));
+			pShader->AddChild("Ambient", sprintf("%f %f %f", pMaterial->m_vecAmbient.x, pMaterial->m_vecAmbient.y, pMaterial->m_vecAmbient.z));
+			pShader->AddChild("Emissive", sprintf("%f %f %f", pMaterial->m_vecEmissive.x, pMaterial->m_vecEmissive.y, pMaterial->m_vecEmissive.z));
+			pShader->AddChild("Specular", sprintf("%f %f %f", pMaterial->m_vecSpecular.x, pMaterial->m_vecSpecular.y, pMaterial->m_vecSpecular.z));
+			pShader->AddChild("Shininess", sprintf("%f", pMaterial->m_flShininess));
 			m_ahMaterials[i] = CMaterialLibrary::AddMaterial(&oMaterialData);
 		}
 

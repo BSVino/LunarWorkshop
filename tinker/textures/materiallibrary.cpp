@@ -97,7 +97,7 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 		TAssert(it != pShader->m_aParameters.end());
 		if (it == pShader->m_aParameters.end())
 		{
-			TError("Material file has a property that's not in the shader: " + sMaterial + "\n");
+			TError("Material file has a property '" + sParameter + "' that's not in the shader '" + pShader->m_sName + "': " + sMaterial + "\n");
 			continue;
 		}
 
