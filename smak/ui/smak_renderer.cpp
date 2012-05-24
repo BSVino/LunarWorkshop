@@ -355,7 +355,10 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 				c.SetUniform("clrLightSpecular", Vector(1, 1, 1));
 			}
 			else
+			{
 				c.SetUniform("bLight", false);
+				c.SetUniform("bShadeBottoms", true);
+			}
 
 			if (!hMaterial->m_ahTextures[0].IsValid() && !SMAKWindow()->IsRenderingLight())
 				c.SetUniform("flRimLight", 0.15f);
@@ -367,72 +370,6 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			c.EndRenderVertexArray(pModel->m_aiVertexBufferSizes[i]);
 		}
 	}
-
-#if 0
-			if (m_Scene.DoesFaceHaveValidMaterial(pFace, pMeshInstance))
-			{
-				CConversionMaterial* pMaterial = m_Scene.GetMaterial(pMappedMaterial->m_iMaterial);
-				glMaterialfv(GL_FRONT, GL_AMBIENT, pMaterial->m_vecAmbient);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, pMaterial->m_vecDiffuse);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, pMaterial->m_vecSpecular);
-				glMaterialfv(GL_FRONT, GL_EMISSION, pMaterial->m_vecEmissive);
-				glMaterialf(GL_FRONT, GL_SHININESS, pMaterial->m_flShininess);
-				glColor4fv(pMaterial->m_vecDiffuse);
-			}
-
-			glUseProgram((GLuint)m_iShaderProgram);
-
-			GLuint bLighting = glGetUniformLocation((GLuint)m_iShaderProgram, "bLighting");
-			GLuint bDiffuseTexture = glGetUniformLocation((GLuint)m_iShaderProgram, "bDiffuseTexture");
-			GLuint bNormalMap = glGetUniformLocation((GLuint)m_iShaderProgram, "bNormalMap");
-			GLuint bNormal2Map = glGetUniformLocation((GLuint)m_iShaderProgram, "bNormal2Map");
-			GLuint bAOMap = glGetUniformLocation((GLuint)m_iShaderProgram, "bAOMap");
-			GLuint bCAOMap = glGetUniformLocation((GLuint)m_iShaderProgram, "bCAOMap");
-
-			GLuint iDiffuseTexture = glGetUniformLocation((GLuint)m_iShaderProgram, "iDiffuseTexture");
-			GLuint iNormalMap = glGetUniformLocation((GLuint)m_iShaderProgram, "iNormalMap");
-			GLuint iNormal2Map = glGetUniformLocation((GLuint)m_iShaderProgram, "iNormal2Map");
-			GLuint iAOMap = glGetUniformLocation((GLuint)m_iShaderProgram, "iAOMap");
-			GLuint iCAOMap = glGetUniformLocation((GLuint)m_iShaderProgram, "iCAOMap");
-
-			GLuint bShadeBottoms = glGetUniformLocation((GLuint)m_iShaderProgram, "bShadeBottoms");
-
-			g_iTangentAttrib = glGetAttribLocation((GLuint)m_iShaderProgram, "vecTangent");
-			g_iBitangentAttrib = glGetAttribLocation((GLuint)m_iShaderProgram, "vecBitangent");
-
-			glUniform1i(iDiffuseTexture, 0);
-			glUniform1i(iNormalMap, 1);
-			glUniform1i(iNormal2Map, 2);
-			glUniform1i(iAOMap, 3);
-			glUniform1i(iCAOMap, 4);
-
-			glUniform1i(bLighting, m_bDisplayLight);
-			glUniform1i(bDiffuseTexture, bTexture);
-			glUniform1i(bNormalMap, bNormal);
-			glUniform1i(bNormal2Map, bNormal2);
-			glUniform1i(bAOMap, bAO);
-			glUniform1i(bCAOMap, bCAO);
-
-			glUniform1i(bShadeBottoms, true);
-
-			gluTessBeginPolygon(m_pTesselator, pMesh);
-			gluTessBeginContour(m_pTesselator);
-
-			for (k = 0; k < pFace->GetNumVertices(); k++)
-			{
-				CConversionVertex* pVertex = pFace->GetVertex(k);
-
-				Vector vecVertex = pMesh->GetVertex(pVertex->v);
-				GLdouble afCoords[3] = { vecVertex.x, vecVertex.y, vecVertex.z };
-				gluTessVertex(m_pTesselator, afCoords, pVertex);
-			}
-
-			gluTessEndContour(m_pTesselator);
-			gluTessEndPolygon(m_pTesselator);
-
-			glUseProgram(0);
-		}
-#endif
 
 #ifdef OPENGL2
 		if (m_bDisplayWireframe)
