@@ -301,8 +301,18 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 		c.UseProgram("wireframe");
 
 		c.SetUniform("flAlpha", 1.0f);
-		c.SetUniform("vecColor", Color(255, 255, 255));
 		c.SetUniform("bDiffuse", false);
+
+		if (SMAKWindow()->IsRenderingLight())
+		{
+			c.SetUniform("bLight", true);
+			c.SetUniform("vecLightDirection", -m_vecLightPosition.Normalized());
+			c.SetUniform("clrLightDiffuse", Vector(1, 1, 1));
+			c.SetUniform("clrLightAmbient", Vector(0.2f, 0.2f, 0.2f));
+			c.SetUniform("clrLightSpecular", Vector(1, 1, 1));
+		}
+		else
+			c.SetUniform("bLight", false);
 
 		c.BeginRenderVertexArray(pModel->m_iVertexWireframeBuffer);
 		c.SetPositionBuffer(pModel->WireframePositionOffset(), pModel->WireframeStride());
@@ -371,38 +381,8 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 		}
 	}
 
-#ifdef OPENGL2
-		if (m_bDisplayWireframe)
-		{
-			glBindTexture(GL_TEXTURE_2D, (GLuint)0);
-			glColor3f(1.0f, 1.0f, 1.0f);
-			glBegin(GL_LINE_STRIP);
-				glNormal3fv(pMesh->GetNormal(pFace->GetVertex(0)->vn));
-				glVertex3fv(pMesh->GetVertex(pFace->GetVertex(0)->v));
-				glNormal3fv(pMesh->GetNormal(pFace->GetVertex(1)->vn));
-				glVertex3fv(pMesh->GetVertex(pFace->GetVertex(1)->v));
-				glNormal3fv(pMesh->GetNormal(pFace->GetVertex(2)->vn));
-				glVertex3fv(pMesh->GetVertex(pFace->GetVertex(2)->v));
-			glEnd();
-			for (k = 0; k < pFace->GetNumVertices()-2; k++)
-			{
-				glBegin(GL_LINES);
-					glNormal3fv(pMesh->GetNormal(pFace->GetVertex(k+1)->vn));
-					glVertex3fv(pMesh->GetVertex(pFace->GetVertex(k+1)->v));
-					glNormal3fv(pMesh->GetNormal(pFace->GetVertex(k+2)->vn));
-					glVertex3fv(pMesh->GetVertex(pFace->GetVertex(k+2)->v));
-				glEnd();
-			}
-			glBegin(GL_LINES);
-				glNormal3fv(pMesh->GetNormal(pFace->GetVertex(k+1)->vn));
-				glVertex3fv(pMesh->GetVertex(pFace->GetVertex(k+1)->v));
-				glNormal3fv(pMesh->GetNormal(pFace->GetVertex(0)->vn));
-				glVertex3fv(pMesh->GetVertex(pFace->GetVertex(0)->v));
-			glEnd();
-		}
-#endif
-
 #if 0
+	{
 		glDisable(GL_LIGHTING);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, (GLuint)0);
