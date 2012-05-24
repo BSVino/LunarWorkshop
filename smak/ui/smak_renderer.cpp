@@ -345,6 +345,14 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 
 			c.SetUniform("flRimLight", 0.05f);
 
+			if (SMAKWindow()->IsRenderingLight())
+			{
+				c.SetUniform("bLight", true);
+				c.SetUniform("vecLightDirection", -m_vecLightPosition.Normalized());
+			}
+			else
+				c.SetUniform("bLight", false);
+
 			c.BeginRenderVertexArray(pModel->m_aiVertexBuffers[i]);
 			c.SetPositionBuffer(pModel->PositionOffset(), pModel->Stride());
 			c.SetNormalsBuffer(pModel->NormalsOffset(), pModel->Stride());
@@ -354,118 +362,6 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 	}
 
 #if 0
-		if (!m_bDisplayWireframe)
-		{
-			bool bTexture = m_bDisplayTexture;
-			bool bNormal = m_bDisplayNormal;
-			bool bNormal2 = m_bDisplayNormal;
-			g_bNormalMap = m_bDisplayNormal;
-			bool bAO = m_bDisplayAO;
-			bool bCAO = m_bDisplayColorAO;
-
-			if (!m_Scene.DoesFaceHaveValidMaterial(pFace, pMeshInstance) || pMappedMaterial->m_iMaterial >= m_aoMaterials.size())
-			{
-#ifdef OPENGL2
-				glBindTexture(GL_TEXTURE_2D, 0);
-#endif
-				bTexture = false;
-				bNormal = false;
-				bNormal2 = false;
-				g_bNormalMap = false;
-				bAO = false;
-				bCAO = false;
-			}
-			else
-			{
-				CMaterial* pMaterial = &m_aoMaterials[pMappedMaterial->m_iMaterial];
-
-				if (!pMaterial->m_iBase)
-					bTexture = false;
-				if (!pMaterial->m_iNormal)
-					bNormal = false;
-				if (!pMaterial->m_iNormal2)
-					bNormal2 = false;
-				if (!bNormal && !bNormal2)
-					g_bNormalMap = false;
-				if (!pMaterial->m_iAO)
-					bAO = false;
-				if (!pMaterial->m_iColorAO)
-					bCAO = false;
-
-#ifdef OPENGL2
-				if (GLEW_VERSION_1_3)
-				{
-					bMultiTexture = true;
-
-					glActiveTexture(GL_TEXTURE0);
-					if (m_bDisplayTexture)
-					{
-						glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iBase);
-						glEnable(GL_TEXTURE_2D);
-					}
-					else
-					{
-						glBindTexture(GL_TEXTURE_2D, (GLuint)0);
-						glDisable(GL_TEXTURE_2D);
-					}
-
-					glActiveTexture(GL_TEXTURE1);
-					if (bNormal)
-					{
-						glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iNormal);
-						glEnable(GL_TEXTURE_2D);
-					}
-					else
-					{
-						glBindTexture(GL_TEXTURE_2D, (GLuint)0);
-						glDisable(GL_TEXTURE_2D);
-					}
-
-					glActiveTexture(GL_TEXTURE2);
-					if (bNormal2)
-					{
-						glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iNormal2);
-						glEnable(GL_TEXTURE_2D);
-					}
-					else
-					{
-						glBindTexture(GL_TEXTURE_2D, (GLuint)0);
-						glDisable(GL_TEXTURE_2D);
-					}
-
-					glActiveTexture(GL_TEXTURE3);
-					if (m_bDisplayAO)
-					{
-						glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iAO);
-						glEnable(GL_TEXTURE_2D);
-					}
-					else
-					{
-						glBindTexture(GL_TEXTURE_2D, (GLuint)0);
-						glDisable(GL_TEXTURE_2D);
-					}
-
-					glActiveTexture(GL_TEXTURE4);
-					if (m_bDisplayColorAO)
-					{
-						glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iColorAO);
-						glEnable(GL_TEXTURE_2D);
-					}
-					else
-					{
-						glBindTexture(GL_TEXTURE_2D, (GLuint)0);
-						glDisable(GL_TEXTURE_2D);
-					}
-				}
-				else
-				{
-					glEnable(GL_TEXTURE_2D);
-					glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iBase);
-				}
-#endif
-			}
-
-#ifdef OPENGL2
 			if (m_Scene.DoesFaceHaveValidMaterial(pFace, pMeshInstance))
 			{
 				CConversionMaterial* pMaterial = m_Scene.GetMaterial(pMappedMaterial->m_iMaterial);
@@ -528,8 +424,8 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			gluTessEndPolygon(m_pTesselator);
 
 			glUseProgram(0);
-#endif
 		}
+#endif
 
 #ifdef OPENGL2
 		if (m_bDisplayWireframe)
@@ -605,7 +501,6 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			glVertex3fv(vecVertex + vecBitangent);
 			glEnd();
 		}
-#endif
 	}
 #endif
 }
