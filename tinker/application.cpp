@@ -369,7 +369,8 @@ void CApplication::WindowResize(int w, int h)
 	m_iWindowWidth = w;
 	m_iWindowHeight = h;
 
-	glgui::CRootPanel::Get()->Layout();
+	glgui::RootPanel()->SetSize((float)w, (float)h);
+	glgui::RootPanel()->Layout();
 
 	Render();
 

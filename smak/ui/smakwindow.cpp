@@ -35,14 +35,6 @@ using namespace glgui;
 #endif
 #endif
 
-#ifdef OPENGL2
-extern "C" {
-static void CALLBACK RenderTesselateBegin(GLenum ePrim);
-static void CALLBACK RenderTesselateVertex(void* pVertexData, void* pPolygonData);
-static void CALLBACK RenderTesselateEnd();
-}
-#endif
-
 CSMAKWindow* CSMAKWindow::s_pSMAKWindow = NULL;
 
 CSMAKWindow::CSMAKWindow(int argc, char** argv)
@@ -260,81 +252,11 @@ void CSMAKWindow::Render()
 	CRootPanel::Get()->Paint(0, 0, (float)m_iWindowWidth, (float)m_iWindowHeight);
 }
 
-// Ew!
-int g_iTangentAttrib;
-int g_iBitangentAttrib;
-bool g_bNormalMap;
-
-#ifdef OPENGL2
-extern "C" {
-static void CALLBACK RenderTesselateBegin(GLenum ePrim)
-{
-	glBegin(ePrim);
-}
-
-static void CALLBACK RenderTesselateVertex(void* pVertexData, void* pPolygonData)
-{
-	CConversionMesh* pMesh = (CConversionMesh*)pPolygonData;
-	CConversionVertex* pVertex = (CConversionVertex*)pVertexData;
-
-	Vector vecVertex = pMesh->GetVertex(pVertex->v);
-	Vector vecUV = pMesh->GetUV(pVertex->vu);
-
-	if (GLEW_VERSION_1_3)
-	{
-		glMultiTexCoord2fv(GL_TEXTURE0, vecUV);
-		glMultiTexCoord2fv(GL_TEXTURE1, vecUV); 
-		glMultiTexCoord2fv(GL_TEXTURE2, vecUV); 
-		glMultiTexCoord2fv(GL_TEXTURE3, vecUV); 
-		glMultiTexCoord2fv(GL_TEXTURE4, vecUV); 
-	}
-	else
-		glTexCoord2fv(vecUV);
-
-	if (g_bNormalMap)
-	{
-		glVertexAttrib3fv(g_iTangentAttrib, pMesh->GetTangent(pVertex->vt));
-		glVertexAttrib3fv(g_iBitangentAttrib, pMesh->GetBitangent(pVertex->vb));
-		glNormal3fv(pMesh->GetNormal(pVertex->vn));
-	}
-	else
-		glNormal3fv(pMesh->GetNormal(pVertex->vn));
-
-	glVertex3fv(vecVertex);
-}
-
-static void CALLBACK RenderTesselateEnd()
-{
-	glEnd();
-}
-}
-#endif
-
 void CSMAKWindow::WindowResize(int w, int h)
 {
-	float flSceneSize = m_Scene.m_oExtends.Size().Length()/2;
-	if (flSceneSize < 150)
-		flSceneSize = 150;
-
-#ifdef OPENGL2
-	glViewport(0, 0, (GLsizei)w, (GLsizei)h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(
-			44.0,						// FOV
-			(float)w/(float)h,			// Aspect ratio
-			1.0,						// Z near
-			m_flCameraDistance + flSceneSize
-		);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-#endif
-
 	if (!IsOpen())
 		return;
 
-	CRootPanel::Get()->SetSize((float)w, (float)h);
-	CRootPanel::Get()->Layout();
 	BaseClass::WindowResize(w, h);
 }
 
