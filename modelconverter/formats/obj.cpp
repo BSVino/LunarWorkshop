@@ -200,7 +200,7 @@ bool CModelConverter::ReadOBJ(const tstring& sFilename)
 			float u, v;
 			tvector<tstring> asTokens;
 			tstrtok(pszLine, asTokens, " ");
-			if (asTokens.size() == 3)
+			if (asTokens.size() >= 3)
 			{
 				u = (float)atof(asTokens[1].c_str());
 				v = (float)atof(asTokens[2].c_str());

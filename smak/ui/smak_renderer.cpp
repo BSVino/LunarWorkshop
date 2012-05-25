@@ -444,58 +444,61 @@ void CSMAKRenderer::RenderUV()
 	c.SetBackCulling(false);
 
 	CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[0];
-	c.UseMaterial(hMaterial);
-
-	bool bTexture = SMAKWindow()->IsRenderingTexture() && hMaterial->m_ahTextures[0].IsValid();
-	if (!bTexture)
-		c.SetUniform("bDiffuse", false);
-
-	c.SetUniform("bShadeBottoms", false);//bNormal||bNormal2);
-
-	if (SMAKWindow()->IsRenderingLight())
+	if (hMaterial.IsValid())
 	{
-		c.SetUniform("bLight", true);
-		c.SetUniform("vecLightDirection", -m_vecLightPositionUV.Normalized());
-		c.SetUniform("clrLightDiffuse", Vector(1, 1, 1));
-		c.SetUniform("clrLightAmbient", Vector(0.2f, 0.2f, 0.2f));
-		c.SetUniform("clrLightSpecular", Vector(1, 1, 1));
+		c.UseMaterial(hMaterial);
+
+		bool bTexture = SMAKWindow()->IsRenderingTexture() && hMaterial.IsValid() && hMaterial->m_ahTextures.size() && hMaterial->m_ahTextures[0].IsValid();
+		if (!bTexture)
+			c.SetUniform("bDiffuse", false);
+
+		c.SetUniform("bShadeBottoms", false);//bNormal||bNormal2);
+
+		if (SMAKWindow()->IsRenderingLight())
+		{
+			c.SetUniform("bLight", true);
+			c.SetUniform("vecLightDirection", -m_vecLightPositionUV.Normalized());
+			c.SetUniform("clrLightDiffuse", Vector(1, 1, 1));
+			c.SetUniform("clrLightAmbient", Vector(0.2f, 0.2f, 0.2f));
+			c.SetUniform("clrLightSpecular", Vector(1, 1, 1));
+		}
+		else
+			c.SetUniform("bLight", false);
+
+		Vector vecUV;
+
+		c.BeginRenderTriFan();
+
+			vecUV = Vector(0.0f, 1.0f, 0.0f);
+			c.TexCoord(vecUV);
+			//glVertexAttrib3fv(iTangent, Vector(0.8165f, 0.4082f, 0.4082f));
+			//glVertexAttrib3fv(iBitangent, Vector(0.0f, 0.7071f, -0.7071f));
+			c.Normal(Vector(-0.5574f, 0.5574f, 0.5574f));
+			c.Vertex(Vector(-0.5f, 0.5f, 0));
+
+			vecUV = Vector(1.0f, 1.0f, 0.0f);
+			c.TexCoord(vecUV);
+			//glVertexAttrib3fv(iTangent, Vector(0.8165f, -0.4082f, -0.4082f));
+			//glVertexAttrib3fv(iBitangent, Vector(0.0f, 0.7071f, 0.7071f));
+			c.Normal(Vector(0.5574f, 0.5574f, 0.5574f));
+			c.Vertex(Vector(0.5f, 0.5f, 0));
+
+			vecUV = Vector(1.0f, 0.0f, 0.0f);
+			c.TexCoord(vecUV);
+			//glVertexAttrib3fv(iTangent, Vector(0.8165f, 0.4082f, -0.4082f));
+			//glVertexAttrib3fv(iBitangent, Vector(0.0f, 0.7071f, 0.7071f));
+			c.Normal(Vector(0.5574f, -0.5574f, 0.5574f));
+			c.Vertex(Vector(0.5f, -0.5f, 0));
+
+			vecUV = Vector(0.0f, 0.0f, 0.0f);
+			c.TexCoord(vecUV);
+			//glVertexAttrib3fv(iTangent, Vector(0.8165f, -0.4082f, 0.4082f));
+			//glVertexAttrib3fv(iBitangent, Vector(0.0f, 0.7071f, 0.7071f));
+			c.Normal(Vector(-0.5574f, -0.5574f, 0.5574f));
+			c.Vertex(Vector(-0.5f, -0.5f, 0));
+
+		c.EndRender();
 	}
-	else
-		c.SetUniform("bLight", false);
-
-	Vector vecUV;
-
-	c.BeginRenderTriFan();
-
-		vecUV = Vector(0.0f, 1.0f, 0.0f);
-		c.TexCoord(vecUV);
-		//glVertexAttrib3fv(iTangent, Vector(0.8165f, 0.4082f, 0.4082f));
-		//glVertexAttrib3fv(iBitangent, Vector(0.0f, 0.7071f, -0.7071f));
-		c.Normal(Vector(-0.5574f, 0.5574f, 0.5574f));
-		c.Vertex(Vector(-0.5f, 0.5f, 0));
-
-		vecUV = Vector(1.0f, 1.0f, 0.0f);
-		c.TexCoord(vecUV);
-		//glVertexAttrib3fv(iTangent, Vector(0.8165f, -0.4082f, -0.4082f));
-		//glVertexAttrib3fv(iBitangent, Vector(0.0f, 0.7071f, 0.7071f));
-		c.Normal(Vector(0.5574f, 0.5574f, 0.5574f));
-		c.Vertex(Vector(0.5f, 0.5f, 0));
-
-		vecUV = Vector(1.0f, 0.0f, 0.0f);
-		c.TexCoord(vecUV);
-		//glVertexAttrib3fv(iTangent, Vector(0.8165f, 0.4082f, -0.4082f));
-		//glVertexAttrib3fv(iBitangent, Vector(0.0f, 0.7071f, 0.7071f));
-		c.Normal(Vector(0.5574f, -0.5574f, 0.5574f));
-		c.Vertex(Vector(0.5f, -0.5f, 0));
-
-		vecUV = Vector(0.0f, 0.0f, 0.0f);
-		c.TexCoord(vecUV);
-		//glVertexAttrib3fv(iTangent, Vector(0.8165f, -0.4082f, 0.4082f));
-		//glVertexAttrib3fv(iBitangent, Vector(0.0f, 0.7071f, 0.7071f));
-		c.Normal(Vector(-0.5574f, -0.5574f, 0.5574f));
-		c.Vertex(Vector(-0.5f, -0.5f, 0));
-
-	c.EndRender();
 
 	if (SMAKWindow()->IsRenderingUVWireframe())
 	{
@@ -512,11 +515,12 @@ void CSMAKRenderer::RenderUV()
 		for (size_t i = 0; i < SMAKWindow()->GetScene()->GetNumMeshes(); i++)
 		{
 			CConversionMesh* pMesh = SMAKWindow()->GetScene()->GetMesh(i);
-
-			if (!pMesh->GetNumUVs())
+			if (!pMesh->IsVisible())
 				continue;
 
 			CModel* pModel = CModelLibrary::GetModel(i);
+			if (!pModel->m_iVertexUVBufferSize)
+				continue;
 
 			c.BeginRenderVertexArray(pModel->m_iVertexUVBuffer);
 			c.SetPositionBuffer(pModel->UVPositionOffset(), pModel->UVStride());
