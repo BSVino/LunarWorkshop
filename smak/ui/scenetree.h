@@ -21,6 +21,10 @@ public:
 
 	void							OpenMaterialEditor(CConversionMaterial* pMaterial);
 
+	size_t							GetLastSelectedMaterial() { return m_iLastSelectedMaterial; }
+
+	EVENT_CALLBACK(CSceneTreePanel, Selected);
+
 	static void						Open(CConversionScene* pScene);
 	static CSceneTreePanel*			Get();
 
@@ -30,6 +34,8 @@ public:
 	glgui::CTree*					m_pTree;
 
 	class CMaterialEditor*			m_pMaterialEditor;
+
+	size_t							m_iLastSelectedMaterial;
 
 	static CSceneTreePanel*			s_pSceneTreePanel;
 };
@@ -103,5 +109,10 @@ protected:
 	glgui::CLabel*					m_pShininessLabel;
 	glgui::CScrollSelector<float>*	m_pShininessSelector;
 };
+
+inline CSceneTreePanel* SceneTree()
+{
+	return CSceneTreePanel::Get();
+}
 
 #endif

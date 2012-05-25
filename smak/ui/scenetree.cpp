@@ -16,6 +16,7 @@ CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
 {
 	m_pScene = pScene;
 	m_pTree = new CTree(SMAKWindow()->GetSMAKRenderer()->GetArrowTexture(), SMAKWindow()->GetSMAKRenderer()->GetEditTexture(), SMAKWindow()->GetSMAKRenderer()->GetVisibilityTexture());
+	m_pTree->SetSelectedListener(this, Selected);
 	AddControl(m_pTree);
 
 	HasCloseButton(false);
@@ -24,6 +25,8 @@ CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
 	SetPos(50, 150);
 
 	m_pMaterialEditor = NULL;
+
+	m_iLastSelectedMaterial = ~0;
 }
 
 CSceneTreePanel::~CSceneTreePanel()
@@ -44,6 +47,8 @@ void CSceneTreePanel::Layout()
 
 void CSceneTreePanel::UpdateTree()
 {
+	m_iLastSelectedMaterial = ~0;
+
 	m_pTree->ClearTree();
 
 	AddAllToTree();
@@ -144,6 +149,28 @@ void CSceneTreePanel::OpenMaterialEditor(CConversionMaterial* pMaterial)
 
 	m_pMaterialEditor->SetVisible(true);
 	m_pMaterialEditor->Layout();
+}
+
+void CSceneTreePanel::SelectedCallback(const tstring& sArgs)
+{
+	if (!m_pTree->GetSelectedNode())
+		return;
+
+	CTreeNodeObject<CConversionMaterial>* pMaterialNode = dynamic_cast<CTreeNodeObject<CConversionMaterial>*>(m_pTree->GetSelectedNode());
+	if (pMaterialNode)
+	{
+		CConversionMaterial* pMaterial = pMaterialNode->GetObject();
+		for (size_t i = 0; i < SMAKWindow()->GetScene()->GetNumMaterials(); i++)
+		{
+			if (pMaterial == SMAKWindow()->GetScene()->GetMaterial(i))
+			{
+				m_iLastSelectedMaterial = i;
+				return;
+			}
+		}
+
+		return;
+	}
 }
 
 void CSceneTreePanel::Open(CConversionScene* pScene)

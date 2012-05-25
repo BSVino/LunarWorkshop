@@ -9,6 +9,7 @@
 
 #include "smakwindow.h"
 #include "models/models.h"
+#include "scenetree.h"
 
 CSMAKRenderer::CSMAKRenderer()
 	: CRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
@@ -444,6 +445,10 @@ void CSMAKRenderer::RenderUV()
 	c.SetBackCulling(false);
 
 	CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[0];
+	size_t iLastSelectedMaterial = SceneTree()->GetLastSelectedMaterial();
+	if (iLastSelectedMaterial < SMAKWindow()->GetMaterials().size())
+		hMaterial = SMAKWindow()->GetMaterials()[iLastSelectedMaterial];
+
 	if (hMaterial.IsValid())
 	{
 		c.UseMaterial(hMaterial);
