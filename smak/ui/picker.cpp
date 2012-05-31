@@ -4,6 +4,7 @@
 #include <glgui/tree.h>
 
 #include "smakwindow.h"
+#include "smak_renderer.h"
 
 using namespace glgui;
 
@@ -15,11 +16,7 @@ CPicker::CPicker(const tstring& sName, IEventListener* pCallback, IEventListener
 
 	m_bPopulated = false;
 
-#ifdef OPENGL2
-	m_pTree = new CTree(CModelWindow::Get()->GetArrowTexture(), CModelWindow::Get()->GetEditTexture(), CModelWindow::Get()->GetVisibilityTexture());
-#else
-	m_pTree = new CTree();
-#endif
+	m_pTree = new CTree(SMAKWindow()->GetSMAKRenderer()->GetArrowTexture(), SMAKWindow()->GetSMAKRenderer()->GetEditTexture(), SMAKWindow()->GetSMAKRenderer()->GetVisibilityTexture());
 	m_pTree->SetBackgroundColor(g_clrBox);
 	m_pTree->SetSelectedListener(this, Selected);
 	AddControl(m_pTree);
@@ -115,9 +112,7 @@ void CMeshInstancePicker::PopulateTreeNode(glgui::CTreeNode* pTreeNode, CConvers
 	{
 		size_t iMeshInstanceNode = pChildNode->AddNode<CConversionMeshInstance>(pSceneNode->GetMeshInstance(m)->GetMesh()->GetName(), pSceneNode->GetMeshInstance(m));
 		CTreeNode* pMeshInstanceNode = pChildNode->GetNode(iMeshInstanceNode);
-#ifdef OPENGL2
-		pMeshInstanceNode->SetIcon(CModelWindow::Get()->GetMeshesNodeTexture());
-#endif
+		pMeshInstanceNode->SetIcon(SMAKWindow()->GetSMAKRenderer()->GetMeshesNodeTexture());
 	}
 }
 

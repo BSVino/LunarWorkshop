@@ -301,9 +301,8 @@ void CSMAKWindow::WorkProgress(size_t iProgress, bool bForceDraw)
 	CSMAKWindow::Get()->Render();
 	CRootPanel::Get()->Think(GetTime());
 	CRootPanel::Get()->Paint(0, 0, (float)m_iWindowWidth, (float)m_iWindowHeight);
-#ifdef OPENGL2
-	glfwSwapBuffers();
-#endif
+
+	SwapBuffers();
 
 	flLastTime = GetTime();
 }
@@ -800,14 +799,11 @@ void CAOPanel::GenerateCallback(const tstring& sArgs)
 	// If the 3d model was there get rid of it.
 	CSMAKWindow::Get()->Render();
 	CRootPanel::Get()->Paint(0, 0, (float)CSMAKWindow::Get()->GetWindowWidth(), (float)CSMAKWindow::Get()->GetWindowHeight());
-#ifdef OPENGL2
-	glfwSwapBuffers();
-#endif
+	Application()->SwapBuffers();
+
 	CSMAKWindow::Get()->Render();
 	CRootPanel::Get()->Paint(0, 0, (float)CSMAKWindow::Get()->GetWindowWidth(), (float)CSMAKWindow::Get()->GetWindowHeight());
-#ifdef OPENGL2
-	glfwSwapBuffers();
-#endif
+	Application()->SwapBuffers();
 
 	if (m_bColor)
 		CSMAKWindow::Get()->SetDisplayColorAO(true);
@@ -926,9 +922,7 @@ void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 	CSMAKWindow::Get()->Render();
 	CRootPanel::Get()->Think(CSMAKWindow::Get()->GetTime());
 	CRootPanel::Get()->Paint(0, 0, (float)CSMAKWindow::Get()->GetWindowWidth(), (float)CSMAKWindow::Get()->GetWindowHeight());
-#ifdef OPENGL2
-	glfwSwapBuffers();
-#endif
+	Application()->SwapBuffers();
 
 	flLastTime = CSMAKWindow::Get()->GetTime();
 }
@@ -1078,11 +1072,7 @@ CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, tvector<CMa
 	m_pLoResLabel = new CLabel(0, 0, 32, 32, "Low Resolution Meshes");
 	AddControl(m_pLoResLabel);
 
-#ifdef OPENGL2
-	m_pLoRes = new CTree(CSMAKWindow::Get()->GetArrowTexture(), CSMAKWindow::Get()->GetEditTexture(), CSMAKWindow::Get()->GetVisibilityTexture());
-#else
-	m_pLoRes = new CTree();
-#endif
+	m_pLoRes = new CTree(SMAKWindow()->GetSMAKRenderer()->GetArrowTexture(), SMAKWindow()->GetSMAKRenderer()->GetEditTexture(), SMAKWindow()->GetSMAKRenderer()->GetVisibilityTexture());
 	m_pLoRes->SetBackgroundColor(g_clrBox);
 	m_pLoRes->SetDroppedListener(this, DroppedLoResMesh);
 	AddControl(m_pLoRes);
@@ -1090,11 +1080,7 @@ CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, tvector<CMa
 	m_pHiResLabel = new CLabel(0, 0, 32, 32, "High Resolution Meshes");
 	AddControl(m_pHiResLabel);
 
-#ifdef OPENGL2
-	m_pHiRes = new CTree(CSMAKWindow::Get()->GetArrowTexture(), CSMAKWindow::Get()->GetEditTexture(), CSMAKWindow::Get()->GetVisibilityTexture());
-#else
-	m_pHiRes = new CTree();
-#endif
+	m_pHiRes = new CTree(SMAKWindow()->GetSMAKRenderer()->GetArrowTexture(), SMAKWindow()->GetSMAKRenderer()->GetEditTexture(), SMAKWindow()->GetSMAKRenderer()->GetVisibilityTexture());
 	m_pHiRes->SetBackgroundColor(g_clrBox);
 	m_pHiRes->SetDroppedListener(this, DroppedHiResMesh);
 	AddControl(m_pHiRes);
@@ -1370,9 +1356,7 @@ void CComboGeneratorPanel::Layout()
 		for (i = 0; i < m_apLoResMeshes.size(); i++)
 		{
 			m_pLoRes->AddNode<CConversionMeshInstance>(m_apLoResMeshes[i]->GetMesh()->GetName(), m_apLoResMeshes[i]);
-#ifdef OPENGL2
-			m_pLoRes->GetNode(i)->SetIcon(CSMAKWindow::Get()->GetMeshesNodeTexture());
-#endif
+			m_pLoRes->GetNode(i)->SetIcon(SMAKWindow()->GetSMAKRenderer()->GetMeshesNodeTexture());
 		}
 	}
 
@@ -1384,9 +1368,7 @@ void CComboGeneratorPanel::Layout()
 		for (i = 0; i < m_apHiResMeshes.size(); i++)
 		{
 			m_pHiRes->AddNode<CConversionMeshInstance>(m_apHiResMeshes[i]->GetMesh()->GetName(), m_apHiResMeshes[i]);
-#ifdef OPENGL2
-			m_pHiRes->GetNode(i)->SetIcon(CSMAKWindow::Get()->GetMeshesNodeTexture());
-#endif
+			m_pHiRes->GetNode(i)->SetIcon(SMAKWindow()->GetSMAKRenderer()->GetMeshesNodeTexture());
 		}
 	}
 
