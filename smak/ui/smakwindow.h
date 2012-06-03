@@ -130,6 +130,7 @@ public:
 	bool					IsRenderingWireframe() { return m_bDisplayWireframe; }
 	bool					IsRenderingUVWireframe() { return m_bDisplayUV; }
 	bool					IsRenderingTexture() { return m_bDisplayTexture; }
+	bool					IsRenderingAO() { return m_bDisplayAO; }
 
 	void					BeginProgress();
 	void					SetAction(const tstring& sAction, size_t iTotalProgress);

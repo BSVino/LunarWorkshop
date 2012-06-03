@@ -523,6 +523,23 @@ void CShader::Destroy()
 	glDeleteProgram((GLuint)m_iProgram);
 }
 
+tstring CShader::FindType(const tstring& sName) const
+{
+	auto it = m_aParameters.find(sName);
+	TAssert(it != m_aParameters.end());
+	if (it == m_aParameters.end())
+		return "unknown";
+
+	const CShader::CParameter* pShaderPar = &it->second;
+
+	tstring sType;
+	for (size_t j = 0; j < pShaderPar->m_aActions.size(); j++)
+		if (pShaderPar->m_aActions[j].m_sValue == "[value]")
+			return m_asUniforms.find(pShaderPar->m_aActions[j].m_sName)->second;
+
+	return "unknown";
+}
+
 void ReloadShaders(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	CShaderLibrary::CompileShaders();

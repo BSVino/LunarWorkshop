@@ -33,6 +33,10 @@ public:
 	void			Save() const;
 	void			Reload();
 
+	size_t			FindParameter(const tstring& sParameterName);
+	void			SetParameter(const tstring& sParameterName, const CTextureHandle& hTexture);
+	void			FillParameter(size_t iParameter, const tstring& sData, class CShader* pShader=nullptr);
+
 public:
 	tstring			m_sFile;
 
@@ -55,6 +59,11 @@ public:
 		Vector		m_vecValue;
 		Vector4D	m_vec4Value;
 		tstring		m_sValue;
+
+		tstring		m_sType;
+
+	public:
+		void		SetValue(const tstring& sValue, class CShader* pShader);
 	};
 
 	tvector<CParameter>		m_aParameters;
@@ -82,9 +91,6 @@ public:
 	static void				ClearUnreferenced();
 
 	static CMaterialLibrary*	Get() { return s_pMaterialLibrary; };
-
-public:
-	static void				FillParameter(CMaterial& oMat, size_t iPar, class CShader* pShader, const class CData* pData);
 
 protected:
 	eastl::map<tstring, CMaterial>	m_aMaterials;

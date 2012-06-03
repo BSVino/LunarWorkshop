@@ -17,6 +17,8 @@ public:
 	bool					Compile();
 	void					Destroy();
 
+	tstring					FindType(const tstring& sName) const;
+
 public:
 	eastl::string			m_sName;
 	eastl::string			m_sVertexFile;

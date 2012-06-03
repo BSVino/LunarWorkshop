@@ -1,7 +1,7 @@
 #pragma once
 
 template <class C, class L>
-CAssetHandle<C, L>::CAssetHandle(const tstring& sName, const C* pAsset = nullptr)
+CAssetHandle<C, L>::CAssetHandle(const tstring& sName, C* pAsset = nullptr)
 {
 	m_sName = sName;
 	if (pAsset)
@@ -16,7 +16,7 @@ CAssetHandle<C, L>::CAssetHandle(const tstring& sName, const C* pAsset = nullptr
 	}
 
 	if (m_pAsset)
-		const_cast<C*>(m_pAsset)->m_iReferences++;
+		m_pAsset->m_iReferences++;
 }
 
 template <class C, class L>
@@ -26,7 +26,7 @@ CAssetHandle<C, L>::CAssetHandle(const CAssetHandle& c)
 	if (c.m_pAsset)
 	{
 		m_pAsset = c.m_pAsset;
-		const_cast<C*>(m_pAsset)->m_iReferences++;
+		m_pAsset->m_iReferences++;
 	}
 	else
 		m_pAsset = nullptr;
@@ -61,7 +61,7 @@ void CAssetHandle<C, L>::Reset()
 		return;
 
 	TAssertNoMsg(m_pAsset->m_iReferences);
-	const_cast<C*>(m_pAsset)->m_iReferences--;
+	m_pAsset->m_iReferences--;
 
 	m_pAsset = nullptr;
 }
@@ -75,13 +75,13 @@ const CAssetHandle<C, L>& CAssetHandle<C, L>::operator=(const CAssetHandle<C, L>
 	Reset();
 
 	// If c == *this, c.m_pAsset will be clobbered in Reset()
-	const C* pAsset = c.m_pAsset;
+	C* pAsset = c.m_pAsset;
 
 	m_sName = c.m_sName;
 	if (pAsset)
 	{
 		m_pAsset = pAsset;
-		const_cast<C*>(m_pAsset)->m_iReferences++;
+		m_pAsset->m_iReferences++;
 	}
 	else
 		m_pAsset = nullptr;

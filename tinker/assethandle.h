@@ -14,7 +14,7 @@ public:
 		m_pAsset = nullptr;
 	}
 
-	CAssetHandle(const tstring& sName, const C* pAsset = nullptr);
+	CAssetHandle(const tstring& sName, C* pAsset = nullptr);
 	CAssetHandle(const CAssetHandle& c);
 	~CAssetHandle();
 
@@ -26,7 +26,7 @@ public:
 		return m_sName;
 	}
 
-	const C* GetAsset() const
+	C* GetAsset() const
 	{
 		if (!IsValid())
 			return nullptr;
@@ -38,18 +38,18 @@ public:
 	const CAssetHandle& operator=(const CAssetHandle& c);
 	CAssetHandle& operator=(CAssetHandle&& c);
 
-	inline operator const C*() const
+	inline operator C*() const
 	{
 		return GetAsset();
 	}
 
-	inline const C* operator->() const
+	inline C* operator->() const
 	{
 		return GetAsset();
 	}
 
 protected:
 	tstring				m_sName;
-	const C*			m_pAsset;
+	C*					m_pAsset;
 };
 

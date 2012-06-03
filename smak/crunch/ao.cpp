@@ -8,6 +8,7 @@
 #include <raytracer/raytracer.h>
 #include "shaders/shaders.h"
 #include <tinker_platform.h>
+#include <textures/texturelibrary.h>
 
 #if 0
 #ifdef _DEBUG
@@ -1453,7 +1454,7 @@ void CAOGenerator::Bleed()
 	free(abPixelMask);
 }
 
-size_t CAOGenerator::GenerateTexture(bool bInMedias)
+CTextureHandle CAOGenerator::GenerateTexture(bool bInMedias)
 {
 	Vector* avecShadowValues = m_avecShadowValues;
 
@@ -1520,16 +1521,7 @@ size_t CAOGenerator::GenerateTexture(bool bInMedias)
 		}
 	}
 
-	size_t iGLId = 0;
-#ifdef OPENGL2
-	glGenTextures(1, &iGLId);
-	glBindTexture(GL_TEXTURE_2D, iGLId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, (GLint)m_iWidth, (GLint)m_iHeight, GL_RGB, GL_FLOAT, &avecShadowValues[0].x);
-#endif
-
-	return iGLId;
+	return CTextureLibrary::AddTexture(avecShadowValues, m_iWidth, m_iHeight);
 }
 
 void CAOGenerator::SaveToFile(const tchar *pszFilename)
@@ -1570,7 +1562,7 @@ bool CAOGenerator::Texel(size_t w, size_t h, size_t& iTexel, bool bUseMask)
 	if (w < 0 || h < 0 || w >= m_iWidth || h >= m_iHeight)
 		return false;
 
-	iTexel = m_iHeight*h + w;
+	iTexel = m_iHeight*(m_iHeight-h-1) + w;
 
 	TAssert(iTexel >= 0 && iTexel < m_iWidth * m_iHeight);
 

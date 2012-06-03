@@ -1,11 +1,14 @@
 #ifndef SMAK_CRUNCH_H
 #define SMAK_CRUNCH_H
 
-#include <modelconverter/convmesh.h>
 #include <parallelize.h>
-#include "ui/smakwindow.h"
 #include <worklistener.h>
 #include <common.h>
+
+#include <modelconverter/convmesh.h>
+#include <textures/texturehandle.h>
+
+#include "ui/smakwindow.h"
 
 namespace raytrace
 {
@@ -256,7 +259,7 @@ public:
 	void					RaytraceSceneFromPosition(class raytrace::CRaytracer* pTracer, Vector vecPosition, Vector vecDirection, CConversionMeshInstance* pMeshInstance, CConversionFace* pFace, size_t iTexel);
 	void					RaytraceJoinThreads();
 
-	size_t					GenerateTexture(bool bInMedias = false);
+	CTextureHandle			GenerateTexture(bool bInMedias = false);
 	void					SaveToFile(const tchar* pszFilename);
 
 	bool					Texel(size_t w, size_t h, size_t& iTexel, bool bUseMask = true);

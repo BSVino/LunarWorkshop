@@ -360,6 +360,9 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			if (!bTexture)
 				c.SetUniform("bDiffuse", false);
 
+			if (!SMAKWindow()->IsRenderingAO())
+				c.SetUniform("bAO", false);
+
 			c.SetUniform("flRimLight", 0.05f);
 
 			if (SMAKWindow()->IsRenderingLight())

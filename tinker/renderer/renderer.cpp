@@ -748,6 +748,36 @@ size_t CRenderer::LoadTextureIntoGL(Color* pclrData, int x, int y, int iClamp)
 	return iGLId;
 }
 
+size_t CRenderer::LoadTextureIntoGL(Vector* pvecData, int x, int y, int iClamp)
+{
+	GLuint iGLId;
+	glGenTextures(1, &iGLId);
+	glBindTexture(GL_TEXTURE_2D, iGLId);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	if (iClamp == 1)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+
+	gluBuild2DMipmaps(GL_TEXTURE_2D,
+		3,
+		x,
+		y,
+		GL_RGB,
+		GL_FLOAT,
+		pvecData);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	s_iTexturesLoaded++;
+
+	return iGLId;
+}
+
 void CRenderer::UnloadTextureFromGL(size_t iGLId)
 {
 	glDeleteTextures(1, &iGLId);

@@ -344,24 +344,12 @@ void CMaterialPanel::ParameterChangedCallback(const tstring& sArgs)
 			continue;
 		}
 
-		CMaterial::CParameter* pParameter = nullptr;
-		size_t iParameter;
-		for (iParameter = 0; iParameter < pMaterial->m_aParameters.size(); iParameter++)
-		{
-			if (pMaterial->m_aParameters[iParameter].m_sName == m_asParameterNames[i])
-			{
-				pParameter = const_cast<CMaterial::CParameter*>(&pMaterial->m_aParameters[iParameter]);
-				break;
-			}
-		}
-
-		if (!pParameter)
-			pParameter = const_cast<CMaterial::CParameter*>(&pMaterial->m_aParameters.push_back());
+		size_t iParameter = pMaterial->FindParameter(m_asParameterNames[i]);
+		CMaterial::CParameter* pParameter = &pMaterial->m_aParameters[iParameter];
 
 		pParameter->m_sName = m_asParameterNames[i];
 
-		CData d("", m_apParameterOptions[i]->GetText());
-		CMaterialLibrary::FillParameter(*pMaterial, iParameter, pShader, &d);
+		pMaterial->FillParameter(iParameter, m_apParameterOptions[i]->GetText(), pShader);
 	}
 }
 

@@ -4,6 +4,7 @@
 #include <EASTL/map.h>
 
 #include <tstring.h>
+#include <vector.h>
 
 #include "texturehandle.h"
 
@@ -36,7 +37,9 @@ public:
 	static size_t			GetNumTextures() { return Get()->m_aTextures.size(); }
 
 	static CTextureHandle	AddTexture(const tstring& sTexture, int iClamp = 0);
+	static CTextureHandle	AddTexture(Vector* vecColors, size_t iWidth, size_t iHeight);
 	static CTexture*		AddAsset(const tstring& sTexture, int iClamp = 0);
+	static CTexture*		AddAsset(const tstring& sTexture, Vector* vecColors, size_t iWidth, size_t iHeight);
 	static CTextureHandle	FindAsset(const tstring& sTexture);
 	static size_t			FindTextureID(const tstring& sTexture);
 

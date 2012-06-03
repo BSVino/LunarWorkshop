@@ -11,6 +11,7 @@
 #include <glgui/tree.h>
 #include <glgui/textfield.h>
 #include <glgui/filedialog.h>
+#include <textures/materiallibrary.h>
 
 #include "smakwindow.h"
 #include "scenetree.h"
@@ -831,27 +832,21 @@ void CAOPanel::GenerateCallback(const tstring& sArgs)
 	}
 	m_oGenerator.Generate();
 
-	size_t iAO;
+	CTextureHandle hAO;
 	if (m_oGenerator.DoneGenerating())
-		iAO = m_oGenerator.GenerateTexture();
+		hAO = m_oGenerator.GenerateTexture();
 
-#ifdef OPENGL2
-	for (size_t i = 0; i < m_paoMaterials->size(); i++)
+	for (size_t i = 0; i < SMAKWindow()->GetMaterials().size(); i++)
 	{
-		size_t& iAOTexture = m_bColor?(*m_paoMaterials)[i].m_iColorAO:(*m_paoMaterials)[i].m_iAO;
+		CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[i];
+		if (!hMaterial.IsValid())
+			continue;
 
 		if (!m_pScene->GetMaterial(i)->IsVisible())
 			continue;
 
-		if (iAOTexture)
-			glDeleteTextures(1, &iAOTexture);
-
-		if (m_oGenerator.DoneGenerating())
-			iAOTexture = iAO;
-		else
-			iAOTexture = 0;
+		hMaterial->SetParameter(m_bColor?"ColorAmbientOcclusion":"AmbientOcclusion", hAO);
 	}
-#endif
 
 	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
 
@@ -902,19 +897,19 @@ void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 
 	if (m_oGenerator.IsGenerating() && flLastTime - flLastGenerate > 0.5f)
 	{
-		size_t iAO = m_oGenerator.GenerateTexture(true);
+		CTextureHandle hAO = m_oGenerator.GenerateTexture(true);
 
-#ifdef OPENGL2
-		for (size_t i = 0; i < m_paoMaterials->size(); i++)
+		for (size_t i = 0; i < SMAKWindow()->GetMaterials().size(); i++)
 		{
-			size_t& iAOTexture = m_bColor?(*m_paoMaterials)[i].m_iColorAO:(*m_paoMaterials)[i].m_iAO;
+			CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[i];
+			if (!hMaterial.IsValid())
+				continue;
 
-			if (iAOTexture)
-				glDeleteTextures(1, &iAOTexture);
+			if (!m_pScene->GetMaterial(i)->IsVisible())
+				continue;
 
-			iAOTexture = iAO;
+			hMaterial->SetParameter(m_bColor?"ColorAmbientOcclusion":"AmbientOcclusion", hAO);
 		}
-#endif
 
 		flLastGenerate = CSMAKWindow::Get()->GetTime();
 	}
