@@ -18,7 +18,7 @@ public:
 
 	CReceptacle*		GetReceptacle() const;
 
-	virtual void		ModifyContext(class CRenderingContext* pContext, bool bTransparent) const;
+	virtual void		ModifyContext(class CRenderingContext* pContext) const;
 
 	void				Reflected(reflection_t eReflectionType);
 	void				SetReflected(bool bReflected) { m_bReflected = bReflected; }

@@ -804,6 +804,8 @@ void CEditorPanel::RemoveOutputCallback(const tstring& sArgs)
 		return;
 
 	pEntity->GetOutputs().erase(pEntity->GetOutputs().begin()+m_pOutputs->GetSelectedNodeId());
+
+	LayoutEntity();
 }
 
 void CEditorPanel::ChooseOutputCallback(const tstring& sArgs)

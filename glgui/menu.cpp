@@ -154,7 +154,11 @@ void CMenu::Layout()
 	GetAbsPos(x, y);
 
 	m_pMenu->SetSize(iWidth, iHeight);
-	m_pMenu->SetPos(x, y + 5 + GetHeight());
+
+	if (y + GetHeight() + 5 + iHeight > RootPanel()->GetHeight())
+		m_pMenu->SetPos(x, y - 5 - iHeight);
+	else
+		m_pMenu->SetPos(x, y + 5 + GetHeight());
 
 	m_pMenu->Layout();
 }

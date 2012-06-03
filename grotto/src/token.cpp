@@ -18,6 +18,9 @@ SAVEDATA_TABLE_BEGIN_EDITOR(CToken);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_COPYTYPE, CEntityHandle<CReceptacle>, m_hReceptacle, "Receptacle", UnserializeString_TokenReceptacle);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bReflected, "Reflected");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sType, "TokenType");
+	SAVEDATA_EDITOR_VARIABLE("Receptacle");
+	SAVEDATA_EDITOR_VARIABLE("Reflected");
+	SAVEDATA_EDITOR_VARIABLE("TokenType");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CToken);
@@ -37,9 +40,9 @@ CReceptacle* CToken::GetReceptacle() const
 	return m_hReceptacle;
 }
 
-void CToken::ModifyContext(CRenderingContext* pContext, bool bTransparent) const
+void CToken::ModifyContext(CRenderingContext* pContext) const
 {
-	if (bTransparent)
+	if (!GameServer()->GetRenderer()->IsRenderingTransparent())
 		return;
 
 	if (IsReflected())
