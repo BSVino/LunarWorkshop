@@ -39,10 +39,12 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 		GetContext().m_pFrameBuffer = oLastContext.m_pFrameBuffer;
 		GetContext().m_sProgram = oLastContext.m_sProgram;
 
+		GetContext().m_rViewport = oLastContext.m_rViewport;
 		GetContext().m_eBlend = oLastContext.m_eBlend;
 		GetContext().m_flAlpha = oLastContext.m_flAlpha;
 		GetContext().m_bDepthMask = oLastContext.m_bDepthMask;
 		GetContext().m_bDepthTest = oLastContext.m_bDepthTest;
+		GetContext().m_eDepthFunction = oLastContext.m_eDepthFunction;
 		GetContext().m_bCull = oLastContext.m_bCull;
 		GetContext().m_bWinding = oLastContext.m_bWinding;
 
@@ -62,10 +64,12 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 		UseFrameBuffer(NULL);
 		UseProgram("");
 
+		SetViewport(Rect(0, 0, Application()->GetWindowWidth(), Application()->GetWindowHeight()));
 		SetBlend(BLEND_NONE);
 		SetAlpha(1);
 		SetDepthMask(true);
 		SetDepthTest(true);
+		SetDepthFunction(DF_LESS);
 		SetBackCulling(true);
 		SetWinding(true);
 	}
@@ -90,10 +94,12 @@ CRenderingContext::~CRenderingContext()
 			SetUniform("mGlobal", GetContext().m_mTransformations);
 		}
 
+		SetViewport(GetContext().m_rViewport);
 		SetBlend(GetContext().m_eBlend);
 		SetAlpha(GetContext().m_flAlpha);
 		SetDepthMask(GetContext().m_bDepthMask);
 		SetDepthTest(GetContext().m_bDepthTest);
+		SetDepthFunction(GetContext().m_eDepthFunction);
 		SetBackCulling(GetContext().m_bCull);
 		SetWinding(GetContext().m_bWinding);
 	}
@@ -115,6 +121,7 @@ CRenderingContext::~CRenderingContext()
 		glDepthMask(true);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
+		glDepthFunc(GL_LESS);
 
 		glFrontFace(GL_CCW);
 	}
@@ -169,6 +176,13 @@ void CRenderingContext::LoadTransform(const Matrix4x4& m)
 	GetContext().m_mTransformations = m;
 }
 
+void CRenderingContext::SetViewport(const Rect& rViewport)
+{
+	glViewport(rViewport.x, rViewport.y, rViewport.w, rViewport.h);
+
+	GetContext().m_rViewport = rViewport;
+}
+
 void CRenderingContext::SetBlend(blendtype_t eBlend)
 {
 	if (eBlend)
@@ -177,8 +191,12 @@ void CRenderingContext::SetBlend(blendtype_t eBlend)
 
 		if (eBlend == BLEND_ALPHA)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else
+		else if (eBlend == BLEND_ADDITIVE)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		else if (eBlend == BLEND_BOTH)
+			glBlendFunc(GL_ONE, GL_ONE);
+		else
+			TUnimplemented();
 	}
 	else
 		glDisablei(GL_BLEND, 0);
@@ -199,6 +217,18 @@ void CRenderingContext::SetDepthTest(bool bDepthTest)
 	else
 		glDisable(GL_DEPTH_TEST);
 	GetContext().m_bDepthTest = bDepthTest;
+}
+
+void CRenderingContext::SetDepthFunction(depth_function_t eDepthFunction)
+{
+	if (eDepthFunction == DF_LEQUAL)
+		glDepthFunc(GL_LEQUAL);
+	else if (eDepthFunction == DF_LESS)
+		glDepthFunc(GL_LESS);
+	else
+		TUnimplemented();
+
+	GetContext().m_eDepthFunction = eDepthFunction;
 }
 
 void CRenderingContext::SetBackCulling(bool bCull)
@@ -900,6 +930,16 @@ void CRenderingContext::RenderText(const tstring& sText, unsigned iLength, const
 
 	ftglSetAttributeLocations(m_pShader->m_iPositionAttribute, m_pShader->m_iTexCoordAttribute);
 	glgui::CLabel::GetFont(sFontName, iFontFaceSize)->Render(sText.c_str(), iLength, FTPoint(vecPosition.x, vecPosition.y, vecPosition.z));
+}
+
+void CRenderingContext::ReadPixels(size_t x, size_t y, size_t w, size_t h, Vector4D* pvecPixels)
+{
+	glReadPixels(x, y, w, h, GL_RGBA, GL_FLOAT, pvecPixels);
+}
+
+void CRenderingContext::Finish()
+{
+	glFinish();
 }
 
 CRenderingContext::CRenderContext& CRenderingContext::GetContext()

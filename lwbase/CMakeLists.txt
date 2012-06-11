@@ -24,6 +24,7 @@ set (LWBASE_SOURCES
 	../common/mempool.cpp
 	../common/mtrand.cpp
 	../common/stb_image.cpp
+	../common/stb_image_write.cpp
 	../common/parallelize.cpp
 	../common/sockets/sockets.cpp
 	../common/math/matrix.cpp

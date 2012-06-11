@@ -7,6 +7,7 @@
 
 #include <modelconverter/convmesh.h>
 #include <textures/texturehandle.h>
+#include <tinker/renderer/renderer.h>
 
 #include "ui/smakwindow.h"
 
@@ -240,7 +241,7 @@ public:
 	void					SetWorkListener(IWorkListener* pListener) { m_pWorkListener = pListener; };
 
 	void					ShadowMapSetupScene();
-	void					ShadowMapSetupSceneNode(CConversionSceneNode* pNode, class GLUtesselator* pTesselator, bool bDepth);
+	void					ShadowMapSetupSceneNode(CConversionSceneNode* pNode, tvector<float>& aflVerts, bool bDepth);
 	void					RenderSetupScene();
 	void					RenderSetupSceneNode(CConversionSceneNode* pNode, class GLUtesselator* pTesselator);
 	void					Generate();
@@ -291,17 +292,20 @@ protected:
 	IWorkListener*			m_pWorkListener;
 
 	size_t					m_iPixelDepth;
-	float*					m_pPixels;
+	Vector4D*				m_pvecPixels;
 	bool*					m_bPixelMask;
 
-	unsigned int			m_iSceneList;
+	size_t					m_iScene;
+	size_t					m_iSceneVerts;
+	size_t					m_iSceneDepth;
+	size_t					m_iSceneDepthVerts;
 
 	Vector*					m_avecShadowValues;
 	Vector*					m_avecShadowGeneratedValues;
 	size_t*					m_aiShadowReads;
 	float					m_flLowestValue;
 	float					m_flHighestValue;
-	size_t					m_iAOFB;
+	CFrameBuffer			m_oAOFB;
 
 	bool					m_bIsGenerating;
 	bool					m_bIsBleeding;

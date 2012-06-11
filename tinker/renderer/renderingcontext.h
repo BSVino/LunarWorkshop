@@ -25,10 +25,12 @@ protected:
 		const class CFrameBuffer*	m_pFrameBuffer;
 		tstring				m_sProgram;
 
+		Rect				m_rViewport;
 		blendtype_t			m_eBlend;
 		float				m_flAlpha;
 		bool				m_bDepthMask;
 		bool				m_bDepthTest;
+		depth_function_t	m_eDepthFunction;
 		bool				m_bCull;
 		bool				m_bWinding;
 	};
@@ -51,15 +53,18 @@ public:
 	void					ResetTransformations();
 	void					LoadTransform(const Matrix4x4& m);
 
+	void					SetViewport(const Rect& rViewport);
 	void					SetBlend(blendtype_t eBlend);
 	void					SetAlpha(float flAlpha) { GetContext().m_flAlpha = flAlpha; };
 	void					SetDepthMask(bool bDepthMask);
 	void					SetDepthTest(bool bDepthTest);
+	void					SetDepthFunction(depth_function_t eDepthFunction);
 	void					SetBackCulling(bool bCull);
 	void					SetWinding(bool bWinding);	// True is default
 
 	float					GetAlpha() { return GetContext().m_flAlpha; };
 	blendtype_t				GetBlend() { return GetContext().m_eBlend; };
+	depth_function_t		GetDepthFunction() { return GetContext().m_eDepthFunction; };
 	::Color					GetColor() { return m_clrRender; };
 	bool					GetWinding() { return GetContext().m_bWinding; };
 
@@ -107,17 +112,22 @@ public:
 	void					EndRender();
 
 	void					BeginRenderVertexArray(size_t iBuffer=0);
-	void					SetPositionBuffer(float* pflBuffer, size_t iStride=0);
-	void					SetPositionBuffer(size_t iOffset, size_t iStride);
-	void					SetNormalsBuffer(float* pflBuffer, size_t iStride=0);
-	void					SetNormalsBuffer(size_t iOffset, size_t iStride);
-	void					SetTexCoordBuffer(float* pflBuffer, size_t iStride=0);
-	void					SetTexCoordBuffer(size_t iOffset, size_t iStride);
+	void					SetPositionBuffer(float* pflBuffer, size_t iStrideBytes=0);
+	void					SetPositionBuffer(size_t iOffsetBytes, size_t iStrideBytes);
+	void					SetNormalsBuffer(float* pflBuffer, size_t iStrideBytes=0);
+	void					SetNormalsBuffer(size_t iOffsetBytes, size_t iStrideBytes);
+	void					SetTexCoordBuffer(float* pflBuffer, size_t iStrideBytes=0);
+	void					SetTexCoordBuffer(size_t iOffsetBytes, size_t iStrideBytes);
 	void					SetCustomIntBuffer(const char* pszName, size_t iSize, size_t iOffset, size_t iStride);
 	void					EndRenderVertexArray(size_t iVertices, bool bWireframe = false);
 	void					EndRenderVertexArrayTriangles(size_t iTriangles, int* piIndices);
 
 	void					RenderText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize);
+
+	// Reads w*h RGBA pixels in float format
+	void					ReadPixels(size_t x, size_t y, size_t w, size_t h, Vector4D* pvecPixels);
+
+	void					Finish();	// Flush and block until complete
 
 protected:
 	inline CRenderContext&	GetContext();

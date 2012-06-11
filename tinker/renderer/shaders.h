@@ -95,7 +95,7 @@ public:
 
 protected:
 	void					ClearLog();
-	void					WriteLog(const char* pszLog, const char* pszShaderText);
+	void					WriteLog(const tstring& sFile, const char* pszLog, const char* pszShaderText);
 
 protected:
 	eastl::map<tstring, size_t>	m_aShaderNames;

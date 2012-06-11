@@ -6,6 +6,7 @@
 #include <maths.h>
 #include <tinker_platform.h>
 #include <stb_image.h>
+#include <stb_image_write.h>
 
 #include <common/worklistener.h>
 #include <renderer/shaders.h>
@@ -18,7 +19,27 @@
 
 CFrameBuffer::CFrameBuffer()
 {
-	m_iRB = m_iMap = m_iDepth = m_iFB = 0;
+	m_iRB = m_iMap = m_iDepth = m_iDepthTexture = m_iFB = 0;
+}
+
+void CFrameBuffer::Destroy()
+{
+	if (m_iMap)
+		glDeleteTextures(1, &m_iMap);
+
+	if (m_iDepthTexture)
+		glDeleteTextures(1, &m_iDepthTexture);
+
+	if (m_iRB)
+		glDeleteRenderbuffers(1, &m_iRB);
+
+	if (m_iDepth)
+		glDeleteRenderbuffers(1, &m_iDepth);
+
+	if (m_iFB)
+		glDeleteFramebuffers(1, &m_iFB);
+
+	m_iRB = m_iMap = m_iDepth = m_iDepthTexture = m_iFB = 0;
 }
 
 CRenderer::CRenderer(size_t iWidth, size_t iHeight)
@@ -124,7 +145,11 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 			glTexParameteri(iTextureTarget, GL_TEXTURE_MAG_FILTER, (eOptions&FB_LINEAR)?GL_LINEAR:GL_NEAREST);
 			glTexParameteri(iTextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 			glTexParameteri(iTextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-			glTexImage2D(iTextureTarget, 0, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+			if (eOptions&FB_TEXTURE_HALF_FLOAT)
+				glTexImage2D(iTextureTarget, 0, GL_RGBA16F, (GLsizei)iWidth, (GLsizei)iHeight, 0, GL_RGBA, GL_HALF_FLOAT, NULL);
+			else
+				glTexImage2D(iTextureTarget, 0, GL_RGBA, (GLsizei)iWidth, (GLsizei)iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 		}
 		glBindTexture(iTextureTarget, 0);
 	}
@@ -149,6 +174,17 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 			glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)iWidth, (GLsizei)iHeight );
 		glBindRenderbuffer( GL_RENDERBUFFER, 0 );
 	}
+	else if (eOptions&FB_DEPTH_TEXTURE)
+	{
+		glGenTextures(1, &oBuffer.m_iDepthTexture);
+		glBindTexture(GL_TEXTURE_2D, oBuffer.m_iDepthTexture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, (GLsizei)iWidth, (GLsizei)iHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 
 	glGenFramebuffers(1, &oBuffer.m_iFB);
 	glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)oBuffer.m_iFB);
@@ -158,7 +194,10 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, (GLuint)oBuffer.m_iRB);
 	if (eOptions&FB_DEPTH)
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, (GLuint)oBuffer.m_iDepth);
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	else if (eOptions&FB_DEPTH_TEXTURE)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, (GLuint)oBuffer.m_iDepthTexture, 0);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	TAssert(status == GL_FRAMEBUFFER_COMPLETE);
 
 	GLint iFBSamples;
@@ -182,6 +221,14 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 	oBuffer.m_vecVertices[3] = Vector2D((float)iWidth, 0);
 
 	return oBuffer;
+}
+
+void CRenderer::DestroyFrameBuffer(CFrameBuffer* pBuffer)
+{
+	if (!pBuffer)
+		return;
+
+	pBuffer->Destroy();
 }
 
 void CRenderer::PreFrame()
@@ -606,21 +653,22 @@ bool CRenderer::HardwareSupported()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	glDeleteTextures(1, &oBuffer.m_iMap);
-	glDeleteRenderbuffers(1, &oBuffer.m_iDepth);
-	glDeleteFramebuffers(1, &oBuffer.m_iFB);
+	oBuffer.Destroy();
 
 	// Compile a test shader. If it fails we don't support shaders.
 	const char* pszVertexShader =
+		"#version 130\n"
 		"void main()"
 		"{"
 		"	gl_Position = vec4(0.0, 0.0, 0.0, 0.0);"
 		"}";
 
 	const char* pszFragmentShader =
-		"void main(void)"
+		"#version 130\n"
+		"out vec4 vecFragColor;"
+		"void main()"
 		"{"
-		"	gl_FragColor = vec4(1.0,1.0,1.0,1.0);"
+		"	vecFragColor = vec4(1.0, 1.0, 1.0, 1.0);"
 		"}";
 
 	GLuint iVShader = glCreateShader(GL_VERTEX_SHADER);
@@ -819,6 +867,24 @@ void CRenderer::UnloadTextureData(Color* pData)
 	stbi_image_free((char*)pData);
 }
 
+void CRenderer::WriteTextureToFile(size_t iTexture, tstring sFilename)
+{
+	glBindTexture(GL_TEXTURE_2D, iTexture);
+
+	int iWidth, iHeight;
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &iWidth);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &iHeight);
+
+	tvector<Color> aclrPixels;
+	aclrPixels.resize(iWidth*iHeight);
+
+	glGetError();
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, aclrPixels.data());
+	int i = glGetError();
+
+	stbi_write_png(sFilename.c_str(), iWidth, iHeight, 4, aclrPixels.data(), 0);
+}
+
 void R_ReadPixels(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	size_t iFBO = 0;
@@ -839,7 +905,7 @@ void R_ReadPixels(class CCommand* pCommand, tvector<tstring>& asTokens, const ts
 
 	TAssert(!"Unsupported.");
 	// I removed DevIL and the replacement doesn't save, but I'm okay with that for the time being.
-	// If I really need this in the future I'll build in libpng and save it that way.
+	// This feature can be implemented with something similar to CRenderer::WriteTextureToFile
 
 	delete pixels;
 }

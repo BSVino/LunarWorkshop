@@ -19,6 +19,8 @@ typedef enum
 	FB_RENDERBUFFER = (1<<2),
 	FB_LINEAR = (1<<3),
 	FB_MULTISAMPLE = (1<<4),
+	FB_DEPTH_TEXTURE = (1<<5),
+	FB_TEXTURE_HALF_FLOAT = (1<<6),
 } fb_options_e;
 
 class CFrameBuffer
@@ -27,12 +29,16 @@ public:
 					CFrameBuffer();
 
 public:
+	void			Destroy();
+
+public:
 	unsigned int	m_iWidth;
 	unsigned int	m_iHeight;
 
 	unsigned int	m_iRB;
 	unsigned int	m_iMap;
 	unsigned int	m_iDepth;
+	unsigned int	m_iDepthTexture;
 	unsigned int	m_iFB;
 
 	Vector2D		m_vecTexCoords[4];
@@ -55,6 +61,7 @@ public:
 	void			LoadShaders();
 
 	CFrameBuffer	CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_options_e eOptions);
+	void			DestroyFrameBuffer(CFrameBuffer* pBuffer);
 
 	// PreFrame is run before thinks, physics, etc.
 	virtual void	PreFrame();
@@ -131,6 +138,8 @@ public:
 
 	static Color*	LoadTextureData(tstring sFilename, int& w, int& h);
 	static void		UnloadTextureData(Color* pData);
+
+	static void		WriteTextureToFile(size_t iTexture, tstring sFilename);
 
 protected:
 	size_t			m_iWidth;

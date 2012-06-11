@@ -209,17 +209,17 @@ void CShaderLibrary::ClearLog()
 	m_bLogNeedsClearing = true;
 }
 
-void CShaderLibrary::WriteLog(const char* pszLog, const char* pszShaderText)
+void CShaderLibrary::WriteLog(const tstring& sFile, const char* pszLog, const char* pszShaderText)
 {
 	if (!pszLog || strlen(pszLog) == 0)
 		return;
 
-	tstring sFile = GetAppDataDirectory(Application()->AppDirectory(), "shaders.txt");
+	tstring sLogFile = GetAppDataDirectory(Application()->AppDirectory(), "shaders.txt");
 
 	if (m_bLogNeedsClearing)
 	{
 		// Only clear it if we're actually going to write to it so we don't create the file.
-		FILE* fp = tfopen(sFile, "w");
+		FILE* fp = tfopen(sLogFile, "w");
 		fclose(fp);
 		m_bLogNeedsClearing = false;
 	}
@@ -228,8 +228,8 @@ void CShaderLibrary::WriteLog(const char* pszLog, const char* pszShaderText)
 	strncpy(szText, pszShaderText, 99);
 	szText[99] = '\0';
 
-	FILE* fp = tfopen(sFile, "a");
-	fprintf(fp, "Shader compile output %d\n", (int)time(NULL));
+	FILE* fp = tfopen(sLogFile, "a");
+	fprintf(fp, ("Shader compile output for file: " + sFile + " timestamp: %d\n").c_str(), (int)time(NULL));
 	fprintf(fp, "%s\n\n", pszLog);
 	fprintf(fp, "%s...\n\n", szText);
 	fclose(fp);
@@ -328,7 +328,7 @@ bool CShader::Compile()
 		int iLogLength = 0;
 		char szLog[1024];
 		glGetShaderInfoLog((GLuint)iVShader, 1024, &iLogLength, szLog);
-		CShaderLibrary::Get()->WriteLog(szLog, pszStr);
+		CShaderLibrary::Get()->WriteLog(m_sVertexFile + ".vs", szLog, pszStr);
 	}
 
 	size_t iFShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -344,7 +344,7 @@ bool CShader::Compile()
 		int iLogLength = 0;
 		char szLog[1024];
 		glGetShaderInfoLog((GLuint)iFShader, 1024, &iLogLength, szLog);
-		CShaderLibrary::Get()->WriteLog(szLog, pszStr);
+		CShaderLibrary::Get()->WriteLog(m_sFragmentFile + ".fs", szLog, pszStr);
 	}
 
 	size_t iProgram = glCreateProgram();
@@ -363,7 +363,7 @@ bool CShader::Compile()
 		int iLogLength = 0;
 		char szLog[1024];
 		glGetProgramInfoLog((GLuint)iProgram, 1024, &iLogLength, szLog);
-		CShaderLibrary::Get()->WriteLog(szLog, "link");
+		CShaderLibrary::Get()->WriteLog("link", szLog, "link");
 	}
 
 	if (iVertexCompiled != GL_TRUE || iFragmentCompiled != GL_TRUE || iProgramLinked != GL_TRUE)
