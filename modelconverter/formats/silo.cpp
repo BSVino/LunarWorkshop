@@ -450,9 +450,6 @@ const tchar* CModelConverter::ReadSIAShape(const tchar* pszLine, const tchar* ps
 			// A face.
 			size_t iFace = pMesh->AddFace(iCurrentMaterial);
 
-			if (iFace == 10000)
-				pMeshNode->GetMeshInstance(0)->SetVisible(false);
-
 			// scanf is pretty slow even for such a short string due to lots of mallocs.
 			const tchar* pszToken = pszLine+6;
 

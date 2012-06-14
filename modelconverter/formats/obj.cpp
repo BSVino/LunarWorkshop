@@ -106,10 +106,6 @@ bool CModelConverter::ReadOBJ(const tstring& sFilename)
 			{
 				iTotalFaces = atoi(pszLine+11);
 				pMesh->SetTotalFaces(iTotalFaces);
-
-				// Don't kill the video card while we're loading the faces.
-				if (iTotalFaces > 10000)
-					pMeshNode->GetMeshInstance(0)->SetVisible(false);
 			}
 
 			continue;
@@ -265,10 +261,6 @@ bool CModelConverter::ReadOBJ(const tstring& sFilename)
 
 			// A face.
 			size_t iFace = pMesh->AddFace(iCurrentMaterial);
-
-			// If we get to 10k faces force the mesh off so it doesn't kill the video card.
-			if (iFace == 10000)
-				pMeshNode->GetMeshInstance(0)->SetVisible(false);
 
 			pMesh->GetFace(iFace)->m_iSmoothingGroup = iSmoothingGroup;
 
