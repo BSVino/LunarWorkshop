@@ -836,6 +836,42 @@ void CRenderingContext::SetNormalsBuffer(size_t iOffset, size_t iStride)
 	glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
 }
 
+void CRenderingContext::SetTangentsBuffer(float* pflBuffer, size_t iStride)
+{
+	if (m_pShader->m_iTangentAttribute == ~0)
+		return;
+
+	glEnableVertexAttribArray(m_pShader->m_iTangentAttribute);
+	glVertexAttribPointer(m_pShader->m_iTangentAttribute, 3, GL_FLOAT, false, iStride, pflBuffer);
+}
+
+void CRenderingContext::SetTangentsBuffer(size_t iOffset, size_t iStride)
+{
+	if (m_pShader->m_iTangentAttribute == ~0)
+		return;
+
+	glEnableVertexAttribArray(m_pShader->m_iTangentAttribute);
+	glVertexAttribPointer(m_pShader->m_iTangentAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
+}
+
+void CRenderingContext::SetBitangentsBuffer(float* pflBuffer, size_t iStride)
+{
+	if (m_pShader->m_iBitangentAttribute == ~0)
+		return;
+
+	glEnableVertexAttribArray(m_pShader->m_iBitangentAttribute);
+	glVertexAttribPointer(m_pShader->m_iBitangentAttribute, 3, GL_FLOAT, false, iStride, pflBuffer);
+}
+
+void CRenderingContext::SetBitangentsBuffer(size_t iOffset, size_t iStride)
+{
+	if (m_pShader->m_iBitangentAttribute == ~0)
+		return;
+
+	glEnableVertexAttribArray(m_pShader->m_iBitangentAttribute);
+	glVertexAttribPointer(m_pShader->m_iBitangentAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
+}
+
 void CRenderingContext::SetTexCoordBuffer(float* pflBuffer, size_t iStride)
 {
 	if (m_pShader->m_iTexCoordAttribute == ~0)
@@ -882,6 +918,10 @@ void CRenderingContext::EndRenderVertexArray(size_t iVertices, bool bWireframe)
 		glDisableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
 	if (m_pShader->m_iNormalAttribute != ~0)
 		glDisableVertexAttribArray(m_pShader->m_iNormalAttribute);
+	if (m_pShader->m_iTangentAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iTangentAttribute);
+	if (m_pShader->m_iBitangentAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iBitangentAttribute);
 	if (m_pShader->m_iColorAttribute != ~0)
 		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
 
@@ -901,6 +941,10 @@ void CRenderingContext::EndRenderVertexArrayTriangles(size_t iTriangles, int* pi
 		glDisableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
 	if (m_pShader->m_iNormalAttribute != ~0)
 		glDisableVertexAttribArray(m_pShader->m_iNormalAttribute);
+	if (m_pShader->m_iTangentAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iTangentAttribute);
+	if (m_pShader->m_iBitangentAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iBitangentAttribute);
 	if (m_pShader->m_iColorAttribute != ~0)
 		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
 

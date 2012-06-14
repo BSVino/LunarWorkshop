@@ -16,7 +16,7 @@ tvector<float>				g_aflWireframeData;
 tvector<float>				g_aflUVData;
 AABB						g_aabbBounds;
 
-void AddVertex(size_t iMaterial, const Vector& v, const Vector& vn, const Vector2D& vt)
+void AddVertex(size_t iMaterial, const Vector& v, const Vector& vn, const Vector& vt, const Vector& vb, const Vector2D& vu)
 {
 	g_aaflData[iMaterial].push_back(v.x);
 	g_aaflData[iMaterial].push_back(v.y);
@@ -26,6 +26,12 @@ void AddVertex(size_t iMaterial, const Vector& v, const Vector& vn, const Vector
 	g_aaflData[iMaterial].push_back(vn.z);
 	g_aaflData[iMaterial].push_back(vt.x);
 	g_aaflData[iMaterial].push_back(vt.y);
+	g_aaflData[iMaterial].push_back(vt.z);
+	g_aaflData[iMaterial].push_back(vb.x);
+	g_aaflData[iMaterial].push_back(vb.y);
+	g_aaflData[iMaterial].push_back(vb.z);
+	g_aaflData[iMaterial].push_back(vu.x);
+	g_aaflData[iMaterial].push_back(vu.y);
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -90,9 +96,9 @@ void LoadMesh(CConversionScene* pScene, size_t iMesh)
 			CConversionVertex* pVertex1 = pFace->GetVertex(k-1);
 			CConversionVertex* pVertex2 = pFace->GetVertex(k);
 
-			AddVertex(iMaterial, pMesh->GetVertex(pVertex0->v), pMesh->GetNormal(pVertex0->vn), pMesh->GetUV(pVertex0->vu));
-			AddVertex(iMaterial, pMesh->GetVertex(pVertex1->v), pMesh->GetNormal(pVertex1->vn), pMesh->GetUV(pVertex1->vu));
-			AddVertex(iMaterial, pMesh->GetVertex(pVertex2->v), pMesh->GetNormal(pVertex2->vn), pMesh->GetUV(pVertex2->vu));
+			AddVertex(iMaterial, pMesh->GetVertex(pVertex0->v), pMesh->GetNormal(pVertex0->vn), pMesh->GetTangent(pVertex0->vt), pMesh->GetBitangent(pVertex0->vb), pMesh->GetUV(pVertex0->vu));
+			AddVertex(iMaterial, pMesh->GetVertex(pVertex1->v), pMesh->GetNormal(pVertex1->vn), pMesh->GetTangent(pVertex1->vt), pMesh->GetBitangent(pVertex1->vb), pMesh->GetUV(pVertex1->vu));
+			AddVertex(iMaterial, pMesh->GetVertex(pVertex2->v), pMesh->GetNormal(pVertex2->vn), pMesh->GetTangent(pVertex2->vt), pMesh->GetBitangent(pVertex2->vb), pMesh->GetUV(pVertex2->vu));
 
 			AddWireframe(pMesh->GetVertex(pVertex1->v), pMesh->GetNormal(pVertex1->vn), pMesh->GetVertex(pVertex2->v), pMesh->GetNormal(pVertex2->vn));
 			AddUV(pMesh->GetUV(pVertex1->vu), pMesh->GetUV(pVertex2->vu));

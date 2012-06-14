@@ -13,10 +13,9 @@
 #include "ui/modelwindow.h"
 #endif
 
-CNormalGenerator::CNormalGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
+CNormalGenerator::CNormalGenerator(CConversionScene* pScene)
 {
 	m_pScene = pScene;
-	m_paoMaterials = paoMaterials;
 
 	m_bPixelMask = NULL;
 
@@ -99,7 +98,7 @@ bool CNormalGenerator::Texel(size_t w, size_t h, size_t& iTexel, size_t tw, size
 	if (w < 0 || h < 0 || w >= tw || h >= th)
 		return false;
 
-	iTexel = th*h + w;
+	iTexel = th*(th-h-1) + w;
 
 	TAssert(iTexel >= 0 && iTexel < tw * th);
 

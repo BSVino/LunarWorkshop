@@ -385,6 +385,8 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 			c.BeginRenderVertexArray(pModel->m_aiVertexBuffers[i]);
 			c.SetPositionBuffer(pModel->PositionOffset(), pModel->Stride());
 			c.SetNormalsBuffer(pModel->NormalsOffset(), pModel->Stride());
+			c.SetTangentsBuffer(pModel->TangentsOffset(), pModel->Stride());
+			c.SetBitangentsBuffer(pModel->BitangentsOffset(), pModel->Stride());
 			c.SetTexCoordBuffer(pModel->TexCoordOffset(), pModel->Stride());
 			c.EndRenderVertexArray(pModel->m_aiVertexBufferSizes[i]);
 		}

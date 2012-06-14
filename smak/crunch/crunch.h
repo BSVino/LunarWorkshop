@@ -32,13 +32,13 @@ public:
 
 	virtual void			PostGenerate() {};
 
-	virtual size_t			GenerateDiffuse(bool bInMedias = false) { return 0; };
-	virtual bool			GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias = false) { return false; };
-	virtual size_t			GenerateAO(bool bInMedias = false) { return 0; };
+	virtual CTextureHandle	GenerateDiffuse(bool bInMedias = false) { return CTextureHandle(); };
+	virtual CTextureHandle	GenerateNormal(bool bInMedias = false) { return CTextureHandle(); };
+	virtual CTextureHandle	GenerateAO(bool bInMedias = false) { return CTextureHandle(); };
 
 	virtual void			SaveToFile(const tstring& sFilename);
 
-	virtual tstring	FileSuffix() { return ""; };
+	virtual tstring			FileSuffix() { return ""; };
 	virtual void*			GetData() { return NULL; };
 
 protected:
@@ -66,9 +66,9 @@ public:
 	virtual void			PostGenerate();
 	void					Bleed();
 
-	virtual size_t			GenerateDiffuse(bool bInMedias = false);
+	virtual CTextureHandle	GenerateDiffuse(bool bInMedias = false);
 
-	virtual tstring	FileSuffix() { return "diffuse"; };
+	virtual tstring			FileSuffix() { return "diffuse"; };
 	virtual void*			GetData();
 
 protected:
@@ -76,7 +76,15 @@ protected:
 	Vector*					m_avecDiffuseGeneratedValues;
 	size_t*					m_aiDiffuseReads;
 
-	tvector<size_t>	m_aiTextures;
+	class CTexture
+	{
+	public:
+		Color*				m_pclrData;
+		int					m_iWidth;
+		int					m_iHeight;
+	};
+
+	tvector<CTexture>		m_aTextures;
 };
 
 class CTexelAOMethod : public CTexelMethod
@@ -95,7 +103,7 @@ public:
 	virtual void			PostGenerate();
 	void					Bleed();
 
-	virtual size_t			GenerateAO(bool bInMedias = false);
+	virtual CTextureHandle	GenerateAO(bool bInMedias = false);
 
 	virtual tstring	FileSuffix() { return "ao"; };
 	virtual void*			GetData();
@@ -129,7 +137,7 @@ public:
 	void					Bleed();
 
 	void					TexturizeValues(Vector* avecTexture);
-	virtual bool			GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias = false);
+	virtual CTextureHandle	GenerateNormal(bool bInMedias = false);
 
 	virtual void			SaveToFile(const tstring& sFilename);
 
@@ -148,7 +156,7 @@ protected:
 class CTexelGenerator
 {
 public:
-							CTexelGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
+							CTexelGenerator(CConversionScene* pScene);
 							~CTexelGenerator();
 
 public:
@@ -175,9 +183,9 @@ public:
 
 	void					MarkTexelUsed(size_t iTexel) { m_abTexelMask[iTexel] = true; }
 
-	size_t					GenerateDiffuse(bool bInMedias = false);
-	size_t					GenerateAO(bool bInMedias = false);
-	void					GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias = false);
+	CTextureHandle			GenerateDiffuse(bool bInMedias = false);
+	CTextureHandle			GenerateAO(bool bInMedias = false);
+	CTextureHandle			GenerateNormal(bool bInMedias = false);
 
 	void					SaveAll(const tstring& sFilename);
 
@@ -222,7 +230,7 @@ typedef enum
 class CAOGenerator
 {
 public:
-							CAOGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
+							CAOGenerator(CConversionScene* pScene);
 							~CAOGenerator();
 
 public:
@@ -318,7 +326,7 @@ protected:
 class CNormalGenerator
 {
 public:
-							CNormalGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
+							CNormalGenerator(CConversionScene* pScene);
 							~CNormalGenerator();
 
 public:
@@ -357,7 +365,6 @@ public:
 
 protected:
 	CConversionScene*		m_pScene;
-	tvector<CMaterial>*		m_paoMaterials;
 
 	IWorkListener*			m_pWorkListener;
 

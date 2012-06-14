@@ -237,13 +237,13 @@ bool CSMAKWindow::DoCharPress(int c)
 {
 	if (c == 'a')
 	{
-		CAOPanel::Open(false, &m_Scene, nullptr);
+		CAOPanel::Open(false, &m_Scene);
 		return true;
 	}
 
 	if (c == 'n')
 	{
-		CNormalPanel::Open(&m_Scene, nullptr);
+		CNormalPanel::Open(&m_Scene);
 		return true;
 	}
 

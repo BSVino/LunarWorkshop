@@ -204,7 +204,7 @@ void CSMAKWindow::ColorAOCallback(const tstring& sArgs)
 
 	if (!CAOPanel::Get(true) || !CAOPanel::Get(true)->DoneGenerating())
 	{
-		CAOPanel::Open(true, &m_Scene, nullptr);
+		CAOPanel::Open(true, &m_Scene);
 		m_pColorAO->SetState(false, false);
 		return;
 	}
@@ -239,22 +239,22 @@ void CSMAKWindow::ColorAOToggleCallback(const tstring& sArgs)
 
 void CSMAKWindow::GenerateComboCallback(const tstring& sArgs)
 {
-	CComboGeneratorPanel::Open(&m_Scene, nullptr);
+	CComboGeneratorPanel::Open(&m_Scene);
 }
 
 void CSMAKWindow::GenerateAOCallback(const tstring& sArgs)
 {
-	CAOPanel::Open(false, &m_Scene, nullptr);
+	CAOPanel::Open(false, &m_Scene);
 }
 
 void CSMAKWindow::GenerateColorAOCallback(const tstring& sArgs)
 {
-	CAOPanel::Open(true, &m_Scene, nullptr);
+	CAOPanel::Open(true, &m_Scene);
 }
 
 void CSMAKWindow::GenerateNormalCallback(const tstring& sArgs)
 {
-	CNormalPanel::Open(&m_Scene, nullptr);
+	CNormalPanel::Open(&m_Scene);
 }
 
 void CSMAKWindow::HelpCallback(const tstring& sArgs)
@@ -479,13 +479,12 @@ CProgressBar* CProgressBar::Get()
 CAOPanel* CAOPanel::s_pAOPanel = NULL;
 CAOPanel* CAOPanel::s_pColorAOPanel = NULL;
 
-CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
-	: CMovablePanel(bColor?"Color AO generator":"AO generator"), m_oGenerator(pScene, paoMaterials)
+CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene)
+	: CMovablePanel(bColor?"Color AO generator":"AO generator"), m_oGenerator(pScene)
 {
 	m_bColor = bColor;
 
 	m_pScene = pScene;
-	m_paoMaterials = paoMaterials;
 
 	if (m_bColor)
 		SetPos(GetParent()->GetWidth() - GetWidth() - 50, GetParent()->GetHeight() - GetHeight() - 150);
@@ -858,7 +857,7 @@ void CAOPanel::SaveMapDialogCallback(const tstring& sArgs)
 	if (!m_oGenerator.DoneGenerating())
 		return;
 
-	CFileDialog::ShowSaveDialog("", ".png;.bmp;.jpg;.tga;.psd", this, SaveMapFile);
+	CFileDialog::ShowSaveDialog("", ".png;.bmp;.tga", this, SaveMapFile);
 }
 
 void CAOPanel::SaveMapFileCallback(const tstring& sArgs)
@@ -936,7 +935,7 @@ void CAOPanel::FindBestRayFalloff()
 		m_pFalloffSelector->SetSelection(m_pFalloffSelector->FindClosestSelectionValue(m_pScene->m_oExtends.Size().Length()/2));
 }
 
-void CAOPanel::Open(bool bColor, CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
+void CAOPanel::Open(bool bColor, CConversionScene* pScene)
 {
 	CAOPanel* pPanel = Get(bColor);
 
@@ -945,9 +944,9 @@ void CAOPanel::Open(bool bColor, CConversionScene* pScene, tvector<CMaterial>* p
 		delete pPanel;
 
 	if (bColor)
-		s_pColorAOPanel = new CAOPanel(true, pScene, paoMaterials);
+		s_pColorAOPanel = new CAOPanel(true, pScene);
 	else
-		s_pAOPanel = new CAOPanel(false, pScene, paoMaterials);
+		s_pAOPanel = new CAOPanel(false, pScene);
 
 	pPanel = Get(bColor);
 
@@ -1035,11 +1034,10 @@ void COptionsButton::COptionsPanel::Paint(float x, float y, float w, float h)
 
 CComboGeneratorPanel* CComboGeneratorPanel::s_pComboGeneratorPanel = NULL;
 
-CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
-	: CMovablePanel("Combo map generator"), m_oGenerator(pScene, paoMaterials)
+CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene)
+	: CMovablePanel("Combo map generator"), m_oGenerator(pScene)
 {
 	m_pScene = pScene;
-	m_paoMaterials = paoMaterials;
 
 	m_pMeshInstancePicker = NULL;
 
@@ -1485,61 +1483,27 @@ void CComboGeneratorPanel::GenerateCallback(const tstring& sArgs)
 	m_oGenerator.SetWorkListener(this);
 	m_oGenerator.Generate();
 
-	size_t iDiffuse = 0;
-	size_t iAO = 0;
-	size_t iNormalGL = 0;
-	size_t iNormalIL = 0;
+	CTextureHandle hDiffuse;
+	CTextureHandle hAO;
+	CTextureHandle hNormal;
 	if (m_oGenerator.DoneGenerating())
 	{
-		iDiffuse = m_oGenerator.GenerateDiffuse();
-		iAO = m_oGenerator.GenerateAO();
-		m_oGenerator.GenerateNormal(iNormalGL, iNormalIL);
+		hDiffuse = m_oGenerator.GenerateDiffuse();
+		hAO = m_oGenerator.GenerateAO();
+		hNormal = m_oGenerator.GenerateNormal();
 	}
 
-#ifdef OPENGL2
-	for (size_t i = 0; i < m_paoMaterials->size(); i++)
+	for (size_t i = 0; i < SMAKWindow()->GetMaterials().size(); i++)
 	{
-		size_t& iDiffuseTexture = (*m_paoMaterials)[i].m_iBase;
-		size_t& iAOTexture = (*m_paoMaterials)[i].m_iAO;
-		size_t& iNormalGLTexture = (*m_paoMaterials)[i].m_iNormal;
-		size_t& iNormalILTexture = (*m_paoMaterials)[i].m_iNormalIL;
+		CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[i];
 
 		if (!m_pScene->GetMaterial(i)->IsVisible())
 			continue;
 
-		if (iDiffuseTexture)
-			glDeleteTextures(1, &iDiffuseTexture);
-
-		if (m_oGenerator.DoneGenerating())
-			iDiffuseTexture = iDiffuse;
-		else
-			iDiffuseTexture = 0;
-
-		if (iAOTexture)
-			glDeleteTextures(1, &iAOTexture);
-
-		if (m_oGenerator.DoneGenerating())
-			iAOTexture = iAO;
-		else
-			iAOTexture = 0;
-
-		if (iNormalGLTexture)
-			glDeleteTextures(1, &iNormalGLTexture);
-
-		if (m_oGenerator.DoneGenerating())
-			iNormalGLTexture = iNormalGL;
-		else
-			iNormalGLTexture = 0;
-
-		if (iNormalILTexture)
-			glDeleteTextures(1, &iNormalILTexture);
-
-		if (m_oGenerator.DoneGenerating())
-			iNormalILTexture = iNormalIL;
-		else
-			iNormalILTexture = 0;
+		hMaterial->SetParameter("DiffuseTexture", hDiffuse);
+		hMaterial->SetParameter("AmbientOcclusion", hAO);
+		hMaterial->SetParameter("Normal", hNormal);
 	}
-#endif
 
 	m_pSave->SetVisible(m_oGenerator.DoneGenerating());
 
@@ -1551,7 +1515,7 @@ void CComboGeneratorPanel::SaveMapDialogCallback(const tstring& sArgs)
 	if (!m_oGenerator.DoneGenerating())
 		return;
 
-	CFileDialog::ShowSaveDialog("", ".png;.bmp;.jpg;.tga;.psd", this, SaveMapFile);
+	CFileDialog::ShowSaveDialog("", ".png;.bmp;.tga", this, SaveMapFile);
 }
 
 void CComboGeneratorPanel::SaveMapFileCallback(const tstring& sArgs)
@@ -1607,34 +1571,23 @@ void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 
 	if (m_oGenerator.IsGenerating() && CSMAKWindow::Get()->GetTime() - flLastGenerate > 0.5f)
 	{
-		size_t iDiffuse = m_oGenerator.GenerateDiffuse(true);
-		size_t iAO = m_oGenerator.GenerateAO(true);
-		size_t iNormal, iNormalIL;
-		m_oGenerator.GenerateNormal(iNormal, iNormalIL, true);
+		CTextureHandle hDiffuse = m_oGenerator.GenerateDiffuse(true);
+		CTextureHandle hAO = m_oGenerator.GenerateAO(true);
+		CTextureHandle hNormal = m_oGenerator.GenerateNormal(true);
 
-#ifdef OPENGL2
-		for (size_t i = 0; i < m_paoMaterials->size(); i++)
+		for (size_t i = 0; i < SMAKWindow()->GetMaterials().size(); i++)
 		{
-			size_t& iDiffuseTexture = (*m_paoMaterials)[i].m_iBase;
-			size_t& iAOTexture = (*m_paoMaterials)[i].m_iAO;
-			size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal;
+			CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[i];
+			if (!hMaterial.IsValid())
+				continue;
 
-			if (iDiffuseTexture)
-				glDeleteTextures(1, &iDiffuseTexture);
+			if (!m_pScene->GetMaterial(i)->IsVisible())
+				continue;
 
-			iDiffuseTexture = iDiffuse;
-
-			if (iAOTexture)
-				glDeleteTextures(1, &iAOTexture);
-
-			iAOTexture = iAO;
-
-			if (iNormalTexture)
-				glDeleteTextures(1, &iNormalTexture);
-
-			iNormalTexture = iNormal;
+			hMaterial->SetParameter("DiffuseTexture", hDiffuse);
+			hMaterial->SetParameter("AmbientOcclusion", hAO);
+			hMaterial->SetParameter("Normal", hNormal);
 		}
-#endif
 
 		flLastGenerate = CSMAKWindow::Get()->GetTime();
 	}
@@ -1642,9 +1595,7 @@ void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 	CSMAKWindow::Get()->Render();
 	CRootPanel::Get()->Think(CSMAKWindow::Get()->GetTime());
 	CRootPanel::Get()->Paint(0, 0, (float)CSMAKWindow::Get()->GetWindowWidth(), (float)CSMAKWindow::Get()->GetWindowHeight());
-#ifdef OPENGL2
-	glfwSwapBuffers();
-#endif
+	SMAKWindow()->SwapBuffers();
 
 	flLastTime = CSMAKWindow::Get()->GetTime();
 }
@@ -1807,14 +1758,14 @@ void CComboGeneratorPanel::DroppedHiResMeshCallback(const tstring& sArgs)
 	Layout();
 }
 
-void CComboGeneratorPanel::Open(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
+void CComboGeneratorPanel::Open(CConversionScene* pScene)
 {
 	CComboGeneratorPanel* pPanel = s_pComboGeneratorPanel;
 
 	if (pPanel)
 		delete pPanel;
 
-	pPanel = s_pComboGeneratorPanel = new CComboGeneratorPanel(pScene, paoMaterials);
+	pPanel = s_pComboGeneratorPanel = new CComboGeneratorPanel(pScene);
 
 	if (!pPanel)
 		return;
@@ -1835,11 +1786,10 @@ void CComboGeneratorPanel::SetVisible(bool bVisible)
 
 CNormalPanel* CNormalPanel::s_pNormalPanel = NULL;
 
-CNormalPanel::CNormalPanel(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
-	: CMovablePanel("Normal map generator"), m_oGenerator(pScene, paoMaterials)
+CNormalPanel::CNormalPanel(CConversionScene* pScene)
+	: CMovablePanel("Normal map generator"), m_oGenerator(pScene)
 {
 	m_pScene = pScene;
-	m_paoMaterials = paoMaterials;
 
 	SetSize(400, 450);
 	SetPos(GetParent()->GetWidth() - GetWidth() - 50, GetParent()->GetHeight() - GetHeight() - 100);
@@ -1847,11 +1797,7 @@ CNormalPanel::CNormalPanel(CConversionScene* pScene, tvector<CMaterial>* paoMate
 	m_pMaterialsLabel = new CLabel(0, 0, 32, 32, "Choose A Material To Generate From:");
 	AddControl(m_pMaterialsLabel);
 
-#ifdef OPENGL2
-	m_pMaterials = new CTree(CSMAKWindow::Get()->GetArrowTexture(), CSMAKWindow::Get()->GetEditTexture(), CSMAKWindow::Get()->GetVisibilityTexture());
-#else
-	m_pMaterials = new CTree();
-#endif
+	m_pMaterials = new CTree(SMAKWindow()->GetSMAKRenderer()->GetArrowTexture(), SMAKWindow()->GetSMAKRenderer()->GetEditTexture(), SMAKWindow()->GetSMAKRenderer()->GetVisibilityTexture());
 	m_pMaterials->SetBackgroundColor(g_clrBox);
 	AddControl(m_pMaterials);
 
@@ -2080,8 +2026,8 @@ void CNormalPanel::Think()
 #ifdef OPENGL2
 		for (size_t i = 0; i < m_paoMaterials->size(); i++)
 		{
-			size_t& iNormalTexture = (*m_paoMaterials)[i].m_iNormal2;
-			size_t& iNormalIL = (*m_paoMaterials)[i].m_iNormal2IL;
+			size_t& iNormalTexture = SMAKWindow()->GetMaterials()[i].m_iNormal2;
+			size_t& iNormalIL = SMAKWindow()->GetMaterials()[i].m_iNormal2IL;
 
 			if (!m_pScene->GetMaterial(i)->IsVisible())
 				continue;
@@ -2154,7 +2100,7 @@ void CNormalPanel::SaveMapDialogCallback(const tstring& sArgs)
 	if (!m_oGenerator.DoneGenerating())
 		return;
 
-	CFileDialog::ShowSaveDialog("", ".png;.bmp;.jpg;.tga;.psd", this, SaveMapFile);
+	CFileDialog::ShowSaveDialog("", ".png;.bmp;.tga", this, SaveMapFile);
 }
 
 void CNormalPanel::SaveMapFileCallback(const tstring& sArgs)
@@ -2189,14 +2135,14 @@ void CNormalPanel::UpdateNormal2Callback(const tstring& sArgs)
 	m_oGenerator.UpdateNormal2();
 }
 
-void CNormalPanel::Open(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
+void CNormalPanel::Open(CConversionScene* pScene)
 {
 	CNormalPanel* pPanel = s_pNormalPanel;
 
 	if (pPanel)
 		delete pPanel;
 
-	pPanel = s_pNormalPanel = new CNormalPanel(pScene, paoMaterials);
+	pPanel = s_pNormalPanel = new CNormalPanel(pScene);
 
 	if (!pPanel)
 		return;

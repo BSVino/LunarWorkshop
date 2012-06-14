@@ -20,11 +20,13 @@ public:
 	void					Unload();
 	void					UnloadBufferFromGL(size_t iBuffer);
 
-	size_t					FloatsPerVertex() { return 8; }
+	size_t					FloatsPerVertex() { return 14; }
 	size_t					Stride() { return FloatsPerVertex()*sizeof(float); }
 	size_t					PositionOffset() { return 0; }
 	size_t					NormalsOffset() { return 3*sizeof(float); }
-	size_t					TexCoordOffset() { return 6*sizeof(float); }
+	size_t					TangentsOffset() { return 6*sizeof(float); }
+	size_t					BitangentsOffset() { return 9*sizeof(float); }
+	size_t					TexCoordOffset() { return 12*sizeof(float); }
 
 	size_t					FloatsPerWireframeVertex() { return 6; }
 	size_t					WireframeStride() { return FloatsPerWireframeVertex()*sizeof(float); }

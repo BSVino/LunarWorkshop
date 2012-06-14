@@ -1,6 +1,8 @@
 #include "crunch.h"
 
 #include <raytracer/raytracer.h>
+#include <common/stb_image_write.h>
+#include <textures/texturelibrary.h>
 
 #if 0
 #ifdef _DEBUG
@@ -12,7 +14,7 @@
 #include "ui/smakwindow.h"
 #endif
 
-CTexelGenerator::CTexelGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
+CTexelGenerator::CTexelGenerator(CConversionScene* pScene)
 {
 	m_pScene = pScene;
 
@@ -429,7 +431,7 @@ bool CTexelGenerator::Texel(size_t w, size_t h, size_t& iTexel, size_t tw, size_
 	if (w < 0 || h < 0 || w >= tw || h >= th)
 		return false;
 
-	iTexel = th*h + w;
+	iTexel = th*(th-h-1) + w;
 
 	TAssert(iTexel >= 0 && iTexel < tw * th);
 
@@ -444,45 +446,44 @@ bool CTexelGenerator::Texel(size_t w, size_t h, size_t& iTexel, bool bUseMask)
 	return Texel(w, h, iTexel, m_iWidth, m_iHeight, bUseMask?m_abTexelMask:NULL);
 }
 
-size_t CTexelGenerator::GenerateDiffuse(bool bInMedias)
+CTextureHandle CTexelGenerator::GenerateDiffuse(bool bInMedias)
 {
 	for (size_t i = 0; i < m_apMethods.size(); i++)
 	{
-		size_t iTexture = m_apMethods[i]->GenerateDiffuse(bInMedias);
-		if (iTexture)
-			return iTexture;
+		CTextureHandle hTexture = m_apMethods[i]->GenerateDiffuse(bInMedias);
+		if (hTexture.IsValid())
+			return hTexture;
 	}
 
-	return 0;
+	return CTextureHandle();
 }
 
-size_t CTexelGenerator::GenerateAO(bool bInMedias)
+CTextureHandle CTexelGenerator::GenerateAO(bool bInMedias)
 {
 	for (size_t i = 0; i < m_apMethods.size(); i++)
 	{
-		size_t iAO = m_apMethods[i]->GenerateAO(bInMedias);
-		if (iAO)
-			return iAO;
+		CTextureHandle hAO = m_apMethods[i]->GenerateAO(bInMedias);
+		if (hAO)
+			return hAO;
 	}
 
-	return 0;
+	return CTextureHandle();
 }
 
-void CTexelGenerator::GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias)
+CTextureHandle CTexelGenerator::GenerateNormal(bool bInMedias)
 {
 	for (size_t i = 0; i < m_apMethods.size(); i++)
 	{
-		if (m_apMethods[i]->GenerateNormal(iGLId, iILId, bInMedias))
-			return;
+		CTextureHandle hNormal = m_apMethods[i]->GenerateNormal(bInMedias);
+		if (hNormal.IsValid())
+			return hNormal;
 	}
+
+	return CTextureHandle();
 }
 
 void CTexelGenerator::SaveAll(const tstring& sFilename)
 {
-#ifdef OPENGL2
-	ilEnable(IL_FILE_OVERWRITE);
-#endif
-
 	for (size_t i = 0; i < m_apMethods.size(); i++)
 		m_apMethods[i]->SaveToFile(sFilename);
 }
@@ -506,20 +507,12 @@ void CTexelMethod::SaveToFile(const tstring& sFilename)
 {
 	tstring sRealFilename = sFilename.substr(0, sFilename.length()-4) + "-" + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
 
-#ifdef OPENGL2
-	ILuint iDevILId;
-	ilGenImages(1, &iDevILId);
-	ilBindImage(iDevILId);
-
-	ilTexImage((ILint)m_iWidth, (ILint)m_iHeight, 1, 3, IL_RGB, IL_FLOAT, GetData());
-
-	// Formats like PNG and VTF don't work unless it's in integer format.
-	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
-
-	ilSaveImage(convertstring<tchar, ILchar>(sRealFilename).c_str());
-
-	ilDeleteImages(1,&iDevILId);
-#endif
+	if (tstr_endswith(sRealFilename, ".png"))
+		stbi_write_png(sRealFilename.c_str(), m_iWidth, m_iHeight, 3, GetData(), 0);
+	else if (tstr_endswith(sRealFilename, ".bmp"))
+		stbi_write_bmp(sRealFilename.c_str(), m_iWidth, m_iHeight, 3, GetData());
+	else if (tstr_endswith(sRealFilename, ".tga"))
+		stbi_write_tga(sRealFilename.c_str(), m_iWidth, m_iHeight, 3, GetData());
 }
 
 CTexelDiffuseMethod::CTexelDiffuseMethod(CTexelGenerator* pGenerator)
@@ -563,9 +556,9 @@ void CTexelDiffuseMethod::PreGenerate()
 {
 	const tvector<CConversionMeshInstance*>& apHiRes = m_pGenerator->GetHiResMeshInstances();
 
-	m_aiTextures.resize(m_pGenerator->GetScene()->GetNumMaterials());
-	for (size_t i = 0; i < m_aiTextures.size(); i++)
-		m_aiTextures[i] = 0;
+	m_aTextures.resize(m_pGenerator->GetScene()->GetNumMaterials());
+	for (size_t i = 0; i < m_aTextures.size(); i++)
+		m_aTextures[i].m_pclrData = nullptr;
 
 	for (size_t i = 0; i < apHiRes.size(); i++)
 	{
@@ -575,23 +568,21 @@ void CTexelDiffuseMethod::PreGenerate()
 		{
 			size_t iMaterial = pMeshInstance->GetMappedMaterial(j->first)->m_iMaterial;
 
-			if (m_aiTextures[iMaterial])
+			if (m_aTextures[iMaterial].m_pclrData)
 				continue;
 
 			CConversionMaterial* pMaterial = m_pGenerator->GetScene()->GetMaterial(iMaterial);
 
-#ifdef OPENGL3
-			m_aiTextures[iMaterial] = CSMAKWindow::LoadTexture(pMaterial->GetDiffuseTexture());
-#endif
+			m_aTextures[iMaterial].m_pclrData = CRenderer::LoadTextureData(pMaterial->GetDiffuseTexture(), m_aTextures[iMaterial].m_iWidth, m_aTextures[iMaterial].m_iHeight);
 		}
 	}
 }
 
 void CTexelDiffuseMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* pMeshInstance, CConversionFace* pFace, CConversionVertex* pV1, CConversionVertex* pV2, CConversionVertex* pV3, raytrace::CTraceResult* tr, const Vector& vecUVPosition, raytrace::CRaytracer* pTracer)
 {
-	size_t iTexture = m_aiTextures[tr->m_pMeshInstance->GetMappedMaterial(tr->m_pFace->m)->m_iMaterial];
+	CTexture& oTexture = m_aTextures[tr->m_pMeshInstance->GetMappedMaterial(tr->m_pFace->m)->m_iMaterial];
 
-	if (!iTexture)
+	if (!oTexture.m_pclrData)
 		return;
 
 	CConversionMesh* pHitMesh = tr->m_pMeshInstance->GetMesh();
@@ -653,23 +644,14 @@ void CTexelDiffuseMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* 
 	// Lock for il texture access so multiple threads don't bind different textures and confuse each other.
 	m_pGenerator->GetParallelizer()->LockData();
 
-#ifdef OPENGL2
-	ilBindImage(iTexture);
+	size_t iU = (size_t)((vecWorldPosition.x * oTexture.m_iWidth) - 0.5f);
+	size_t iV = (size_t)((vecWorldPosition.y * oTexture.m_iHeight) - 0.5f);
 
-	size_t iU = (size_t)((vecWorldPosition.x * ilGetInteger(IL_IMAGE_WIDTH)) - 0.5f);
-	size_t iV = (size_t)((vecWorldPosition.y * ilGetInteger(IL_IMAGE_HEIGHT)) - 0.5f);
+	iU %= oTexture.m_iWidth;
+	iV %= oTexture.m_iHeight;
 
-	iU %= ilGetInteger(IL_IMAGE_WIDTH);
-	iV %= ilGetInteger(IL_IMAGE_HEIGHT);
-
-	size_t iColorTexel = iU + iV*ilGetInteger(IL_IMAGE_HEIGHT);
-	Color* pclrData = ((Color*)ilGetData());
-	Color clrData = pclrData[iColorTexel];
-
-	ilBindImage(0);
-#else
-	Color clrData;
-#endif
+	size_t iColorTexel = iU + iV*oTexture.m_iHeight;
+	Color clrData = oTexture.m_pclrData[iColorTexel];
 
 	m_avecDiffuseValues[iTexel] += Vector(clrData);
 	m_aiDiffuseReads[iTexel]++;
@@ -680,13 +662,11 @@ void CTexelDiffuseMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* 
 
 void CTexelDiffuseMethod::PostGenerate()
 {
-#ifdef OPENGL2
-	for (size_t i = 0; i < m_aiTextures.size(); i++)
+	for (size_t i = 0; i < m_aTextures.size(); i++)
 	{
-		if (m_aiTextures[i])
-			ilDeleteImages(1, &m_aiTextures[i]);
+		if (m_aTextures[i].m_pclrData)
+			CRenderer::UnloadTextureData(m_aTextures[i].m_pclrData);
 	}
-#endif
 
 	if (m_pGenerator->GetWorkListener())
 		m_pGenerator->GetWorkListener()->SetAction("Averaging reads", m_iWidth*m_iHeight);
@@ -790,7 +770,7 @@ void CTexelDiffuseMethod::Bleed()
 	}
 }
 
-size_t CTexelDiffuseMethod::GenerateDiffuse(bool bInMedias)
+CTextureHandle CTexelDiffuseMethod::GenerateDiffuse(bool bInMedias)
 {
 	Vector* avecDiffuseValues = m_avecDiffuseValues;
 
@@ -819,16 +799,7 @@ size_t CTexelDiffuseMethod::GenerateDiffuse(bool bInMedias)
 		}
 	}
 
-	size_t iGLId = 0;
-#ifdef OPENGL2
-	glGenTextures(1, &iGLId);
-	glBindTexture(GL_TEXTURE_2D, iGLId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, (GLint)m_iWidth, (GLint)m_iHeight, GL_RGB, GL_FLOAT, &avecDiffuseValues[0].x);
-#endif
-
-	return iGLId;
+	return CTextureLibrary::AddTexture(avecDiffuseValues, m_iWidth, m_iHeight);
 }
 
 void* CTexelDiffuseMethod::GetData()
@@ -1135,7 +1106,7 @@ void CTexelAOMethod::Bleed()
 	free(abPixelMask);
 }
 
-size_t CTexelAOMethod::GenerateAO(bool bInMedias)
+CTextureHandle CTexelAOMethod::GenerateAO(bool bInMedias)
 {
 	Vector* avecShadowValues = m_avecShadowValues;
 
@@ -1164,16 +1135,7 @@ size_t CTexelAOMethod::GenerateAO(bool bInMedias)
 		}
 	}
 
-	size_t iGLId=0;
-#ifdef OPENGL2
-	glGenTextures(1, &iGLId);
-	glBindTexture(GL_TEXTURE_2D, iGLId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, (GLint)m_iWidth, (GLint)m_iHeight, GL_RGB, GL_FLOAT, &avecShadowValues[0].x);
-#endif
-
-	return iGLId;
+	return CTextureLibrary::AddTexture(avecShadowValues, m_iWidth, m_iHeight);
 }
 
 void* CTexelAOMethod::GetData()
@@ -1351,7 +1313,7 @@ void CTexelNormalMethod::TexturizeValues(Vector* avecTexture)
 	}
 }
 
-bool CTexelNormalMethod::GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMedias)
+CTextureHandle CTexelNormalMethod::GenerateNormal(bool bInMedias)
 {
 	Vector* avecNormalValues = m_avecNormalValues;
 
@@ -1362,23 +1324,7 @@ bool CTexelNormalMethod::GenerateNormal(size_t& iGLId, size_t& iILId, bool bInMe
 		TexturizeValues(avecNormalValues);
 	}
 
-#ifdef OPENGL2
-	glGenTextures(1, &iGLId);
-	glBindTexture(GL_TEXTURE_2D, iGLId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, (GLint)m_iWidth, (GLint)m_iHeight, GL_RGB, GL_FLOAT, &avecNormalValues[0].x);
-
-	if (!bInMedias)
-	{
-		ilGenImages(1, &iILId);
-		ilBindImage(iILId);
-		ilTexImage((ILint)m_iWidth, (ILint)m_iHeight, 1, 3, IL_RGB, IL_FLOAT, &avecNormalValues[0].x);
-		ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
-	}
-#endif
-
-	return true;
+	return CTextureLibrary::AddTexture(avecNormalValues, m_iWidth, m_iHeight);
 }
 
 void CTexelNormalMethod::SaveToFile(const tstring& sFilename)

@@ -20,7 +20,7 @@ void DrawTexture(size_t iTexture, float flScale = 1.0f, CRenderingContext& c=CRe
 
 CVar ao_debug("ao_debug", "0");
 
-CAOGenerator::CAOGenerator(CConversionScene* pScene, tvector<CMaterial>* paoMaterials)
+CAOGenerator::CAOGenerator(CConversionScene* pScene)
 {
 	m_eAOMethod = AOMETHOD_NONE;
 	m_pScene = pScene;

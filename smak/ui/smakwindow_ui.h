@@ -99,7 +99,7 @@ protected:
 class CComboGeneratorPanel : public glgui::CMovablePanel, public IWorkListener
 {
 public:
-								CComboGeneratorPanel(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
+								CComboGeneratorPanel(CConversionScene* pScene);
 
 public:
 	virtual void				SetVisible(bool bVisible);
@@ -133,12 +133,11 @@ public:
 	EVENT_CALLBACK(CComboGeneratorPanel,	DroppedLoResMesh);
 	EVENT_CALLBACK(CComboGeneratorPanel,	DroppedHiResMesh);
 
-	static void					Open(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
+	static void					Open(CConversionScene* pScene);
 	static CComboGeneratorPanel*	Get() { return s_pComboGeneratorPanel; }
 
 protected:
 	CConversionScene*			m_pScene;
-	tvector<CMaterial>*			m_paoMaterials;
 
 	CTexelGenerator				m_oGenerator;
 
@@ -197,7 +196,7 @@ protected:
 class CAOPanel : public glgui::CMovablePanel, public IWorkListener
 {
 public:
-							CAOPanel(bool bColor, CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
+							CAOPanel(bool bColor, CConversionScene* pScene);
 
 	virtual void			SetVisible(bool bVisible);
 
@@ -220,14 +219,13 @@ public:
 
 	virtual void			FindBestRayFalloff();
 
-	static void				Open(bool bColor, CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
+	static void				Open(bool bColor, CConversionScene* pScene);
 	static CAOPanel*		Get(bool bColor);
 
 protected:
 	bool					m_bColor;
 
 	CConversionScene*		m_pScene;
-	tvector<CMaterial>*		m_paoMaterials;
 
 	CAOGenerator			m_oGenerator;
 
@@ -268,7 +266,7 @@ protected:
 class CNormalPanel : public glgui::CMovablePanel
 {
 public:
-								CNormalPanel(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
+								CNormalPanel(CConversionScene* pScene);
 
 public:
 	virtual void				SetVisible(bool bVisible);
@@ -291,12 +289,11 @@ public:
 	EVENT_CALLBACK(CNormalPanel,	SetupNormal2);
 	EVENT_CALLBACK(CNormalPanel,	UpdateNormal2);
 
-	static void					Open(CConversionScene* pScene, tvector<CMaterial>* paoMaterials);
+	static void					Open(CConversionScene* pScene);
 	static CNormalPanel*		Get() { return s_pNormalPanel; }
 
 protected:
 	CConversionScene*			m_pScene;
-	tvector<CMaterial>*			m_paoMaterials;
 
 	CNormalGenerator			m_oGenerator;
 

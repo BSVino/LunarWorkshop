@@ -116,6 +116,10 @@ public:
 	void					SetPositionBuffer(size_t iOffsetBytes, size_t iStrideBytes);
 	void					SetNormalsBuffer(float* pflBuffer, size_t iStrideBytes=0);
 	void					SetNormalsBuffer(size_t iOffsetBytes, size_t iStrideBytes);
+	void					SetTangentsBuffer(float* pflBuffer, size_t iStrideBytes=0);
+	void					SetTangentsBuffer(size_t iOffsetBytes, size_t iStrideBytes);
+	void					SetBitangentsBuffer(float* pflBuffer, size_t iStrideBytes=0);
+	void					SetBitangentsBuffer(size_t iOffsetBytes, size_t iStrideBytes);
 	void					SetTexCoordBuffer(float* pflBuffer, size_t iStrideBytes=0);
 	void					SetTexCoordBuffer(size_t iOffsetBytes, size_t iStrideBytes);
 	void					SetCustomIntBuffer(const char* pszName, size_t iSize, size_t iOffset, size_t iStride);
