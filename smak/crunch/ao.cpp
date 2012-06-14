@@ -1242,6 +1242,7 @@ void DrawSplit(const raytrace::CKDNode* pNode)
 	if (pNode->GetRightChild())
 		DrawSplit(pNode->GetRightChild());
 }
+#endif
 
 void DrawTexture(size_t iTexture, float flScale, CRenderingContext& c)
 {
@@ -1278,4 +1279,3 @@ void DrawTexture(size_t iTexture, float flScale, CRenderingContext& c)
 	c.Finish();
 	Application()->SwapBuffers();
 }
-#endif
