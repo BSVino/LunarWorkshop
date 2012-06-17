@@ -888,12 +888,6 @@ void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 
 	CProgressBar::Get()->SetProgress(iProgress);
 
-	// We need to correct the viewport size before we push any events, or else any Layout() commands during
-	// button presses and the line will use the wrong viewport size.
-#ifdef OPENGL2
-	glViewport(0, 0, CSMAKWindow::Get()->GetWindowWidth(), CSMAKWindow::Get()->GetWindowHeight());
-#endif
-
 	if (m_oGenerator.IsGenerating() && flLastTime - flLastGenerate > 0.5f)
 	{
 		CTextureHandle hAO = m_oGenerator.GenerateTexture(true);
@@ -1388,11 +1382,8 @@ void CComboGeneratorPanel::Think()
 		{
 			size_t iMaterial = pMeshInstance->GetMappedMaterial(iMaterialStub)->m_iMaterial;
 
-#ifdef OPENGL2
-			// Materials not loaded yet?
-			if (!m_paoMaterials->size())
+			if (iMaterial >= SMAKWindow()->GetMaterials().size())
 				continue;
-#endif
 
 			bFoundMaterial = true;
 			break;
@@ -1522,15 +1513,13 @@ void CComboGeneratorPanel::SaveMapFileCallback(const tstring& sArgs)
 
 	m_oGenerator.SaveAll(sFilename);
 
-#ifdef OPENGL2
-	for (size_t i = 0; i < m_paoMaterials->size(); i++)
+	for (size_t i = 0; i < SMAKWindow()->GetMaterials().size(); i++)
 	{
 		if (!m_pScene->GetMaterial(i)->IsVisible())
 			continue;
 
 		m_pScene->GetMaterial(i)->m_sNormalTexture = sFilename;
 	}
-#endif
 
 	CRootPanel::Get()->Layout();
 }
@@ -1557,12 +1546,6 @@ void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 		return;
 
 	CProgressBar::Get()->SetProgress(iProgress);
-
-	// We need to correct the viewport size before we push any events, or else any Layout() commands during
-	// button presses and the line will use the wrong viewport size.
-#ifdef OPENGL2
-	glViewport(0, 0, CSMAKWindow::Get()->GetWindowWidth(), CSMAKWindow::Get()->GetWindowHeight());
-#endif
 
 	if (m_oGenerator.IsGenerating() && CSMAKWindow::Get()->GetTime() - flLastGenerate > 0.5f)
 	{
