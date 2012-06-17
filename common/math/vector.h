@@ -75,6 +75,7 @@ public:
 	void	Normalize();
 	const TemplateVector<unit_t>	Normalized() const;
 	const TemplateVector<unit_t>	Flattened() const;
+	unit_t	Average() const;
 
 	unit_t	Distance(const TemplateVector<unit_t>& v) const;
 	unit_t	DistanceSqr(const TemplateVector<unit_t>& v) const;
@@ -273,6 +274,12 @@ inline const TemplateVector<unit_t> TemplateVector<unit_t>::Flattened() const
 	TemplateVector<unit_t> vecResult(*this);
 	vecResult.y = 0;
 	return vecResult;
+}
+
+template <class unit_t>
+inline unit_t TemplateVector<unit_t>::Average() const
+{
+	return (x + y + z)/3;
 }
 
 template <class unit_t>

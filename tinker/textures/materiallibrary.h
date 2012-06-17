@@ -33,7 +33,7 @@ public:
 	void			Save() const;
 	void			Reload();
 
-	size_t			FindParameter(const tstring& sParameterName);
+	size_t			FindParameter(const tstring& sParameterName, bool bCreate = false);
 	void			SetParameter(const tstring& sParameterName, const CTextureHandle& hTexture);
 	void			FillParameter(size_t iParameter, const tstring& sData, class CShader* pShader=nullptr);
 

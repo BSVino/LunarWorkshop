@@ -348,12 +348,6 @@ void CSMAKWindow::SaveNormal(size_t iMaterial, const tstring& sFilename)
 
 		ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
 
-		if (!IsRegistered() && (ilGetInteger(IL_IMAGE_WIDTH) > 128 || ilGetInteger(IL_IMAGE_HEIGHT) > 128))
-		{
-			iluImageParameter(ILU_FILTER, ILU_BILINEAR);
-			iluScale(128, 128, 1);
-		}
-
 		ilSaveImage(convertstring<tchar, ILchar>(sFilename).c_str());
 
 		ilDeleteImage(iSaveId);
@@ -428,12 +422,6 @@ void CSMAKWindow::SaveNormal(size_t iMaterial, const tstring& sFilename)
 	ilBindImage(iNormalId);
 	ilTexImage((ILint)iTotalWidth, (ILint)iTotalHeight, 1, 3, IL_RGB, IL_FLOAT, &avecMergedNormalValues[0].x);
 	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
-
-	if (!IsRegistered() && (iTotalWidth > 128 || iTotalHeight > 128))
-	{
-		iluImageParameter(ILU_FILTER, ILU_BILINEAR);
-		iluScale(128, 128, 1);
-	}
 
 	ilSaveImage(convertstring<tchar, ILchar>(sFilename).c_str());
 

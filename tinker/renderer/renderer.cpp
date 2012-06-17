@@ -867,6 +867,19 @@ void CRenderer::UnloadTextureData(Color* pData)
 	stbi_image_free((char*)pData);
 }
 
+void CRenderer::ReadTextureFromGL(CTextureHandle hTexture, Vector* pvecData)
+{
+	TAssert(hTexture.IsValid());
+	if (!hTexture.IsValid())
+		return;
+
+	glBindTexture(GL_TEXTURE_2D, hTexture->m_iGLID);
+
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, pvecData);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void CRenderer::WriteTextureToFile(size_t iTexture, tstring sFilename)
 {
 	glBindTexture(GL_TEXTURE_2D, iTexture);
@@ -878,9 +891,7 @@ void CRenderer::WriteTextureToFile(size_t iTexture, tstring sFilename)
 	tvector<Color> aclrPixels;
 	aclrPixels.resize(iWidth*iHeight);
 
-	glGetError();
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, aclrPixels.data());
-	int i = glGetError();
 
 	stbi_write_png(sFilename.c_str(), iWidth, iHeight, 4, aclrPixels.data(), 0);
 }

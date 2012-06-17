@@ -344,7 +344,7 @@ void CMaterialPanel::ParameterChangedCallback(const tstring& sArgs)
 			continue;
 		}
 
-		size_t iParameter = pMaterial->FindParameter(m_asParameterNames[i]);
+		size_t iParameter = pMaterial->FindParameter(m_asParameterNames[i], true);
 		CMaterial::CParameter* pParameter = &pMaterial->m_aParameters[iParameter];
 
 		pParameter->m_sName = m_asParameterNames[i];

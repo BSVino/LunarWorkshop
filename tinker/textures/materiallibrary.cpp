@@ -205,7 +205,7 @@ void CMaterial::Reload()
 	CMaterialLibrary::CreateMaterial(pData.get(), m_sFile);
 }
 
-size_t CMaterial::FindParameter(const tstring& sParameterName)
+size_t CMaterial::FindParameter(const tstring& sParameterName, bool bCreate)
 {
 	for (size_t i = 0; i < m_aParameters.size(); i++)
 	{
@@ -213,9 +213,14 @@ size_t CMaterial::FindParameter(const tstring& sParameterName)
 			return i;
 	}
 
-	m_aParameters.push_back();
-	m_aParameters.back().m_sName = sParameterName;
-	return m_aParameters.size()-1;
+	if (bCreate)
+	{
+		m_aParameters.push_back();
+		m_aParameters.back().m_sName = sParameterName;
+		return m_aParameters.size()-1;
+	}
+
+	return ~0;
 }
 
 void CMaterial::SetParameter(const tstring& sParameterName, const CTextureHandle& hTexture)
@@ -225,7 +230,7 @@ void CMaterial::SetParameter(const tstring& sParameterName, const CTextureHandle
 	if (!pShader)
 		return;
 
-	size_t iParameter = FindParameter(sParameterName);
+	size_t iParameter = FindParameter(sParameterName, true);
 
 	CMaterial::CParameter& oPar = m_aParameters[iParameter];
 

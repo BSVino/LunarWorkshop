@@ -10,6 +10,8 @@
 #include <color.h>
 #include <frustum.h>
 
+#include <textures/texturehandle.h>
+
 #include "render_common.h"
 
 typedef enum
@@ -138,6 +140,8 @@ public:
 
 	static Color*	LoadTextureData(tstring sFilename, int& w, int& h);
 	static void		UnloadTextureData(Color* pData);
+
+	static void		ReadTextureFromGL(CTextureHandle hTexture, Vector* pvecData);
 
 	static void		WriteTextureToFile(size_t iTexture, tstring sFilename);
 

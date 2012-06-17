@@ -1,7 +1,10 @@
 #include "crunch.h"
 
-#include <raytracer/raytracer.h>
 #include <maths.h>
+#include <stb_image_write.h>
+
+#include <raytracer/raytracer.h>
+#include <textures/materiallibrary.h>
 
 #if 0
 #ifdef _DEBUG
@@ -24,12 +27,10 @@ CNormalGenerator::CNormalGenerator(CConversionScene* pScene)
 	m_bStopGenerating = false;
 
 	m_iMaterial = 0;
-	m_iNormal2GLId = 0;
-	m_iNormal2ILId = 0;
-	m_aflTextureTexels = NULL;
+	m_avecTextureTexels = NULL;
 	m_aflMidPassTexels = NULL;
 	m_aflLowPassTexels = NULL;
-	m_aflNormal2Texels = NULL;
+	m_avecNormal2Texels = NULL;
 	m_bNewNormal2Available = false;
 	m_bNormal2Generated = false;
 
@@ -41,17 +42,12 @@ CNormalGenerator::~CNormalGenerator()
 {
 	free(m_bPixelMask);
 
-#ifdef OPENGL2
-	if (m_iNormal2GLId)
-		glDeleteTextures(1, &m_iNormal2GLId);
-#endif
-
-	if (m_aflNormal2Texels)
+	if (m_avecNormal2Texels)
 	{
-		delete[] m_aflTextureTexels;
+		delete[] m_avecTextureTexels;
 		delete[] m_aflMidPassTexels;
 		delete[] m_aflLowPassTexels;
-		delete[] m_aflNormal2Texels;
+		delete[] m_avecNormal2Texels;
 	}
 }
 
@@ -68,29 +64,22 @@ void CNormalGenerator::SaveToFile(const tchar *pszFilename)
 	if (!pszFilename)
 		return;
 
-#ifdef OPENGL2
-	ilEnable(IL_FILE_OVERWRITE);
+	tstring sFilename = pszFilename;
 
-	ILuint iDevILId;
-	ilGenImages(1, &iDevILId);
-	ilBindImage(iDevILId);
+	tvector<Color> aclrTexels;
+	aclrTexels.resize(m_iNormal2Width*m_iNormal2Height);
 
-	if (m_aflNormal2Texels)
-		ilTexImage((ILint)m_iNormal2Width, (ILint)m_iNormal2Height, 1, 3, IL_RGB, IL_FLOAT, &m_aflNormal2Texels[0]);
+	for (size_t i = 0; i < aclrTexels.size(); i++)
+		aclrTexels[i] = m_avecNormal2Texels[i];
 
-	// Formats like PNG and VTF don't work unless it's in integer format.
-	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
-
-	if (!ModelWindow()->IsRegistered() && (m_iNormal2Width > 128 || m_iNormal2Height > 128))
-	{
-		iluImageParameter(ILU_FILTER, ILU_BILINEAR);
-		iluScale(128, 128, 1);
-	}
-
-	ilSaveImage(convertstring<tchar, ILchar>(pszFilename).c_str());
-
-	ilDeleteImages(1,&iDevILId);
-#endif
+	if (tstr_endswith(sFilename, ".png"))
+		stbi_write_png(sFilename.c_str(), m_iNormal2Width, m_iNormal2Height, 3, aclrTexels.data(), 0);
+	else if (tstr_endswith(sFilename, ".tga"))
+		stbi_write_tga(sFilename.c_str(), m_iNormal2Width, m_iNormal2Height, 3, aclrTexels.data());
+	else if (tstr_endswith(sFilename, ".bmp"))
+		stbi_write_bmp(sFilename.c_str(), m_iNormal2Width, m_iNormal2Height, 3, aclrTexels.data());
+	else
+		TUnimplemented();
 }
 
 bool CNormalGenerator::Texel(size_t w, size_t h, size_t& iTexel, size_t tw, size_t th, bool* abMask)
@@ -124,7 +113,7 @@ void NormalizeHeightValue(void* pVoidData)
 
 void CNormalGenerator::NormalizeHeightValue(size_t x, size_t y)
 {
-	if (!m_aflTextureTexels)
+	if (!m_avecTextureTexels)
 		return;
 
 	float flHiScale = ((m_iNormal2Width+m_iNormal2Height)/2.0f)/200.0f * m_flNormalTextureDepth;
@@ -136,7 +125,7 @@ void CNormalGenerator::NormalizeHeightValue(size_t x, size_t y)
 
 	tvector<Vector> avecHeights;
 
-	float flHeight = (m_aflTextureTexels[iTexel*3]+m_aflTextureTexels[iTexel*3+1]+m_aflTextureTexels[iTexel*3+2])/3 * flHiScale;
+	float flHeight = m_avecTextureTexels[iTexel].Average() * flHiScale;
 	float flMidPass = m_aflMidPassTexels[iTexel] * flMidScale;
 	float flLowPass = m_aflLowPassTexels[iTexel] * flLowScale;
 
@@ -145,7 +134,7 @@ void CNormalGenerator::NormalizeHeightValue(size_t x, size_t y)
 
 	if (Texel(x+1, y, iTexel, m_iNormal2Width, m_iNormal2Height, false))
 	{
-		flHeight = (m_aflTextureTexels[iTexel*3]+m_aflTextureTexels[iTexel*3+1]+m_aflTextureTexels[iTexel*3+2])/3 * flHiScale;
+		flHeight = m_avecTextureTexels[iTexel].Average() * flHiScale;
 		flMidPass = m_aflMidPassTexels[iTexel] * flMidScale;
 		flLowPass = m_aflLowPassTexels[iTexel] * flLowScale;
 		Vector vecNeighbor(x+1.0f, (float)y, flHeight*m_flNormalTextureHiDepth + flMidPass*m_flNormalTextureMidDepth + flLowPass*m_flNormalTextureLoDepth);
@@ -154,7 +143,7 @@ void CNormalGenerator::NormalizeHeightValue(size_t x, size_t y)
 
 	if (Texel(x-1, y, iTexel, m_iNormal2Width, m_iNormal2Height, false))
 	{
-		flHeight = (m_aflTextureTexels[iTexel*3]+m_aflTextureTexels[iTexel*3+1]+m_aflTextureTexels[iTexel*3+2])/3 * flHiScale;
+		flHeight = m_avecTextureTexels[iTexel].Average() * flHiScale;
 		flMidPass = m_aflMidPassTexels[iTexel] * flMidScale;
 		flLowPass = m_aflLowPassTexels[iTexel] * flLowScale;
 		Vector vecNeighbor(x-1.0f, (float)y, flHeight*m_flNormalTextureHiDepth + flMidPass*m_flNormalTextureMidDepth + flLowPass*m_flNormalTextureLoDepth);
@@ -163,7 +152,7 @@ void CNormalGenerator::NormalizeHeightValue(size_t x, size_t y)
 
 	if (Texel(x, y+1, iTexel, m_iNormal2Width, m_iNormal2Height, false))
 	{
-		flHeight = (m_aflTextureTexels[iTexel*3]+m_aflTextureTexels[iTexel*3+1]+m_aflTextureTexels[iTexel*3+2])/3 * flHiScale;
+		flHeight = m_avecTextureTexels[iTexel].Average() * flHiScale;
 		flMidPass = m_aflMidPassTexels[iTexel] * flMidScale;
 		flLowPass = m_aflLowPassTexels[iTexel] * flLowScale;
 		Vector vecNeighbor((float)x, y+1.0f, flHeight*m_flNormalTextureHiDepth + flMidPass*m_flNormalTextureMidDepth + flLowPass*m_flNormalTextureLoDepth);
@@ -172,7 +161,7 @@ void CNormalGenerator::NormalizeHeightValue(size_t x, size_t y)
 
 	if (Texel(x, y-1, iTexel, m_iNormal2Width, m_iNormal2Height, false))
 	{
-		flHeight = (m_aflTextureTexels[iTexel*3]+m_aflTextureTexels[iTexel*3+1]+m_aflTextureTexels[iTexel*3+2])/3 * flHiScale;
+		flHeight = m_avecTextureTexels[iTexel].Average() * flHiScale;
 		flMidPass = m_aflMidPassTexels[iTexel] * flMidScale;
 		flLowPass = m_aflLowPassTexels[iTexel] * flLowScale;
 		Vector vecNeighbor((float)x, y-1.0f, flHeight*m_flNormalTextureHiDepth + flMidPass*m_flNormalTextureMidDepth + flLowPass*m_flNormalTextureLoDepth);
@@ -185,9 +174,7 @@ void CNormalGenerator::NormalizeHeightValue(size_t x, size_t y)
 		vecNormal[i] = RemapVal(vecNormal[i], -1.0f, 1.0f, 0.0f, 0.99f);	// Don't use 1.0 because of integer overflow.
 
 	// Don't need to lock the data because we're guaranteed never to access the same texel twice due to the generation method.
-	m_aflNormal2Texels[iTexel*3] = vecNormal.x;
-	m_aflNormal2Texels[iTexel*3+1] = vecNormal.y;
-	m_aflNormal2Texels[iTexel*3+2] = vecNormal.z;
+	m_avecNormal2Texels[iTexel] = vecNormal;
 }
 
 typedef struct
@@ -233,15 +220,15 @@ void CNormalGenerator::GeneratePass(int x, int y)
 			size_t iTexel2;
 			if (Texel(x+i, y+j, iTexel2, m_iNormal2Width, m_iNormal2Height))
 			{
-				size_t iTexelOffset = iTexel2*3;
+				size_t iTexelOffset = iTexel2;
 				float flWeight = flWeightTable[(i/2)+5][(j/2)+5];
-				flLowHeight += (m_aflTextureTexels[iTexelOffset]+m_aflTextureTexels[iTexelOffset+1]+m_aflTextureTexels[iTexelOffset+2])/3 * flWeight;
+				flLowHeight += m_avecTextureTexels[iTexelOffset].Average() * flWeight;
 				flTotalLowHeight += flWeight;
 
 				if (i >= -5 && i <= 5 && j >= -5 && j <= 5)
 				{
 					flWeight = flWeightTable[i+5][j+5];
-					flMidHeight += (m_aflTextureTexels[iTexelOffset]+m_aflTextureTexels[iTexelOffset+1]+m_aflTextureTexels[iTexelOffset+2])/3 * flWeight;
+					flMidHeight += m_avecTextureTexels[iTexelOffset].Average() * flWeight;
 					flTotalMidHeight += flWeight;
 				}
 			}
@@ -310,78 +297,47 @@ float CNormalGenerator::GetSetupProgress()
 	return (float)m_pGenerationParallelizer->GetJobsDone() / (float)m_pGenerationParallelizer->GetJobsTotal();
 }
 
-void CNormalGenerator::SetNormalTexture(bool bNormalTexture, size_t iMaterial)
+void CNormalGenerator::SetNormalTexture(size_t iMaterial)
 {
-#ifdef OPENGL2
 	// Materials not loaded yet?
-	if (!m_paoMaterials->size())
+	if (iMaterial >= SMAKWindow()->GetMaterials().size())
 		return;
 
-	CMaterial* pMaterial = &(*m_paoMaterials)[iMaterial];
+	CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[iMaterial];
 
-	if (!pMaterial->m_iBase)
+	size_t iDiffuse = hMaterial->FindParameter("DiffuseTexture");
+	if (iDiffuse >= hMaterial->m_ahTextures.size())
+		return;
+
+	CTextureHandle hDiffuseTexture = hMaterial->m_ahTextures[iDiffuse];
+
+	if (!hDiffuseTexture.IsValid())
 		return;
 
 	m_iMaterial = iMaterial;
 
-	if (m_iNormal2GLId)
-		glDeleteTextures(1, &m_iNormal2GLId);
-	m_iNormal2GLId = 0;
-
 	// Don't let the listeners know yet, we want to generate the new one first so there is no lapse in displaying.
 //	m_bNewNormal2Available = true;
 
-	if (!bNormalTexture)
-	{
-		if (m_pNormal2Parallelizer)
-		{
-			delete m_pNormal2Parallelizer;
-			m_pNormal2Parallelizer = NULL;
-		}
+	if (!m_avecTextureTexels)
+		m_avecTextureTexels = new Vector[hDiffuseTexture->m_iWidth*hDiffuseTexture->m_iHeight];
 
-		if (m_aflNormal2Texels)
-		{
-			delete[] m_aflTextureTexels;
-			delete[] m_aflMidPassTexels;
-			delete[] m_aflLowPassTexels;
-			delete[] m_aflNormal2Texels;
-		}
-		m_aflTextureTexels = NULL;
-		m_aflMidPassTexels = NULL;
-		m_aflLowPassTexels = NULL;
-		m_aflNormal2Texels = NULL;
+	CRenderer::ReadTextureFromGL(hDiffuseTexture, m_avecTextureTexels);
 
-		m_bNewNormal2Available = true;
-		return;
-	}
-
-	size_t iWidth=1, iHeight=1;
-	glBindTexture(GL_TEXTURE_2D, (GLuint)pMaterial->m_iBase);
-
-	GLint iWidth, iHeight;
-	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &iWidth);
-	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &iHeight);
-
-	if (!m_aflTextureTexels)
-		m_aflTextureTexels = new float[iWidth*iHeight*3];
-
-	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, &m_aflTextureTexels[0]);
-
-	m_iNormal2Width = iWidth;
-	m_iNormal2Height = iHeight;
+	m_iNormal2Width = hDiffuseTexture->m_iWidth;
+	m_iNormal2Height = hDiffuseTexture->m_iHeight;
 
 	if (!m_aflLowPassTexels)
-		m_aflLowPassTexels = new float[iWidth*iHeight];
+		m_aflLowPassTexels = new float[hDiffuseTexture->m_iWidth*hDiffuseTexture->m_iHeight];
 	if (!m_aflMidPassTexels)
-		m_aflMidPassTexels = new float[iWidth*iHeight];
+		m_aflMidPassTexels = new float[hDiffuseTexture->m_iWidth*hDiffuseTexture->m_iHeight];
 
-	if (!m_aflNormal2Texels)
-		m_aflNormal2Texels = new float[iWidth*iHeight*3];
+	if (!m_avecNormal2Texels)
+		m_avecNormal2Texels = new Vector[hDiffuseTexture->m_iWidth*hDiffuseTexture->m_iHeight];
 
 	Setup();
 
 	UpdateNormal2();
-#endif
 }
 
 void CNormalGenerator::UpdateNormal2()
@@ -394,7 +350,7 @@ void CNormalGenerator::StartGenerationJobs()
 {
 	m_bNormal2Changed = false;
 
-	if (m_pNormal2Parallelizer && m_aflNormal2Texels)
+	if (m_pNormal2Parallelizer && m_avecNormal2Texels)
 	{
 		m_pNormal2Parallelizer->RestartJobs();
 		return;
@@ -422,34 +378,10 @@ void CNormalGenerator::StartGenerationJobs()
 
 void CNormalGenerator::RegenerateNormal2Texture()
 {
-	if (!m_aflNormal2Texels)
+	if (!m_avecNormal2Texels)
 		return;
 
-	size_t iILId = 0;
-#ifdef OPENGL2
-	if (m_iNormal2GLId)
-		glDeleteTextures(1, &m_iNormal2GLId);
-
-	GLuint iGLId;
-	glGenTextures(1, &iGLId);
-	glBindTexture(GL_TEXTURE_2D, iGLId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, (GLint)m_iNormal2Width, (GLint)m_iNormal2Height, GL_RGB, GL_FLOAT, &m_aflNormal2Texels[0]);
-
-	m_iNormal2GLId = iGLId;
-
-	if (m_iNormal2ILId)
-		ilDeleteImages(1, &m_iNormal2ILId);
-
-	ILuint iILId;
-	ilGenImages(1, &iILId);
-	ilBindImage(iILId);
-	ilTexImage((ILint)m_iNormal2Width, (ILint)m_iNormal2Height, 1, 3, IL_RGB, IL_FLOAT, &m_aflNormal2Texels[0]);
-	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
-#endif
-
-	m_iNormal2ILId = iILId;
+	m_hNewNormal2 = CTextureLibrary::AddTexture(m_avecNormal2Texels, m_iNormal2Width, m_iNormal2Height);
 
 	m_bNewNormal2Available = true;
 	m_bNormal2Generated = true;
@@ -492,11 +424,9 @@ float CNormalGenerator::GetNormal2GenerationProgress()
 	return (float)m_pNormal2Parallelizer->GetJobsDone() / (float)m_pNormal2Parallelizer->GetJobsTotal();
 }
 
-void CNormalGenerator::GetNormalMap2(size_t& iNormal2, size_t& iNormal2IL)
+void CNormalGenerator::GetNormalMap2(CTextureHandle& hNormal2)
 {
-	iNormal2 = m_iNormal2GLId;
-	iNormal2IL = m_iNormal2ILId;
-	m_iNormal2GLId = 0;
-	m_iNormal2ILId = 0;
+	hNormal2 = m_hNewNormal2;
+
 	m_bNewNormal2Available = false;
 }

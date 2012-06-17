@@ -1954,10 +1954,8 @@ void CNormalPanel::Layout()
 	{
 		m_pMaterials->AddNode<CConversionMaterial>(m_pScene->GetMaterial(i)->GetName(), m_pScene->GetMaterial(i));
 
-#ifdef OPENGL2
-		if (m_paoMaterials->size() > i && !m_paoMaterials->at(i).m_iBase)
+		if (SMAKWindow()->GetMaterials().size() > i && SMAKWindow()->GetMaterials()[i]->FindParameter("DiffuseTexture") == ~0)
 			m_pMaterials->GetNode(i)->m_pLabel->SetAlpha(100);
-#endif
 
 		m_pMaterials->SetSelectedListener(this, SetupNormal2);
 	}
@@ -2015,33 +2013,21 @@ void CNormalPanel::Think()
 {
 	if (m_oGenerator.IsNewNormal2Available())
 	{
-		size_t iNormal2, iNormal2IL;
-		m_oGenerator.GetNormalMap2(iNormal2, iNormal2IL);
+		CTextureHandle hNewNormal2;
+		m_oGenerator.GetNormalMap2(hNewNormal2);
 
-#ifdef OPENGL2
-		for (size_t i = 0; i < m_paoMaterials->size(); i++)
+		for (size_t i = 0; i < SMAKWindow()->GetMaterials().size(); i++)
 		{
-			size_t& iNormalTexture = SMAKWindow()->GetMaterials()[i].m_iNormal2;
-			size_t& iNormalIL = SMAKWindow()->GetMaterials()[i].m_iNormal2IL;
-
 			if (!m_pScene->GetMaterial(i)->IsVisible())
 				continue;
 
-			if (iNormalTexture)
-				glDeleteTextures(1, &iNormalTexture);
-
-			if (iNormalIL)
-				ilDeleteImages(1, &iNormalIL);
-
-			iNormalTexture = iNormal2;
-			iNormalIL = iNormal2IL;
+			SMAKWindow()->GetMaterials()[i]->SetParameter("Normal2", hNewNormal2);
 			break;
 		}
-#endif
 
-		m_pSave->SetVisible(!!iNormal2);
+		m_pSave->SetVisible(hNewNormal2.IsValid());
 
-		if (!!iNormal2)
+		if (hNewNormal2.IsValid())
 			CSMAKWindow::Get()->SetDisplayNormal(true);
 	}
 
@@ -2116,7 +2102,7 @@ void CNormalPanel::SetupNormal2Callback(const tstring& sArgs)
 	m_oGenerator.SetNormalTextureHiDepth(m_pHiDepthSelector->GetSelectionValue());
 	m_oGenerator.SetNormalTextureMidDepth(m_pMidDepthSelector->GetSelectionValue());
 	m_oGenerator.SetNormalTextureLoDepth(m_pLoDepthSelector->GetSelectionValue());
-	m_oGenerator.SetNormalTexture(true, m_pMaterials->GetSelectedNodeId());
+	m_oGenerator.SetNormalTexture(m_pMaterials->GetSelectedNodeId());
 
 	CSMAKWindow::Get()->SetDisplayNormal(true);
 }
