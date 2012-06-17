@@ -288,10 +288,8 @@ void CAOGenerator::Generate()
 	m_flLowestValue = -1;
 	m_flHighestValue = 0;
 
-#ifdef _DEBUG
-	if (CSMAKWindow::Get())
-		CSMAKWindow::Get()->ClearDebugLines();
-#endif
+	if (SMAKWindow())
+		SMAKWindow()->ClearDebugLines();
 
 	memset(&m_bPixelMask[0], 0, m_iWidth*m_iHeight*sizeof(bool));
 
@@ -408,9 +406,7 @@ void CAOGenerator::GenerateShadowMaps()
 
 	for (size_t x = 0; x <= iSamples; x++)
 	{
-		float flPitch = RemapVal(cos(RemapVal((float)x, 0, (float)iSamples, -M_PI/2, M_PI/2)), 0, 1, 90, 0);
-		if (x > iSamples/2)
-			flPitch = -flPitch;
+		float flPitch = -asin(RemapVal((float)x, 0, (float)iSamples, -1, 1)) * 90 / (M_PI/2);
 
 		for (size_t y = 0; y < iSamples; y++)
 		{
@@ -428,7 +424,7 @@ void CAOGenerator::GenerateShadowMaps()
 			Vector vecLightPosition = vecDir*flSize + vecCenter;	// Puts us twice as far from the closest vertex
 
 			if (ao_debug.GetInt() > 1)
-				CSMAKWindow::Get()->AddDebugLine(vecLightPosition, vecLightPosition-vecDir);
+				SMAKWindow()->AddDebugLine(vecLightPosition, vecLightPosition-vecDir);
 
 			Matrix4x4 mLightView = Matrix4x4::ConstructCameraView(vecLightPosition, (vecCenter-vecLightPosition).Normalized(), Vector(0, 1, 0));
 
@@ -493,7 +489,7 @@ void CAOGenerator::GenerateShadowMaps()
 				DrawTexture(oUVFB.m_iMap, 1, c);
 			}
 
-			double flTimeBefore = CSMAKWindow::Get()->GetTime();
+			double flTimeBefore = SMAKWindow()->GetTime();
 
 			c.SetViewport(Rect(0, 0, m_iWidth, m_iHeight));
 			c.UseFrameBuffer(&m_oAOFB);
@@ -509,13 +505,13 @@ void CAOGenerator::GenerateShadowMaps()
 				DrawTexture(m_oAOFB.m_iMap, 1, c);
 			}
 
-			flProcessSceneRead += (CSMAKWindow::Get()->GetTime() - flTimeBefore);
-			flTimeBefore = CSMAKWindow::Get()->GetTime();
+			flProcessSceneRead += (SMAKWindow()->GetTime() - flTimeBefore);
+			flTimeBefore = SMAKWindow()->GetTime();
 
 			if (m_pWorkListener)
 				m_pWorkListener->WorkProgress(x*iSamples + y);
 
-			flProgress += (CSMAKWindow::Get()->GetTime() - flTimeBefore);
+			flProgress += (SMAKWindow()->GetTime() - flTimeBefore);
 
 			if (m_bStopGenerating)
 				break;
@@ -803,7 +799,7 @@ void CAOGenerator::GenerateTriangleByTexel(CConversionMeshInstance* pMeshInstanc
 			}
 
 			if (ao_debug.GetInt() > 1)
-				CSMAKWindow::Get()->AddDebugLine(vecUVPosition, vecUVPosition + vecNormal/2);
+				SMAKWindow()->AddDebugLine(vecUVPosition, vecUVPosition + vecNormal/2);
 
 			size_t iTexel;
 			if (!Texel(i, j, iTexel, false))
@@ -1232,10 +1228,10 @@ void DrawSplit(const raytrace::CKDNode* pNode)
 	Vector v3 = v0;
 	v3[(iSplitAxis+2)%3] = oBox.m_vecMaxs[(iSplitAxis+2)%3];
 
-	CSMAKWindow::Get()->AddDebugLine(v0, v1);
-	CSMAKWindow::Get()->AddDebugLine(v1, v2);
-	CSMAKWindow::Get()->AddDebugLine(v2, v3);
-	CSMAKWindow::Get()->AddDebugLine(v3, v0);
+	SMAKWindow()->AddDebugLine(v0, v1);
+	SMAKWindow()->AddDebugLine(v1, v2);
+	SMAKWindow()->AddDebugLine(v2, v3);
+	SMAKWindow()->AddDebugLine(v3, v0);
 
 	if (pNode->GetLeftChild())
 		DrawSplit(pNode->GetLeftChild());

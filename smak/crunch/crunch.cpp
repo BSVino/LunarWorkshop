@@ -117,10 +117,8 @@ void CTexelGenerator::Generate()
 		m_pWorkListener->SetAction("Building tree", 0);
 	}
 
-#ifdef _DEBUG
-	if (CSMAKWindow::Get())
-		CSMAKWindow::Get()->ClearDebugLines();
-#endif
+	if (SMAKWindow())
+		SMAKWindow()->ClearDebugLines();
 
 	memset(&m_abTexelMask[0], 0, m_iWidth*m_iHeight*sizeof(bool));
 
@@ -387,9 +385,9 @@ void CTexelGenerator::FindHiResMeshLocation(CConversionMeshInstance* pMeshInstan
 
 #ifdef NORMAL_DEBUG
 	if (bHitFront && (vecUVPosition - trFront.m_vecHit).LengthSqr() > 0.001f)
-		CSMAKWindow::Get()->AddDebugLine(vecUVPosition, trFront.m_vecHit);
+		SMAKWindow()->AddDebugLine(vecUVPosition, trFront.m_vecHit);
 	if (bHitBack && (vecUVPosition - trBack.m_vecHit).LengthSqr() > 0.001f)
-		CSMAKWindow::Get()->AddDebugLine(vecUVPosition, trBack.m_vecHit);
+		SMAKWindow()->AddDebugLine(vecUVPosition, trBack.m_vecHit);
 #endif
 
 	if (!bHitBack && !bHitFront)
@@ -413,11 +411,11 @@ void CTexelGenerator::FindHiResMeshLocation(CConversionMeshInstance* pMeshInstan
 	}
 
 #ifdef NORMAL_DEBUG
-//	CSMAKWindow::Get()->AddDebugLine(vecUVPosition, vecUVPosition+vecHitNormal);
+//	SMAKWindow()->AddDebugLine(vecUVPosition, vecUVPosition+vecHitNormal);
 	if (bHitFront && (vecUVPosition - trFront.m_vecHit).LengthSqr() > 0.001f)
-		CSMAKWindow::Get()->AddDebugLine(trFront.m_vecHit, trFront.m_vecHit + trFront.m_pFace->GetNormal(trFront.m_vecHit, trFront.m_pMeshInstance));
+		SMAKWindow()->AddDebugLine(trFront.m_vecHit, trFront.m_vecHit + trFront.m_pFace->GetNormal(trFront.m_vecHit, trFront.m_pMeshInstance));
 	if (bHitBack && (vecUVPosition - trBack.m_vecHit).LengthSqr() > 0.001f)
-		CSMAKWindow::Get()->AddDebugLine(trBack.m_vecHit, trBack.m_vecHit + trBack.m_pFace->GetNormal(trBack.m_vecHit, trBack.m_pMeshInstance));
+		SMAKWindow()->AddDebugLine(trBack.m_vecHit, trBack.m_vecHit + trBack.m_pFace->GetNormal(trBack.m_vecHit, trBack.m_pMeshInstance));
 #endif
 
 	for (size_t i = 0; i < m_apMethods.size(); i++)

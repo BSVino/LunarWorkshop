@@ -672,6 +672,22 @@ void CRenderingContext::BeginRenderDebugLines()
 	BeginRenderLines(3);
 }
 
+void CRenderingContext::BeginRenderPoints(float flSize)
+{
+	m_avecTexCoord.clear();
+	m_aavecTexCoords.clear();
+	m_avecNormals.clear();
+	m_aclrColors.clear();
+	m_avecVertices.clear();
+
+	m_bTexCoord = false;
+	m_bNormal = false;
+	m_bColor = false;
+
+	glPointSize( flSize );
+	m_iDrawMode = GL_POINTS;
+}
+
 void CRenderingContext::TexCoord(float s, float t, int iChannel)
 {
 	if (iChannel >= (int)m_avecTexCoord.size())
@@ -909,7 +925,10 @@ void CRenderingContext::EndRenderVertexArray(size_t iVertices, bool bWireframe)
 	SetUniform("mGlobal", GetContext().m_mTransformations);
 
 	if (bWireframe)
+	{
+		glLineWidth(1);
 		glDrawArrays(GL_LINES, 0, iVertices);
+	}
 	else
 		glDrawArrays(GL_TRIANGLES, 0, iVertices);
 

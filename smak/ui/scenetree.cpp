@@ -4,6 +4,8 @@
 #include <glgui/rootpanel.h>
 #include <glgui/tree.h>
 #include <glgui/filedialog.h>
+#include <textures/texturelibrary.h>
+#include <textures/materiallibrary.h>
 
 #include "smak_renderer.h"
 
@@ -499,25 +501,19 @@ void CMaterialEditor::ChooseDiffuseCallback(const tstring& sArgs)
 
 void CMaterialEditor::OpenDiffuseCallback(const tstring& sArgs)
 {
-	tstring sOpen = sArgs;
-
-	if (!sOpen.length())
+	if (!sArgs.length())
 		return;
 
-#ifdef OPENGL3
-	size_t iTexture = CSMAKWindow::LoadTextureIntoGL(sOpen);
+	CTextureHandle hTexture = CTextureLibrary::AddTexture(sArgs);
 
-	if (!iTexture)
+	if (!hTexture.IsValid())
 		return;
 
-	CMaterial* pMaterial = &(*CSMAKWindow::Get()->GetMaterials())[m_iMaterial];
+	CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[m_iMaterial];
 
-	if (pMaterial->m_iBase)
-		glDeleteTextures(1, &pMaterial->m_iBase);
+	hMaterial->SetParameter("DiffuseTexture", hTexture);
 
-	pMaterial->m_iBase = iTexture;
-	m_pMaterial->m_sDiffuseTexture = sOpen;
-#endif
+	m_pMaterial->m_sDiffuseTexture = sArgs;
 
 	Layout();
 }
@@ -529,79 +525,41 @@ void CMaterialEditor::ChooseNormalCallback(const tstring& sArgs)
 
 void CMaterialEditor::OpenNormalCallback(const tstring& sArgs)
 {
-	tstring sOpen = sArgs;
-
-	if (!sOpen.length())
+	if (!sArgs.length())
 		return;
 
-#ifdef OPENGL3
-	size_t iTexture = CSMAKWindow::LoadTextureIntoGL(sOpen);
+	CTextureHandle hTexture = CTextureLibrary::AddTexture(sArgs);
 
-	if (!iTexture)
+	if (!hTexture.IsValid())
 		return;
 
-	CMaterial* pMaterial = &(*CSMAKWindow::Get()->GetMaterials())[m_iMaterial];
+	CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[m_iMaterial];
 
-	if (pMaterial->m_iNormal)
-		glDeleteTextures(1, &pMaterial->m_iNormal);
+	hMaterial->SetParameter("Normal", hTexture);
 
-	pMaterial->m_iNormal = iTexture;
-	m_pMaterial->m_sNormalTexture = sOpen;
-
-	if (pMaterial->m_iNormal2)
-		glDeleteTextures(1, &pMaterial->m_iNormal2);
-	pMaterial->m_iNormal2 = 0;
-
-	if (pMaterial->m_iNormal2IL)
-		ilDeleteImages(1, &pMaterial->m_iNormal2IL);
-	if (pMaterial->m_iNormalIL)
-		ilDeleteImages(1, &pMaterial->m_iNormalIL);
-
-	pMaterial->m_iNormal2IL = 0;
-	pMaterial->m_iNormalIL = 0;
-#endif
+	m_pMaterial->m_sNormalTexture = sArgs;
 
 	Layout();
 }
 
 void CMaterialEditor::RemoveDiffuseCallback(const tstring& sArgs)
 {
-#ifdef OPENGL2
-	CMaterial* pMaterial = &(*CSMAKWindow::Get()->GetMaterials())[m_iMaterial];
+	CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[m_iMaterial];
 
-	if (pMaterial->m_iBase)
-		glDeleteTextures(1, &pMaterial->m_iBase);
+	hMaterial->SetParameter("DiffuseTexture", CTextureHandle());
 
-	pMaterial->m_iBase = 0;
 	m_pMaterial->m_sDiffuseTexture = "";
-#endif
 
 	Layout();
 }
 
 void CMaterialEditor::RemoveNormalCallback(const tstring& sArgs)
 {
-#ifdef OPENGL2
-	CMaterial* pMaterial = &(*CSMAKWindow::Get()->GetMaterials())[m_iMaterial];
+	CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[m_iMaterial];
 
-	if (pMaterial->m_iNormal)
-		glDeleteTextures(1, &pMaterial->m_iNormal);
+	hMaterial->SetParameter("Normal", CTextureHandle());
 
-	pMaterial->m_iNormal = 0;
 	m_pMaterial->m_sNormalTexture = "";
-
-	if (pMaterial->m_iNormal2)
-		glDeleteTextures(1, &pMaterial->m_iNormal2);
-	pMaterial->m_iNormal2 = 0;
-
-	if (pMaterial->m_iNormal2IL)
-		ilDeleteImages(1, &pMaterial->m_iNormal2IL);
-	if (pMaterial->m_iNormalIL)
-		ilDeleteImages(1, &pMaterial->m_iNormalIL);
-
-	pMaterial->m_iNormal2IL = 0;
-	pMaterial->m_iNormalIL = 0;
-#endif
 
 	Layout();
 }

@@ -32,7 +32,7 @@ void CAOGenerator::RaytraceSceneFromPosition(raytrace::CRaytracer* pTracer, Vect
 
 	m *= m2;
 
-	//ModelWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecNormal*0.5f, Color(0, 0, 255));
+	//SMAKWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecNormal*0.5f, Color(0, 0, 255));
 
 	float flHits = 0;
 	float flTotalHits = 0;
@@ -64,7 +64,7 @@ void CAOGenerator::RaytraceSceneFromPosition(raytrace::CRaytracer* pTracer, Vect
 
 			flTotalHits += flWeight;
 
-			//ModelWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecRay.Normalized()*0.1f, vecDir);
+			//SMAKWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecRay.Normalized()*0.1f, vecDir);
 
 			raytrace::CTraceResult tr;
 			if (pTracer->Raytrace(Ray(vecUVPosition + pFace->GetNormal()*0.01f, vecRay), &tr))
@@ -105,7 +105,7 @@ void CAOGenerator::RaytraceSceneFromPosition(raytrace::CRaytracer* pTracer, Vect
 
 	flTotalHits++;
 
-	//ModelWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecRay.Normalized()*0.2f, vecDir);
+	//SMAKWindow()->AddDebugLine(vecUVPosition + pFace->GetNormal()*0.01f, vecUVPosition + vecRay.Normalized()*0.2f, vecDir);
 
 	raytrace::CTraceResult tr;
 	if (pTracer->Raytrace(Ray(vecUVPosition + pFace->GetNormal()*0.01f, vecRay), &tr))

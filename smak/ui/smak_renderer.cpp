@@ -126,31 +126,27 @@ void CSMAKRenderer::Render3D()
 	// Render light source on top of objects, since it doesn't use the depth buffer.
 	RenderLightSource();
 
-#if 0
-	if (m_aDebugLines.size())
+	if (SMAKWindow()->GetDebugLines().size())
 	{
-#ifdef OPENGL2
-		glLineWidth(1);
-		glDisable(GL_COLOR_MATERIAL);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_TEXTURE_2D);
-		glBegin(GL_LINES);
-			for (size_t i = 0; i < m_aDebugLines.size(); i++)
+		CRenderingContext c(this, true);
+
+		c.UseProgram("grid");
+		for (size_t i = 0; i < SMAKWindow()->GetDebugLines().size(); i++)
+		{
+			c.BeginRenderLines();
+				c.Color(SMAKWindow()->GetDebugLines()[i].clrLine);
+				c.Vertex(SMAKWindow()->GetDebugLines()[i].vecStart);
+				c.Vertex(SMAKWindow()->GetDebugLines()[i].vecEnd);
+			c.EndRender();
+		}
+		c.BeginRenderPoints(2);
+			c.Color(Vector(0.6f, 0.6f, 0.6f));
+			for (size_t i = 0; i < SMAKWindow()->GetDebugLines().size(); i++)
 			{
-				glColor3ubv(m_aDebugLines[i].clrLine);
-				glVertex3fv(m_aDebugLines[i].vecStart);
-				glVertex3fv(m_aDebugLines[i].vecEnd);
+				c.Vertex(SMAKWindow()->GetDebugLines()[i].vecStart);
+				c.Vertex(SMAKWindow()->GetDebugLines()[i].vecEnd);
 			}
-		glEnd();
-		glBegin(GL_POINTS);
-			glColor3f(0.6f, 0.6f, 0.6f);
-			for (size_t i = 0; i < m_aDebugLines.size(); i++)
-			{
-				glVertex3fv(m_aDebugLines[i].vecStart);
-				glVertex3fv(m_aDebugLines[i].vecEnd);
-			}
-		glEnd();
-#endif
+		c.EndRender();
 	}
 
 #ifdef RAYTRACE_DEBUG
@@ -166,7 +162,6 @@ void CSMAKRenderer::Render3D()
 	}
 	if (pTracer)
 		pTracer->Raytrace(Ray(vecStart, vecDirection));
-#endif
 #endif
 }
 

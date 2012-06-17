@@ -13,6 +13,14 @@ class CSMAKWindow : public CApplication, glgui::IEventListener, IWorkListener
 	DECLARE_CLASS(CSMAKWindow, CApplication);
 
 public:
+	typedef struct
+	{
+		Vector vecStart;
+		Vector vecEnd;
+		Color clrLine;
+	} DebugLine;
+
+public:
 							CSMAKWindow(int argc, char** argv);
 							~CSMAKWindow();
 
@@ -124,6 +132,7 @@ public:
 
 	void					ClearDebugLines();
 	void					AddDebugLine(Vector vecStart, Vector vecEnd, Color clrLine = Color(150, 150, 150));
+	tvector<DebugLine>&		GetDebugLines() { return m_aDebugLines; }
 
 	bool					IsRenderingLight() { return m_bDisplayLight; }
 	bool					IsRenderingUV() { return m_bRenderUV; }
@@ -167,12 +176,6 @@ protected:
 	float					m_flCameraUVY;
 	float					m_flCameraUVZoom;
 
-	typedef struct
-	{
-		Vector vecStart;
-		Vector vecEnd;
-		Color clrLine;
-	} DebugLine;
 	tvector<DebugLine>		m_aDebugLines;
 
 	// Options
