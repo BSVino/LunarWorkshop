@@ -14,6 +14,7 @@
 #include <tinker/renderer/renderer.h>
 #include <datamanager/data.h>
 #include <textures/materiallibrary.h>
+#include <renderer/shaders.h>
 
 #include "smak_renderer.h"
 #include "scenetree.h"
@@ -325,83 +326,87 @@ void CSMAKWindow::SetDisplayColorAO(bool bColorAO)
 	m_pColorAO->SetState(bColorAO, false);
 }
 
+// Returns a normalized vector from the specified image file with dimensions iNormalWidth by iNormalHeight
+// at x, y if the image were resampled to iSampleWidth, iSampleHeight
+Vector NormalSample(const tvector<Vector>& vecNormal, size_t iNormalWidth, size_t iNormalHeight, size_t x, size_t y, size_t iSampleWidth, size_t iSampleHeight)
+{
+	TAssert(vecNormal.size() == iNormalWidth*iNormalHeight);
+
+	float flX = RemapVal((float)x, 0, (float)iSampleWidth, 0, (float)iNormalWidth);
+	float flY = RemapVal((float)y, 0, (float)iSampleHeight, 0, (float)iNormalHeight);
+
+	int iX = (int)flX;	// Truncation desired!
+	int iY = (int)flY;	// Truncation desired!
+	int iX2 = iX + 1;
+	int iY2 = iY + 1;
+
+	iX = Clamp<int>(iX, 0, iNormalWidth-1);
+	iX2 = Clamp<int>(iX2, 0, iNormalHeight-1);
+	iY = Clamp<int>(iY, 0, iNormalWidth-1);
+	iY2 = Clamp<int>(iY2, 0, iNormalHeight-1);
+
+	float flXLerp = flX - iX;
+	float flYLerp = flY - iY;
+
+	float flXLerpInv = 1-flXLerp;
+	float flYLerpInv = 1-flYLerp;
+
+	Vector xy = (vecNormal[iNormalHeight*(iNormalHeight-iY-1) + iX] - Vector(0.5f, 0.5f, 0.5f)) * 2;
+	Vector xY = (vecNormal[iNormalHeight*(iNormalHeight-iY2-1) + iX] - Vector(0.5f, 0.5f, 0.5f)) * 2;
+	Vector Xy = (vecNormal[iNormalHeight*(iNormalHeight-iY-1) + iX2] - Vector(0.5f, 0.5f, 0.5f)) * 2;
+	Vector XY = (vecNormal[iNormalHeight*(iNormalHeight-iY2-1) + iX2] - Vector(0.5f, 0.5f, 0.5f)) * 2;
+
+	return ((xy*flYLerpInv + xY*flYLerp)*flXLerpInv + (Xy*flYLerpInv + XY*flYLerp)*flXLerp).Normalized();
+}
+
 void CSMAKWindow::SaveNormal(size_t iMaterial, const tstring& sFilename)
 {
-#ifdef OPENGL2
-	CMaterial* pMaterial = &m_aoMaterials[iMaterial];
+	CMaterialHandle hMaterial = GetMaterials()[iMaterial];
 
-	if (pMaterial->m_iNormalIL == 0 && pMaterial->m_iNormal2IL == 0)
+	CShader* pShader = CShaderLibrary::GetShader(hMaterial->m_sShader);
+	size_t iNormal = pShader->FindTextureByUniform("iNormal");
+	size_t iNormal2 = pShader->FindTextureByUniform("iNormal2");
+
+	if (iNormal == ~0 && iNormal2 == ~0)
 		return;
 
-	ilEnable(IL_FILE_OVERWRITE);
-
-	if (pMaterial->m_iNormalIL == 0 || pMaterial->m_iNormal2IL == 0)
+	// If we only have one, spit it out as is.
+	if (iNormal == ~0 || iNormal2 == ~0)
 	{
-		ILuint iSaveId;
-
-		ilGenImages(1, &iSaveId);
-		ilBindImage(iSaveId);
-
-		// Heh. Nice hack
-		ILuint iNormalId = pMaterial->m_iNormalIL + pMaterial->m_iNormal2IL;
-		ilCopyImage(iNormalId);
-
-		ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
-
-		ilSaveImage(convertstring<tchar, ILchar>(sFilename).c_str());
-
-		ilDeleteImage(iSaveId);
-		ilBindImage(0);
+		if (iNormal != ~0)
+			CRenderer::WriteTextureToFile(hMaterial->m_ahTextures[iNormal]->m_iGLID, sFilename);
+		else
+			CRenderer::WriteTextureToFile(hMaterial->m_ahTextures[iNormal2]->m_iGLID, sFilename);
 
 		return;
 	}
 
-	ILuint iNormalId;
-	ilGenImages(1, &iNormalId);
-	ilBindImage(iNormalId);
-	ilCopyImage(pMaterial->m_iNormalIL);
-	ilConvertImage(IL_RGB, IL_FLOAT);
+	CTextureHandle hNormal = hMaterial->m_ahTextures[iNormal];
+	CTextureHandle hNormal2 = hMaterial->m_ahTextures[iNormal2];
 
-	int iWidth = ilGetInteger(IL_IMAGE_WIDTH);
-	int iHeight = ilGetInteger(IL_IMAGE_HEIGHT);
+	tvector<Vector> avecNormals;
+	tvector<Vector> avecNormals2;
 
-	ILuint iNormal2Id;
-	ilGenImages(1, &iNormal2Id);
-	ilBindImage(iNormal2Id);
-	ilCopyImage(pMaterial->m_iNormal2IL);
-	ilConvertImage(IL_RGB, IL_FLOAT);
+	avecNormals.resize(hNormal->m_iWidth*hNormal->m_iHeight);
+	avecNormals2.resize(hNormal2->m_iWidth*hNormal2->m_iHeight);
 
-	int iWidth2 = ilGetInteger(IL_IMAGE_WIDTH);
-	int iHeight2 = ilGetInteger(IL_IMAGE_HEIGHT);
+	CRenderer::ReadTextureFromGL(hNormal, avecNormals.data());
+	CRenderer::ReadTextureFromGL(hNormal2, avecNormals2.data());
 
-	size_t iTotalWidth = iWidth > iWidth2 ? iWidth : iWidth2;
-	size_t iTotalHeight = iHeight > iHeight2 ? iHeight : iHeight2;
+	size_t iTotalWidth = hNormal->m_iWidth > hNormal2->m_iWidth ? hNormal->m_iWidth : hNormal2->m_iWidth;
+	size_t iTotalHeight = hNormal->m_iHeight > hNormal2->m_iHeight ? hNormal->m_iHeight : hNormal2->m_iHeight;
 
-	Vector* avecResizedNormals = new Vector[iTotalWidth*iTotalHeight];
-	Vector* avecResizedNormals2 = new Vector[iTotalWidth*iTotalHeight];
-
-	ilBindImage(iNormalId);
-	iluImageParameter(ILU_FILTER, ILU_BILINEAR);
-	iluScale((ILint)iTotalWidth, (ILint)iTotalHeight, 1);
-	ilCopyPixels(0, 0, 0, (ILint)iTotalWidth, (ILint)iTotalHeight, 1, IL_RGB, IL_FLOAT, &avecResizedNormals[0].x);
-	ilDeleteImage(iNormalId);
-
-	ilBindImage(iNormal2Id);
-	iluImageParameter(ILU_FILTER, ILU_BILINEAR);
-	iluScale((ILint)iTotalWidth, (ILint)iTotalHeight, 1);
-	ilCopyPixels(0, 0, 0, (ILint)iTotalWidth, (ILint)iTotalHeight, 1, IL_RGB, IL_FLOAT, &avecResizedNormals2[0].x);
-	ilDeleteImage(iNormal2Id);
-
-	Vector* avecMergedNormalValues = new Vector[iTotalWidth*iTotalHeight];
+	tvector<Color> aclrMergedNormalValues;
+	aclrMergedNormalValues.resize(iTotalWidth*iTotalHeight);
 
 	for (size_t i = 0; i < iTotalWidth; i++)
 	{
 		for (size_t j = 0; j < iTotalHeight; j++)
 		{
-			size_t iTexel = iTotalHeight*j + i;
+			size_t iTexel = iTotalHeight*(iTotalHeight-j-1) + i;
 
-			Vector vecNormal = (avecResizedNormals[iTexel]*2 - Vector(1.0f, 1.0f, 1.0f));
-			Vector vecNormal2 = (avecResizedNormals2[iTexel]*2 - Vector(1.0f, 1.0f, 1.0f));
+			Vector vecNormal = NormalSample(avecNormals, hNormal->m_iWidth, hNormal->m_iHeight, i, j, iTotalWidth, iTotalHeight);
+			Vector vecNormal2 = NormalSample(avecNormals2, hNormal2->m_iWidth, hNormal2->m_iHeight, i, j, iTotalWidth, iTotalHeight);
 
 			Vector vecBitangent = vecNormal.Cross(Vector(1, 0, 0)).Normalized();
 			Vector vecTangent = vecBitangent.Cross(vecNormal).Normalized();
@@ -411,24 +416,12 @@ void CSMAKWindow::SaveNormal(size_t iMaterial, const tstring& sFilename)
 			mTBN.SetUpVector(vecBitangent);
 			mTBN.SetRightVector(vecNormal);
 
-			avecMergedNormalValues[iTexel] = (mTBN * vecNormal2)*0.99f/2 + Vector(0.5f, 0.5f, 0.5f);
+			Vector vecMergedNormal = (mTBN * vecNormal2)/1.99f + Vector(0.5f, 0.5f, 0.5f);
+			aclrMergedNormalValues[iTexel] = vecMergedNormal;
 		}
 	}
 
-	delete[] avecResizedNormals;
-	delete[] avecResizedNormals2;
-
-	ilGenImages(1, &iNormalId);
-	ilBindImage(iNormalId);
-	ilTexImage((ILint)iTotalWidth, (ILint)iTotalHeight, 1, 3, IL_RGB, IL_FLOAT, &avecMergedNormalValues[0].x);
-	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
-
-	ilSaveImage(convertstring<tchar, ILchar>(sFilename).c_str());
-
-	ilDeleteImages(1, &iNormalId);
-
-	delete[] avecMergedNormalValues;
-#endif
+	CRenderer::WriteTextureToFile(aclrMergedNormalValues.data(), iTotalWidth, iTotalHeight, sFilename);
 }
 
 CSMAKRenderer* CSMAKWindow::GetSMAKRenderer()

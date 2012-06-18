@@ -19,6 +19,8 @@ public:
 
 	tstring					FindType(const tstring& sName) const;
 
+	size_t					FindTextureByUniform(const tstring& sUniform) const;
+
 public:
 	eastl::string			m_sName;
 	eastl::string			m_sVertexFile;

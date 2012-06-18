@@ -144,6 +144,7 @@ public:
 	static void		ReadTextureFromGL(CTextureHandle hTexture, Vector* pvecData);
 
 	static void		WriteTextureToFile(size_t iTexture, tstring sFilename);
+	static void		WriteTextureToFile(Color* pclrData, int w, int h, tstring sFilename);
 
 protected:
 	size_t			m_iWidth;

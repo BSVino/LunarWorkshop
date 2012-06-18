@@ -542,6 +542,17 @@ tstring CShader::FindType(const tstring& sName) const
 	return "unknown";
 }
 
+size_t CShader::FindTextureByUniform(const tstring& sUniform) const
+{
+	for (size_t i = 0; i < m_asTextures.size(); i++)
+	{
+		if (m_asTextures[i] == sUniform)
+			return i;
+	}
+
+	return ~0;
+}
+
 void ReloadShaders(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	CShaderLibrary::CompileShaders();

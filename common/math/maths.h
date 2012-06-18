@@ -63,6 +63,12 @@ inline float RemapValClamped(float flInput, float flInLo, float flInHi, float fl
 	return RemapVal(flInput, flInLo, flInHi, flOutLo, flOutHi);
 }
 
+template<typename T>
+T Clamp(T flInput, T flMin, T flMax)
+{
+	return (flInput<flMin)?flMin:(flInput>flMax)?flMax:flInput;
+}
+ 
 inline float Blink(float flTime, float flLength)
 {
 	if (fmod(flTime, flLength) > flLength/2)

@@ -893,7 +893,22 @@ void CRenderer::WriteTextureToFile(size_t iTexture, tstring sFilename)
 
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, aclrPixels.data());
 
-	stbi_write_png(sFilename.c_str(), iWidth, iHeight, 4, aclrPixels.data(), 0);
+	if (tstr_endswith(sFilename, ".png"))
+		stbi_write_png(sFilename.c_str(), iWidth, iHeight, 4, aclrPixels.data(), 0);
+	else if (tstr_endswith(sFilename, ".tga"))
+		stbi_write_tga(sFilename.c_str(), iWidth, iHeight, 4, aclrPixels.data());
+	else if (tstr_endswith(sFilename, ".bmp"))
+		stbi_write_bmp(sFilename.c_str(), iWidth, iHeight, 4, aclrPixels.data());
+}
+
+void CRenderer::WriteTextureToFile(Color* pclrData, int w, int h, tstring sFilename)
+{
+	if (tstr_endswith(sFilename, ".png"))
+		stbi_write_png(sFilename.c_str(), w, h, 4, pclrData, 0);
+	else if (tstr_endswith(sFilename, ".tga"))
+		stbi_write_tga(sFilename.c_str(), w, h, 4, pclrData);
+	else if (tstr_endswith(sFilename, ".bmp"))
+		stbi_write_bmp(sFilename.c_str(), w, h, 4, pclrData);
 }
 
 void R_ReadPixels(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)

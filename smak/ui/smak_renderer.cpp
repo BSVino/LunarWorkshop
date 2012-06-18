@@ -351,9 +351,20 @@ void CSMAKRenderer::RenderMeshInstance(CConversionMeshInstance* pMeshInstance)
 				c.SetUniform("bDiffuse", false);
 			}
 
-			bool bTexture = SMAKWindow()->IsRenderingTexture() && hMaterial->m_ahTextures[0].IsValid();
+			size_t iDiffuse = c.GetActiveShader()->FindTextureByUniform("iDiffuse");
+			size_t iNormal = c.GetActiveShader()->FindTextureByUniform("iNormal");
+			size_t iNormal2 = c.GetActiveShader()->FindTextureByUniform("iNormal2");
+
+			bool bTexture = SMAKWindow()->IsRenderingTexture() && hMaterial.IsValid() && iDiffuse < hMaterial->m_ahTextures.size() && hMaterial->m_ahTextures[iDiffuse].IsValid();
+			bool bNormal = SMAKWindow()->IsRenderingNormal() && hMaterial.IsValid() && iNormal < hMaterial->m_ahTextures.size() && hMaterial->m_ahTextures[iNormal].IsValid();
+			bool bNormal2 = SMAKWindow()->IsRenderingNormal() && hMaterial.IsValid() && iNormal2 < hMaterial->m_ahTextures.size() && hMaterial->m_ahTextures[iNormal2].IsValid();
+
 			if (!bTexture)
 				c.SetUniform("bDiffuse", false);
+
+			c.SetUniform("bShadeBottoms", bNormal||bNormal2);
+			c.SetUniform("bNormal", bNormal);
+			c.SetUniform("bNormal2", bNormal2);
 
 			if (!SMAKWindow()->IsRenderingAO())
 				c.SetUniform("bAO", false);
@@ -453,11 +464,18 @@ void CSMAKRenderer::RenderUV()
 	{
 		c.UseMaterial(hMaterial);
 
-		bool bTexture = SMAKWindow()->IsRenderingTexture() && hMaterial.IsValid() && hMaterial->m_ahTextures.size() && hMaterial->m_ahTextures[0].IsValid();
-		if (!bTexture)
-			c.SetUniform("bDiffuse", false);
+		size_t iDiffuse = c.GetActiveShader()->FindTextureByUniform("iDiffuse");
+		size_t iNormal = c.GetActiveShader()->FindTextureByUniform("iNormal");
+		size_t iNormal2 = c.GetActiveShader()->FindTextureByUniform("iNormal2");
 
-		c.SetUniform("bShadeBottoms", false);//bNormal||bNormal2);
+		bool bTexture = SMAKWindow()->IsRenderingTexture() && hMaterial.IsValid() && iDiffuse < hMaterial->m_ahTextures.size() && hMaterial->m_ahTextures[iDiffuse].IsValid();
+		bool bNormal = SMAKWindow()->IsRenderingNormal() && hMaterial.IsValid() && iNormal < hMaterial->m_ahTextures.size() && hMaterial->m_ahTextures[iNormal].IsValid();
+		bool bNormal2 = SMAKWindow()->IsRenderingNormal() && hMaterial.IsValid() && iNormal2 < hMaterial->m_ahTextures.size() && hMaterial->m_ahTextures[iNormal2].IsValid();
+
+		c.SetUniform("bDiffuse", bTexture);
+		c.SetUniform("bShadeBottoms", bNormal||bNormal2);
+		c.SetUniform("bNormal", bNormal);
+		c.SetUniform("bNormal2", bNormal2);
 
 		if (SMAKWindow()->IsRenderingLight())
 		{

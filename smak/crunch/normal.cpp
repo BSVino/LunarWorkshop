@@ -5,6 +5,7 @@
 
 #include <raytracer/raytracer.h>
 #include <textures/materiallibrary.h>
+#include <renderer/shaders.h>
 
 #if 0
 #ifdef _DEBUG
@@ -305,7 +306,8 @@ void CNormalGenerator::SetNormalTexture(size_t iMaterial)
 
 	CMaterialHandle hMaterial = SMAKWindow()->GetMaterials()[iMaterial];
 
-	size_t iDiffuse = hMaterial->FindParameter("DiffuseTexture");
+	CShader* pShader = CShaderLibrary::GetShader(hMaterial->m_sShader);
+	size_t iDiffuse = pShader->FindTextureByUniform("iDiffuse");
 	if (iDiffuse >= hMaterial->m_ahTextures.size())
 		return;
 
