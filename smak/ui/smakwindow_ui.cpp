@@ -300,8 +300,6 @@ void CSMAKWindow::WorkProgress(size_t iProgress, bool bForceDraw)
 	CProgressBar::Get()->SetProgress(iProgress);
 
 	CSMAKWindow::Get()->Render();
-	CRootPanel::Get()->Think(GetTime());
-	CRootPanel::Get()->Paint(0, 0, (float)m_iWindowWidth, (float)m_iWindowHeight);
 
 	SwapBuffers();
 
@@ -798,11 +796,9 @@ void CAOPanel::GenerateCallback(const tstring& sArgs)
 
 	// If the 3d model was there get rid of it.
 	CSMAKWindow::Get()->Render();
-	CRootPanel::Get()->Paint(0, 0, (float)CSMAKWindow::Get()->GetWindowWidth(), (float)CSMAKWindow::Get()->GetWindowHeight());
 	Application()->SwapBuffers();
 
 	CSMAKWindow::Get()->Render();
-	CRootPanel::Get()->Paint(0, 0, (float)CSMAKWindow::Get()->GetWindowWidth(), (float)CSMAKWindow::Get()->GetWindowHeight());
 	Application()->SwapBuffers();
 
 	if (m_bColor)
@@ -908,8 +904,6 @@ void CAOPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 	}
 
 	CSMAKWindow::Get()->Render();
-	CRootPanel::Get()->Think(CSMAKWindow::Get()->GetTime());
-	CRootPanel::Get()->Paint(0, 0, (float)CSMAKWindow::Get()->GetWindowWidth(), (float)CSMAKWindow::Get()->GetWindowHeight());
 	Application()->SwapBuffers();
 
 	flLastTime = CSMAKWindow::Get()->GetTime();
@@ -1571,8 +1565,6 @@ void CComboGeneratorPanel::WorkProgress(size_t iProgress, bool bForceDraw)
 	}
 
 	CSMAKWindow::Get()->Render();
-	CRootPanel::Get()->Think(CSMAKWindow::Get()->GetTime());
-	CRootPanel::Get()->Paint(0, 0, (float)CSMAKWindow::Get()->GetWindowWidth(), (float)CSMAKWindow::Get()->GetWindowHeight());
 	SMAKWindow()->SwapBuffers();
 
 	flLastTime = CSMAKWindow::Get()->GetTime();
