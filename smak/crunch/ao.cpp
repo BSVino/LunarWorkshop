@@ -42,7 +42,6 @@ CAOGenerator::CAOGenerator(CConversionScene* pScene)
 	m_flRayFalloff = 1;
 
 	SetRenderPreviewViewport(0, 0, 100, 100);
-	SetUseFrontBuffer(false);
 
 	m_pWorkListener = NULL;
 
@@ -128,7 +127,7 @@ void CAOGenerator::ShadowMapSetupScene()
 	m_iSceneDepthVerts = aflVertsDepth.size()/8;
 }
 
-void AddVertex(tvector<float>& aflVerts, const Vector& v, const Vector& vn, const Vector2D& vt)
+void AddShadowMapVertex(tvector<float>& aflVerts, const Vector& v, const Vector& vn, const Vector2D& vt)
 {
 	aflVerts.push_back(v.x);
 	aflVerts.push_back(v.y);
@@ -177,9 +176,9 @@ void CAOGenerator::ShadowMapSetupSceneNode(CConversionSceneNode* pNode, tvector<
 				CConversionVertex* pVertex1 = pFace->GetVertex(k-1);
 				CConversionVertex* pVertex2 = pFace->GetVertex(k);
 
-				AddVertex(aflVerts, pMeshInstance->GetVertex(pVertex0->v), pMeshInstance->GetNormal(pVertex0->vn), pMesh->GetUV(pVertex0->vu));
-				AddVertex(aflVerts, pMeshInstance->GetVertex(pVertex1->v), pMeshInstance->GetNormal(pVertex1->vn), pMesh->GetUV(pVertex1->vu));
-				AddVertex(aflVerts, pMeshInstance->GetVertex(pVertex2->v), pMeshInstance->GetNormal(pVertex2->vn), pMesh->GetUV(pVertex2->vu));
+				AddShadowMapVertex(aflVerts, pMeshInstance->GetVertex(pVertex0->v), pMeshInstance->GetNormal(pVertex0->vn), pMesh->GetUV(pVertex0->vu));
+				AddShadowMapVertex(aflVerts, pMeshInstance->GetVertex(pVertex1->v), pMeshInstance->GetNormal(pVertex1->vn), pMesh->GetUV(pVertex1->vu));
+				AddShadowMapVertex(aflVerts, pMeshInstance->GetVertex(pVertex2->v), pMeshInstance->GetNormal(pVertex2->vn), pMesh->GetUV(pVertex2->vu));
 			}
 		}
 	}
@@ -187,45 +186,36 @@ void CAOGenerator::ShadowMapSetupSceneNode(CConversionSceneNode* pNode, tvector<
 
 void CAOGenerator::RenderSetupScene()
 {
-#ifdef OPENGL2
-	// Tuck away our current stack so we can return to it later.
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
+	TUnimplemented();
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
+	tvector<tvector<float>> aaflVerts;
+	RenderSetupSceneNode(m_pScene->GetScene(0), aaflVerts);
 
-	// Background represents light, so it's white.
-	glClearColor(1, 1, 1, 1);
+	for (size_t i = 0; i < aaflVerts.size(); i++)
+	{
+		m_aiSceneMaterials.push_back(CRenderer::LoadVertexDataIntoGL(aaflVerts[i].size()*sizeof(float), aaflVerts[i].data()));
+		m_aiSceneMaterialVerts.push_back(aaflVerts[i].size()/8);
+	}
 
-	GLUtesselator* pTesselator = gluNewTess();
-	gluTessCallback(pTesselator, GLU_TESS_BEGIN, (void(CALLBACK*)())RenderTesselateBegin);
-	gluTessCallback(pTesselator, GLU_TESS_VERTEX_DATA, (void(CALLBACK*)())RenderTesselateVertex);
-	gluTessCallback(pTesselator, GLU_TESS_END, (void(CALLBACK*)())RenderTesselateEnd);
-	gluTessProperty(pTesselator, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
-
-	// Create a list with the required polys so it draws quicker.
-	m_iSceneList = glGenLists(1);
-
-	glNewList(m_iSceneList, GL_COMPILE);
-
-	RenderSetupSceneNode(m_pScene->GetScene(0), pTesselator);
-
-	glEndList();
-
-	gluDeleteTess(pTesselator);
-#endif
+	m_oRenderFB = SMAKRenderer()->CreateFrameBuffer(m_iWidth, m_iHeight, (fb_options_e)(FB_TEXTURE|FB_LINEAR|FB_DEPTH));
 }
 
-void CAOGenerator::RenderSetupSceneNode(CConversionSceneNode* pNode, GLUtesselator* pTesselator)
+void AddRenderedVertex(tvector<float>& aflVerts, const Vector& v, const Vector2D& vt)
+{
+	aflVerts.push_back(v.x);
+	aflVerts.push_back(v.y);
+	aflVerts.push_back(v.z);
+	aflVerts.push_back(vt.x);
+	aflVerts.push_back(vt.y);
+}
+
+void CAOGenerator::RenderSetupSceneNode(CConversionSceneNode* pNode, tvector<tvector<float>>& aaflVerts)
 {
 	if (!pNode)
 		return;
 
 	for (size_t c = 0; c < pNode->GetNumChildren(); c++)
-		RenderSetupSceneNode(pNode->GetChild(c), pTesselator);
+		RenderSetupSceneNode(pNode->GetChild(c), aaflVerts);
 
 	for (size_t m = 0; m < pNode->GetNumMeshInstances(); m++)
 	{
@@ -235,36 +225,21 @@ void CAOGenerator::RenderSetupSceneNode(CConversionSceneNode* pNode, GLUtesselat
 		{
 			CConversionFace* pFace = pMesh->GetFace(f);
 
-#ifdef OPENGL2
-			glBindTexture(GL_TEXTURE_2D, (GLuint)(*m_paoMaterials)[m].m_iBase);
-			glColor3f(1, 1, 1);
+			size_t iMaterial = pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial;
+			while (aaflVerts.size() <= iMaterial)
+				aaflVerts.push_back();
 
-			if (m_pScene->DoesFaceHaveValidMaterial(pFace, pMeshInstance))
+			CConversionVertex* pVertex0 = pFace->GetVertex(0);
+
+			for (size_t k = 2; k < pFace->GetNumVertices(); k++)
 			{
-				CConversionMaterial* pMaterial = m_pScene->GetMaterial(pMeshInstance->GetMappedMaterial(pFace->m)->m_iMaterial);
-				glMaterialfv(GL_FRONT, GL_AMBIENT, pMaterial->m_vecAmbient);
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, pMaterial->m_vecDiffuse);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, pMaterial->m_vecSpecular);
-				glMaterialfv(GL_FRONT, GL_EMISSION, pMaterial->m_vecEmissive);
-				glMaterialf(GL_FRONT, GL_SHININESS, pMaterial->m_flShininess);
-				glColor4fv(pMaterial->m_vecDiffuse);
+				CConversionVertex* pVertex1 = pFace->GetVertex(k-1);
+				CConversionVertex* pVertex2 = pFace->GetVertex(k);
+
+				AddRenderedVertex(aaflVerts[iMaterial], pMeshInstance->GetVertex(pVertex0->v), pMesh->GetUV(pVertex0->vu));
+				AddRenderedVertex(aaflVerts[iMaterial], pMeshInstance->GetVertex(pVertex1->v), pMesh->GetUV(pVertex1->vu));
+				AddRenderedVertex(aaflVerts[iMaterial], pMeshInstance->GetVertex(pVertex2->v), pMesh->GetUV(pVertex2->vu));
 			}
-
-			gluTessBeginPolygon(pTesselator, pMeshInstance);
-			gluTessBeginContour(pTesselator);
-
-			for (size_t k = 0; k < pFace->GetNumVertices(); k++)
-			{
-				CConversionVertex* pVertex = pFace->GetVertex(k);
-
-				Vector vecVertex = pMeshInstance->GetVertex(pVertex->v);
-				GLdouble afCoords[3] = { vecVertex.x, vecVertex.y, vecVertex.z };
-				gluTessVertex(pTesselator, afCoords, pVertex);
-			}
-
-			gluTessEndContour(pTesselator);
-			gluTessEndPolygon(pTesselator);
-#endif
 		}
 	}
 }
@@ -341,10 +316,13 @@ void CAOGenerator::Generate()
 			CRenderer::UnloadVertexDataFromGL(m_iScene);
 			CRenderer::UnloadVertexDataFromGL(m_iSceneDepth);
 		}
-#ifdef OPENGL2
 		else
-			glDeleteLists(m_iSceneList, 1);
-#endif
+		{
+			for (size_t i = 0; i < m_aiSceneMaterials.size(); i++)
+				CRenderer::UnloadVertexDataFromGL(m_aiSceneMaterials[i]);
+
+			m_oRenderFB.Destroy();
+		}
 	}
 
 	// Somebody get this ao some clotters and morphine, STAT!
@@ -831,68 +809,51 @@ void CAOGenerator::GenerateTriangleByTexel(CConversionMeshInstance* pMeshInstanc
 
 Vector CAOGenerator::RenderSceneFromPosition(Vector vecPosition, Vector vecDirection, CConversionFace* pRenderFace)
 {
-#ifdef OPENGL2
-	GLenum eBuffer = GL_AUX0;
+	TUnimplemented();
 
-	if (m_bUseFrontBuffer)
-		eBuffer = GL_FRONT;
+	CRenderingContext c(SMAKRenderer());
 
-	glDrawBuffer(eBuffer);
-
-	glDisable(GL_LIGHTING);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_COLOR_MATERIAL);
-	glEnable(GL_TEXTURE_2D);
-	glShadeModel(GL_FLAT);
+	c.UseFrameBuffer(&m_oRenderFB);
 
 	// Bring it away from its poly so that the camera never clips around behind it.
 	// Adds .001 because of a bug where GL for some reason won't show the faces unless I do that.
 	Vector vecEye = vecPosition + (vecDirection + Vector(.001f, .001f, .001f)) * 0.1f;
-	Vector vecLookAt = vecPosition + vecDirection;
 
-	glViewport(m_iRPVX, m_iRPVY, m_iRPVW, m_iRPVH);
+	c.SetViewport(Rect(m_iRPVX, m_iRPVY, m_iRPVW, m_iRPVH));
 
-	// Set up some rendering stuff.
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(
-			120.0,
-			1,
-			0.01,
-			100.0
-		);
+	c.SetProjection(Matrix4x4::ProjectPerspective(120.0f, 1, 0.01f, 100.0f));
+	c.SetView(Matrix4x4::ConstructCameraView(vecEye, vecDirection, Vector(0, 1, 0)));
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	c.ClearColor();
+	c.ClearDepth();
 
-	gluLookAt(
-		vecEye.x, vecEye.y, vecEye.z,
-		vecLookAt.x, vecLookAt.y, vecLookAt.z,
-		0.0, 1.0, 0.0);
+	for (size_t i = 0; i < m_aiSceneMaterials.size(); i++)
+	{
+		TAssert(i < SMAKWindow()->GetMaterials().size());
+		if (i >= SMAKWindow()->GetMaterials().size())
+			break;
 
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+		if (!m_aiSceneMaterialVerts[i])
+			continue;
 
-	// It uses this color if the texture is missing.
-	GLfloat flMaterialColor[] = {0.0, 0.0, 0.0, 1.0};
+		c.UseMaterial(SMAKWindow()->GetMaterials()[i]);
 
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, flMaterialColor);
-	glColor4fv(flMaterialColor);
+		c.BeginRenderVertexArray(m_aiSceneMaterials[i]);
+		c.SetPositionBuffer((size_t)0, 5*sizeof(float));
+		c.SetTexCoordBuffer((size_t)3*sizeof(float), 5*sizeof(float));
+		c.EndRenderVertexArray(m_aiSceneMaterialVerts[i]);
+	}
 
-	glCallList(m_iSceneList);
-
-	glFinish();
+	c.Finish();
 
 #ifdef AO_DEBUG
 	DebugRenderSceneLookAtPosition(vecPosition, vecDirection, pRenderFace);
 	glFinish();
 #endif
 
-	Vector vecShadowColor(0,0,0);
+	c.ReadPixels(m_iRPVX, m_iRPVY, m_iRPVW, m_iRPVH, m_pvecPixels);
 
-	glReadBuffer(eBuffer);
-
-	glReadPixels(m_iRPVX, m_iRPVY, m_iRPVW, m_iRPVH, GL_RGBA, GL_FLOAT, m_pvecPixels);
-
+	Vector vecShadowColor;
 	float flTotal = 0;
 
 	for (size_t p = 0; p < m_iRPVW*m_iRPVH*m_iPixelDepth; p++)
@@ -921,8 +882,6 @@ Vector CAOGenerator::RenderSceneFromPosition(Vector vecPosition, Vector vecDirec
 	vecShadowColor /= flTotal;
 
 	return vecShadowColor;
-#endif
-	return Vector();
 }
 
 void CAOGenerator::DebugRenderSceneLookAtPosition(Vector vecPosition, Vector vecDirection, CConversionFace* pRenderFace)
@@ -1163,32 +1122,19 @@ void CAOGenerator::SaveToFile(const tchar *pszFilename)
 	if (!pszFilename)
 		return;
 
-#ifdef OPENGL2
-	ilEnable(IL_FILE_OVERWRITE);
+	tvector<Color> aclrData;
+	aclrData.resize(m_iWidth*m_iHeight);
 
-	ILuint iDevILId;
-	ilGenImages(1, &iDevILId);
-	ilBindImage(iDevILId);
-
-	// WHAT A HACK!
-	ilTexImage((ILint)m_iWidth, (ILint)m_iHeight, 1, 3, IL_RGB, IL_FLOAT, NULL);
-
-	if (m_eAOMethod != AOMETHOD_SHADOWMAP)
+	for (size_t i = 0; i < m_iWidth*m_iHeight; i++)
 	{
-		for (size_t i = 0; i < m_iWidth*m_iHeight; i++)
+		if (m_eAOMethod != AOMETHOD_SHADOWMAP)
 			// When exporting to png sometimes a pure white value will suffer integer overflow.
 			m_avecShadowValues[i] *= 0.99f;
+
+		aclrData[i] = m_avecShadowValues[i];
 	}
 
-	ilSetData(&m_avecShadowValues[0].x);
-
-	// Formats like PNG and VTF don't work unless it's in integer format.
-	ilConvertImage(IL_RGB, IL_UNSIGNED_INT);
-
-	ilSaveImage(convertstring<tchar, ILchar>(pszFilename).c_str());
-
-	ilDeleteImages(1,&iDevILId);
-#endif
+	CRenderer::WriteTextureToFile(aclrData.data(), m_iWidth, m_iHeight, pszFilename);
 }
 
 bool CAOGenerator::Texel(size_t w, size_t h, size_t& iTexel, bool bUseMask)

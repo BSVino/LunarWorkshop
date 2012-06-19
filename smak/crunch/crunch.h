@@ -239,7 +239,6 @@ public:
 	void					SetUseTexture(bool bUseTexture) { m_bUseTexture = bUseTexture; };
 	void					SetBleed(size_t iBleed) { m_iBleed = iBleed; };
 	void					SetRenderPreviewViewport(int x, int y, int w, int h);
-	void					SetUseFrontBuffer(bool bUseFrontBuffer) { m_bUseFrontBuffer = bUseFrontBuffer; };
 	void					SetSamples(size_t iSamples) { m_iSamples = iSamples; };
 	void					SetRandomize(bool bRandomize) { m_bRandomize = bRandomize; };
 	void					SetCreaseEdges(bool bCreaseEdges) { m_bCreaseEdges = bCreaseEdges; };
@@ -251,7 +250,7 @@ public:
 	void					ShadowMapSetupScene();
 	void					ShadowMapSetupSceneNode(CConversionSceneNode* pNode, tvector<float>& aflVerts, bool bDepth);
 	void					RenderSetupScene();
-	void					RenderSetupSceneNode(CConversionSceneNode* pNode, class GLUtesselator* pTesselator);
+	void					RenderSetupSceneNode(CConversionSceneNode* pNode, tvector<tvector<float>>& aaflVerts);
 	void					Generate();
 	void					GenerateShadowMaps();
 	void					GenerateByTexel();
@@ -294,7 +293,6 @@ protected:
 	int						m_iRPVY;
 	int						m_iRPVW;
 	int						m_iRPVH;
-	bool					m_bUseFrontBuffer;
 	aomethod_t				m_eAOMethod;
 
 	IWorkListener*			m_pWorkListener;
@@ -307,6 +305,10 @@ protected:
 	size_t					m_iSceneVerts;
 	size_t					m_iSceneDepth;
 	size_t					m_iSceneDepthVerts;
+
+	tvector<size_t>			m_aiSceneMaterials;
+	tvector<size_t>			m_aiSceneMaterialVerts;
+	CFrameBuffer			m_oRenderFB;
 
 	Vector*					m_avecShadowValues;
 	Vector*					m_avecShadowGeneratedValues;
