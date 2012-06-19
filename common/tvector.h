@@ -2,6 +2,8 @@
 
 #include <EASTL/vector.h>
 
+#include "common.h"
+
 template <class T>
 class tvector : public eastl::vector<T>
 {
@@ -22,10 +24,10 @@ tvector<T>::tvector()
 template <class T>
 tvector<T>::tvector(tvector<T>&& x)
 {
-	mpBegin = x.mpBegin;
-	mpEnd = x.mpEnd;
-	mpCapacity = x.mpCapacity;
-	mAllocator = x.mAllocator;
+	this->mpBegin = x.mpBegin;
+	this->mpEnd = x.mpEnd;
+	this->mpCapacity = x.mpCapacity;
+	this->mAllocator = x.mAllocator;
 
 	x.mpBegin = nullptr;
 	x.mpEnd = nullptr;
@@ -42,10 +44,10 @@ tvector<T>& tvector<T>::operator=(tvector<T>&& x)
 	// Clear
 	swap(tvector<T>());
 
-	mpBegin = x.mpBegin;
-	mpEnd = x.mpEnd;
-	mpCapacity = x.mpCapacity;
-	mAllocator = x.mAllocator;
+	this->mpBegin = x.mpBegin;
+	this->mpEnd = x.mpEnd;
+	this->mpCapacity = x.mpCapacity;
+	this->mAllocator = x.mAllocator;
 
 	x.mpBegin = nullptr;
 	x.mpEnd = nullptr;
