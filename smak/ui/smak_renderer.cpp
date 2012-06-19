@@ -49,7 +49,7 @@ void CSMAKRenderer::Render()
 		m_vecCameraPosition.x = SMAKWindow()->GetCameraUVX();
 		m_vecCameraPosition.y = SMAKWindow()->GetCameraUVY();
 
-		m_vecCameraDirection = Vector(0, 0, 1);
+		m_vecCameraDirection = Vector(0, 0, -1);
 		m_vecCameraUp = Vector(0, 1, 0);
 	}
 	else

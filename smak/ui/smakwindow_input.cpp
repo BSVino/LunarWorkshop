@@ -26,7 +26,7 @@ void CSMAKWindow::MouseMotion(int x, int y)
 
 		if (m_bCameraPanning)
 		{
-			m_flCameraUVX += (float)(x - m_iMouseStartX)/500;
+			m_flCameraUVX += (float)(m_iMouseStartX - x)/500;
 			m_flCameraUVY += (float)(y - m_iMouseStartY)/500;
 
 			m_iMouseStartX = x;
@@ -35,7 +35,7 @@ void CSMAKWindow::MouseMotion(int x, int y)
 
 		if (m_bLightRotating)
 		{
-			GetSMAKRenderer()->MoveUVLight((float)(m_iMouseStartX - x)/100, (float)(m_iMouseStartY - y)/100);
+			GetSMAKRenderer()->MoveUVLight((float)(x - m_iMouseStartX)/100, (float)(m_iMouseStartY - y)/100);
 
 			m_iMouseStartX = x;
 			m_iMouseStartY = y;
