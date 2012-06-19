@@ -303,7 +303,7 @@ void CLoopbackConnection::CallbackFunction(const char* pszName, CNetworkParamete
 
 	CRegisteredFunction* pFunction = &m_aFunctions[pszName];
 
-	eastl::string sFunction = pFunction->m_pszFunction;
+	tstring sFunction = pFunction->m_pszFunction;
 	if (sFunction != "NC")
 	{
 		if (m_bLoading)

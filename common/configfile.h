@@ -43,15 +43,12 @@
 #ifndef CONFIGFILE_H
 #define CONFIGFILE_H
 
-#include <EASTL/string.h>
 #include <EASTL/map.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
 #include "tstring.h"
-
-using eastl::string;
 
 class ConfigFile {
 // Data

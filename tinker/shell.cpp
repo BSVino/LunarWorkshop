@@ -67,12 +67,12 @@ const char* CShell::GetCommandLineSwitchValue(const char* pszSwitch)
 
 void CShell::PrintConsole(const tstring& sText)
 {
-	puts(convertstring<tchar, char>(sText).c_str());
+	puts(sText.c_str());
 }
 
 void CShell::PrintError(const tstring& sText)
 {
-	puts(convertstring<tchar, char>(tstring("ERROR: ") + sText).c_str());
+	puts((tstring("ERROR: ") + sText).c_str());
 }
 
 void CreateApplicationWithErrorHandling(CreateApplicationCallback pfnCallback, int argc, char** argv)

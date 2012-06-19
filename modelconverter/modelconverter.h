@@ -1,7 +1,6 @@
 #ifndef Lw_MODELCONVERTER_H
 #define LW_MODELCONVERTER_H
 
-#include <EASTL/string.h>
 #include <iostream>
 #include <fstream>
 

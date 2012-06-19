@@ -89,7 +89,6 @@ public:
 		DATA_COPYVECTOR,
 		DATA_NETVAR,
 		DATA_STRING,
-		DATA_STRING16,
 		DATA_OUTPUT,
 	} datatype_t;
 
@@ -115,7 +114,7 @@ typedef void (*EntityInputCallback)(const class CBaseEntity* pTarget, const tvec
 class CEntityInput
 {
 public:
-	eastl::string							m_sName;
+	tstring									m_sName;
 	EntityInputCallback						m_pfnCallback;
 };
 
@@ -130,27 +129,27 @@ class CEntityOutput
 {
 public:
 	void									Call();
-	void									AddTarget(const eastl::string& sTargetName, const eastl::string& sInput, const eastl::string& sArgs, bool bKill);
+	void									AddTarget(const tstring& sTargetName, const tstring& sInput, const tstring& sArgs, bool bKill);
 	void									Clear();
 
 	const tstring							FormatArgs(tstring sArgs);
 
 	void									SetEntity(class CBaseEntity* pEnt) { m_pEnt = pEnt; }
-	void									SetOutputName(const eastl::string& sOutputName) { m_sOutputName = sOutputName; }
+	void									SetOutputName(const tstring& sOutputName) { m_sOutputName = sOutputName; }
 
 public:
 	class CEntityOutputTarget
 	{
 	public:
-		eastl::string						m_sTargetName;
-		eastl::string						m_sInput;
-		eastl::string						m_sArgs;
+		tstring								m_sTargetName;
+		tstring								m_sInput;
+		tstring								m_sArgs;
 		bool								m_bKill;
 	};
 
 	tvector<CEntityOutputTarget>			m_aTargets;
 	class CBaseEntity*						m_pEnt;
-	eastl::string							m_sOutputName;
+	tstring									m_sOutputName;
 };
 
 #define DECLARE_ENTITY_OUTPUT(name) \
@@ -166,7 +165,7 @@ public:
 	EntityCreateCallback		m_pfnCreateCallback;
 	tvector<CSaveData>			m_aSaveData;
 	tvector<CNetworkedVariableData>	m_aNetworkVariables;
-	eastl::map<eastl::string, CEntityInput>		m_aInputs;
+	eastl::map<tstring, CEntityInput>		m_aInputs;
 	tvector<tstring>			m_asPrecaches;
 	tvector<CMaterialHandle>	m_ahMaterialPrecaches;
 	bool						m_bCreatableInEditor;
@@ -482,8 +481,8 @@ public:
 	virtual void							Spawn();
 	DECLARE_ENTITY_OUTPUT(OnSpawn);
 
-	void									SetName(const eastl::string& sName) { m_sName = sName; };
-	eastl::string							GetName() const { return m_sName; };
+	void									SetName(const tstring& sName) { m_sName = sName; };
+	tstring									GetName() const { return m_sName; };
 
 	void									SetMass(float flMass) { m_flMass = flMass; };
 	float									GetMass() const { return m_flMass; };
@@ -632,10 +631,10 @@ public:
 	virtual void							BeginTouchingList() {};
 	virtual void							EndTouchingList() {};
 
-	void									CallInput(const eastl::string& sName, const tstring& sArgs);
-	void									CallOutput(const eastl::string& sName);
-	void									AddOutputTarget(const eastl::string& sName, const eastl::string& sTargetName, const eastl::string& sInput, const eastl::string& sArgs = "", bool bKill = false);
-	void									RemoveOutputs(const eastl::string& sName);
+	void									CallInput(const tstring& sName, const tstring& sArgs);
+	void									CallOutput(const tstring& sName);
+	void									AddOutputTarget(const tstring& sName, const tstring& sTargetName, const tstring& sInput, const tstring& sArgs = "", bool bKill = false);
+	void									RemoveOutputs(const tstring& sName);
 	virtual const tstring					GetOutputValue(const tstring& sOutput, size_t iValue) { return ""; }
 	DECLARE_ENTITY_INPUT(RemoveOutput);
 
@@ -714,8 +713,8 @@ public:
 	template <class T>
 	static T*								FindClosest(const TVector& vecPoint, CBaseEntity* pFurther = NULL);
 
-	static CBaseEntity*						GetEntityByName(const eastl::string& sName);
-	static void								FindEntitiesByName(const eastl::string& sName, tvector<CBaseEntity*>& apEntities);
+	static CBaseEntity*						GetEntityByName(const tstring& sName);
+	static void								FindEntitiesByName(const tstring& sName, tvector<CBaseEntity*>& apEntities);
 
 protected:
 	static eastl::map<tstring, CEntityRegistration>& GetEntityRegistration();

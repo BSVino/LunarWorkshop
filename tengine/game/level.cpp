@@ -21,9 +21,9 @@ void CLevel::ReadInfoFromData(const CData* pData)
 void CLevel::OnReadInfo(const CData* pData)
 {
 	if (pData->GetKey() == "Name")
-		m_sName = pData->GetValueTString();
+		m_sName = pData->GetValueString();
 	else if (pData->GetKey() == "GameMode")
-		m_sGameMode = pData->GetValueTString();
+		m_sGameMode = pData->GetValueString();
 }
 
 void CLevel::SaveToFile()
@@ -120,7 +120,7 @@ void CLevel::CreateEntitiesFromData(const CData* pData)
 		if (pChildData->GetKey() != "Entity")
 			continue;
 
-		m_aLevelEntities.push_back(CLevelEntity(pChildData->GetValueTString()));
+		m_aLevelEntities.push_back(CLevelEntity(pChildData->GetValueString()));
 
 		CLevelEntity* pEntity = &m_aLevelEntities.back();
 
@@ -129,7 +129,7 @@ void CLevel::CreateEntitiesFromData(const CData* pData)
 			CData* pField = pChildData->GetChild(k);
 
 			tstring sHandle = pField->GetKey();
-			tstring sValue = pField->GetValueTString();
+			tstring sValue = pField->GetValueString();
 
 			if (sHandle == "Output")
 			{

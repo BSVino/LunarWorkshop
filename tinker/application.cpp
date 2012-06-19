@@ -225,12 +225,12 @@ void CApplication::DumpGLInfo()
 {
 	gl3wInit();
 
-	std::ifstream i(convertstring<tchar, char>(GetAppDataDirectory(AppDirectory(), "glinfo.txt")).c_str());
+	std::ifstream i(GetAppDataDirectory(AppDirectory(), "glinfo.txt").c_str());
 	if (i)
 		return;
 	i.close();
 
-	std::ofstream o(convertstring<tchar, char>(GetAppDataDirectory(AppDirectory(), "glinfo.txt")).c_str());
+	std::ofstream o(GetAppDataDirectory(AppDirectory(), "glinfo.txt").c_str());
 	if (!o || !o.is_open())
 		return;
 
@@ -243,10 +243,10 @@ void CApplication::DumpGLInfo()
 		o << "Shading Language Version: " << pszShadingLanguageVersion << std::endl;
 
 	char* pszExtensions = (char*)glGetString(GL_EXTENSIONS);
-	eastl::string sExtensions;
+	tstring sExtensions;
 	if (pszExtensions)
 		sExtensions = pszExtensions;
-	tvector<eastl::string> asExtensions;
+	tvector<tstring> asExtensions;
 	strtok(sExtensions, asExtensions);
 	o << "Extensions:" << std::endl;
 	for (size_t i = 0; i < asExtensions.size(); i++)

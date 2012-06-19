@@ -242,7 +242,6 @@ void CBaseEntity::SetSaveDataDefaults()
 				break;
 
 			case CSaveData::DATA_STRING:
-			case CSaveData::DATA_STRING16:
 			case CSaveData::DATA_OUTPUT:
 				break;
 			}
@@ -948,14 +947,14 @@ void CBaseEntity::Delete(const tvector<tstring>& sArgs)
 	Delete();
 }
 
-void CBaseEntity::CallInput(const eastl::string& sName, const tstring& sArgs)
+void CBaseEntity::CallInput(const tstring& sName, const tstring& sArgs)
 {
 	CEntityInput* pInput = FindInput(sName.c_str());
 
 	if (!pInput)
 	{
 		TAssert(!"Input missing.");
-		TMsg(sprintf(tstring("Input %s not found in %s\n"), convertstring<char, tchar>(sName).c_str(), convertstring<char, tchar>(GetClassName()).c_str()));
+		TMsg(sprintf(tstring("Input %s not found in %s\n"), sName.c_str(), GetClassName()));
 		return;
 	}
 
@@ -964,14 +963,14 @@ void CBaseEntity::CallInput(const eastl::string& sName, const tstring& sArgs)
 	pInput->m_pfnCallback(this, asArgs);
 }
 
-void CBaseEntity::CallOutput(const eastl::string& sName)
+void CBaseEntity::CallOutput(const tstring& sName)
 {
-	CSaveData* pData = FindSaveData((eastl::string("m_Output_") + sName).c_str());
+	CSaveData* pData = FindSaveData((tstring("m_Output_") + sName).c_str());
 
 	if (!pData)
 	{
 		TAssert(!"Output missing.");
-		TMsg(sprintf(tstring("Called nonexistant output %s of entity %s\n"), convertstring<char, tchar>(sName).c_str(), convertstring<char, tchar>(GetClassName()).c_str()));
+		TMsg(sprintf(tstring("Called nonexistant output %s of entity %s\n"), sName.c_str(), GetClassName()));
 		return;
 	}
 
@@ -981,14 +980,14 @@ void CBaseEntity::CallOutput(const eastl::string& sName)
 	pOutput->Call();
 }
 
-void CBaseEntity::AddOutputTarget(const eastl::string& sName, const eastl::string& sTargetName, const eastl::string& sInput, const eastl::string& sArgs, bool bKill)
+void CBaseEntity::AddOutputTarget(const tstring& sName, const tstring& sTargetName, const tstring& sInput, const tstring& sArgs, bool bKill)
 {
-	CSaveData* pData = FindSaveData((eastl::string("m_Output_") + sName).c_str());
+	CSaveData* pData = FindSaveData((tstring("m_Output_") + sName).c_str());
 
 	if (!pData)
 	{
 		TAssert(!"Output missing.");
-		TMsg(sprintf(tstring("Called nonexistant output %s of entity %s\n"), convertstring<char, tchar>(sName).c_str(), convertstring<char, tchar>(GetClassName()).c_str()));
+		TMsg(sprintf(tstring("Called nonexistant output %s of entity %s\n"), sName.c_str(), GetClassName()));
 		return;
 	}
 
@@ -996,14 +995,14 @@ void CBaseEntity::AddOutputTarget(const eastl::string& sName, const eastl::strin
 	pOutput->AddTarget(sTargetName, sInput, sArgs, bKill);
 }
 
-void CBaseEntity::RemoveOutputs(const eastl::string& sName)
+void CBaseEntity::RemoveOutputs(const tstring& sName)
 {
-	CSaveData* pData = FindSaveData((eastl::string("m_Output_") + sName).c_str());
+	CSaveData* pData = FindSaveData((tstring("m_Output_") + sName).c_str());
 
 	if (!pData)
 	{
 		TAssert(!"Output missing.");
-		TMsg(sprintf(tstring("Called nonexistant output %s of entity %s\n"), convertstring<char, tchar>(sName).c_str(), convertstring<char, tchar>(GetClassName()).c_str()));
+		TMsg(sprintf(tstring("Called nonexistant output %s of entity %s\n"), sName.c_str(), GetClassName()));
 		return;
 	}
 
@@ -1019,7 +1018,7 @@ void CBaseEntity::RemoveOutput(const tvector<tstring>& sArgs)
 		return;
 	}
 
-	RemoveOutputs(convertstring<tchar, char>(sArgs[0]));
+	RemoveOutputs(sArgs[0]);
 }
 
 CVar debug_entity_outputs("debug_entity_outputs", "off");
@@ -1242,7 +1241,7 @@ CEntityInput* CBaseEntity::FindInput(const char* pszName, bool bThisClassOnly)
 	{
 		pRegistration = CBaseEntity::GetRegisteredEntity(pszClassName);
 
-		eastl::map<eastl::string, CEntityInput>::iterator it = pRegistration->m_aInputs.find(pszName);
+		eastl::map<tstring, CEntityInput>::iterator it = pRegistration->m_aInputs.find(pszName);
 
 		if (it != pRegistration->m_aInputs.end())
 			return &it->second;
@@ -1298,7 +1297,7 @@ void CBaseEntity::CheckSaveDataSize(CEntityRegistration* pRegistration)
 	// If you're getting this assert it probably means you forgot to add a savedata entry for some variable that you added to a class.
 	if (iSaveTableSize != iSizeOfThis)
 	{
-		TMsg(sprintf(tstring("Save table for class '%s' doesn't match the class's size, %d != %d.\n"), convertstring<char, tchar>(GetClassName()).c_str(), iSaveTableSize, iSizeOfThis));
+		TMsg(sprintf(tstring("Save table for class '%s' doesn't match the class's size, %d != %d.\n"), GetClassName(), iSaveTableSize, iSizeOfThis));
 //		TAssert(!"Save table size doesn't match class size.\n");
 	}
 }
@@ -1423,11 +1422,7 @@ void CBaseEntity::Serialize(std::ostream& o, const char* pszClassName, void* pEn
 		}
 
 		case CSaveData::DATA_STRING:
-			writestring(o, *(eastl::string*)pData);
-			break;
-
-		case CSaveData::DATA_STRING16:
-			writetstring(o, *(tstring*)pData);
+			writestring(o, *(tstring*)pData);
 			break;
 
 		case CSaveData::DATA_OUTPUT:
@@ -1503,11 +1498,7 @@ bool CBaseEntity::Unserialize(std::istream& i, const char* pszClassName, void* p
 		}
 
 		case CSaveData::DATA_STRING:
-			((eastl::string*)pData)->assign(readstring(i));
-			break;
-
-		case CSaveData::DATA_STRING16:
-			((tstring*)pData)->assign(readtstring(i));
+			((tstring*)pData)->assign(readstring(i));
 			break;
 
 		case CSaveData::DATA_OUTPUT:
@@ -1519,9 +1510,9 @@ bool CBaseEntity::Unserialize(std::istream& i, const char* pszClassName, void* p
 			{
 				bool bKill;
 
-				eastl::string sTargetName = readstring(i);
-				eastl::string sInput = readstring(i);
-				eastl::string sArgs = readstring(i);
+				tstring sTargetName = readstring(i);
+				tstring sInput = readstring(i);
+				tstring sArgs = readstring(i);
 				i.read((char*)&bKill, sizeof(bool));
 
 				pOutput->AddTarget(sTargetName, sInput, sArgs, bKill);
@@ -1767,7 +1758,7 @@ CEntityRegistration* CBaseEntity::GetRegisteredEntity(tstring sClassName)
 	return &GetEntityRegistration()[sClassName];
 }
 
-CBaseEntity* CBaseEntity::GetEntityByName(const eastl::string& sName)
+CBaseEntity* CBaseEntity::GetEntityByName(const tstring& sName)
 {
 	if (sName.length() == 0)
 		return NULL;
@@ -1784,7 +1775,7 @@ CBaseEntity* CBaseEntity::GetEntityByName(const eastl::string& sName)
 
 		if (sName[0] == '*')
 		{
-			if (eastl::string(pEntity->GetClassName()+1) == sName.c_str()+1)
+			if (tstring(pEntity->GetClassName()+1) == sName.c_str()+1)
 				return pEntity;
 		}
 		else
@@ -1797,7 +1788,7 @@ CBaseEntity* CBaseEntity::GetEntityByName(const eastl::string& sName)
 	return NULL;
 }
 
-void CBaseEntity::FindEntitiesByName(const eastl::string& sName, tvector<CBaseEntity*>& apEntities)
+void CBaseEntity::FindEntitiesByName(const tstring& sName, tvector<CBaseEntity*>& apEntities)
 {
 	if (sName.length() == 0)
 		return;
@@ -1814,7 +1805,7 @@ void CBaseEntity::FindEntitiesByName(const eastl::string& sName, tvector<CBaseEn
 
 		if (sName[0] == '*')
 		{
-			if (eastl::string(pEntity->GetClassName()+1) != sName.c_str()+1)
+			if (tstring(pEntity->GetClassName()+1) != sName.c_str()+1)
 				continue;
 		}
 		else
@@ -1986,7 +1977,6 @@ void UnserializeString_bool(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 	case CSaveData::DATA_COPYARRAY:
 	case CSaveData::DATA_COPYVECTOR:
 	case CSaveData::DATA_STRING:
-	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
 		TUnimplemented();
 		break;
@@ -2021,7 +2011,6 @@ void UnserializeString_size_t(const tstring& sData, CSaveData* pSaveData, CBaseE
 	case CSaveData::DATA_COPYARRAY:
 	case CSaveData::DATA_COPYVECTOR:
 	case CSaveData::DATA_STRING:
-	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
 		TUnimplemented();
 		break;
@@ -2050,7 +2039,6 @@ void UnserializeString_float(const tstring& sData, CSaveData* pSaveData, CBaseEn
 	case CSaveData::DATA_COPYARRAY:
 	case CSaveData::DATA_COPYVECTOR:
 	case CSaveData::DATA_STRING:
-	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
 		TUnimplemented();
 		break;
@@ -2079,7 +2067,6 @@ void UnserializeString_double(const tstring& sData, CSaveData* pSaveData, CBaseE
 	case CSaveData::DATA_COPYARRAY:
 	case CSaveData::DATA_COPYVECTOR:
 	case CSaveData::DATA_STRING:
-	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
 		TUnimplemented();
 		break;
@@ -2106,7 +2093,6 @@ void UnserializeString_tstring(const tstring& sData, CSaveData* pSaveData, CBase
 	case CSaveData::DATA_COPYARRAY:
 	case CSaveData::DATA_COPYVECTOR:
 	case CSaveData::DATA_COPYTYPE:
-	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
 		TUnimplemented();
 		break;
@@ -2135,7 +2121,6 @@ void UnserializeString_TVector(const tstring& sData, CSaveData* pSaveData, CBase
 	case CSaveData::DATA_COPYARRAY:
 	case CSaveData::DATA_COPYVECTOR:
 	case CSaveData::DATA_STRING:
-	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
 		TUnimplemented();
 		break;
@@ -2169,7 +2154,6 @@ void UnserializeString_Vector2D(const tstring& sData, CSaveData* pSaveData, CBas
 	case CSaveData::DATA_COPYARRAY:
 	case CSaveData::DATA_COPYVECTOR:
 	case CSaveData::DATA_STRING:
-	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
 		TUnimplemented();
 		break;
@@ -2203,7 +2187,6 @@ void UnserializeString_Matrix4x4(const tstring& sData, CSaveData* pSaveData, CBa
 	case CSaveData::DATA_COPYARRAY:
 	case CSaveData::DATA_COPYVECTOR:
 	case CSaveData::DATA_STRING:
-	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
 		TUnimplemented();
 		break;
@@ -2242,7 +2225,6 @@ void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 	case CSaveData::DATA_COPYARRAY:
 	case CSaveData::DATA_COPYVECTOR:
 	case CSaveData::DATA_STRING:
-	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
 		TUnimplemented();
 		break;
@@ -2304,7 +2286,6 @@ void UnserializeString_EntityHandle(const tstring& sData, CSaveData* pSaveData, 
 	case CSaveData::DATA_COPYARRAY:
 	case CSaveData::DATA_COPYVECTOR:
 	case CSaveData::DATA_STRING:
-	case CSaveData::DATA_STRING16:
 	case CSaveData::DATA_OUTPUT:
 		TUnimplemented();
 		break;

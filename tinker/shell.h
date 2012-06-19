@@ -1,7 +1,5 @@
 #pragma once
 
-#include <EASTL/string.h>
-
 #include <tvector.h>
 #include <common.h>
 #include <vector.h>

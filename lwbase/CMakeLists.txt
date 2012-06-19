@@ -12,13 +12,6 @@ if (WIN32)
 endif (WIN32)
 
 set (LWBASE_SOURCES
-	../../ext-deps/EASTL/src/allocator.cpp
-	../../ext-deps/EASTL/src/assert.cpp
-	../../ext-deps/EASTL/src/fixed_pool.cpp
-	../../ext-deps/EASTL/src/hashtable.cpp
-	../../ext-deps/EASTL/src/red_black_tree.cpp
-	../../ext-deps/EASTL/src/string.cpp
-
 	../common/configfile.cpp
 	../common/eastl.cpp
 	../common/mempool.cpp
@@ -54,3 +47,7 @@ add_library(lwbase ${LWBASE_SOURCES})
 if (WIN32)
 	target_link_libraries(lwbase iphlpapi ws2_32 dbghelp)
 endif (WIN32)
+
+add_subdirectory (eastl)
+
+target_link_libraries(lwbase eastl)

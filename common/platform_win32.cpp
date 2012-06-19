@@ -67,17 +67,17 @@ void SleepMS(size_t iMS)
 
 void OpenBrowser(const tstring& sURL)
 {
-	ShellExecute(NULL, L"open", convertstring<tchar, wchar_t>(sURL).c_str(), NULL, NULL, SW_SHOWNORMAL);
+	ShellExecute(NULL, L"open", convert_to_wstring(sURL).c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
 
 void OpenExplorer(const tstring& sDirectory)
 {
-	ShellExecute(NULL, L"open", convertstring<tchar, wchar_t>(sDirectory).c_str(), NULL, NULL, SW_SHOWNORMAL);
+	ShellExecute(NULL, L"open", convert_to_wstring(sDirectory).c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
 
 void Alert(const tstring& sMessage)
 {
-	MessageBox(NULL, convertstring<tchar, wchar_t>(sMessage).c_str(), L"Alert", MB_ICONWARNING|MB_OK);
+	MessageBox(NULL, convert_to_wstring(sMessage).c_str(), L"Alert", MB_ICONWARNING|MB_OK);
 }
 
 static int g_iMinidumpsWritten = 0;
@@ -114,7 +114,7 @@ void CreateMinidump(void* pInfo, tchar* pszDirectory)
 			g_iMinidumpsWritten++
 			);
 
-	HANDLE hFile = CreateFile( convertstring<tchar, wchar_t>(GetAppDataDirectory(pszDirectory, convertstring<wchar_t, tchar>(szFileName))).c_str(), GENERIC_READ | GENERIC_WRITE,
+	HANDLE hFile = CreateFile( convert_to_wstring(GetAppDataDirectory(pszDirectory, convert_from_wstring(szFileName))).c_str(), GENERIC_READ | GENERIC_WRITE,
 		0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
 
 	if( ( hFile != NULL ) && ( hFile != INVALID_HANDLE_VALUE ) )
@@ -145,7 +145,7 @@ void CreateMinidump(void* pInfo, tchar* pszDirectory)
 #endif
 }
 
-eastl::string GetClipboard()
+tstring GetClipboard()
 {
 	if (!OpenClipboard(NULL))
 		return "";
@@ -155,12 +155,12 @@ eastl::string GetClipboard()
 	GlobalUnlock(hData);
 	CloseClipboard();
 
-	eastl::string sClipboard(szBuffer);
+	tstring sClipboard(szBuffer);
 
 	return sClipboard;
 }
 
-void SetClipboard(const eastl::string& sBuf)
+void SetClipboard(const tstring& sBuf)
 {
 	if (!OpenClipboard(NULL))
 		return;
@@ -197,11 +197,11 @@ tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile)
 
 	_wgetenv_s(&iSize, pszVar, iSize, L"APPDATA");
 
-	tstring sReturn = convertstring<wchar_t, tchar>(pszVar);
+	tstring sReturn = convert_from_wstring(pszVar);
 
 	free(pszVar);
 
-	CreateDirectory(convertstring<tchar, wchar_t>(tstring(sReturn).append("\\").append(sDirectory)).c_str(), NULL);
+	CreateDirectory(convert_to_wstring(tstring(sReturn).append("\\").append(sDirectory)).c_str(), NULL);
 
 	sReturn.append("\\").append(sSuffix);
 	return sReturn;
@@ -212,7 +212,7 @@ tvector<tstring> ListDirectory(const tstring& sDirectory, bool bDirectories)
 	tvector<tstring> asResult;
 
 	wchar_t szPath[MAX_PATH];
-	_swprintf(szPath, L"%s\\*", convertstring<tchar, wchar_t>(sDirectory).c_str());
+	_swprintf(szPath, L"%s\\*", convert_to_wstring(sDirectory).c_str());
 
 	WIN32_FIND_DATA fd;
 	HANDLE hFind = FindFirstFile(szPath, &fd);
@@ -229,7 +229,7 @@ tvector<tstring> ListDirectory(const tstring& sDirectory, bool bDirectories)
 			if (wcscmp(fd.cFileName, L".") == 0 || wcscmp(fd.cFileName, L"..") == 0)
 				continue;
 
-			asResult.push_back(convertstring<wchar_t, tchar>(fd.cFileName));
+			asResult.push_back(convert_from_wstring(fd.cFileName));
 		} while(FindNextFile(hFind, &fd));
 
 		FindClose(hFind);
@@ -241,7 +241,7 @@ tvector<tstring> ListDirectory(const tstring& sDirectory, bool bDirectories)
 bool IsFile(const tstring& sPath)
 {
 	WIN32_FIND_DATA fd;
-	HANDLE hFind = FindFirstFile(convertstring<tchar, wchar_t>(sPath).c_str(), &fd);
+	HANDLE hFind = FindFirstFile(convert_to_wstring(sPath).c_str(), &fd);
 
 	if (hFind == INVALID_HANDLE_VALUE)
 		return false;
@@ -260,7 +260,7 @@ bool IsDirectory(const tstring& sPath)
 		sPathNoSep = sPathNoSep.substr(0, sPathNoSep.length()-1);
 
 	WIN32_FIND_DATA fd;
-	HANDLE hFind = FindFirstFile(convertstring<tchar, wchar_t>(sPathNoSep).c_str(), &fd);
+	HANDLE hFind = FindFirstFile(convert_to_wstring(sPathNoSep).c_str(), &fd);
 
 	if (hFind == INVALID_HANDLE_VALUE)
 		return false;
@@ -273,30 +273,30 @@ bool IsDirectory(const tstring& sPath)
 
 void CreateDirectoryNonRecursive(const tstring& sPath)
 {
-	CreateDirectory(convertstring<tchar, wchar_t>(sPath).c_str(), NULL);
+	CreateDirectory(convert_to_wstring(sPath).c_str(), NULL);
 }
 
 bool CopyFileTo(const tstring& sFrom, const tstring& sTo, bool bOverride)
 {
 	if (IsFile(sTo) && bOverride)
-		::DeleteFile(convertstring<tchar, wchar_t>(sTo).c_str());
+		::DeleteFile(convert_to_wstring(sTo).c_str());
 
-	return !!CopyFile(convertstring<tchar, wchar_t>(sFrom).c_str(), convertstring<tchar, wchar_t>(sTo).c_str(), true);
+	return !!CopyFile(convert_to_wstring(sFrom).c_str(), convert_to_wstring(sTo).c_str(), true);
 }
 
 tstring FindAbsolutePath(const tstring& sPath)
 {
 	wchar_t szPath[MAX_PATH];
-	eastl::wstring swPath;
+	std::wstring swPath;
 
 	if (!sPath.length())
 		swPath = L".";
 	else
-		swPath = convertstring<tchar, wchar_t>(sPath);
+		swPath = convert_to_wstring(sPath);
 
 	GetFullPathName(swPath.c_str(), MAX_PATH, szPath, nullptr);
 
-	return convertstring<wchar_t, tchar>(szPath);
+	return convert_from_wstring(szPath);
 }
 
 time_t GetFileModificationTime(const char* pszFile)
@@ -310,10 +310,10 @@ time_t GetFileModificationTime(const char* pszFile)
 
 void DebugPrint(const tstring& sText)
 {
-	OutputDebugString(convertstring<tchar, wchar_t>(sText).c_str());
+	OutputDebugString(convert_to_wstring(sText).c_str());
 }
 
-void Exec(const eastl::string& sLine)
+void Exec(const tstring& sLine)
 {
 	system(sLine.c_str());
 }

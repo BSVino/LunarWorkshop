@@ -55,6 +55,7 @@
 // If you hit this, the code is either incomplete or untested.
 #define TUnimplemented() TAssert(false)
 
+#ifdef __GNUC__
 #if __GNUC__ < 4 || __GNUC_MINOR__ < 6
 
 const                        // this is a const object...
@@ -70,6 +71,7 @@ private:
   void operator&() const;    // whose address can't be taken
 } nullptr = {};              // and whose name is nullptr
 
+#endif
 #endif
 
 #endif

@@ -2,7 +2,6 @@
 #define _TINKER_REPLICATION_H
 
 #include <EASTL/map.h>
-#include <EASTL/string.h>
 
 #include <common.h>
 #include <color.h>

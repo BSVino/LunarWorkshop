@@ -104,8 +104,8 @@ void CShaderLibrary::AddShader(const tstring& sFile)
 		return;
 	}
 
-	Get()->m_aShaders.push_back(CShader(pName->GetValueTString(), pVertex->GetValueTString(), pFragment->GetValueTString()));
-	Get()->m_aShaderNames[pName->GetValueTString()] = Get()->m_aShaders.size()-1;
+	Get()->m_aShaders.push_back(CShader(pName->GetValueString(), pVertex->GetValueString(), pFragment->GetValueString()));
+	Get()->m_aShaderNames[pName->GetValueString()] = Get()->m_aShaders.size()-1;
 
 	auto& oShader = Get()->m_aShaders.back();
 
@@ -114,8 +114,8 @@ void CShaderLibrary::AddShader(const tstring& sFile)
 		CData* pChild = pData->GetChild(i);
 		if (pChild->GetKey() == "Parameter")
 		{
-			auto& oParameter = oShader.m_aParameters.insert(pChild->GetValueTString()).first->second;
-			oParameter.m_sName = pChild->GetValueTString();
+			auto& oParameter = oShader.m_aParameters.insert(pChild->GetValueString()).first->second;
+			oParameter.m_sName = pChild->GetValueString();
 
 			for (size_t j = 0; j < pChild->GetNumChildren(); j++)
 			{
@@ -123,7 +123,7 @@ void CShaderLibrary::AddShader(const tstring& sFile)
 				if (pUniform->GetKey() == "Uniform")
 				{
 					auto& oUniform = oParameter.m_aActions.push_back();
-					oUniform.m_sName = pUniform->GetValueTString();
+					oUniform.m_sName = pUniform->GetValueString();
 					oUniform.m_bTexture = false;
 					CData* pValue = pUniform->FindChild("Value");
 					CData* pTexture = pUniform->FindChild("Texture");
@@ -131,18 +131,18 @@ void CShaderLibrary::AddShader(const tstring& sFile)
 					TAssert(pValue || pTexture);
 
 					if (pValue)
-						oUniform.m_sValue = pValue->GetValueTString();
+						oUniform.m_sValue = pValue->GetValueString();
 					else if (pTexture)
 					{
-						oUniform.m_sValue = pTexture->GetValueTString();
-						oShader.m_asTextures.push_back(pUniform->GetValueTString());
+						oUniform.m_sValue = pTexture->GetValueString();
+						oShader.m_asTextures.push_back(pUniform->GetValueString());
 						oUniform.m_bTexture = true;
 					}
 				}
 				else if (pUniform->GetKey() == "Blend")
 				{
 					tstring& sBlend = oParameter.m_sBlend;
-					sBlend = pUniform->GetValueTString();
+					sBlend = pUniform->GetValueString();
 				}
 			}
 		}
@@ -153,7 +153,7 @@ void CShaderLibrary::AddShader(const tstring& sFile)
 				CData* pUniform = pChild->GetChild(j);
 				auto& oDefault = oShader.m_aDefaults.insert(pUniform->GetKey());
 				oDefault.first->second.m_sName = pUniform->GetKey();
-				oDefault.first->second.m_sValue = pUniform->GetValueTString();
+				oDefault.first->second.m_sValue = pUniform->GetValueString();
 			}
 		}
 	}

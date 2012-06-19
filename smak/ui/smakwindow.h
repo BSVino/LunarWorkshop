@@ -25,7 +25,7 @@ public:
 							~CSMAKWindow();
 
 public:
-	virtual eastl::string	WindowTitle() { return "SMAK - Super Model Army Knife"; }
+	virtual tstring			WindowTitle() { return "SMAK - Super Model Army Knife"; }
 	virtual tstring			AppDirectory() { return "SMAK"; }
 
 	void					OpenWindow();

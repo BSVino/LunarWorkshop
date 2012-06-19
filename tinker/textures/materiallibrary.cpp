@@ -71,7 +71,7 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 		return nullptr;
 	}
 
-	CShader* pShader = CShaderLibrary::GetShader(pShaderData->GetValueTString());
+	CShader* pShader = CShaderLibrary::GetShader(pShaderData->GetValueString());
 	TAssert(pShader);
 
 	if (!pShader)
@@ -85,7 +85,7 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 
 	oMat.m_sFile = sMaterial;
 
-	oMat.m_sShader = pShaderData->GetValueTString();
+	oMat.m_sShader = pShaderData->GetValueString();
 	oMat.m_ahTextures.resize(pShader->m_asTextures.size());
 
 	for (size_t i = 0; i < pShaderData->GetNumChildren(); i++)
@@ -105,14 +105,14 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 		{
 			oMat.m_sBlend = it->second.m_sBlend;
 			if (oMat.m_sBlend == "[value]")
-				oMat.m_sBlend = pParameter->GetValueTString();
+				oMat.m_sBlend = pParameter->GetValueString();
 			continue;
 		}
 
 		CMaterial::CParameter& oPar = oMat.m_aParameters.push_back();
 		oPar.m_sName = sParameter;
 
-		oMat.FillParameter(oMat.m_aParameters.size()-1, pParameter->GetValueTString(), pShader);
+		oMat.FillParameter(oMat.m_aParameters.size()-1, pParameter->GetValueString(), pShader);
 	}
 
 	for (size_t i = 0; i < oMat.m_ahTextures.size(); i++)
@@ -303,7 +303,7 @@ void CMaterial::CParameter::SetValue(const tstring& sValue, class CShader* pShad
 	oData.SetValue(sValue);
 	CData* pData = &oData;
 
-	m_sValue = pData->GetValueTString();
+	m_sValue = pData->GetValueString();
 
 	if (!m_sType.length())
 	{

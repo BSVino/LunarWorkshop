@@ -2,7 +2,6 @@
 #define DT_SHADERS_H
 
 #include <tvector.h>
-#include <EASTL/string.h>
 #include <EASTL/map.h>
 
 #include <tstring.h>
@@ -22,9 +21,9 @@ public:
 	size_t					FindTextureByUniform(const tstring& sUniform) const;
 
 public:
-	eastl::string			m_sName;
-	eastl::string			m_sVertexFile;
-	eastl::string			m_sFragmentFile;
+	tstring					m_sName;
+	tstring					m_sVertexFile;
+	tstring					m_sFragmentFile;
 	size_t					m_iVShader;
 	size_t					m_iFShader;
 	size_t					m_iProgram;

@@ -2,7 +2,6 @@
 #define _TINKER_COMMANDS_H
 
 #include <EASTL/map.h>
-#include <EASTL/string.h>
 
 #include <tvector.h>
 #include <color.h>
@@ -66,7 +65,7 @@ protected:
 
 #define CLIENT_COMMAND(cxn, name) \
 void ClientCommand_##name(int iConnection, CNetworkCommand* pCmd, size_t iClient, const tstring& sParameters); \
-CNetworkCommand name(cxn, convertstring<char, tchar>(#name), ClientCommand_##name, NETWORK_TOSERVER); \
+CNetworkCommand name(cxn, #name, ClientCommand_##name, NETWORK_TOSERVER); \
 class CRegisterClientCommand##name \
 { \
 public: \
@@ -79,7 +78,7 @@ void ClientCommand_##name(int iConnection, CNetworkCommand* pCmd, size_t iClient
 
 #define SERVER_COMMAND_TARGET(cxn, name, target) \
 void ServerCommand_##name(int iConnection, CNetworkCommand* pCmd, size_t iClient, const tstring& sParameters); \
-CNetworkCommand name(cxn, convertstring<char, tchar>(#name), ServerCommand_##name, target); \
+CNetworkCommand name(cxn, #name, ServerCommand_##name, target); \
 class CRegisterServerCommand##name \
 { \
 public: \

@@ -10,8 +10,6 @@
 #include <linux/if.h>
 #include <X11/Xlib.h>
 
-#include <EASTL/string.h>
-
 #include <strutils.h>
 
 void GetMACAddresses(unsigned char*& paiAddresses, size_t& iAddresses)
@@ -91,23 +89,23 @@ void SleepMS(size_t iMS)
 
 void OpenBrowser(const tstring& sURL)
 {
-	int iSystem = system(convertstring<tchar, char>(tstring("firefox ") + sURL).c_str());
+	int iSystem = system((tstring("firefox ") + sURL).c_str());
 }
 
 void OpenExplorer(const tstring& sDirectory)
 {
-	int iSystem = system(convertstring<tchar, char>(tstring("gnome-open ") + sDirectory).c_str());
+	int iSystem = system((tstring("gnome-open ") + sDirectory).c_str());
 }
 
 void CreateMinidump(void* pInfo, tchar* pszDirectory)
 {
 }
 
-eastl::string GetClipboard()
+tstring GetClipboard()
 {
 }
 
-void SetClipboard(const eastl::string& sBuf)
+void SetClipboard(const tstring& sBuf)
 {
 }
 
@@ -118,9 +116,9 @@ tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile)
 	tstring sSuffix;
 	sSuffix.append(".").append(sDirectory).append("/").append(sFile);
 
-	tstring sReturn(convertstring<char, tchar>(pszVar));
+	tstring sReturn(pszVar);
 
-	mkdir(convertstring<tchar, char>(tstring(sReturn).append("/").append(".").append(sDirectory)).c_str(), 0777);
+	mkdir((tstring(sReturn).append("/").append(".").append(sDirectory)).c_str(), 0777);
 
 	sReturn.append("/").append(sSuffix);
 	return sReturn;
@@ -132,13 +130,13 @@ tvector<tstring> ListDirectory(tstring sDirectory, bool bDirectories)
 
 	struct dirent *dp;
 
-	DIR *dir = opendir(convertstring<tchar, char>(sDirectory).c_str());
+	DIR *dir = opendir((sDirectory).c_str());
 	while ((dp=readdir(dir)) != NULL)
 	{
 		if (!bDirectories && (dp->d_type == DT_DIR))
 			continue;
 
-		tstring sName = convertstring<char, tchar>(dp->d_name);
+		tstring sName = dp->d_name;
 		if (sName == ".")
 			continue;
 
@@ -159,7 +157,7 @@ bool IsFile(tstring sPath)
 	int intStat;
 
 	// Attempt to get the file attributes
-	intStat = stat(convertstring<tchar, char>(sPath).c_str(), &stFileInfo);
+	intStat = stat(sPath.c_str(), &stFileInfo);
 	if(intStat == 0 && S_ISREG(stFileInfo.st_mode))
 		return true;
 	else
@@ -173,7 +171,7 @@ bool IsDirectory(tstring sPath)
 	int intStat;
 
 	// Attempt to get the file attributes
-	intStat = stat(convertstring<tchar, char>(sPath).c_str(), &stFileInfo);
+	intStat = stat(sPath.c_str(), &stFileInfo);
 	if(intStat == 0 && S_ISDIR(stFileInfo.st_mode))
 		return true;
 	else
@@ -182,10 +180,10 @@ bool IsDirectory(tstring sPath)
 
 void DebugPrint(tstring sText)
 {
-	puts(convertstring<tchar, char>(sText).c_str());
+	puts(sText.c_str());
 }
 
-void Exec(eastl::string sLine)
+void Exec(tstring sLine)
 {
 	int iSystem = system((tstring("./") + sLine).c_str());
 }

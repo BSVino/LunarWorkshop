@@ -50,7 +50,7 @@ tstring TPortal_GetPlayerNickname()
 
 	const char* pszNickname = SteamFriends()->GetPersonaName();
 
-	return convertstring<char, tchar>(pszNickname);
+	return tstring(pszNickname);
 }
 
 #endif

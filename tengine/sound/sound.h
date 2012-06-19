@@ -2,7 +2,6 @@
 #define DT_SOUND_H
 
 #include <EASTL/map.h>
-#include <EASTL/string.h>
 
 #include <tvector.h>
 

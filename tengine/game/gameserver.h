@@ -107,7 +107,7 @@ public:
 		return dynamic_cast<T*>(Create(pszEntityName).GetPointer());
 	}
 
-	void										DestroyAllEntities(const tvector<eastl::string>& asSpare = tvector<eastl::string>(), bool bRemakeGame = false);
+	void										DestroyAllEntities(const tvector<tstring>& asSpare = tvector<tstring>(), bool bRemakeGame = false);
 
 	NET_CALLBACK(CGameServer,					UpdateValue);
 	NET_CALLBACK(CGameServer,					ClientInfo);

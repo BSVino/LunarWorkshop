@@ -24,11 +24,11 @@ public:
 		}
 
 	public:
-		eastl::string					m_sOutput;
-		eastl::string					m_sTargetName;
-		eastl::string					m_sInput;
-		eastl::string					m_sArgs;
-		bool							m_bKill;
+		tstring					m_sOutput;
+		tstring					m_sTargetName;
+		tstring					m_sInput;
+		tstring					m_sArgs;
+		bool					m_bKill;
 	};
 
 public:

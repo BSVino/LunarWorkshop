@@ -11,7 +11,7 @@ public:
 								CReflectionWindow(int argc, char** argv);
 
 public:
-	virtual eastl::string		WindowTitle() { return "Reflection"; }
+	virtual tstring				WindowTitle() { return "Reflection"; }
 	virtual tstring				AppDirectory() { return "Reflection"; }
 
 	void						SetupReflection();

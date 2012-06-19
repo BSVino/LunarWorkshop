@@ -184,12 +184,12 @@ bool CSoundLibrary::IsSoundPlaying(CBaseEntity* pEntity, const tstring& pszFilen
 }
 
 Mix_Music *g_pMusic = NULL;
-void CSoundLibrary::PlayMusic(const tstring& pszFilename, bool bLoop)
+void CSoundLibrary::PlayMusic(const tstring& sFilename, bool bLoop)
 {
 	if (g_pMusic)
 		StopMusic();
 
-	g_pMusic = Mix_LoadMUS(convertstring<tchar, char>(pszFilename).c_str());
+	g_pMusic = Mix_LoadMUS(sFilename.c_str());
 
 	Mix_PlayMusic(g_pMusic, bLoop?-1:0);
 }
@@ -297,15 +297,15 @@ void CSoundLibrary::ClearUnreferenced()
 	}
 }
 
-CSound::CSound(const tstring& pszFilename)
+CSound::CSound(const tstring& sFilename)
 {
 	m_iReferences = 0;
 
-	SDL_RWops* pRW = SDL_RWFromFile(convertstring<tchar, char>(pszFilename).c_str(), "rb");
+	SDL_RWops* pRW = SDL_RWFromFile(sFilename.c_str(), "rb");
 
 	m_pSound = Mix_LoadWAV_RW(pRW, 1);
 
-	m_sFilename = pszFilename;
+	m_sFilename = sFilename;
 }
 
 CSound::~CSound()

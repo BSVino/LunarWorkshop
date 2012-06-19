@@ -30,7 +30,7 @@ int Vsnprintf8(char* pDestination, size_t n, const char* pFormat, va_list argume
 int Vsnprintf16(char16_t* pDestination, size_t n, const char16_t* pFormat, va_list arguments)
 {
     #ifdef _MSC_VER
-        return _vsnwprintf(pDestination, n, pFormat, arguments);
+        return _vsnwprintf((wchar_t*)pDestination, n, (wchar_t*)pFormat, arguments);
     #else
 		char* d = new char[n+1];
 		int r = vsnprintf(d, n, convertstring<char16_t, char>(pFormat).c_str(), arguments);

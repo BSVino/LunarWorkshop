@@ -113,7 +113,7 @@ CGameServer::~CGameServer()
 	if (m_pWorkListener)
 		m_pWorkListener->SetAction("Scrubbing database", CBaseEntity::GetEntityRegistration().size());
 
-	DestroyAllEntities(tvector<eastl::string>());
+	DestroyAllEntities(tvector<tstring>());
 
 	GamePhysics()->RemoveAllEntities();
 
@@ -236,7 +236,7 @@ void CGameServer::Initialize()
 
 	RegisterNetworkFunctions();
 
-	DestroyAllEntities(tvector<eastl::string>(), true);
+	DestroyAllEntities(tvector<tstring>(), true);
 
 	CParticleSystemLibrary::ClearInstances();
 
@@ -261,7 +261,7 @@ void CGameServer::LoadLevel(tstring sFile)
 		LoadLevel(pLevel);
 	else
 	{
-		std::basic_ifstream<tchar> f(convertstring<tchar, char>(sFile).c_str());
+		std::basic_ifstream<tchar> f(sFile.c_str());
 
 		CData* pData = new CData();
 		CDataSerializer::Read(f, pData);
@@ -394,7 +394,7 @@ void CGameServer::RestartLevel()
 {
 	SetLoading(false);
 	AllowPrecaches();
-	DestroyAllEntities(tvector<eastl::string>(), true);
+	DestroyAllEntities(tvector<tstring>(), true);
 	m_bRestartLevel = true;
 	Game()->SetupGame(CVar::GetCVarValue("game_mode"));
 	m_bRestartLevel = false;
@@ -434,7 +434,7 @@ void CGameServer::ReadLevels(tstring sDirectory)
 
 void CGameServer::ReadLevelInfo(tstring sFile)
 {
-	std::basic_ifstream<tchar> f(convertstring<tchar, char>(sFile).c_str());
+	std::basic_ifstream<tchar> f(sFile.c_str());
 
 	CData* pData = new CData();
 	CDataSerializer::Read(f, pData);
@@ -722,7 +722,7 @@ void CGameServer::SaveToFile(const tchar* pFileName)
 		return;
 
 	std::ofstream o;
-	o.open(convertstring<tchar, char>(pFileName).c_str(), std::ios_base::binary|std::ios_base::out);
+	o.open(pFileName, std::ios_base::binary|std::ios_base::out);
 
 	o.write("GameSave", 8);
 
@@ -765,7 +765,7 @@ bool CGameServer::LoadFromFile(const tchar* pFileName)
 	GameServer()->DestroyAllEntities();
 
 	std::ifstream i;
-	i.open(convertstring<tchar, char>(pFileName).c_str(), std::ios_base::binary|std::ios_base::in);
+	i.open(pFileName, std::ios_base::binary|std::ios_base::in);
 
 	char szTag[8];
 	i.read(szTag, 8);
@@ -913,7 +913,7 @@ void CGameServer::DestroyEntity(int iConnection, CNetworkParameters* p)
 	m_ahDeletedEntities.push_back(pEntity);
 }
 
-void CGameServer::DestroyAllEntities(const tvector<eastl::string>& asSpare, bool bRemakeGame)
+void CGameServer::DestroyAllEntities(const tvector<tstring>& asSpare, bool bRemakeGame)
 {
 	if (!GameNetwork()->IsHost() && !IsLoading())
 		return;
@@ -1032,8 +1032,8 @@ CGame* CGameServer::GetGame()
 
 void ShowStatus(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
-	TMsg(eastl::string("Level: ") + CVar::GetCVarValue("game_level") + "\n");
-	TMsg(convertstring<tchar, char>(sprintf(tstring("Clients: %d Entities: %d/%d\n"), GameNetwork()->GetClientsConnected(), CBaseEntity::GetNumEntities(), GameServer()->GetMaxEntities())));
+	TMsg(tstring("Level: ") + CVar::GetCVarValue("game_level") + "\n");
+	TMsg(sprintf(tstring("Clients: %d Entities: %d/%d\n"), GameNetwork()->GetClientsConnected(), CBaseEntity::GetNumEntities(), GameServer()->GetMaxEntities()));
 
 	for (size_t i = 0; i < Game()->GetNumPlayers(); i++)
 	{
@@ -1044,7 +1044,7 @@ void ShowStatus(class CCommand* pCommand, tvector<tstring>& asTokens, const tstr
 		if (pPlayer->GetClient() < 0)
 			TMsg("Local: ");
 		else
-			TMsg(convertstring<tchar, char>(sprintf(tstring("%d: "), pPlayer->GetClient())));
+			TMsg(sprintf(tstring("%d: "), pPlayer->GetClient()));
 
 		TMsg(pPlayer->GetPlayerName());
 

@@ -21,8 +21,7 @@ public:
 
 	size_t					FindChildIndex(const tstring& sKey) const;
 	CData*					FindChild(const tstring& sKey) const;
-	tstring					FindChildValueTString(const tstring& sKey, tstring sDefault="") const;
-	eastl::string			FindChildValueString(const tstring& sKey, eastl::string sDefault="") const;
+	tstring					FindChildValueString(const tstring& sKey, const tstring& sDefault="") const;
 	bool					FindChildValueBool(const tstring& sKey, bool bDefault=false) const;
 	int						FindChildValueInt(const tstring& sKey, int iDefault=0) const;
 	size_t					FindChildValueUInt(const tstring& sKey, size_t iDefault=0) const;
@@ -31,8 +30,7 @@ public:
 	EAngle					FindChildValueEAngle(const tstring& sKey, EAngle angDefault=EAngle()) const;
 
 	tstring					GetKey() const { return m_sKey; }
-	tstring					GetValueTString() const { return m_sValue; }
-	eastl::string			GetValueString() const { return convertstring<tchar, char>(m_sValue); }
+	tstring					GetValueString() const { return m_sValue; }
 	bool					GetValueBool() const;
 	int						GetValueInt() const;
 	size_t					GetValueUInt() const;

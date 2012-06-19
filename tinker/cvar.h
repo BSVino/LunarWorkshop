@@ -1,7 +1,6 @@
 #ifndef LW_TINKER_CVAR
 #define LW_TINKER_CVAR
 
-#include <EASTL/string.h>
 #include <EASTL/map.h>
 
 #include <common.h>

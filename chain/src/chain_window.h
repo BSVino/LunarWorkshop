@@ -11,7 +11,7 @@ public:
 								CChainWindow(int argc, char** argv);
 
 public:
-	virtual eastl::string		WindowTitle() { return "Chain"; }
+	virtual tstring				WindowTitle() { return "Chain"; }
 	virtual tstring				AppDirectory() { return "Chain"; }
 
 	void						OpenWindow();

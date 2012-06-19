@@ -267,7 +267,7 @@ void CENetConnection::ConnectToHost(const char* pszHost, int iPort)
 			oAddress.port = 30203;
 	}
 
-	TMsg(sprintf(tstring("Connecting to '%s' on port %d\n"), convertstring<char, tchar>(pszHost).c_str(), (int)oAddress.port));
+	TMsg(sprintf(tstring("Connecting to '%s' on port %d\n"), pszHost, (int)oAddress.port));
 
 	m_pClientPeer = enet_host_connect(m_pClient, &oAddress, 1, 0);    
 
@@ -603,7 +603,7 @@ void CENetConnection::CallbackFunction(const char* pszName, CNetworkParameters* 
 
 	CRegisteredFunction* pFunction = &m_aFunctions[pszName];
 
-	eastl::string sFunction = pFunction->m_pszFunction;
+	tstring sFunction = pFunction->m_pszFunction;
 	if (sFunction != "NC")
 	{
 		if (m_bLoading)

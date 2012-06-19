@@ -41,17 +41,17 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 		if (pArea->GetKey() != "Area")
 			continue;
 
-		tstring sFile = pArea->FindChildValueTString("File");
+		tstring sFile = pArea->FindChildValueString("File");
 		TAssert(sFile.length());
 		if (!sFile.length())
 			continue;
 
-		tstring sMesh = pArea->FindChildValueTString("Mesh");
+		tstring sMesh = pArea->FindChildValueString("Mesh");
 		TAssert(sMesh.length());
 		if (!sMesh.length())
 			continue;
 
-		tstring sPhysics = pArea->FindChildValueTString("Physics");
+		tstring sPhysics = pArea->FindChildValueString("Physics");
 		TAssert(sPhysics.length());
 		if (!sPhysics.length())
 			continue;
@@ -77,7 +77,7 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 
 		ts.SetGameDirectory(t.GetGameDirectory());
 		ts.SetOutputDirectory(t.GetOutputDirectory());
-		ts.SetOutputFile(sprintf(t.GetOutputFile() + "_sa%d_" + tolower(pArea->GetValueTString()), i));
+		ts.SetOutputFile(sprintf(t.GetOutputFile() + "_sa%d_" + tolower(pArea->GetValueString()), i));
 		ts.UseLocalTransformations(t.IsUsingLocalTransformations());
 
 		CConversionSceneNode* pMeshNode = asScenes[sFile]->FindSceneNode(sMesh);
@@ -100,7 +100,7 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 
 		TMsg(" Done.\n");
 
-		tstring sGameOutput = pArea->FindChildValueTString("Output");
+		tstring sGameOutput = pArea->FindChildValueString("Output");
 		if (!sGameOutput.length())
 			sGameOutput = t.GetOutputDirectory() + "/" + ts.GetOutputFile() + ".toy";
 
@@ -116,7 +116,7 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 		else
 			TMsg(" FAILED!\n");
 
-		aiSceneIDs[pArea->GetValueTString()] = t.AddSceneArea(sGameOutput);
+		aiSceneIDs[pArea->GetValueString()] = t.AddSceneArea(sGameOutput);
 	}
 
 	for (size_t i = 0; i < pData->GetNumChildren(); i++)
@@ -126,7 +126,7 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 		if (pArea->GetKey() != "Area")
 			continue;
 
-		size_t iArea = aiSceneIDs[pArea->GetValueTString()];
+		size_t iArea = aiSceneIDs[pArea->GetValueString()];
 
 		for (size_t i = 0; i < pArea->GetNumChildren(); i++)
 		{
@@ -134,27 +134,27 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 
 			if (pNeighbor->GetKey() == "Neighbor")
 			{
-				TAssert(aiSceneIDs.find(pNeighbor->GetValueTString()) != aiSceneIDs.end());
-				if (aiSceneIDs.find(pNeighbor->GetValueTString()) == aiSceneIDs.end())
+				TAssert(aiSceneIDs.find(pNeighbor->GetValueString()) != aiSceneIDs.end());
+				if (aiSceneIDs.find(pNeighbor->GetValueString()) == aiSceneIDs.end())
 				{
-					TError("Couldn't find area \"" + pNeighbor->GetValueTString() + "\"\n");
+					TError("Couldn't find area \"" + pNeighbor->GetValueString() + "\"\n");
 					continue;
 				}
 
-				t.AddSceneAreaNeighbor(iArea, aiSceneIDs[pNeighbor->GetValueTString()]);
+				t.AddSceneAreaNeighbor(iArea, aiSceneIDs[pNeighbor->GetValueString()]);
 				continue;
 			}
 
 			if (pNeighbor->GetKey() == "Visible")
 			{
-				TAssert(aiSceneIDs.find(pNeighbor->GetValueTString()) != aiSceneIDs.end());
-				if (aiSceneIDs.find(pNeighbor->GetValueTString()) == aiSceneIDs.end())
+				TAssert(aiSceneIDs.find(pNeighbor->GetValueString()) != aiSceneIDs.end());
+				if (aiSceneIDs.find(pNeighbor->GetValueString()) == aiSceneIDs.end())
 				{
-					TError("Couldn't find area \"" + pNeighbor->GetValueTString() + "\"\n");
+					TError("Couldn't find area \"" + pNeighbor->GetValueString() + "\"\n");
 					continue;
 				}
 
-				t.AddSceneAreaVisible(iArea, aiSceneIDs[pNeighbor->GetValueTString()]);
+				t.AddSceneAreaVisible(iArea, aiSceneIDs[pNeighbor->GetValueString()]);
 				continue;
 			}
 		}
@@ -189,14 +189,14 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 		return false;
 	}
 
-	t.SetGameDirectory(FindAbsolutePath(GetPath(pGame->GetValueTString())));
+	t.SetGameDirectory(FindAbsolutePath(GetPath(pGame->GetValueString())));
 
-	tstring sOutputDir = ToForwardSlashes(pOutput->GetValueTString());
+	tstring sOutputDir = ToForwardSlashes(pOutput->GetValueString());
 	t.SetOutputDirectory(GetDirectory(sOutputDir));
 	t.SetOutputFile(GetFilename(sOutputDir));
 	t.SetScriptDirectory(GetDirectory((GetPath(sScript))));
 
-	m_sOutput = FindAbsolutePath(t.GetGameDirectory() + DIR_SEP + pOutput->GetValueTString());
+	m_sOutput = FindAbsolutePath(t.GetGameDirectory() + DIR_SEP + pOutput->GetValueString());
 
 	CData* pSceneAreas = pData->FindChild("SceneAreas");
 	CData* pMesh = pData->FindChild("Mesh");
@@ -218,7 +218,7 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 			if (pArea->GetKey() != "Area")
 				continue;
 
-			tstring sFile = pArea->FindChildValueTString("File");
+			tstring sFile = pArea->FindChildValueString("File");
 			TAssert(sFile.length());
 			if (!sFile.length())
 				continue;
@@ -231,10 +231,10 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 
 	time_t iInputModificationTime = 0;
 	if (pMesh)
-		iInputModificationTime = GetFileModificationTime(pMesh->GetValueTString().c_str());
+		iInputModificationTime = GetFileModificationTime(pMesh->GetValueString().c_str());
 	time_t iPhysicsModificationTime = 0;
 	if (pPhysics)
-		iPhysicsModificationTime = GetFileModificationTime(pPhysics->GetValueTString().c_str());
+		iPhysicsModificationTime = GetFileModificationTime(pPhysics->GetValueString().c_str());
 
 	bool bRecompile = false;
 	if (iScriptModificationTime > iOutputModificationTime)
@@ -272,16 +272,16 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 
 	if (pMesh)
 	{
-		tstring sExtension = pMesh->GetValueTString().substr(pMesh->GetValueTString().length()-4);
+		tstring sExtension = pMesh->GetValueString().substr(pMesh->GetValueString().length()-4);
 		if (sExtension == ".png")
 		{
 			TUnimplemented();	// Not updated since the switch to materials.
 			int x, y, n;
-			unsigned char* pData = stbi_load((GetPath(pMesh->GetValueTString())).c_str(), &x, &y, &n, 0);
+			unsigned char* pData = stbi_load((GetPath(pMesh->GetValueString())).c_str(), &x, &y, &n, 0);
 
 			if (!pData)
 			{
-				TError("Input image  '" + pMesh->GetValueTString() + "' does not exist.\n");
+				TError("Input image  '" + pMesh->GetValueString() + "' does not exist.\n");
 				return false;
 			}
 
@@ -290,10 +290,10 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 			Vector vecUp = Vector(0, 0.5f, 0) * (float)y/100;
 			Vector vecRight = Vector(0, 0, 0.5f) * (float)x/100;
 
-			if (IsAbsolutePath(pMesh->GetValueTString()))
-				t.AddMaterial(GetPath(pMesh->GetValueTString()));
+			if (IsAbsolutePath(pMesh->GetValueString()))
+				t.AddMaterial(GetPath(pMesh->GetValueString()));
 			else
-				t.AddMaterial(t.GetOutputDirectory() + "/" + pMesh->GetValueTString(), GetPath(pMesh->GetValueTString()));
+				t.AddMaterial(t.GetOutputDirectory() + "/" + pMesh->GetValueString(), GetPath(pMesh->GetValueString()));
 			t.AddVertex(0, -vecRight + vecUp, Vector2D(0.0f, 1.0f));
 			t.AddVertex(0, -vecRight - vecUp, Vector2D(0.0f, 0.0f));
 			t.AddVertex(0, vecRight - vecUp, Vector2D(1.0f, 0.0f));
@@ -304,16 +304,16 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 		}
 		else if (sExtension == ".mat")
 		{
-			CMaterialHandle hMaterial(pMesh->GetValueTString());
+			CMaterialHandle hMaterial(pMesh->GetValueString());
 			if (!hMaterial.IsValid())
 			{
-				TError("Input material  '" + pMesh->GetValueTString() + "' does not exist or is invalid.\n");
+				TError("Input material  '" + pMesh->GetValueString() + "' does not exist or is invalid.\n");
 				return false;
 			}
 
 			if (!hMaterial->m_ahTextures.size())
 			{
-				TError("Input material  '" + pMesh->GetValueTString() + "' has no textures.\n");
+				TError("Input material  '" + pMesh->GetValueString() + "' has no textures.\n");
 				return false;
 			}
 
@@ -323,7 +323,7 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 			Vector vecUp = Vector(0, 0.5f, 0) * h/100;
 			Vector vecRight = Vector(0, 0, 0.5f) * w/100;
 
-			t.AddMaterial(pMesh->GetValueTString());
+			t.AddMaterial(pMesh->GetValueString());
 
 			t.AddVertex(0, -vecRight + vecUp, Vector2D(0.0f, 1.0f));
 			t.AddVertex(0, -vecRight - vecUp, Vector2D(0.0f, 0.0f));
@@ -335,13 +335,13 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 		}
 		else
 		{
-			TMsg("Reading model '" + GetPath(pMesh->GetValueTString()) + "' ...");
+			TMsg("Reading model '" + GetPath(pMesh->GetValueString()) + "' ...");
 			std::shared_ptr<CConversionScene> pScene(new CConversionScene());
 			CModelConverter c(pScene.get());
 
-			if (!c.ReadModel(GetPath(pMesh->GetValueTString())))
+			if (!c.ReadModel(GetPath(pMesh->GetValueString())))
 			{
-				TError("Couldn't read '" + GetPath(pMesh->GetValueTString()) + "'.\n");
+				TError("Couldn't read '" + GetPath(pMesh->GetValueString()) + "'.\n");
 				return false;
 			}
 			TMsg(" Done.\n");
@@ -354,13 +354,13 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 
 	if (pPhysics)
 	{
-		TMsg("Reading physics model '" + GetPath(pPhysics->GetValueTString()) + "' ...");
+		TMsg("Reading physics model '" + GetPath(pPhysics->GetValueString()) + "' ...");
 		std::shared_ptr<CConversionScene> pScene(new CConversionScene());
 		CModelConverter c(pScene.get());
 
-		if (!c.ReadModel(GetPath(pPhysics->GetValueTString())))
+		if (!c.ReadModel(GetPath(pPhysics->GetValueString())))
 		{
-			TError("Couldn't read '" + GetPath(pPhysics->GetValueTString()) + "'.\n");
+			TError("Couldn't read '" + GetPath(pPhysics->GetValueString()) + "'.\n");
 			return false;
 		}
 		TMsg(" Done.\n");

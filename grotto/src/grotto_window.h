@@ -10,7 +10,7 @@ public:
 								CGrottoWindow(int argc, char** argv);
 
 public:
-	virtual eastl::string		WindowTitle() { return "Grotto"; }
+	virtual tstring				WindowTitle() { return "Grotto"; }
 	virtual tstring				AppDirectory() { return "Grotto"; }
 
 	class CRenderer*			CreateRenderer();

@@ -2,7 +2,6 @@
 #define LW_CONVMESH_H
 
 #include <EASTL/map.h>
-#include <EASTL/string.h>
 
 #include <tvector.h>
 #include <worklistener.h>

@@ -24,7 +24,7 @@ public:
 	virtual void SetAction(const tstring& sAction, size_t iTotalProgress)
 	{
 		printf("\n");
-		puts(convertstring<tchar, char>(sAction).c_str());
+		puts(sAction.c_str());
 		if (!iTotalProgress)
 			printf("...");
 
@@ -85,7 +85,7 @@ int CreateApplication(int argc, char** argv)
 	{
 		for (int i = 1; i < argc; i++)
 		{
-			tstring sToken = convertstring<char, tchar>(argv[i]);
+			tstring sToken = argv[i];
 
 			if (sToken[0] == '-')
 			{
@@ -93,14 +93,14 @@ int CreateApplication(int argc, char** argv)
 				if (sToken == "--command")
 				{
 					i++;
-					tstring sToken = convertstring<char, tchar>(argv[i]);
+					tstring sToken = argv[i];
 					if (sToken == "ao")
 						eCommand = COMMAND_AO;
 				}
 				else if (sToken == "--method")
 				{
 					i++;
-					tstring sToken = convertstring<char, tchar>(argv[i]);
+					tstring sToken = argv[i];
 					if (sToken == "shadowmap")
 						eMethod = AOMETHOD_SHADOWMAP;
 					else if (sToken == "raytrace")
@@ -113,7 +113,7 @@ int CreateApplication(int argc, char** argv)
 				else if (sToken == "--size")
 				{
 					i++;
-					tstring sToken = convertstring<char, tchar>(argv[i]);
+					tstring sToken = argv[i];
 					iSize = stoi(sToken);
 					if (iSize < 64)
 						iSize = 64;
@@ -123,7 +123,7 @@ int CreateApplication(int argc, char** argv)
 				else if (sToken == "--bleed")
 				{
 					i++;
-					tstring sToken = convertstring<char, tchar>(argv[i]);
+					tstring sToken = argv[i];
 					iBleed = stoi(sToken);
 					if (iBleed < 0)
 						iBleed = 0;
@@ -133,7 +133,7 @@ int CreateApplication(int argc, char** argv)
 				else if (sToken == "--lights")
 				{
 					i++;
-					tstring sToken = convertstring<char, tchar>(argv[i]);
+					tstring sToken = argv[i];
 					iLights = stoi(sToken);
 					if (iLights < 500)
 						iLights = 500;
@@ -143,7 +143,7 @@ int CreateApplication(int argc, char** argv)
 				else if (sToken == "--samples")
 				{
 					i++;
-					tstring sToken = convertstring<char, tchar>(argv[i]);
+					tstring sToken = argv[i];
 					iSamples = stoi(sToken);
 					if (iSamples < 5)
 						iSamples = 5;
@@ -153,7 +153,7 @@ int CreateApplication(int argc, char** argv)
 				else if (sToken == "--falloff")
 				{
 					i++;
-					tstring sToken = convertstring<char, tchar>(argv[i]);
+					tstring sToken = argv[i];
 					if (sToken == "none")
 						flRayFalloff = -1.0f;
 					else
@@ -178,7 +178,7 @@ int CreateApplication(int argc, char** argv)
 				else if (sToken == "--output")
 				{
 					i++;
-					tstring sToken = convertstring<char, tchar>(argv[i]);
+					tstring sToken = argv[i];
 					sOutput = sToken;
 				}
 			}
@@ -193,7 +193,7 @@ int CreateApplication(int argc, char** argv)
 		{
 		case COMMAND_AO:
 		{
-			puts(convertstring<tchar, char>(tstring("Generating ambient occlusion map for ") + sFile + "\n").c_str());
+			puts((tstring("Generating ambient occlusion map for ") + sFile + "\n").c_str());
 			switch (eMethod)
 			{
 			case AOMETHOD_RENDER:
@@ -214,7 +214,7 @@ int CreateApplication(int argc, char** argv)
 				printf("Lights: %d\n", iLights);
 			else if (eMethod == AOMETHOD_RAYTRACE)
 				printf("Samples: %d\n", iSamples);
-			puts(convertstring<tchar, char>(tstring("Output file: ") + sOutput + "\n").c_str());
+			puts((tstring("Output file: ") + sOutput + "\n").c_str());
 
 			CConversionScene s;
 			CModelConverter c(&s);

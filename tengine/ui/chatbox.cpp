@@ -300,7 +300,7 @@ void CGameWindow::PrintChat(tstring sText)
 {
 	if (!Get())
 	{
-		puts(convertstring<tchar, char>(sText).c_str());
+		puts(sText.c_str());
 		return;
 	}
 

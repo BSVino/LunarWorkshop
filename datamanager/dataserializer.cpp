@@ -23,7 +23,7 @@ void CDataSerializer::Read(std::basic_istream<tchar>& sStream, CData* pData)
 		sLine = tstring(szLine);
 
 		size_t iComment = sLine.find("//");
-		if (iComment != eastl::string::npos)
+		if (iComment != tstring::npos)
 			sLine = sLine.substr(0, iComment);
 
 		sLine = trim(sLine);
@@ -63,8 +63,8 @@ static void SaveData(std::basic_ostream<tchar>& sStream, CData* pData, size_t iL
 	{
 		CData* pChild = pData->GetChild(i);
 
-		if (pChild->GetValueTString().length())
-			sStream << (sTabs + pChild->GetKey() + ": " + pChild->GetValueTString() + "\n").c_str();
+		if (pChild->GetValueString().length())
+			sStream << (sTabs + pChild->GetKey() + ": " + pChild->GetValueString() + "\n").c_str();
 		else
 			sStream << (sTabs + pChild->GetKey() + "\n").c_str();
 

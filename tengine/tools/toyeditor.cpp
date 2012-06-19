@@ -994,17 +994,17 @@ void CToySource::Open(const tstring& sFile)
 	TAssert(!pSceneAreas);	// This is unimplemented.
 
 	if (pOutput)
-		m_sToyFile = pOutput->GetValueTString();
+		m_sToyFile = pOutput->GetValueString();
 	else
 		m_sToyFile = "";
 
 	if (pMesh)
-		m_sMesh = pMesh->GetValueTString();
+		m_sMesh = pMesh->GetValueString();
 	else
 		m_sMesh = "";
 
 	if (pPhysics)
-		m_sPhys = pPhysics->GetValueTString();
+		m_sPhys = pPhysics->GetValueString();
 	else
 		m_sPhys = "";
 

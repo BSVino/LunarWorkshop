@@ -18,7 +18,7 @@ int main(int argc, const char* argv[])
 	CConversionScene s;
 	CModelConverter c(&s);
 
-	tstring sFile = convertstring<char, tchar>(argv[1]);
+	tstring sFile = argv[1];
 
 	if (strcmp(pszExtension, ".obj") == 0)
 	{

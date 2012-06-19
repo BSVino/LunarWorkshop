@@ -124,12 +124,12 @@ void CVar::CalculateValues()
 	if (!m_bDirtyValues)
 		return;
 
-	m_flValue = (float)atof(convertstring<tchar, char>(m_sValue).c_str());
-	m_iValue = atoi(convertstring<tchar, char>(m_sValue).c_str());
+	m_flValue = (float)atof(m_sValue.c_str());
+	m_iValue = atoi(m_sValue.c_str());
 	m_bValue = (m_sValue.comparei("yes") == 0 ||
 		m_sValue.comparei("true") == 0 ||
 		m_sValue.comparei("on") == 0 ||
-		atoi(convertstring<tchar, char>(m_sValue).c_str()) != 0);
+		atoi(m_sValue.c_str()) != 0);
 
 	m_bDirtyValues = false;
 }

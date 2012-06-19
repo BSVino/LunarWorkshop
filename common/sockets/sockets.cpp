@@ -2,8 +2,6 @@
 
 #include "strutils.h"
 
-using eastl::string;
-
 #ifdef __GNUC__
 #define INVALID_SOCKET -1
 #endif
@@ -49,7 +47,7 @@ bool CClientSocket::Connect(const char* pszHostname, int iPort)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 
-	string sPort;
+	tstring sPort;
 	sPort.sprintf("%d", iPort);
 
 	int iResult = getaddrinfo(pszHostname, sPort.c_str(), &hints, &pResult);
@@ -99,7 +97,7 @@ int CClientSocket::Send(const char* pszData, size_t iLength)
 	return Send(pszData, (int)iLength);
 }
 
-int CClientSocket::Send(string sData)
+int CClientSocket::Send(const tstring& sData)
 {
 	return (Send(sData.c_str(), (size_t)sData.length()));
 }
@@ -119,9 +117,9 @@ int CClientSocket::Recv(char* pszData, int iLength)
 	return iResult;
 }
 
-string CClientSocket::RecvAll()
+tstring CClientSocket::RecvAll()
 {
-	string sOutput;
+	tstring sOutput;
 	char szBuffer[1028];
 	int iResult;
 
@@ -156,9 +154,9 @@ CHTTPPostSocket::CHTTPPostSocket(const char* pszHostname, int iPort) : CClientSo
 {
 }
 
-void CHTTPPostSocket::AddPost(const char* pszKey, const eastl::string& pszValue)
+void CHTTPPostSocket::AddPost(const char* pszKey, const tstring& pszValue)
 {
-	string sPostContent = m_sPostContent;
+	tstring sPostContent = m_sPostContent;
 
 	if (sPostContent.length())
 		sPostContent += "&";
@@ -172,10 +170,10 @@ void CHTTPPostSocket::AddPost(const char* pszKey, const eastl::string& pszValue)
 
 void CHTTPPostSocket::SendHTTP11(const char* pszPage)
 {
-	string p;
-	string sOutput;
+	tstring p;
+	tstring sOutput;
 
-	sOutput  = string("POST ") + pszPage + " HTTP/1.1\n";
+	sOutput  = tstring("POST ") + pszPage + " HTTP/1.1\n";
 	sOutput += "Host: " + m_sHostname + "\n";
 	sOutput += p.sprintf("Content-Length: %d\n", m_sPostContent.length());
 	sOutput += "Content-Type: application/x-www-form-urlencoded\n\n";
@@ -184,21 +182,21 @@ void CHTTPPostSocket::SendHTTP11(const char* pszPage)
 	Send(m_sPostContent);
 }
 
-void CHTTPPostSocket::SetPostContent(string sPostContent)
+void CHTTPPostSocket::SetPostContent(const tstring& sPostContent)
 {
 	m_sPostContent = sPostContent;
 }
 
 void CHTTPPostSocket::ParseOutput()
 {
-	string sReturn = RecvAll();
+	tstring sReturn = RecvAll();
 	bool bHTTPOver = false;
-	tvector<string> vTokens;
+	tvector<tstring> vTokens;
 
 	strtok(sReturn, vTokens, "\n");
 	for (unsigned int i = 1; i < vTokens.size(); i++)
 	{
-		string sToken = vTokens[i];
+		tstring sToken = vTokens[i];
 		if (!trim(sToken).length())
 		{
 			bHTTPOver = true;
@@ -208,7 +206,7 @@ void CHTTPPostSocket::ParseOutput()
 		if (!bHTTPOver)
 			continue;
 
-		string::size_type iColon = sToken.find(":");
+		tstring::size_type iColon = sToken.find(":");
 		KeyValue(sToken.substr(0, iColon).c_str(), sToken.substr(iColon+2).c_str());
 	}
 }

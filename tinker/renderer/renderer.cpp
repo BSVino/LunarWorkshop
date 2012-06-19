@@ -740,7 +740,7 @@ size_t CRenderer::LoadTextureIntoGL(tstring sFilename, int iClamp)
 		return 0;
 
 	int x, y, n;
-    unsigned char *pData = stbi_load(convertstring<tchar, char>(sFilename).c_str(), &x, &y, &n, 4);
+    unsigned char *pData = stbi_load(sFilename.c_str(), &x, &y, &n, 4);
 
 	if (!pData)
 		return 0;
@@ -840,7 +840,7 @@ Color* CRenderer::LoadTextureData(tstring sFilename, int& x, int& y)
 		return nullptr;
 
 	int n;
-    unsigned char *pData = stbi_load(convertstring<tchar, char>(sFilename).c_str(), &x, &y, &n, 4);
+    unsigned char *pData = stbi_load(sFilename.c_str(), &x, &y, &n, 4);
 
 	if (!pData)
 		return 0;

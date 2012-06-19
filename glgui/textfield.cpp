@@ -48,7 +48,7 @@ void CTextField::Paint(float x, float y, float w, float h)
 
 	glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 50), 3);
 
-	float flCursor = CLabel::GetFont("sans-serif", m_iFontFaceSize)->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str(), m_iCursor);
+	float flCursor = CLabel::GetFont("sans-serif", m_iFontFaceSize)->Advance(m_sText.c_str(), m_iCursor);
 	if (HasFocus() && (fmod(CRootPanel::Get()->GetTime() - m_flBlinkTime, 1) < 0.5f))
 		glgui::CRootPanel::PaintRect(x + 4 + flCursor + m_flRenderOffset, y+3, 1, h-6, Color(200, 200, 200, 255), 1);
 
@@ -342,7 +342,7 @@ bool CTextField::KeyPressed(int iKey, bool bCtrlDown)
 	}
 	else if ((iKey == 'v' || iKey == 'V') && bCtrlDown)
 	{
-		tstring sClipboard = convertstring<char, tchar>(GetClipboard());
+		tstring sClipboard = GetClipboard();
 		m_sText.insert(m_sText.begin()+m_iCursor, sClipboard.begin(), sClipboard.end());
 		m_iCursor += sClipboard.length();
 		UpdateContentsChangedListener();

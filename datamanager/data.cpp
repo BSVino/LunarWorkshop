@@ -55,16 +55,7 @@ CData* CData::FindChild(const tstring& sKey) const
 	return m_apChildren[iIndex];
 }
 
-tstring CData::FindChildValueTString(const tstring& sKey, tstring sDefault) const
-{
-	CData* pChild = FindChild(sKey);
-	if (!pChild)
-		return sDefault;
-
-	return pChild->GetValueTString();
-}
-
-eastl::string CData::FindChildValueString(const tstring& sKey, eastl::string sDefault) const
+tstring CData::FindChildValueString(const tstring& sKey, const tstring& sDefault) const
 {
 	CData* pChild = FindChild(sKey);
 	if (!pChild)
@@ -129,7 +120,7 @@ EAngle CData::FindChildValueEAngle(const tstring& sKey, EAngle angDefault) const
 
 bool CData::GetValueBool() const
 {
-	tstring sValue = GetValueTString();
+	tstring sValue = GetValueString();
 
 	for( tstring::iterator p = sValue.begin(); p != sValue.end(); ++p )
 		*p = toupper(*p);  // make string all caps
@@ -144,23 +135,23 @@ bool CData::GetValueBool() const
 
 int CData::GetValueInt() const
 {
-	return (int)stoi(GetValueTString().c_str());
+	return (int)stoi(GetValueString().c_str());
 }
 
 size_t CData::GetValueUInt() const
 {
-	return (size_t)stoi(GetValueTString().c_str());
+	return (size_t)stoi(GetValueString().c_str());
 }
 
 float CData::GetValueFloat() const
 {
-	return (float)stof(GetValueTString().c_str());
+	return (float)stof(GetValueString().c_str());
 }
 
 Vector2D CData::GetValueVector2D() const
 {
 	tvector<tstring> asTokens;
-	tstrtok(GetValueTString(), asTokens);
+	tstrtok(GetValueString(), asTokens);
 
 	Vector2D vecResult;
 	if (asTokens.size() > 0)
@@ -174,7 +165,7 @@ Vector2D CData::GetValueVector2D() const
 Vector CData::GetValueVector() const
 {
 	tvector<tstring> asTokens;
-	tstrtok(GetValueTString(), asTokens);
+	tstrtok(GetValueString(), asTokens);
 
 	Vector vecResult;
 	if (asTokens.size() > 0)
@@ -190,7 +181,7 @@ Vector CData::GetValueVector() const
 Vector4D CData::GetValueVector4D() const
 {
 	tvector<tstring> asTokens;
-	tstrtok(GetValueTString(), asTokens);
+	tstrtok(GetValueString(), asTokens);
 
 	Vector4D vecResult;
 	if (asTokens.size() > 0)
@@ -208,7 +199,7 @@ Vector4D CData::GetValueVector4D() const
 EAngle CData::GetValueEAngle() const
 {
 	tvector<tstring> asTokens;
-	tstrtok(GetValueTString(), asTokens);
+	tstrtok(GetValueString(), asTokens);
 
 	EAngle vecResult;
 	if (asTokens.size() > 0)
@@ -224,7 +215,7 @@ EAngle CData::GetValueEAngle() const
 TRS CData::GetValueTRS() const
 {
 	tvector<tstring> asTokens;
-	tstrtok(GetValueTString(), asTokens);
+	tstrtok(GetValueString(), asTokens);
 	TAssertNoMsg(asTokens.size() == 9);
 	if (asTokens.size() != 9)
 		return TRS();

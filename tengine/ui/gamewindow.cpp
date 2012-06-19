@@ -200,7 +200,7 @@ void CGameWindow::ReloadLevel()
 	mtsrand((size_t)time(NULL));
 
 	CParticleSystemLibrary::ClearInstances();
-	GameServer()->DestroyAllEntities(tvector<eastl::string>(), true);
+	GameServer()->DestroyAllEntities(tvector<tstring>(), true);
 
 	// Now turn the network on and connect all clients.
 	GameNetwork()->SetLoading(false);

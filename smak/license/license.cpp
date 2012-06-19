@@ -1,4 +1,3 @@
-#include <EASTL/string.h>
 #include <string.h>
 
 #include <tvector.h>
@@ -6,12 +5,12 @@
 #include <platform.h>
 #include <mtrand.h>
 
-bool GenerateKey(eastl::string sProductCode, eastl::string& sKey)
+bool GenerateKey(tstring sProductCode, tstring& sKey)
 {
 	if (!sProductCode.size())
 		return false;
 
-	tvector<eastl::string> sTokens;
+	tvector<tstring> sTokens;
 	strtok(sProductCode, sTokens, "-");
 
 	int iProductCode = atoi(sTokens[0].c_str());
@@ -78,7 +77,7 @@ bool GenerateKey(eastl::string sProductCode, eastl::string& sKey)
 
 	szResult[40] = '\0';
 
-	sKey = eastl::string((char*)szResult);
+	sKey = tstring((char*)szResult);
 
 	// Re-seed to ensure randomness.
 	mtsrand(iSeed);

@@ -36,7 +36,7 @@ void CModelConverter::WriteSMD(size_t iMesh, const tstring& sFilename)
 	// Nodes section
 	fprintf(fp, "nodes\n");
 	// Only bothering with one node, we're only doing static props with this code for now.
-	fprintf(fp, "0 \"%s\" -1\n", convertstring<tchar, char>(pMesh->GetBoneName(0)).c_str());
+	fprintf(fp, "0 \"%s\" -1\n", pMesh->GetBoneName(0).c_str());
 	fprintf(fp, "end\n\n");
 
 	// Skeleton section
@@ -84,7 +84,7 @@ void CModelConverter::WriteSMD(size_t iMesh, const tstring& sFilename)
 				fprintf(fp, "error\n");
 			}
 			else
-				fprintf(fp, "%s\n", convertstring<tchar, char>(m_pScene->GetMaterial(iMaterial)->GetName()).c_str());
+				fprintf(fp, "%s\n", m_pScene->GetMaterial(iMaterial)->GetName().c_str());
 
 			// <int|Parent bone> <float|PosX PosY PosZ> <normal|NormX NormY NormZ> <normal|U V>
 			// Studio coordinates are not the same as game coordinates. Studio (x, y, z) is game (x, -z, y) and vice versa.

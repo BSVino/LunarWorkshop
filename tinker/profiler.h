@@ -1,9 +1,9 @@
 #ifndef TINKER_PROFILER_H
 #define TINKER_PROFILER_H
 
-#include <EASTL/string.h>
 #include <EASTL/map.h>
 
+#include <tstring.h>
 #include <tvector.h>
 
 #define TPROF(name) CProfileScope _TProf(name);
@@ -11,44 +11,44 @@
 class CProfileScope
 {
 public:
-								CProfileScope(const eastl::string& sName);
+								CProfileScope(const tstring& sName);
 								~CProfileScope();
 
 public:
-	eastl::string				GetName() { return m_sName; };
+	tstring						GetName() { return m_sName; };
 
 protected:
-	eastl::string				m_sName;
+	tstring						m_sName;
 };
 
 class CPerfBlock
 {
 public:
-								CPerfBlock(const eastl::string& sName, CPerfBlock* pParent);
+								CPerfBlock(const tstring& sName, CPerfBlock* pParent);
 
 public:
 	CPerfBlock*					GetParent() { return m_pParent; };
 
-	CPerfBlock*					GetChild(const eastl::string& sName);
-	CPerfBlock*					AddChild(const eastl::string& sName);
+	CPerfBlock*					GetChild(const tstring& sName);
+	CPerfBlock*					AddChild(const tstring& sName);
 
 	void						BeginFrame();
 
 	void						BlockStarted();
 	void						BlockEnded();
 
-	eastl::string				GetName() { return m_sName; };
+	tstring						GetName() { return m_sName; };
 	double						GetTime() { return m_flTime; };
 
 public:
 	CPerfBlock*					m_pParent;
 
-	eastl::string				m_sName;
+	tstring						m_sName;
 	double						m_flTime;
 
 	double						m_flTimeBlockStarted;
 
-	eastl::map<eastl::string, CPerfBlock*>	m_apPerfBlocks;
+	eastl::map<tstring, CPerfBlock*>	m_apPerfBlocks;
 };
 
 class CProfiler

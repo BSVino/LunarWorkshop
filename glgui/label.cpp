@@ -776,7 +776,7 @@ void CLabel::SetSectionHoverListener(IEventListener* pListener, IEventListener::
 		tstring sFont;
 
 #ifdef _WIN32
-		sFont = sprintf(tstring("%s\\Fonts\\Arial.ttf"), convertstring<char, tchar>(getenv("windir")));
+		sFont = sprintf(tstring("%s\\Fonts\\Arial.ttf"), getenv("windir"));
 #else
 		sFont = "/usr/share/fonts/truetype/freefont/FreeSans.ttf");
 #endif
@@ -797,7 +797,7 @@ void CLabel::AddFontSize(const tstring& sName, size_t iSize)
 	if (s_apFontNames.find(sName) == s_apFontNames.end())
 		return;
 
-	FTTextureFont* pFont = new FTTextureFont(convertstring<tchar, char>(s_apFontNames[sName]).c_str());
+	FTTextureFont* pFont = new FTTextureFont(s_apFontNames[sName].c_str());
 	pFont->FaceSize(iSize);
 	s_apFonts[sName][iSize] = pFont;
 }

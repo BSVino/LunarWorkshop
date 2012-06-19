@@ -28,7 +28,7 @@ inline FILE* tfopen(const tstring& sFile, const tstring& sMode)
 	if (!bHasB)
 		sBinaryMode = sMode + "b";
 
-	return fopen(convertstring<tchar, char>(sFile).c_str(), convertstring<tchar, char>(sBinaryMode).c_str());
+	return fopen(sFile.c_str(), convertstring<tchar, char>(sBinaryMode).c_str());
 }
 
 inline bool fgetts(tstring& str, FILE* fp)
@@ -39,7 +39,7 @@ inline bool fgetts(tstring& str, FILE* fp)
 	if (!r)
 		return false;
 
-	str = convertstring<char, tchar>(szLine);
+	str = szLine;
 	return !!r;
 }
 

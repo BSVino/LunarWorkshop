@@ -18,14 +18,14 @@ inline eastl::basic_string<T> convertstring(const eastl::basic_string<F>& s);
 #include "tvector.h"
 
 // It's inline so I don't have to make a strutils.cpp :P
-inline void strtok(const eastl::string& str, tvector<eastl::string>& tokens, const eastl::string& delimiters = " \r\n\t")
+inline void strtok(const tstring& str, tvector<tstring>& tokens, const tstring& delimiters = " \r\n\t")
 {
     // Skip delimiters at beginning.
-    eastl::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+    tstring::size_type lastPos = str.find_first_not_of(delimiters, 0);
     // Find first "non-delimiter".
-    eastl::string::size_type pos     = str.find_first_of(delimiters, lastPos);
+    tstring::size_type pos     = str.find_first_of(delimiters, lastPos);
 
-    while (eastl::string::npos != pos || eastl::string::npos != lastPos)
+    while (tstring::npos != pos || tstring::npos != lastPos)
     {
         // Found a token, add it to the vector.
         tokens.push_back(str.substr(lastPos, pos - lastPos));
@@ -111,24 +111,24 @@ inline tstring trim(tstring s)
 	return ltrim(rtrim(s));
 }
 
-inline void writestring(std::ostream& o, const eastl::string& s)
+inline void writestring(std::ostream& o, const tstring& s)
 {
 	size_t iStringSize = s.length();
 	o.write((char*)&iStringSize, sizeof(iStringSize));
-	o.write((char*)s.c_str(), s.size()*sizeof(eastl::string::value_type));
+	o.write((char*)s.c_str(), s.size()*sizeof(tstring::value_type));
 }
 
-inline eastl::string readstring(std::istream& i)
+inline tstring readstring(std::istream& i)
 {
 	size_t iStringSize;
 	i.read((char*)&iStringSize, sizeof(iStringSize));
 
-	eastl::string s;
-	eastl::string::value_type c[2];
+	tstring s;
+	tstring::value_type c[2];
 	c[1] = '\0';
 	for (size_t j = 0; j < iStringSize; j++)
 	{
-		i.read((char*)&c[0], sizeof(eastl::string::value_type));
+		i.read((char*)&c[0], sizeof(tstring::value_type));
 		s.append(c);
 	}
 
@@ -175,6 +175,30 @@ inline eastl::basic_string<T> convertstring(const eastl::basic_string<F>& s)
 	return t;
 }
 
+inline std::wstring convert_to_wstring(const tstring& s)
+{
+	std::wstring t;
+	size_t iSize = s.size();
+	t.resize(iSize);
+
+	for (size_t i = 0; i < iSize; i++)
+		t[i] = (wchar_t)s[i];
+
+	return t;
+}
+
+inline tstring convert_from_wstring(const std::wstring& s)
+{
+	tstring t;
+	size_t iSize = s.size();
+	t.resize(iSize);
+
+	for (size_t i = 0; i < iSize; i++)
+		t[i] = (tchar)s[i];
+
+	return t;
+}
+
 inline tstring sprintf(tstring s, ...)
 {
 	va_list arguments;
@@ -201,7 +225,7 @@ inline tstring str_replace(const tstring& s, const tstring& f, const tstring& r)
 
 inline int stoi(const tstring& s)
 {
-	std::istringstream i(convertstring<tchar, char>(s).c_str());
+	std::istringstream i(s.c_str());
 	int x;
 	if (!(i >> x))
 		return 0;
@@ -211,7 +235,7 @@ inline int stoi(const tstring& s)
 
 inline double stof(const tstring& s)
 {
-	std::istringstream i(convertstring<tchar, char>(s).c_str());
+	std::istringstream i(s.c_str());
 	double x;
 	if (!(i >> x))
 		return 0;

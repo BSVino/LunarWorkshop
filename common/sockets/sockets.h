@@ -5,8 +5,8 @@
 #endif
 
 #include <stdio.h>
-#include <EASTL/string.h>
 
+#include <tstring.h>
 #include <tvector.h>
 
 #ifdef _WIN32
@@ -43,20 +43,20 @@ public:
 	virtual bool	IsOpen() { return m_bOpen; };
 
 	virtual int		Send(const char* pszData, size_t iLength);
-	virtual int		Send(eastl::string sData);
+	virtual int		Send(const tstring& sData);
 	virtual int		Send(const char* pszData, int iLength);
 	virtual int		Recv(char* pszData, int iLength);
-	virtual eastl::string	RecvAll();
+	virtual tstring	RecvAll();
 
 	virtual void	Close();
 
 	inline SOCKET	GetSocket() { return m_iSocket; };
 
-	inline eastl::string	GetError() { return m_sError; };
+	inline tstring	GetError() { return m_sError; };
 
 protected:
 	SOCKET			m_iSocket;
-	eastl::string	m_sError;
+	tstring			m_sError;
 
 	bool			m_bOpen;
 
@@ -64,22 +64,22 @@ protected:
 	WSADATA			m_WSAData;
 #endif
 
-	eastl::string	m_sHostname;
+	tstring			m_sHostname;
 	int				m_iPort;
 };
 
 class CPostReply
 {
 public:
-	CPostReply(eastl::string sKey, eastl::string sValue)
+	CPostReply(const tstring& sKey, const tstring& sValue)
 	{
 		m_sKey = sKey;
 		m_sValue = sValue;
 	}
 
 public:
-	eastl::string	m_sKey;
-	eastl::string	m_sValue;
+	tstring		m_sKey;
+	tstring		m_sValue;
 };
 
 class CHTTPPostSocket : public CClientSocket
@@ -89,8 +89,8 @@ public:
 
 	virtual void	SendHTTP11(const char* pszPage);
 
-	virtual void	AddPost(const char* pszKey, const eastl::string&);
-	virtual void	SetPostContent(eastl::string sPostContent);
+	virtual void	AddPost(const char* pszKey, const tstring&);
+	virtual void	SetPostContent(const tstring& sPostContent);
 
 	virtual void	ParseOutput();
 	virtual void	KeyValue(const char* pszKey, const char* pszValue);
@@ -99,7 +99,7 @@ public:
 	CPostReply*		GetReply(size_t i) { return &m_aKeys[i]; }
 
 protected:
-	eastl::string	m_sPostContent;
+	tstring			m_sPostContent;
 
 	tvector<CPostReply>	m_aKeys;
 };

@@ -11,7 +11,7 @@
 
 CTextureSheet::CTextureSheet(tstring sFile)
 {
-	std::basic_ifstream<tchar> f(convertstring<tchar, char>(sFile).c_str());
+	std::basic_ifstream<tchar> f(sFile.c_str());
 
 	CData* pFile = new CData();
 	CDataSerializer::Read(f, pFile);
@@ -21,7 +21,7 @@ CTextureSheet::CTextureSheet(tstring sFile)
 		CData* pChild = pFile->GetChild(i);
 		if (pChild->GetKey() == "Texture")
 		{
-			tstring sTexture = pChild->GetValueTString();
+			tstring sTexture = pChild->GetValueString();
 			m_hDefaultSheet = CTextureLibrary::AddTexture(sTexture);
 		}
 		else if (pChild->GetKey() == "Area")
@@ -47,14 +47,14 @@ CTextureSheet::CTextureSheet(tstring sFile)
 			if (pData)
 				h = pData->GetValueInt();
 
-			m_aAreas[pChild->GetValueTString()].m_rRect = Rect(x, y, w, h);
+			m_aAreas[pChild->GetValueString()].m_rRect = Rect(x, y, w, h);
 
-			m_aAreas[pChild->GetValueTString()].m_hSheet.Reset();
+			m_aAreas[pChild->GetValueString()].m_hSheet.Reset();
 			pData = pChild->FindChild("Texture");
 			if (pData)
 			{
-				tstring sTexture = pData->GetValueTString();
-				m_aAreas[pChild->GetValueTString()].m_hSheet = CTextureLibrary::AddTexture(sTexture);
+				tstring sTexture = pData->GetValueString();
+				m_aAreas[pChild->GetValueString()].m_hSheet = CTextureLibrary::AddTexture(sTexture);
 			}
 		}
 	}

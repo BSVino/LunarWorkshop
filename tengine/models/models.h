@@ -1,8 +1,6 @@
 #ifndef DT_MODELS_H
 #define DT_MODELS_H
 
-#include <EASTL/string.h>
-
 #include <tvector.h>
 #include <color.h>
 #include <geometry.h>

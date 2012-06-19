@@ -1,8 +1,6 @@
 #ifndef TINKER_APPLICATION_H
 #define TINKER_APPLICATION_H
 
-#include <EASTL/string.h>
-
 #include <tvector.h>
 #include <common.h>
 #include <vector.h>
@@ -25,7 +23,7 @@ public:
 
 	void						DumpGLInfo();
 
-	virtual eastl::string		WindowTitle() { return "Tinker"; }
+	virtual tstring				WindowTitle() { return "Tinker"; }
 	virtual tstring				AppDirectory() { return "Tinker"; }
 
 	void						SwapBuffers();
@@ -117,8 +115,8 @@ protected:
 	bool						m_bMultisampling;
 
 	ConfigFile					m_oRegFile;
-	eastl::string				m_sCode;
-	eastl::string				m_sKey;
+	tstring						m_sCode;
+	tstring						m_sKey;
 
 	bool						m_bMouseEnabled;
 	bool						m_bMouseDownInGUI;

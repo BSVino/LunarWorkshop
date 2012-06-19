@@ -473,7 +473,7 @@ void CModelConverter::SaveOBJ(const tstring& sFilename)
 {
 	tstring sMaterialFileName = tstring(GetDirectory(sFilename).c_str()) + "/" + GetFilename(sFilename).c_str() + ".mtl";
 
-	std::wofstream sMaterialFile(convertstring<tchar, char>(sMaterialFileName).c_str());
+	std::wofstream sMaterialFile(sMaterialFileName.c_str());
 	if (!sMaterialFile.is_open())
 		return;
 
@@ -523,7 +523,7 @@ void CModelConverter::SaveOBJ(const tstring& sFilename)
 		if (m_pScene->GetNumMeshes() == 1)
 			sOBJFilename = sFilename;
 
-		std::wofstream sOBJFile(convertstring<tchar, char>(sOBJFilename).c_str());
+		std::wofstream sOBJFile(convert_to_wstring(sOBJFilename).c_str());
 		sOBJFile.precision(8);
 		sOBJFile.setf(std::ios::fixed, std::ios::floatfield);
 

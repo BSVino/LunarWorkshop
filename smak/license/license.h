@@ -4,8 +4,6 @@
 #pragma once
 #endif
 
-#include <EASTL/string.h>
-
-extern bool GenerateKey(eastl::string sCode, eastl::string& sKey);
+extern bool GenerateKey(tstring sCode, tstring& sKey);
 
 #endif

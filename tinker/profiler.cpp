@@ -10,7 +10,7 @@
 
 CVar prof_enable("prof_enable", "no");
 
-CProfileScope::CProfileScope(const eastl::string& sName)
+CProfileScope::CProfileScope(const tstring& sName)
 {
 	m_sName = sName;
 
@@ -22,16 +22,16 @@ CProfileScope::~CProfileScope()
 	CProfiler::PopScope(this);
 }
 
-CPerfBlock::CPerfBlock(const eastl::string& sName, CPerfBlock* pParent)
+CPerfBlock::CPerfBlock(const tstring& sName, CPerfBlock* pParent)
 {
 	m_pParent = pParent;
 	m_sName = sName;
 	m_flTime = 0;
 }
 
-CPerfBlock* CPerfBlock::GetChild(const eastl::string& sName)
+CPerfBlock* CPerfBlock::GetChild(const tstring& sName)
 {
-	eastl::map<eastl::string, CPerfBlock*>::iterator it = m_apPerfBlocks.find(sName);
+	eastl::map<tstring, CPerfBlock*>::iterator it = m_apPerfBlocks.find(sName);
 
 	if (it == m_apPerfBlocks.end())
 		return NULL;
@@ -39,7 +39,7 @@ CPerfBlock* CPerfBlock::GetChild(const eastl::string& sName)
 	return it->second;
 }
 
-CPerfBlock* CPerfBlock::AddChild(const eastl::string& sName)
+CPerfBlock* CPerfBlock::AddChild(const tstring& sName)
 {
 	CPerfBlock* pChild = new CPerfBlock(sName, this);
 	m_apPerfBlocks[sName] = pChild;
@@ -50,7 +50,7 @@ void CPerfBlock::BeginFrame()
 {
 	m_flTime = 0;
 
-	for (eastl::map<eastl::string, CPerfBlock*>::iterator it = m_apPerfBlocks.begin(); it != m_apPerfBlocks.end(); it++)
+	for (eastl::map<tstring, CPerfBlock*>::iterator it = m_apPerfBlocks.begin(); it != m_apPerfBlocks.end(); it++)
 		it->second->BeginFrame();
 }
 
@@ -180,11 +180,11 @@ void CProfiler::Render(CPerfBlock* pBlock, float& flLeft, float& flTop)
 
 	glgui::CBaseControl::PaintRect(flLeft, flTop+1, (float)pBlock->GetTime()*5000, 1, clrBlock);
 
-	tstring sName = convertstring<char, tchar>(pBlock->GetName());
+	tstring sName = pBlock->GetName();
 	sName += sprintf(tstring(": %d ms"), (int)(pBlock->GetTime()*1000));
 	glgui::CLabel::PaintText(sName, sName.length(), "sans-serif", 10, (float)flLeft, (float)flTop, clrBlock);
 
-	for (eastl::map<eastl::string, CPerfBlock*>::iterator it = pBlock->m_apPerfBlocks.begin(); it != pBlock->m_apPerfBlocks.end(); it++)
+	for (eastl::map<tstring, CPerfBlock*>::iterator it = pBlock->m_apPerfBlocks.begin(); it != pBlock->m_apPerfBlocks.end(); it++)
 		Render(it->second, flLeft, flTop);
 
 	flLeft -= 15;

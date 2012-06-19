@@ -13,7 +13,7 @@ ConfigFile::ConfigFile( tstring filename, tstring delimiter,
 {
 	// Construct a ConfigFile, getting keys and values from given file
 	
-	std::basic_ifstream<tchar> in( convertstring<tchar, char>(filename).c_str() );
+	std::basic_ifstream<tchar> in( filename.c_str() );
 
 	fileValid = !!in;
 

@@ -434,7 +434,7 @@ void CBulletPhysics::UnloadCollisionMesh(const tstring& sModel)
 		TAssert(pObject->getCollisionShape() != it->second.m_pCollisionShape);
 		if (pObject->getCollisionShape() == it->second.m_pCollisionShape)
 		{
-			TError("Entity found with collision shape '" + sModel + "' which is being unloaded: " + tstring(hEntity->GetClassName()) + ":" + convertstring<char, tchar>(hEntity->GetName()) + "\n");
+			TError("Entity found with collision shape '" + sModel + "' which is being unloaded: " + tstring(hEntity->GetClassName()) + ":" + hEntity->GetName() + "\n");
 			RemoveEntity(hEntity);
 		}
 	}
