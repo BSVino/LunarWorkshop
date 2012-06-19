@@ -95,7 +95,8 @@ class CConversionBone
 public:
 									CConversionBone(const tstring& sName);
 
-	tstring					m_sName;
+public:
+	tstring							m_sName;
 };
 
 typedef enum
