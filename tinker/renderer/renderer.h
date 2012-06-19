@@ -135,7 +135,7 @@ public:
 	static size_t	LoadTextureIntoGL(tstring sFilename, int iClamp = 0);
 	static size_t	LoadTextureIntoGL(Color* pclrData, int w, int h, int iClamp = 0);
 	static size_t	LoadTextureIntoGL(Vector* pvecData, int w, int h, int iClamp = 0);
-	static void		UnloadTextureFromGL(unsigned int iGLID);
+	static void		UnloadTextureFromGL(size_t iGLID);
 	static size_t	GetNumTexturesLoaded() { return s_iTexturesLoaded; }
 
 	static Color*	LoadTextureData(tstring sFilename, int& w, int& h);

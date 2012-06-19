@@ -523,7 +523,7 @@ void CModelConverter::SaveOBJ(const tstring& sFilename)
 		if (m_pScene->GetNumMeshes() == 1)
 			sOBJFilename = sFilename;
 
-		std::wofstream sOBJFile(convert_to_wstring(sOBJFilename).c_str());
+		std::ofstream sOBJFile(sOBJFilename.c_str());
 		sOBJFile.precision(8);
 		sOBJFile.setf(std::ios::fixed, std::ios::floatfield);
 

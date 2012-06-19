@@ -92,7 +92,7 @@ public:
 
 	virtual void				OnClientDisconnect(int iClient) {};
 
-	virtual class CRenderer*	CreateRenderer()=0 { return nullptr; }
+	virtual class CRenderer*	CreateRenderer()=0;
 	class CRenderer*			GetRenderer() { return m_pRenderer; }
 
 	static void					OpenConsole();
@@ -132,6 +132,11 @@ protected:
 inline CApplication* Application()
 {
 	return CApplication::Get();
+}
+
+inline class CRenderer* CApplication::CreateRenderer()
+{
+	return nullptr;
 }
 
 #endif

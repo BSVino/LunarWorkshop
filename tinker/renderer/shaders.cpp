@@ -151,9 +151,9 @@ void CShaderLibrary::AddShader(const tstring& sFile)
 			for (size_t j = 0; j < pChild->GetNumChildren(); j++)
 			{
 				CData* pUniform = pChild->GetChild(j);
-				auto& oDefault = oShader.m_aDefaults.insert(pUniform->GetKey());
-				oDefault.first->second.m_sName = pUniform->GetKey();
-				oDefault.first->second.m_sValue = pUniform->GetValueString();
+				auto& oDefault = oShader.m_aDefaults[pUniform->GetKey()];
+				oDefault.m_sName = pUniform->GetKey();
+				oDefault.m_sValue = pUniform->GetValueString();
 			}
 		}
 	}

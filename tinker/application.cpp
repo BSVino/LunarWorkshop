@@ -58,6 +58,10 @@ CApplication::CApplication(int argc, char** argv)
 
 CVar gl_debug("gl_debug", GL_DEBUG_VALUE);
 
+#ifndef CALLBACK
+#define CALLBACK
+#endif
+
 void CALLBACK GLDebugCallback(GLenum iSource, GLenum iType, GLuint id, GLenum iSeverity, GLsizei iLength, const GLchar* pszMessage, GLvoid* pUserParam)
 {
 	if (iType != GL_DEBUG_TYPE_PERFORMANCE_ARB)

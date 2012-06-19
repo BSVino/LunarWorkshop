@@ -618,7 +618,7 @@ void CTreeNode::CExpandButton::Paint(float x, float y, float w, float h)
 		r.Rotate((float)RootPanel()->GetTime()*200, Vector(0, 0, 1));
 
 	r.BeginRenderVertexArray(s_iQuad);
-	r.SetPositionBuffer(0u, 24);
+	r.SetPositionBuffer((size_t)0u, 24);
 	r.SetTexCoordBuffer(12, 24);
 	r.SetCustomIntBuffer("iVertex", 1, 20, 24);
 	r.EndRenderVertexArray(6);

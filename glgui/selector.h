@@ -1,6 +1,7 @@
 #ifndef TINKER_SELECTOR_H
 #define TINKER_SELECTOR_H
 
+#include "rootpanel.h"
 #include "panel.h"
 
 namespace glgui

@@ -522,7 +522,7 @@ void CModelConverter::SaveSIA(const tstring& sFilename)
 {
 	tstring sSIAFileName = tstring(GetDirectory(sFilename).c_str()) + "/" + GetFilename(sFilename).c_str() + ".sia";
 
-	std::wofstream sFile(convert_to_wstring(sSIAFileName).c_str());
+	std::ofstream sFile(sSIAFileName.c_str());
 	if (!sFile.is_open())
 		return;
 

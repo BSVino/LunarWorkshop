@@ -135,7 +135,7 @@ public:
 	void					Finish();	// Flush and block until complete
 
 protected:
-	inline CRenderContext&	GetContext();
+	inline CRenderContext&	GetContext() { return s_aContexts.back(); }
 
 public:
 	class CRenderer*		m_pRenderer;
@@ -154,7 +154,7 @@ public:
 	Vector					m_vecNormal;
 	tvector<Vector>	m_avecNormals;
 	::Color					m_clrColor;
-	tvector<::Color>		m_aclrColors;
+	tvector< ::Color>		m_aclrColors;
 	tvector<Vector>			m_avecVertices;
 
 	static tvector<CRenderContext>	s_aContexts;

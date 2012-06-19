@@ -61,12 +61,17 @@ source_group(GLGUI FILES ${TINKER_GLGUI_SOURCES})
 source_group(Renderer FILES ${TINKER_RENDERER_SOURCES})
 source_group(Textures FILES ${TINKER_TEXTURES_SOURCES})
 
+include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/glfw/include)
+include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/ftgl-gl3/src)
+
 if (WIN32)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/gl3w/include)
-	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/glfw-1.3/include)
-	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/ftgl-gl3/src)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/freetype-2.3.11/include)
 endif (WIN32)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/gl3w/include)
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 add_library(tinker STATIC ${TINKER_SOURCES})
 target_link_libraries(tinker lwbase)

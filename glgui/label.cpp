@@ -778,7 +778,7 @@ void CLabel::SetSectionHoverListener(IEventListener* pListener, IEventListener::
 #ifdef _WIN32
 		sFont = sprintf(tstring("%s\\Fonts\\Arial.ttf"), getenv("windir"));
 #else
-		sFont = "/usr/share/fonts/truetype/freefont/FreeSans.ttf");
+		sFont = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
 #endif
 
 		AddFont("sans-serif", sFont);

@@ -731,7 +731,7 @@ size_t CRenderer::LoadVertexDataIntoGL(size_t iSizeInBytes, float* aflVertices)
 
 void CRenderer::UnloadVertexDataFromGL(size_t iBuffer)
 {
-	glDeleteBuffers(1, &iBuffer);
+	glDeleteBuffers(1, (GLuint*)&iBuffer);
 }
 
 size_t CRenderer::LoadTextureIntoGL(tstring sFilename, int iClamp)
@@ -828,7 +828,7 @@ size_t CRenderer::LoadTextureIntoGL(Vector* pvecData, int x, int y, int iClamp)
 
 void CRenderer::UnloadTextureFromGL(size_t iGLId)
 {
-	glDeleteTextures(1, &iGLId);
+	glDeleteTextures(1, (GLuint*)&iGLId);
 	s_iTexturesLoaded--;
 }
 

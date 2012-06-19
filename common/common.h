@@ -72,6 +72,10 @@ private:
 } nullptr = {};              // and whose name is nullptr
 
 #endif
+
+// For std::shared_ptr
+#include <memory>
+
 #endif
 
 #endif

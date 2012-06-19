@@ -451,7 +451,7 @@ void CRenderingContext::SetupMaterial()
 	for (size_t i = 0; i < GetContext().m_hMaterial->m_aParameters.size(); i++)
 	{
 		auto& oParameter = GetContext().m_hMaterial->m_aParameters[i];
-		auto& it = m_pShader->m_aParameters.find(oParameter.m_sName);
+		const auto& it = m_pShader->m_aParameters.find(oParameter.m_sName);
 
 		TAssert(it != m_pShader->m_aParameters.end());
 		if (it == m_pShader->m_aParameters.end())
@@ -1005,7 +1005,3 @@ void CRenderingContext::Finish()
 	glFinish();
 }
 
-CRenderingContext::CRenderContext& CRenderingContext::GetContext()
-{
-	return s_aContexts.back();
-}

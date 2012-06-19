@@ -1,7 +1,7 @@
 #pragma once
 
 template <class C, class L>
-CAssetHandle<C, L>::CAssetHandle(const tstring& sName, C* pAsset = nullptr)
+CAssetHandle<C, L>::CAssetHandle(const tstring& sName, C* pAsset)
 {
 	m_sName = sName;
 	if (pAsset)

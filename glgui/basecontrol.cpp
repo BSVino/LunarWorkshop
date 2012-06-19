@@ -312,7 +312,7 @@ void CBaseControl::PaintRect(float x, float y, float w, float h, const Color& c,
 	r.SetUniform("vecDimensions", Vector4D(x, y, w, h));
 
 	r.BeginRenderVertexArray(s_iQuad);
-	r.SetPositionBuffer(0u, 24);
+	r.SetPositionBuffer((size_t)0u, 24);
 	r.SetTexCoordBuffer(12, 24);
 	r.SetCustomIntBuffer("iVertex", 1, 20, 24);
 	r.EndRenderVertexArray(6);
@@ -339,7 +339,7 @@ void CBaseControl::PaintTexture(const CMaterialHandle& hMaterial, float x, float
 	r.SetUniform("vecDimensions", Vector4D(x, y, w, h));
 
 	r.BeginRenderVertexArray(s_iQuad);
-	r.SetPositionBuffer(0u, 24);
+	r.SetPositionBuffer((size_t)0u, 24);
 	r.SetTexCoordBuffer(12, 24);
 	r.SetCustomIntBuffer("iVertex", 1, 20, 24);
 	r.EndRenderVertexArray(6);
@@ -369,7 +369,7 @@ void CBaseControl::PaintSheet(const CMaterialHandle& hMaterial, float x, float y
 	r.SetUniform("vecTexCoords", Vector4D((float)sx/(float)tw, (float)sy/(float)th, (float)sw/(float)tw, (float)sh/(float)th));
 
 	r.BeginRenderVertexArray(s_iQuad);
-	r.SetPositionBuffer(0u, 24);
+	r.SetPositionBuffer((size_t)0u, 24);
 	r.SetTexCoordBuffer(12, 24);
 	r.SetCustomIntBuffer("iVertex", 1, 20, 24);
 	r.EndRenderVertexArray(6);
