@@ -23,7 +23,6 @@ set (SMAK_SOURCES
 	crunch/normal.cpp
 	models/loadsource.cpp
 	models/models.cpp
-	shaders/shaders.cpp
 	ui/smakwindow.cpp
 	ui/smakwindow_input.cpp
 	ui/smakwindow_ui.cpp
@@ -42,7 +41,7 @@ add_executable(smak WIN32 ${SMAK_SOURCES})
 target_link_libraries (smak tinker modelconverter raytracer)
 
 if (WIN32)
-	target_link_libraries(smak debug ${CMAKE_SOURCE_DIR}/../ext-deps/glfw-1.3/src/Debug/GLFW.lib)
+	target_link_libraries(smak debug ${CMAKE_SOURCE_DIR}/../ext-deps/glfw/src/Debug/GLFW.lib)
 	target_link_libraries(smak debug ${CMAKE_SOURCE_DIR}/../ext-deps/ftgl-gl3/msvc/build/ftgl_static_D.lib)
 	target_link_libraries(smak debug ${CMAKE_SOURCE_DIR}/../ext-deps/freetype-2.3.11/objs/win32/vc2010/freetype2311MT_D.lib)
 	target_link_libraries(smak debug ${CMAKE_SOURCE_DIR}/../ext-deps/pthreads-w32-2-8-0-release/Debug/pthread.lib)
@@ -50,7 +49,7 @@ if (WIN32)
 	target_link_libraries(smak debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/farchivexml-2010.lib)
 	target_link_libraries(smak debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/libxml-2010.lib)
 
-	target_link_libraries(smak optimized ${CMAKE_SOURCE_DIR}/../ext-deps/glfw-1.3/src/RelWithDebInfo/GLFW.lib)
+	target_link_libraries(smak optimized ${CMAKE_SOURCE_DIR}/../ext-deps/glfw/src/RelWithDebInfo/GLFW.lib)
 	target_link_libraries(smak optimized ${CMAKE_SOURCE_DIR}/../ext-deps/ftgl-gl3/msvc/build/ftgl_static.lib)
 	target_link_libraries(smak optimized ${CMAKE_SOURCE_DIR}/../ext-deps/freetype-2.3.11/objs/win32/vc2010/freetype2311MT.lib)
 	target_link_libraries(smak optimized ${CMAKE_SOURCE_DIR}/../ext-deps/pthreads-w32-2-8-0-release/Release/pthread.lib)

@@ -7,7 +7,6 @@
 #include <matrix.h>
 #include <mtrand.h>
 #include <raytracer/raytracer.h>
-#include "shaders/shaders.h"
 #include <tinker_platform.h>
 #include <textures/texturelibrary.h>
 #include <renderer/renderingcontext.h>
