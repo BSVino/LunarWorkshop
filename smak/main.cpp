@@ -238,11 +238,12 @@ int CreateApplication(int argc, char** argv)
 				glfwIconifyWindow(i);
 			}
 
-#ifdef OPENGL3
 			// If this is the color AO method, we need to load the textures.
-			tvector<CMaterial> aMaterials;
+			//tvector<CMaterial> aMaterials;
 			if (eMethod == AOMETHOD_RENDER)
 			{
+				TUnimplemented();
+#ifdef OPENGL2
 				for (size_t i = 0; i < s.GetNumMaterials(); i++)
 				{
 					CConversionMaterial* pMaterial = s.GetMaterial(i);
@@ -261,9 +262,10 @@ int CreateApplication(int argc, char** argv)
 				{
 					aMaterials.push_back(CMaterial(0));
 				}
+#endif
 			}
 
-			CAOGenerator ao(&s, &aMaterials);
+			CAOGenerator ao(&s);
 
 			ao.SetMethod(eMethod);
 			ao.SetSize(iSize, iSize);
@@ -288,7 +290,7 @@ int CreateApplication(int argc, char** argv)
 				ao.SaveToFile("ao-output.png");
 
 			printf("Done.\n");
-#endif
+
 			return 0;
 		}
 		}
