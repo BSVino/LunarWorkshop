@@ -79,7 +79,7 @@ inline float Blink(float flTime, float flLength)
 
 inline float Oscillate(float flTime, float flLength)
 {
-	return fabs(RemapVal(fmod(flTime, flLength), 0, flLength, -1, 1));
+	return fabs(RemapVal((float)fmod(flTime, flLength), 0, flLength, -1, 1));
 }
 
 // Strobe: Flicker("az", GetGameTime(), 0.1f)

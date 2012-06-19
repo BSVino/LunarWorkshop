@@ -67,12 +67,12 @@ inline int tstrncmp(const tchar* s1, const tchar* s2, size_t n)
 
 inline void TMsgStdOut(const tstring& sOut)
 {
-	printf(sOut.c_str());
+	puts(sOut.c_str());
 }
 
 inline void TErrorStdOut(const tstring& sOut)
 {
-	printf(("ERROR: " + sOut).c_str());
+	puts(("ERROR: " + sOut).c_str());
 }
 
 #endif
