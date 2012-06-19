@@ -412,7 +412,7 @@ void CModelConverter::SaveDAE(const tstring& sFilename)
 
 			pSurface->SetInitMethod(new FCDEffectParameterSurfaceInitFrom());
 			pSurface->AddImage(pSurfaceImage);
-			pSurface->SetReference(convert_to_fstring(pConversionMaterial->GetName() + "-surface"));
+			pSurface->SetReference((pConversionMaterial->GetName() + "-surface").c_str());
 
 			pSampler->SetSurface(pSurface);
 		}
