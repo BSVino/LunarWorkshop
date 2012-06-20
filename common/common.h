@@ -53,7 +53,7 @@
 #endif
 
 // If you hit this, the code is either incomplete or untested.
-#define TUnimplemented() TAssert(false)
+#define TUnimplemented() TAssertNoMsg(false)
 
 #ifdef __GNUC__
 #if __GNUC__ < 4 || __GNUC_MINOR__ < 6

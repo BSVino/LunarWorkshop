@@ -5,7 +5,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/sendfile.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <linux/if.h>
 #include <X11/Xlib.h>
@@ -97,6 +99,11 @@ void OpenExplorer(const tstring& sDirectory)
 	int iSystem = system((tstring("gnome-open ") + sDirectory).c_str());
 }
 
+void Alert(const tstring& sMessage)
+{
+	fputs(sMessage.c_str(), stderr);
+}
+
 void CreateMinidump(void* pInfo, tchar* pszDirectory)
 {
 }
@@ -124,7 +131,7 @@ tstring GetAppDataDirectory(const tstring& sDirectory, const tstring& sFile)
 	return sReturn;
 }
 
-tvector<tstring> ListDirectory(tstring sDirectory, bool bDirectories)
+tvector<tstring> ListDirectory(const tstring& sDirectory, bool bDirectories)
 {
 	tvector<tstring> asResult;
 
@@ -150,7 +157,7 @@ tvector<tstring> ListDirectory(tstring sDirectory, bool bDirectories)
 	return asResult;
 }
 
-bool IsFile(tstring sPath)
+bool IsFile(const tstring& sPath)
 {
 	struct stat stFileInfo;
 	bool blnReturn;
@@ -164,7 +171,7 @@ bool IsFile(tstring sPath)
 		return false;
 }
 
-bool IsDirectory(tstring sPath)
+bool IsDirectory(const tstring& sPath)
 {
 	struct stat stFileInfo;
 	bool blnReturn;
@@ -178,12 +185,85 @@ bool IsDirectory(tstring sPath)
 		return false;
 }
 
-void DebugPrint(tstring sText)
+void CreateDirectoryNonRecursive(const tstring& sPath)
+{
+	TUnimplemented();
+
+	mkdir(sPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+}
+
+bool CopyFileTo(const tstring& sFrom, const tstring& sTo, bool bOverride)
+{
+	TUnimplemented();
+
+	int read_fd;
+	int write_fd;
+	struct stat stat_buf;
+	off_t offset = 0;
+
+	read_fd = open(sFrom.c_str(), O_RDONLY);
+
+	if (!read_fd)
+		return false;
+
+	fstat(read_fd, &stat_buf);
+
+	write_fd = open(sTo.c_str(), O_WRONLY | O_CREAT, stat_buf.st_mode);
+	if (!write_fd)
+	{
+		close(read_fd);
+		return false;
+	}
+
+	sendfile(write_fd, read_fd, &offset, stat_buf.st_size);
+
+	close(read_fd);
+	close(write_fd);
+
+	return true;
+}
+
+tstring FindAbsolutePath(const tstring& sPath)
+{
+	TUnimplemented();
+
+	char* pszFullPath = realpath(sPath.c_str(), nullptr);
+	tstring sFullPath = pszFullPath;
+	free(pszFullPath);
+
+	return sFullPath;
+}
+
+time_t GetFileModificationTime(const char* pszFile)
+{
+	TUnimplemented();
+
+	struct stat s;
+	if (stat(pszFile, &s) != 0)
+		return 0;
+
+	return s.st_mtime;
+}
+
+void DebugPrint(const tstring& sText)
 {
 	puts(sText.c_str());
 }
 
-void Exec(tstring sLine)
+void Exec(const tstring& sLine)
 {
 	int iSystem = system((tstring("./") + sLine).c_str());
 }
+
+// Not worried about supporting these on Linux right now.
+int TranslateKeyToQwerty(int iKey)
+{
+	return iKey;
+}
+
+int TranslateKeyFromQwerty(int iKey)
+{
+	return iKey;
+}
+
+

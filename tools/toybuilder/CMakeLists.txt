@@ -19,7 +19,8 @@ set (TOYBUILDER_SOURCES
 
 add_library(geppetto STATIC ${GEPPETTO_SOURCES})
 add_executable (toybuilder ${TOYBUILDER_SOURCES})
-target_link_libraries (toybuilder lwbase tinker modelconverter toys geppetto)
+target_link_libraries (geppetto lwbase tinker modelconverter toys)
+target_link_libraries (toybuilder geppetto)
 
 if (WIN32)
 	target_link_libraries(toybuilder debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/fcollada-2010.lib)
@@ -30,3 +31,10 @@ if (WIN32)
 	target_link_libraries(toybuilder optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/farchivexml-2010.lib)
 	target_link_libraries(toybuilder optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/libxml-2010.lib)
 endif (WIN32)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	target_link_libraries(toybuilder ${FREETYPE_LIBRARIES} ${LIBXML2_LIBRARIES})
+	target_link_libraries(toybuilder ${CMAKE_SOURCE_DIR}/../ext-deps/fcolladaCE/FCollada/libfcollada.so)
+	target_link_libraries(toybuilder ${CMAKE_SOURCE_DIR}/../ext-deps/fcolladaCE/FColladaPlugins/FArchiveXML/libfarchivexml.so)
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+

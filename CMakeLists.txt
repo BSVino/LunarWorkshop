@@ -44,6 +44,10 @@ if (WIN32)
 	add_definitions(-DFTGL_LIBRARY_STATIC)
 endif (WIN32)
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	add_definitions(-DFCOLLADA_DLL)
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
 if (CMAKE_BUILD_TYPE MATCHES Debug)
 	add_definitions(-D_DEBUG)
 endif (CMAKE_BUILD_TYPE MATCHES Debug)

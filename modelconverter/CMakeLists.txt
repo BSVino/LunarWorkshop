@@ -8,7 +8,6 @@ include_directories (
 	${PROJECT_SOURCE_DIR}/../ext-deps/fcollada/FCollada
 	${PROJECT_SOURCE_DIR}/../ext-deps/fcollada/FCollada/LibXML/include
 	${PROJECT_SOURCE_DIR}/../ext-deps/fcolladaCE/FCollada
-	${PROJECT_SOURCE_DIR}/../ext-deps/fcolladaCE/FCollada/LibXML/include
 	../common
 	../common/math
 )
