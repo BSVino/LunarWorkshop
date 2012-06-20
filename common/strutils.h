@@ -14,6 +14,7 @@
 #include <EASTL/string.h>
 
 #define TSTRING_BASE_T eastl::basic_string
+#define STL_NAMESPACE eastl
 using eastl::find_if;
 using eastl::not1;
 using eastl::ptr_fun;
@@ -22,6 +23,7 @@ using eastl::ptr_fun;
 #include <stdarg.h>
 
 #define TSTRING_BASE_T std::basic_string
+#define STL_NAMESPACE std
 using std::find_if;
 using std::not1;
 using std::ptr_fun;
@@ -112,13 +114,13 @@ inline int isspace(int i)
 
 inline tstring ltrim(tstring s)
 {
-	s.erase(s.begin(), find_if(s.begin(), s.end(), not1(ptr_fun<int, int>(isspace))));
+	s.erase(s.begin(), STL_NAMESPACE::find_if(s.begin(), s.end(), not1(ptr_fun<int, int>(isspace))));
 	return s;
 }
 
 inline tstring rtrim(tstring s)
 {
-	s.erase(find_if(s.rbegin(), s.rend(), not1(ptr_fun<int, int>(isspace))).base(), s.end());
+	s.erase(STL_NAMESPACE::find_if(s.rbegin(), s.rend(), not1(ptr_fun<int, int>(isspace))).base(), s.end());
 	return s;
 }
 
