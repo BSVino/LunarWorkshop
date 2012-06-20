@@ -1,5 +1,6 @@
 include_directories (
 	${PROJECT_SOURCE_DIR}/../ext-deps/EASTL/include
+	${CMAKE_SOURCE_DIR}/../ext-deps/glfw/include
 	.
 	../
 	../common

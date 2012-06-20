@@ -1,8 +1,7 @@
 #ifndef _TINKER_COMMANDS_H
 #define _TINKER_COMMANDS_H
 
-#include <EASTL/map.h>
-
+#include <tmap.h>
 #include <tvector.h>
 #include <color.h>
 #include <vector.h>
@@ -18,7 +17,7 @@ public:
 	CNetworkCommand(int iConnection, tstring sName, CommandServerCallback pfnCallback, network_id_t iTarget)
 	{
 		m_iConnection = iConnection;
-		m_sName = str_replace(sName, " ", "-");
+		m_sName = sName.replace(" ", "-");
 		m_pfnCallback = pfnCallback;
 		m_iMessageTarget = iTarget;
 	};
@@ -26,7 +25,7 @@ public:
 	CNetworkCommand(tstring sName, CommandServerCallback pfnCallback, network_id_t iTarget)
 	{
 		m_iConnection = CONNECTION_UNDEFINED;
-		m_sName = str_replace(sName, " ", "-");
+		m_sName = sName.replace(" ", "-");
 		m_pfnCallback = pfnCallback;
 		m_iMessageTarget = iTarget;
 	};
@@ -49,7 +48,7 @@ public:
 	int						ArgAsInt(size_t i);
 	float					ArgAsFloat(size_t i);
 
-	static eastl::map<tstring, CNetworkCommand*>& GetCommands();
+	static tmap<tstring, CNetworkCommand*>& GetCommands();
 	static CNetworkCommand*	GetCommand(const tstring& sName);
 	static void				RegisterCommand(CNetworkCommand* pCommand);
 

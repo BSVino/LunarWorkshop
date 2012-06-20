@@ -100,7 +100,7 @@ void CFileDialog::Layout()
 
 		for (size_t j = 0; j < m_asExtensions.size(); j++)
 		{
-			if (!tstr_endswith(sFile, m_asExtensions[j]))
+			if (!sFile.endswith(m_asExtensions[j]))
 				continue;
 
 			m_pFileList->AddNode(sFile);
@@ -132,7 +132,7 @@ void CFileDialog::NewDirectoryCallback(const tstring& sArgs)
 	{
 		for (size_t i = 0; i < m_asExtensions.size(); i++)
 		{
-			if (tstr_endswith(m_sDirectory, m_asExtensions[i]))
+			if (m_sDirectory.endswith(m_asExtensions[i]))
 			{
 				FileConfirmed(m_sDirectory);
 				return;

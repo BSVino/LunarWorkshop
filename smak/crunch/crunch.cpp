@@ -505,11 +505,11 @@ void CTexelMethod::SaveToFile(const tstring& sFilename)
 {
 	tstring sRealFilename = sFilename.substr(0, sFilename.length()-4) + "-" + FileSuffix() + sFilename.substr(sFilename.length()-4, 4);
 
-	if (tstr_endswith(sRealFilename, ".png"))
+	if (sRealFilename.endswith(".png"))
 		stbi_write_png(sRealFilename.c_str(), m_iWidth, m_iHeight, 3, GetData(), 0);
-	else if (tstr_endswith(sRealFilename, ".bmp"))
+	else if (sRealFilename.endswith(".bmp"))
 		stbi_write_bmp(sRealFilename.c_str(), m_iWidth, m_iHeight, 3, GetData());
-	else if (tstr_endswith(sRealFilename, ".tga"))
+	else if (sRealFilename.endswith(".tga"))
 		stbi_write_tga(sRealFilename.c_str(), m_iWidth, m_iHeight, 3, GetData());
 }
 
@@ -562,7 +562,7 @@ void CTexelDiffuseMethod::PreGenerate()
 	{
 		CConversionMeshInstance* pMeshInstance = apHiRes[i];
 
-		for (eastl::map<size_t, CConversionMaterialMap>::iterator j = pMeshInstance->m_aiMaterialsMap.begin(); j != pMeshInstance->m_aiMaterialsMap.end(); j++)
+		for (tmap<size_t, CConversionMaterialMap>::iterator j = pMeshInstance->m_aiMaterialsMap.begin(); j != pMeshInstance->m_aiMaterialsMap.end(); j++)
 		{
 			size_t iMaterial = pMeshInstance->GetMappedMaterial(j->first)->m_iMaterial;
 
@@ -1335,7 +1335,7 @@ void CTexelNormalMethod::SaveToFile(const tstring& sFilename)
 	for (size_t i = 0; i < m_pGenerator->GetLoResMeshInstances().size(); i++)
 	{
 		CConversionMeshInstance* pMeshInstance = m_pGenerator->GetLoResMeshInstances()[i];
-		for (eastl::map<size_t, CConversionMaterialMap>::iterator j = pMeshInstance->m_aiMaterialsMap.begin(); j != pMeshInstance->m_aiMaterialsMap.end(); j++)
+		for (tmap<size_t, CConversionMaterialMap>::iterator j = pMeshInstance->m_aiMaterialsMap.begin(); j != pMeshInstance->m_aiMaterialsMap.end(); j++)
 		{
 			size_t iMaterial = pMeshInstance->GetMappedMaterial(j->first)->m_iMaterial;
 

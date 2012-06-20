@@ -1,7 +1,6 @@
 #pragma once
 
-#include <EASTL/map.h>
-
+#include <tmap.h>
 #include <tvector.h>
 #include "vector.h"
 
@@ -38,7 +37,7 @@ protected:
 	tvector<size_t>				m_aiTriangles;
 
 	tvector<EdgePair>			m_aOpenEdges;
-	eastl::map<size_t, eastl::map<size_t, bool> >	m_aaCreatedEdges;
+	tmap<size_t, tmap<size_t, bool> >	m_aaCreatedEdges;
 };
 
 // Removes verts in a mesh which are coplanar

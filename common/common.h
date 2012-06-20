@@ -78,4 +78,8 @@ private:
 
 #endif
 
+#ifndef WITH_EASTL
+#include <stdint.h>
+#endif
+
 #endif

@@ -125,11 +125,11 @@ void CSoundLibrary::StopSound(CBaseEntity* pEntity, const tstring& pszFilename)
 		// Un-register the channel finish callback for the time being because we clear the active sound list by ourselves.
 		Mix_ChannelFinished(NULL);
 
-		eastl::map<CBaseEntity*, eastl::map<tstring, CSoundInstance> >::iterator it = Get()->m_aiActiveSounds.begin();
+		tmap<CBaseEntity*, tmap<tstring, CSoundInstance> >::iterator it = Get()->m_aiActiveSounds.begin();
 
 		while (it != Get()->m_aiActiveSounds.end())
 		{
-			eastl::map<tstring, CSoundInstance>::iterator it2 = Get()->m_aiActiveSounds[(*it).first].begin();
+			tmap<tstring, CSoundInstance>::iterator it2 = Get()->m_aiActiveSounds[(*it).first].begin();
 			while (it2 != Get()->m_aiActiveSounds[(*it).first].end())
 			{
 				Mix_HaltChannel(Get()->m_aiActiveSounds[(*it).first][(*it2).first].iChannel);
@@ -153,7 +153,7 @@ void CSoundLibrary::StopSound(CBaseEntity* pEntity, const tstring& pszFilename)
 		// Un-register the channel finish callback for the time being because we clear the active sound list by ourselves.
 		Mix_ChannelFinished(NULL);
 
-		eastl::map<tstring, CSoundInstance>::iterator it2 = Get()->m_aiActiveSounds[pEntity].begin();
+		tmap<tstring, CSoundInstance>::iterator it2 = Get()->m_aiActiveSounds[pEntity].begin();
 		while (it2 != Get()->m_aiActiveSounds[pEntity].end())
 		{
 			Mix_HaltChannel(Get()->m_aiActiveSounds[pEntity][(*it2).first].iChannel);
@@ -225,9 +225,9 @@ void CSoundLibrary::SetSoundVolume(CBaseEntity* pEntity, const tstring& pszFilen
 void CSoundLibrary::SetSoundVolume(float flVolume)
 {
 	s_flMasterVolume = flVolume;
-	for (eastl::map<CBaseEntity*, eastl::map<tstring, CSoundInstance> >::iterator it = Get()->m_aiActiveSounds.begin(); it != Get()->m_aiActiveSounds.end(); it++)
+	for (tmap<CBaseEntity*, tmap<tstring, CSoundInstance> >::iterator it = Get()->m_aiActiveSounds.begin(); it != Get()->m_aiActiveSounds.end(); it++)
 	{
-		for (eastl::map<tstring, CSoundInstance>::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++)
+		for (tmap<tstring, CSoundInstance>::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++)
 			Mix_Volume(it2->second.iChannel, (int)(it2->second.flVolume*s_flMasterVolume*MIX_MAX_VOLUME));
 	}
 }
@@ -239,12 +239,12 @@ void CSoundLibrary::SetMusicVolume(float flVolume)
 
 void CSoundLibrary::ChannelFinished(int iChannel)
 {
-	eastl::map<CBaseEntity*, eastl::map<tstring, CSoundInstance> >::iterator it = Get()->m_aiActiveSounds.begin();
+	tmap<CBaseEntity*, tmap<tstring, CSoundInstance> >::iterator it = Get()->m_aiActiveSounds.begin();
 
 	while (it != Get()->m_aiActiveSounds.end())
 	{
 		CBaseEntity* pEntity = (*it).first;
-		eastl::map<tstring, CSoundInstance>::iterator it2 = Get()->m_aiActiveSounds[pEntity].begin();
+		tmap<tstring, CSoundInstance>::iterator it2 = Get()->m_aiActiveSounds[pEntity].begin();
 		while (it2 != Get()->m_aiActiveSounds[pEntity].end())
 		{
 			tstring pszFilename = (*it2).first;

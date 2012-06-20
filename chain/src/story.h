@@ -54,7 +54,7 @@ protected:
 	float					m_flAlpha;
 	float					m_flAlphaGoal;
 
-	eastl::map<tstring, CPage>	m_asPages;
+	tmap<tstring, CPage>	m_asPages;
 	tstring					m_sCurrentPage;
 	tstring					m_sNextPage;
 
@@ -65,7 +65,7 @@ protected:
 		float		m_flValue;
 	};
 
-	eastl::map<tstring, GoalValue>	m_aflHighlightedSections;
+	tmap<tstring, GoalValue>	m_aflHighlightedSections;
 };
 
 #endif

@@ -31,7 +31,7 @@ CPerfBlock::CPerfBlock(const tstring& sName, CPerfBlock* pParent)
 
 CPerfBlock* CPerfBlock::GetChild(const tstring& sName)
 {
-	eastl::map<tstring, CPerfBlock*>::iterator it = m_apPerfBlocks.find(sName);
+	tmap<tstring, CPerfBlock*>::iterator it = m_apPerfBlocks.find(sName);
 
 	if (it == m_apPerfBlocks.end())
 		return NULL;
@@ -50,7 +50,7 @@ void CPerfBlock::BeginFrame()
 {
 	m_flTime = 0;
 
-	for (eastl::map<tstring, CPerfBlock*>::iterator it = m_apPerfBlocks.begin(); it != m_apPerfBlocks.end(); it++)
+	for (tmap<tstring, CPerfBlock*>::iterator it = m_apPerfBlocks.begin(); it != m_apPerfBlocks.end(); it++)
 		it->second->BeginFrame();
 }
 
@@ -184,7 +184,7 @@ void CProfiler::Render(CPerfBlock* pBlock, float& flLeft, float& flTop)
 	sName += sprintf(tstring(": %d ms"), (int)(pBlock->GetTime()*1000));
 	glgui::CLabel::PaintText(sName, sName.length(), "sans-serif", 10, (float)flLeft, (float)flTop, clrBlock);
 
-	for (eastl::map<tstring, CPerfBlock*>::iterator it = pBlock->m_apPerfBlocks.begin(); it != pBlock->m_apPerfBlocks.end(); it++)
+	for (tmap<tstring, CPerfBlock*>::iterator it = pBlock->m_apPerfBlocks.begin(); it != pBlock->m_apPerfBlocks.end(); it++)
 		Render(it->second, flLeft, flTop);
 
 	flLeft -= 15;

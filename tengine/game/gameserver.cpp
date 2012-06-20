@@ -32,7 +32,7 @@
 #include "cameramanager.h"
 #include "level.h"
 
-eastl::map<tstring, CPrecacheItem> CGameServer::s_aPrecacheClasses;
+tmap<tstring, CPrecacheItem> CGameServer::s_aPrecacheClasses;
 CGameServer* CGameServer::s_pGameServer = NULL;
 
 ConfigFile g_cfgEngine("scripts/engine.cfg");
@@ -80,7 +80,7 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 		m_pWorkListener->SetAction("Registering entities", CBaseEntity::GetEntityRegistration().size());
 
 	size_t i = 0;
-	for (eastl::map<tstring, CEntityRegistration>::iterator it = CBaseEntity::GetEntityRegistration().begin(); it != CBaseEntity::GetEntityRegistration().end(); it++)
+	for (tmap<tstring, CEntityRegistration>::iterator it = CBaseEntity::GetEntityRegistration().begin(); it != CBaseEntity::GetEntityRegistration().end(); it++)
 	{
 		CEntityRegistration* pRegistration = &it->second;
 		pRegistration->m_pfnRegisterCallback();
@@ -134,7 +134,7 @@ void CGameServer::AllowPrecaches()
 {
 	m_bAllowPrecaches = true;
 
-	for (eastl::map<tstring, CEntityRegistration>::iterator it = CBaseEntity::GetEntityRegistration().begin(); it != CBaseEntity::GetEntityRegistration().end(); it++)
+	for (tmap<tstring, CEntityRegistration>::iterator it = CBaseEntity::GetEntityRegistration().begin(); it != CBaseEntity::GetEntityRegistration().end(); it++)
 	{
 		CEntityRegistration* pRegistration = &it->second;
 		pRegistration->m_asPrecaches.clear();
@@ -278,7 +278,7 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 {
 	// Create and name the entities first and add them to this array. This way we avoid a problem where
 	// one entity needs to connect to another entity which has not yet been created.
-	eastl::map<size_t, CBaseEntity*> apEntities;
+	tmap<size_t, CBaseEntity*> apEntities;
 
 	auto aEntities = pLevel->GetEntityData();
 	for (size_t i = 0; i < aEntities.size(); i++)
@@ -424,7 +424,7 @@ void CGameServer::ReadLevels(tstring sDirectory)
 	{
 		tstring sFile = sDirectory + "/" + asFiles[i];
 
-		if (IsFile(sFile) && tstr_endswith(sFile, ".txt"))
+		if (IsFile(sFile) && sFile.endswith(".txt"))
 			ReadLevelInfo(sFile);
 
 		if (IsDirectory(sFile))
@@ -440,7 +440,7 @@ void CGameServer::ReadLevelInfo(tstring sFile)
 	CDataSerializer::Read(f, pData);
 
 	CResource<CLevel> pLevel = CreateLevel();
-	pLevel->SetFile(str_replace(sFile, "\\", "/"));
+	pLevel->SetFile(sFile.replace("\\", "/"));
 	pLevel->ReadInfoFromData(pData);
 	m_apLevels.push_back(pLevel);
 
@@ -449,7 +449,7 @@ void CGameServer::ReadLevelInfo(tstring sFile)
 
 CHandle<CLevel> CGameServer::GetLevel(tstring sFile)
 {
-	sFile = str_replace(sFile, "\\", "/");
+	sFile = sFile.replace("\\", "/");
 	for (size_t i = 0; i < m_apLevels.size(); i++)
 	{
 		CResource<CLevel>& pLevel = m_apLevels[i];

@@ -129,19 +129,6 @@ protected:
 	class CQuadTreeBranch<T, F>*m_pQuadTreeHead;
 };
 
-#include <EASTL/list.h>
-#include <EASTL/heap.h>
-
-template <class T, typename F=float>
-class LowestF
-{
-public:
-	bool operator() (const CQuadTreeBranch<T, F>* pLeft, const CQuadTreeBranch<T, F>* pRight)
-	{
-		return const_cast<CQuadTreeBranch<T, F>*>(pLeft)->GetFScore() > const_cast<CQuadTreeBranch<T, F>*>(pRight)->GetFScore();
-	}
-};
-
 template <class T, typename F>
 void CQuadTree<T, F>::Init(CQuadTreeDataSource<T, F>* pSource, const T& oData)
 {

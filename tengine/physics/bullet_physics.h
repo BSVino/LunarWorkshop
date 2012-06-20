@@ -110,8 +110,8 @@ protected:
 		btCollisionShape*						m_pCollisionShape;
 	};
 
-	eastl::map<size_t, CCollisionMesh>		m_apCollisionMeshes;
-	eastl::map<tstring, btConvexShape*>		m_apCharacterShapes;
+	tmap<size_t, CCollisionMesh>		m_apCollisionMeshes;
+	tmap<tstring, btConvexShape*>		m_apCharacterShapes;
 
 	class CPhysicsDebugDrawer*				m_pDebugDrawer;
 };

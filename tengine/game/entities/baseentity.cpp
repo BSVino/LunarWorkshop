@@ -1072,7 +1072,7 @@ void CEntityOutput::Call()
 	}
 }
 
-void CEntityOutput::AddTarget(const eastl::string& sTargetName, const eastl::string& sInput, const eastl::string& sArgs, bool bKill)
+void CEntityOutput::AddTarget(const tstring& sTargetName, const tstring& sInput, const tstring& sArgs, bool bKill)
 {
 	CEntityOutputTarget* pTarget = &m_aTargets.push_back();
 
@@ -1241,7 +1241,7 @@ CEntityInput* CBaseEntity::FindInput(const char* pszName, bool bThisClassOnly)
 	{
 		pRegistration = CBaseEntity::GetRegisteredEntity(pszClassName);
 
-		eastl::map<tstring, CEntityInput>::iterator it = pRegistration->m_aInputs.find(pszName);
+		tmap<tstring, CEntityInput>::iterator it = pRegistration->m_aInputs.find(pszName);
 
 		if (it != pRegistration->m_aInputs.end())
 			return &it->second;
@@ -1585,9 +1585,9 @@ void CBaseEntity::PrecacheMaterial(const tstring& sMaterial)
 	pReg->m_asPrecaches.push_back(sMaterial);
 }
 
-eastl::map<tstring, CEntityRegistration>& CBaseEntity::GetEntityRegistration()
+tmap<tstring, CEntityRegistration>& CBaseEntity::GetEntityRegistration()
 {
-	static eastl::map<tstring, CEntityRegistration> aEntityRegistration;
+	static tmap<tstring, CEntityRegistration> aEntityRegistration;
 	return aEntityRegistration;
 }
 

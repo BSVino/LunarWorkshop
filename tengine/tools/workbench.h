@@ -62,7 +62,7 @@ protected:
 		ToolCreator			m_pfnToolCreator;
 	};
 
-	static eastl::map<tstring, CToolRegistration>& GetToolRegistration();
+	static tmap<tstring, CToolRegistration>& GetToolRegistration();
 
 	CWorkbenchTool*			GetActiveTool();
 

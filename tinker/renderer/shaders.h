@@ -2,7 +2,7 @@
 #define DT_SHADERS_H
 
 #include <tvector.h>
-#include <EASTL/map.h>
+#include <tmap.h>
 
 #include <tstring.h>
 #include <vector.h>
@@ -62,10 +62,10 @@ public:
 		tstring				m_sBlend;
 	};
 
-	eastl::map<tstring, CParameter>				m_aParameters;	// What the shader.txt has.
-	eastl::map<tstring, tstring>				m_asUniforms;	// What the hardware has. Values are types.
-	eastl::map<tstring, CParameter::CUniform>	m_aDefaults;	// Defaults for each uniform as specified by shader .txt (not GLSL)
-	tvector<tstring>							m_asTextures;	// List of textures for purposes of assigning to channels and whatnot.
+	tmap<tstring, CParameter>			m_aParameters;	// What the shader.txt has.
+	tmap<tstring, tstring>				m_asUniforms;	// What the hardware has. Values are types.
+	tmap<tstring, CParameter::CUniform>	m_aDefaults;	// Defaults for each uniform as specified by shader .txt (not GLSL)
+	tvector<tstring>					m_asTextures;	// List of textures for purposes of assigning to channels and whatnot.
 };
 
 class CShaderLibrary
@@ -101,7 +101,7 @@ protected:
 	void					WriteLog(const tstring& sFile, const char* pszLog, const char* pszShaderText);
 
 protected:
-	eastl::map<tstring, size_t>	m_aShaderNames;
+	tmap<tstring, size_t>	m_aShaderNames;
 	tvector<CShader>		m_aShaders;
 	bool					m_bCompiled;
 

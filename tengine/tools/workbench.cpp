@@ -209,9 +209,9 @@ void CWorkbench::RegisterTool(const char* pszTool, ToolCreator pfnToolCreator)
 	pTool->m_pfnToolCreator = pfnToolCreator;
 }
 
-eastl::map<tstring, CWorkbench::CToolRegistration>& CWorkbench::GetToolRegistration()
+tmap<tstring, CWorkbench::CToolRegistration>& CWorkbench::GetToolRegistration()
 {
-	static eastl::map<tstring, CToolRegistration> aToolRegistration;
+	static tmap<tstring, CToolRegistration> aToolRegistration;
 	return aToolRegistration;
 }
 

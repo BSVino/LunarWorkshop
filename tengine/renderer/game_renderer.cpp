@@ -1,7 +1,6 @@
 #include "game_renderer.h"
 
-#include <EASTL/sort.h>
-
+#include <tsort.h>
 #include <maths.h>
 #include <simplex.h>
 
@@ -104,7 +103,7 @@ void CGameRenderer::RenderEverything()
 		m_apRenderList.push_back(pEntity);
 	}
 
-	eastl::sort(m_apRenderList.begin(), m_apRenderList.end(), DistanceCompare);
+	sort(m_apRenderList.begin(), m_apRenderList.end(), DistanceCompare);
 
 	m_bRenderingTransparent = false;
 

@@ -21,7 +21,7 @@ void CCommand::Run(tstring sCommand)
 	if (asTokens.size() == 0)
 		return;
 
-	eastl::map<tstring, CCommand*>::iterator it = GetCommands().find(asTokens[0]);
+	tmap<tstring, CCommand*>::iterator it = GetCommands().find(asTokens[0]);
 	if (it == GetCommands().end())
 	{
 		TMsg("Unrecognized command.\n");
@@ -38,8 +38,8 @@ tvector<tstring> CCommand::GetCommandsBeginningWith(tstring sFragment)
 
 	size_t iFragLength = sFragment.length();
 
-	eastl::map<tstring, CCommand*>& sCommands = GetCommands();
-	for (eastl::map<tstring, CCommand*>::iterator it = sCommands.begin(); it != sCommands.end(); it++)
+	tmap<tstring, CCommand*>& sCommands = GetCommands();
+	for (tmap<tstring, CCommand*>::iterator it = sCommands.begin(); it != sCommands.end(); it++)
 	{
 		if (it->first.substr(0, iFragLength) == sFragment)
 			sResults.push_back(it->first);
@@ -136,7 +136,7 @@ void CVar::CalculateValues()
 
 CVar* CVar::FindCVar(tstring sName)
 {
-	eastl::map<tstring, CCommand*>::iterator it = GetCommands().find(sName);
+	tmap<tstring, CCommand*>::iterator it = GetCommands().find(sName);
 	if (it == GetCommands().end())
 		return NULL;
 

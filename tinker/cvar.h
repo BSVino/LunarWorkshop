@@ -1,7 +1,7 @@
 #ifndef LW_TINKER_CVAR
 #define LW_TINKER_CVAR
 
-#include <EASTL/map.h>
+#include <tmap.h>
 
 #include <common.h>
 #include <tstring.h>
@@ -30,9 +30,9 @@ protected:
 	static void			RegisterCommand(CCommand* pCommand);
 
 protected:
-	static eastl::map<tstring, CCommand*>& GetCommands()
+	static tmap<tstring, CCommand*>& GetCommands()
 	{
-		static eastl::map<tstring, CCommand*> aCommands;
+		static tmap<tstring, CCommand*> aCommands;
 		return aCommands;
 	}
 };

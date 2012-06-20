@@ -1,5 +1,4 @@
 add_definitions(-DEA_CHAR16_NATIVE=0)
-add_definitions(-D_CHAR16T)
 
 set (EASTL_SOURCES
 	../../../ext-deps/EASTL/src/allocator.cpp

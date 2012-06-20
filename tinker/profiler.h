@@ -1,8 +1,7 @@
 #ifndef TINKER_PROFILER_H
 #define TINKER_PROFILER_H
 
-#include <EASTL/map.h>
-
+#include <tmap.h>
 #include <tstring.h>
 #include <tvector.h>
 
@@ -48,7 +47,7 @@ public:
 
 	double						m_flTimeBlockStarted;
 
-	eastl::map<tstring, CPerfBlock*>	m_apPerfBlocks;
+	tmap<tstring, CPerfBlock*>	m_apPerfBlocks;
 };
 
 class CProfiler

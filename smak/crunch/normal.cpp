@@ -73,11 +73,11 @@ void CNormalGenerator::SaveToFile(const tchar *pszFilename)
 	for (size_t i = 0; i < aclrTexels.size(); i++)
 		aclrTexels[i] = m_avecNormal2Texels[i];
 
-	if (tstr_endswith(sFilename, ".png"))
+	if (sFilename.endswith(".png"))
 		stbi_write_png(sFilename.c_str(), m_iNormal2Width, m_iNormal2Height, 3, aclrTexels.data(), 0);
-	else if (tstr_endswith(sFilename, ".tga"))
+	else if (sFilename.endswith(".tga"))
 		stbi_write_tga(sFilename.c_str(), m_iNormal2Width, m_iNormal2Height, 3, aclrTexels.data());
-	else if (tstr_endswith(sFilename, ".bmp"))
+	else if (sFilename.endswith(".bmp"))
 		stbi_write_bmp(sFilename.c_str(), m_iNormal2Width, m_iNormal2Height, 3, aclrTexels.data());
 	else
 		TUnimplemented();

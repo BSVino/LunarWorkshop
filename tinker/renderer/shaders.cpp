@@ -114,7 +114,7 @@ void CShaderLibrary::AddShader(const tstring& sFile)
 		CData* pChild = pData->GetChild(i);
 		if (pChild->GetKey() == "Parameter")
 		{
-			auto& oParameter = oShader.m_aParameters.insert(pChild->GetValueString()).first->second;
+			auto& oParameter = oShader.m_aParameters[pChild->GetValueString()];
 			oParameter.m_sName = pChild->GetValueString();
 
 			for (size_t j = 0; j < pChild->GetNumChildren(); j++)
@@ -237,7 +237,7 @@ void CShaderLibrary::WriteLog(const tstring& sFile, const char* pszLog, const ch
 
 CShader* CShaderLibrary::GetShader(const tstring& sName)
 {
-	eastl::map<tstring, size_t>::const_iterator i = Get()->m_aShaderNames.find(sName);
+	tmap<tstring, size_t>::const_iterator i = Get()->m_aShaderNames.find(sName);
 	if (i == Get()->m_aShaderNames.end())
 		return NULL;
 
@@ -415,7 +415,7 @@ bool CShader::Compile()
 		if (sUniformName == "mGlobal")
 			continue;
 
-		tstring& sType = m_asUniforms.insert(sUniformName).first->second;
+		tstring& sType = m_asUniforms[sUniformName];
 		switch (iType)
 		{
 		case GL_FLOAT: sType = "float"; break;

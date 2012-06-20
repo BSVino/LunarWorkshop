@@ -36,7 +36,7 @@ protected:
 	bool								m_bActive;
 	size_t								m_iLobbyID;
 	tvector<CLobbyPlayer>				m_aClients;
-	eastl::map<tstring, tstring> m_asInfo;
+	tmap<tstring, tstring>				m_asInfo;
 };
 
 class ILobbyListener
@@ -78,8 +78,8 @@ public:
 
 protected:
 	static tvector<CGameLobby>			s_aLobbies;
-	static eastl::map<size_t, size_t>	s_aiPlayerLobbies;
-	static eastl::map<size_t, size_t>	s_aiClientPlayerIDs;
+	static tmap<size_t, size_t>			s_aiPlayerLobbies;
+	static tmap<size_t, size_t>			s_aiClientPlayerIDs;
 	static ILobbyListener*				s_pListener;
 };
 

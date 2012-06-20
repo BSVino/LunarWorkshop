@@ -181,7 +181,7 @@ void CCoplanarPointOptimizer::OptimizeMesh(const tvector<Vector>& avecPoints, tv
 			aiPointTriangles.clear();
 
 			// aiNumberOfEdges[x] is the number of triangles which have an edge on i, x
-			eastl::map<size_t, size_t> aiTrisWithEdge;
+			tmap<size_t, size_t> aiTrisWithEdge;
 
 			// Find all triangles with this point.
 			for (size_t j = 0; j < aiTriangles.size(); j += 3)
@@ -318,7 +318,7 @@ void CUnusedPointOptimizer::OptimizeMesh(tvector<Vector>& avecPoints, tvector<si
 {
 	TAssert(aiTriangles.size() % 3 == 0);
 
-	eastl::map<size_t, size_t> aiUsedVertsMap; // Maps input vertices to the optimized mesh. eg aiUsedVerts[aiUsedVertsMap[aiTriangles[x]]]
+	tmap<size_t, size_t> aiUsedVertsMap; // Maps input vertices to the optimized mesh. eg aiUsedVerts[aiUsedVertsMap[aiTriangles[x]]]
 	tvector<size_t> aiUsedVerts;
 	tvector<size_t> aiUsedVertTriangles;
 	aiUsedVertTriangles.reserve(aiTriangles.size());

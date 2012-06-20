@@ -131,7 +131,7 @@ tstring CCreateToySourcePanel::GetToyFileName()
 {
 	tstring sToyFile = m_pToyFileText->GetText();
 
-	if (!tstr_endswith(sToyFile, ".toy"))
+	if (!sToyFile.endswith(".toy"))
 		sToyFile.append(".toy");
 
 	return sToyFile;
@@ -141,7 +141,7 @@ tstring CCreateToySourcePanel::GetSourceFileName()
 {
 	tstring sSourceFile = m_pSourceFileText->GetText();
 
-	if (!tstr_endswith(sSourceFile, ".txt"))
+	if (!sSourceFile.endswith(".txt"))
 		sSourceFile.append(".txt");
 
 	return "../sources/" + sSourceFile;

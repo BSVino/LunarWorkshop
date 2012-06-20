@@ -1,8 +1,7 @@
 #ifndef TINKER_BASEENTITY_H
 #define TINKER_BASEENTITY_H
 
-#include <EASTL/map.h>
-
+#include <tmap.h>
 #include <tvector.h>
 #include <vector.h>
 #include <geometry.h>
@@ -165,7 +164,7 @@ public:
 	EntityCreateCallback		m_pfnCreateCallback;
 	tvector<CSaveData>			m_aSaveData;
 	tvector<CNetworkedVariableData>	m_aNetworkVariables;
-	eastl::map<tstring, CEntityInput>		m_aInputs;
+	tmap<tstring, CEntityInput>	m_aInputs;
 	tvector<tstring>			m_asPrecaches;
 	tvector<CMaterialHandle>	m_ahMaterialPrecaches;
 	bool						m_bCreatableInEditor;
@@ -717,7 +716,7 @@ public:
 	static void								FindEntitiesByName(const tstring& sName, tvector<CBaseEntity*>& apEntities);
 
 protected:
-	static eastl::map<tstring, CEntityRegistration>& GetEntityRegistration();
+	static tmap<tstring, CEntityRegistration>& GetEntityRegistration();
 
 protected:
 	tstring									m_sName;

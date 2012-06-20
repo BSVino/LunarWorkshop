@@ -1,8 +1,7 @@
 #ifndef DT_SOUND_H
 #define DT_SOUND_H
 
-#include <EASTL/map.h>
-
+#include <tmap.h>
 #include <tvector.h>
 
 #include <game/entities/baseentity.h>
@@ -65,7 +64,7 @@ protected:
 
 	tvector<CSound*>		m_apSounds;
 	size_t					m_iSoundsLoaded;
-	eastl::map<CBaseEntity*, eastl::map<tstring, CSoundInstance> >	m_aiActiveSounds;
+	tmap<CBaseEntity*, tmap<tstring, CSoundInstance> >	m_aiActiveSounds;
 
 private:
 	static CSoundLibrary*	s_pSoundLibrary;

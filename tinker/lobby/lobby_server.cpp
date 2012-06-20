@@ -138,8 +138,8 @@ CLIENT_COMMAND(CONNECTION_LOBBY, RemovePlayer)
 }
 
 tvector<CGameLobby> CGameLobbyServer::s_aLobbies;
-eastl::map<size_t, size_t> CGameLobbyServer::s_aiPlayerLobbies;
-eastl::map<size_t, size_t> CGameLobbyServer::s_aiClientPlayerIDs;
+tmap<size_t, size_t> CGameLobbyServer::s_aiPlayerLobbies;
+tmap<size_t, size_t> CGameLobbyServer::s_aiClientPlayerIDs;
 ILobbyListener* CGameLobbyServer::s_pListener = NULL;
 
 CVar lobby_debug("lobby_debug", "0");
@@ -247,7 +247,7 @@ size_t CGameLobbyServer::GetActiveLobbies()
 
 size_t CGameLobbyServer::GetPlayerLobby(size_t iID)
 {
-	eastl::map<size_t, size_t>::iterator it = s_aiPlayerLobbies.find(iID);
+	tmap<size_t, size_t>::iterator it = s_aiPlayerLobbies.find(iID);
 	if (it == s_aiPlayerLobbies.end())
 		return ~0;
 
@@ -256,7 +256,7 @@ size_t CGameLobbyServer::GetPlayerLobby(size_t iID)
 
 size_t CGameLobbyServer::GetClientPlayerID(size_t iClient)
 {
-	eastl::map<size_t, size_t>::iterator it = s_aiClientPlayerIDs.find(iClient);
+	tmap<size_t, size_t>::iterator it = s_aiClientPlayerIDs.find(iClient);
 	if (it == s_aiClientPlayerIDs.end())
 		return ~0;
 
@@ -451,7 +451,7 @@ void CGameLobby::UpdateInfo(const tstring& sKey, const tstring& sValue)
 
 tstring CGameLobby::GetInfoValue(const tstring& sKey)
 {
-	eastl::map<tstring, tstring>::iterator it = m_asInfo.find(sKey);
+	tmap<tstring, tstring>::iterator it = m_asInfo.find(sKey);
 
 	if (it == m_asInfo.end())
 		return "";
@@ -503,7 +503,7 @@ void CGameLobby::SendFullUpdate(size_t iClient)
 {
 	::FullUpdate.RunCommand("", iClient);
 
-	for (eastl::map<tstring, tstring>::iterator it = m_asInfo.begin(); it != m_asInfo.end(); it++)
+	for (tmap<tstring, tstring>::iterator it = m_asInfo.begin(); it != m_asInfo.end(); it++)
 	{
 		tstring sCommand = it->first + " " + it->second;
 		::LobbyInfo.RunCommand(sCommand, iClient);
@@ -515,7 +515,7 @@ void CGameLobby::SendFullUpdate(size_t iClient)
 
 		::LobbyPlayerInfo.RunCommand(sprintf(tstring("%d add %d"), pPlayer->iID, pPlayer->iClient), iClient);
 
-		for (eastl::map<tstring, tstring>::iterator it = pPlayer->asInfo.begin(); it != pPlayer->asInfo.end(); it++)
+		for (tmap<tstring, tstring>::iterator it = pPlayer->asInfo.begin(); it != pPlayer->asInfo.end(); it++)
 		{
 			tstring sCommand = sprintf(tstring("%d ") + it->first + " " + it->second, pPlayer->iID);
 			::LobbyPlayerInfo.RunCommand(sCommand, iClient);

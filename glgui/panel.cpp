@@ -343,7 +343,7 @@ void CPanel::RemoveControl(IControl* pControl)
 		for (size_t i = 0; i < m_apControls.size(); i++)
 		{
 			if (m_apControls[i] == pControl)
-				m_apControls.erase(eastl::remove(m_apControls.begin(), m_apControls.end(), pControl), m_apControls.end());
+				m_apControls.erase(remove(m_apControls.begin(), m_apControls.end(), pControl), m_apControls.end());
 		}
 	}
 
@@ -359,7 +359,7 @@ void CPanel::MoveToTop(IControl* pControl)
 	{
 		if (m_apControls[i] == pControl)
 		{
-			m_apControls.erase(eastl::remove(m_apControls.begin(), m_apControls.end(), pControl), m_apControls.end());
+			m_apControls.erase(remove(m_apControls.begin(), m_apControls.end(), pControl), m_apControls.end());
 			m_apControls.push_back(pControl);
 			return;
 		}

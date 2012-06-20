@@ -97,7 +97,7 @@ tstring CCreateMaterialPanel::GetMaterialFileName()
 {
 	tstring sToyFile = m_pMaterialFileText->GetText();
 
-	if (!tstr_endswith(sToyFile, ".mat"))
+	if (!sToyFile.endswith(".mat"))
 		sToyFile.append(".mat");
 
 	return sToyFile;

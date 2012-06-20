@@ -1,7 +1,7 @@
 #ifndef DT_TEXTURE_SHEET_H
 #define DT_TEXTURE_SHEET_H
 
-#include <EASTL/map.h>
+#include <tmap.h>
 
 #include <tstring.h>
 #include <geometry.h>
@@ -28,7 +28,7 @@ public:
 	size_t					GetSheetHeight(const tstring& sArea) const;
 
 protected:
-	eastl::map<tstring, CTextureArea>	m_aAreas;
+	tmap<tstring, CTextureArea>	m_aAreas;
 	CTextureHandle			m_hDefaultSheet;
 };
 

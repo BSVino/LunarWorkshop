@@ -241,7 +241,7 @@ void CRootPanel::RemoveDroppable(IDroppable* pDroppable)
 	{
 		for (size_t i = 0; i < m_apDroppables.size(); i++)
 			if (m_apDroppables[i] == pDroppable)
-				m_apDroppables.erase(eastl::remove(m_apDroppables.begin(), m_apDroppables.end(), pDroppable), m_apDroppables.end());
+				m_apDroppables.erase(remove(m_apDroppables.begin(), m_apDroppables.end(), pDroppable), m_apDroppables.end());
 	}
 }
 

@@ -77,7 +77,7 @@ void CParticleSystemLibrary::Simulate()
 {
 	CParticleSystemLibrary* pPSL = Get();
 
-	eastl::map<size_t, CSystemInstance*>::iterator it = pPSL->m_apInstances.begin();
+	tmap<size_t, CSystemInstance*>::iterator it = pPSL->m_apInstances.begin();
 
 	tvector<size_t> aiDeleted;
 
@@ -104,7 +104,7 @@ void CParticleSystemLibrary::Render()
 	if (!pPSL->m_apInstances.size())
 		return;
 
-	eastl::map<size_t, CSystemInstance*>::iterator it;
+	tmap<size_t, CSystemInstance*>::iterator it;
 
 	if (true)
 	{
@@ -152,7 +152,7 @@ size_t CParticleSystemLibrary::AddInstance(size_t iParticleSystem, Vector vecOri
 	if (!pSystem)
 		return ~0;
 
-	pPSL->m_apInstances.insert(eastl::pair<size_t, CSystemInstance*>(pPSL->m_iSystemInstanceIndex++, new CSystemInstance(pSystem, vecOrigin, angAngles)));
+	pPSL->m_apInstances[pPSL->m_iSystemInstanceIndex++] = new CSystemInstance(pSystem, vecOrigin, angAngles);
 	return pPSL->m_iSystemInstanceIndex-1;
 }
 
@@ -169,7 +169,7 @@ void CParticleSystemLibrary::StopInstance(size_t iInstance)
 void CParticleSystemLibrary::StopInstances(const tstring& sName)
 {
 	CParticleSystemLibrary* pPSL = Get();
-	eastl::map<size_t, CSystemInstance*>::iterator it = pPSL->m_apInstances.begin();
+	tmap<size_t, CSystemInstance*>::iterator it = pPSL->m_apInstances.begin();
 
 	for (; it != pPSL->m_apInstances.end(); it++)
 	{
@@ -181,7 +181,7 @@ void CParticleSystemLibrary::StopInstances(const tstring& sName)
 
 void CParticleSystemLibrary::RemoveInstance(size_t iInstance)
 {
-	eastl::map<size_t, CSystemInstance*>::iterator it = Get()->m_apInstances.find(iInstance);
+	tmap<size_t, CSystemInstance*>::iterator it = Get()->m_apInstances.find(iInstance);
 
 	if (it == Get()->m_apInstances.end())
 		return;
