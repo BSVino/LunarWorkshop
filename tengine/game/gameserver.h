@@ -13,7 +13,7 @@
 
 #include <network/network.h>
 
-#include "team.h"
+#include "entities/team.h"
 
 class CLevel;
 

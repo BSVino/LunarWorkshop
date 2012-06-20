@@ -873,7 +873,7 @@ void CTexelAOMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* pMesh
 		if (m_bRandomize)
 			flRandom = RemapVal((float)(rand()%10000), 0, 10000.0f, -0.5f, 0.5f);
 
-		float flPitch = RemapVal(cos(RemapVal((float)x+flRandom, 0, (float)m_iSamples/2, 0, M_PI/2)), 0, 1, 90, 0);
+		float flPitch = RemapVal(cos(RemapVal((float)x+flRandom, 0, (float)m_iSamples/2, 0, (float)M_PI/2)), 0, 1, 90, 0);
 
 		float flWeight = sin(flPitch * M_PI/180);
 

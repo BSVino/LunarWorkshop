@@ -45,7 +45,7 @@ public:
 
 		if (iPercent > iLastPercent)
 		{
-			printf("%d", iPercent);
+			printf("%d", (int)iPercent);
 			return;
 		}
 
@@ -208,12 +208,12 @@ int CreateApplication(int argc, char** argv)
 				printf("Method: Shadow mapping\n");
 				break;
 			}
-			printf("Size: %dx%d\n", iSize, iSize);
-			printf("Bleed: %d\n", iBleed);
+			printf("Size: %dx%d\n", (int)iSize, (int)iSize);
+			printf("Bleed: %d\n", (int)iBleed);
 			if (eMethod == AOMETHOD_SHADOWMAP)
-				printf("Lights: %d\n", iLights);
+				printf("Lights: %d\n", (int)iLights);
 			else if (eMethod == AOMETHOD_RAYTRACE)
-				printf("Samples: %d\n", iSamples);
+				printf("Samples: %d\n", (int)iSamples);
 			puts((tstring("Output file: ") + sOutput + "\n").c_str());
 
 			CConversionScene s;

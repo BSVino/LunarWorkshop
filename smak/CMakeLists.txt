@@ -64,4 +64,8 @@ endif (WIN32)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	target_link_libraries (smak ${IL_LIBRARIES} ${ILU_LIBRARIES})
+
+	target_link_libraries(smak ${FREETYPE_LIBRARIES} ${LIBXML2_LIBRARIES})
+	target_link_libraries(smak ${CMAKE_SOURCE_DIR}/../ext-deps/fcolladaCE/FCollada/libfcollada.so)
+	target_link_libraries(smak ${CMAKE_SOURCE_DIR}/../ext-deps/fcolladaCE/FColladaPlugins/FArchiveXML/libfarchivexml.so)
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")

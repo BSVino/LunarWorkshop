@@ -23,6 +23,7 @@ if (WIN32)
 endif (WIN32)
 
 option(BUILD_SMAK "Build SMAK" OFF)
+option(BUILD_ENGINE "Build Tinker's game engine and whatever games I happen to be working on" ON)
 option(WITH_NETWORKING "Build with networking enabled." ON)
 option(WITH_EASTL "Use the super-fast (even in debug mode) EASTL STL library." ON)
 
@@ -67,12 +68,15 @@ add_subdirectory (toys)
 add_subdirectory (tools)
 
 add_subdirectory (tinker)
-add_subdirectory (tengine)
 
-#add_subdirectory (reflection)
-add_subdirectory (grotto)
+if (BUILD_ENGINE)
+	add_subdirectory (tengine)
 
-if (BUILD_CHAIN)
+	#add_subdirectory (reflection)
+	add_subdirectory (grotto)
+endif (BUILD_ENGINE)
+
+if (BUILD_CHAIN AND BUILD_ENGINE)
 	add_subdirectory (chain)
 endif ()
 

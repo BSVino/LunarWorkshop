@@ -15,7 +15,7 @@
 #include "smak/ui/smak_renderer.h"
 #include "ui/smakwindow.h"
 
-void DrawTexture(size_t iTexture, float flScale = 1.0f, CRenderingContext& c=CRenderingContext(SMAKRenderer()));
+void DrawTexture(size_t iTexture, float flScale, CRenderingContext& c);
 
 CVar ao_debug("ao_debug", "0");
 

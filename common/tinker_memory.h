@@ -27,6 +27,9 @@ public:
 	}
 
 public:
+	using std::weak_ptr<C>::expired;
+	using std::weak_ptr<C>::lock;
+
 	C* operator->()
 	{
 		if (expired())

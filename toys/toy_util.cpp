@@ -293,6 +293,10 @@ void CToyUtil::AddVisibleNeighbors(size_t iArea, size_t iVisible)
 		avecPoints.push_back(Vector(vecMaxs.x, vecMaxs.y, vecMins.z));
 		avecPoints.push_back(vecMaxs);
 
+#ifdef __linux__
+		// Odd linker errors, linker can't find CConvexHullGenerator for some reason
+		TUnimplemented();
+#else
 		CConvexHullGenerator c(avecPoints);
 
 		const tvector<size_t>& avecConvexTriangles = c.GetConvexTriangles();
@@ -310,6 +314,7 @@ void CToyUtil::AddVisibleNeighbors(size_t iArea, size_t iVisible)
 			// I'm willing to accept that for now if it doesn't become a problem.
 			AddVisibleNeighbors(iArea, iOther);
 		}
+#endif
 	}
 }
 

@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-template <class C, class E=CCalculateEntity>
+template <class C, class E>
 class CCachedValue
 {
 public:

@@ -605,7 +605,7 @@ void CSMAKRenderer::RenderLightSource()
 		vecLightUp = mLight.GetUpVector();
 
 		flDot = vecCameraDirection.Dot(vecLightRight);
-		c.SetUniform("flAlpha", fabs(flDot));
+		c.SetUniform("flAlpha", (float)fabs(flDot));
 
 		c.BeginRenderTriFan();
 			c.TexCoord(Vector(1, 1, 0));
@@ -619,7 +619,7 @@ void CSMAKRenderer::RenderLightSource()
 		c.EndRender();
 
 		flDot = vecCameraDirection.Dot(vecLightUp);
-		c.SetUniform("flAlpha", fabs(flDot));
+		c.SetUniform("flAlpha", (float)fabs(flDot));
 
 		c.BeginRenderTriFan();
 			c.TexCoord(Vector(1, 1, 0));

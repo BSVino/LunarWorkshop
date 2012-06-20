@@ -14,8 +14,7 @@
 #include <network/network.h>
 #include <game/entityhandle.h>
 #include <textures/materialhandle.h>
-
-extern enum collision_type_e;
+#include <physics/physics.h>
 
 typedef enum
 {
