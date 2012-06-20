@@ -61,7 +61,7 @@ CVar m_sensitivity("m_sensitivity", "5");
 
 void CPlayer::MouseMotion(int x, int y)
 {
-	if (m_hCharacter == nullptr)
+	if (!m_hCharacter)
 		return;
 
 	EAngle angDirection = m_hCharacter->GetViewAngles();
@@ -86,7 +86,7 @@ void CPlayer::MouseMotion(int x, int y)
 
 void CPlayer::KeyPress(int c)
 {
-	if (m_hCharacter == nullptr)
+	if (!m_hCharacter)
 		return;
 
 	if (c == 'W')
@@ -104,7 +104,7 @@ void CPlayer::KeyPress(int c)
 
 void CPlayer::KeyRelease(int c)
 {
-	if (m_hCharacter == nullptr)
+	if (!m_hCharacter)
 		return;
 
 	if (c == 'W')

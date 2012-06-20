@@ -402,7 +402,7 @@ const TMatrix& CBaseEntity::GetGlobalTransform()
 	if (!m_bGlobalTransformsDirty)
 		return m_mGlobalTransform;
 
-	if (m_hMoveParent == nullptr)
+	if (!m_hMoveParent)
 		m_mGlobalTransform = m_mLocalTransform;
 	else
 		m_mGlobalTransform = m_hMoveParent->GetGlobalTransform() * m_mLocalTransform;
@@ -417,7 +417,7 @@ const TMatrix CBaseEntity::GetGlobalTransform() const
 	if (!m_bGlobalTransformsDirty)
 		return m_mGlobalTransform;
 
-	if (m_hMoveParent == nullptr)
+	if (!m_hMoveParent)
 		m_mGlobalTransform = m_mLocalTransform;
 	else
 		m_mGlobalTransform = m_hMoveParent->GetGlobalTransform() * m_mLocalTransform;
@@ -493,7 +493,7 @@ const EAngle CBaseEntity::GetGlobalAngles() const
 
 void CBaseEntity::SetGlobalOrigin(const TVector& vecOrigin)
 {
-	if (m_hMoveParent == nullptr)
+	if (!m_hMoveParent)
 		SetLocalOrigin(vecOrigin);
 	else
 	{
@@ -504,7 +504,7 @@ void CBaseEntity::SetGlobalOrigin(const TVector& vecOrigin)
 
 void CBaseEntity::SetGlobalAngles(const EAngle& angAngles)
 {
-	if (m_hMoveParent == nullptr)
+	if (!m_hMoveParent)
 		SetLocalAngles(angAngles);
 	else
 	{
@@ -532,7 +532,7 @@ const TVector CBaseEntity::GetGlobalVelocity() const
 
 void CBaseEntity::SetGlobalVelocity(const TVector& vecVelocity)
 {
-	if (m_hMoveParent == nullptr)
+	if (!m_hMoveParent)
 		SetLocalVelocity(vecVelocity);
 	else
 		SetLocalVelocity(GetMoveParent()->GetGlobalToLocalTransform().TransformVector(vecVelocity));
