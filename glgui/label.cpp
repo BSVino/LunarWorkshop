@@ -13,8 +13,8 @@ using namespace glgui;
 
 typedef char FTGLchar;
 
-eastl::map<tstring, tstring> CLabel::s_apFontNames;
-eastl::map<tstring, eastl::map<size_t, class ::FTFont*> > CLabel::s_apFonts;
+tmap<tstring, tstring> CLabel::s_apFontNames;
+tmap<tstring, tmap<size_t, class ::FTFont*> > CLabel::s_apFonts;
 
 CLabel::CLabel()
 	: CBaseControl(0, 0, 100, 30)
@@ -691,7 +691,7 @@ void CLabel::ComputeLines(float w, float h)
 		}
 
 		// Push the remainder.
-		PushSection(aSectionStack.back(), tstring(&sLine[iLastBreak], &sLine[iLastBreak+iLength]));
+		PushSection(aSectionStack.back(), tstring(&sLine[iLastBreak], (&sLine[iLastBreak+iLength-1])+1));
 		m_flTotalHeight += m_aLines.back().m_flLineHeight;
 	}
 

@@ -258,7 +258,7 @@ private:
 protected:
 	tvector<CParticleSystem*>		m_apParticleSystems;
 	size_t							m_iParticleSystemsLoaded;
-	eastl::map<size_t, CSystemInstance*>	m_apInstances;
+	tmap<size_t, CSystemInstance*>	m_apInstances;
 	size_t							m_iSystemInstanceIndex;
 
 private:

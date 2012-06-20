@@ -1,8 +1,7 @@
 #ifndef LW_LEVEL_H
 #define LW_LEVEL_H
 
-#include <EASTL/map.h>
-
+#include <tmap.h>
 #include <tstring.h>
 #include <cachedvalue.h>
 #include <matrix.h>
@@ -88,7 +87,7 @@ public:
 	void								SetParameterValue(const tstring& sKey, const tstring& sValue);
 	void								RemoveParameter(const tstring& sKey);
 	bool								HasParameterValue(const tstring& sKey) const;
-	eastl::map<tstring, tstring>&		GetParameters() { return m_asParameters; }
+	tmap<tstring, tstring>&				GetParameters() { return m_asParameters; }
 
 	Matrix4x4							GetGlobalTransform() { return m_mGlobalTransform; }
 	void								SetGlobalTransform(const Matrix4x4& m) { m_mGlobalTransform = m; }
@@ -114,7 +113,7 @@ public:
 
 private:
 	tstring								m_sClass;
-	eastl::map<tstring, tstring>		m_asParameters;
+	tmap<tstring, tstring>				m_asParameters;
 	CMaterialHandle						m_hMaterialModel;
 
 	CCachedValue<Matrix4x4, CLevelEntity>	m_mGlobalTransform;

@@ -23,8 +23,12 @@ if (WIN32)
 endif (WIN32)
 
 option(BUILD_SMAK "Build SMAK" OFF)
-
 option(WITH_NETWORKING "Build with networking enabled." ON)
+option(WITH_EASTL "Use the super-fast (even in debug mode) EASTL STL library." ON)
+
+if (WITH_EASTL)
+	add_definitions(-DWITH_EASTL)
+endif (WITH_EASTL)
 
 if (NOT WITH_NETWORKING)
 	add_definitions(-DTINKER_NO_NETWORKING)

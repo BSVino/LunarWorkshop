@@ -12,8 +12,8 @@
 
 bool CGeppetto::LoadSceneAreas(CData* pData)
 {
-	eastl::map<tstring, std::shared_ptr<CConversionScene> > asScenes;
-	eastl::map<tstring, size_t> aiSceneIDs;
+	tmap<tstring, std::shared_ptr<CConversionScene> > asScenes;
+	tmap<tstring, size_t> aiSceneIDs;
 
 	for (size_t i = 0; i < pData->GetNumChildren(); i++)
 	{
@@ -77,7 +77,7 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 
 		ts.SetGameDirectory(t.GetGameDirectory());
 		ts.SetOutputDirectory(t.GetOutputDirectory());
-		ts.SetOutputFile(sprintf(t.GetOutputFile() + "_sa%d_" + tolower(pArea->GetValueString()), i));
+		ts.SetOutputFile(sprintf(t.GetOutputFile() + "_sa%d_" + pArea->GetValueString().tolower(), i));
 		ts.UseLocalTransformations(t.IsUsingLocalTransformations());
 
 		CConversionSceneNode* pMeshNode = asScenes[sFile]->FindSceneNode(sMesh);
@@ -207,7 +207,7 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 	time_t iScriptModificationTime = GetFileModificationTime(sScript.c_str());
 	time_t iOutputModificationTime = GetFileModificationTime(m_sOutput.c_str());
 
-	eastl::map<tstring, time_t> aiSceneModificationTimes;
+	tmap<tstring, time_t> aiSceneModificationTimes;
 
 	if (pSceneAreas)
 	{

@@ -65,7 +65,7 @@ SERVER_COMMAND(CONNECTION_LOBBY, BeginGame)
 
 bool CGameLobbyClient::s_bInLobby = false;
 tvector<CLobbyPlayer> CGameLobbyClient::s_aClients;
-eastl::map<tstring, tstring> CGameLobbyClient::s_asInfo;
+tmap<tstring, tstring> CGameLobbyClient::s_asInfo;
 INetworkListener::Callback CGameLobbyClient::s_pfnLobbyUpdateCallback = NULL;
 INetworkListener::Callback CGameLobbyClient::s_pfnLobbyJoinCallback = NULL;
 INetworkListener::Callback CGameLobbyClient::s_pfnLobbyLeaveCallback = NULL;
@@ -227,7 +227,7 @@ void CGameLobbyClient::R_UpdateLobby(const tstring& sKey, const tstring& sValue)
 
 tstring CGameLobbyClient::L_GetInfoValue(const tstring& sKey)
 {
-	eastl::map<tstring, tstring>::iterator it = s_asInfo.find(sKey);
+	tmap<tstring, tstring>::iterator it = s_asInfo.find(sKey);
 
 	if (it == s_asInfo.end())
 		return "";

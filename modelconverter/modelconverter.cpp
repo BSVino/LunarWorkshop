@@ -18,7 +18,7 @@ bool CModelConverter::ReadModel(const tstring& sFilename)
 
 	size_t iFileLength = sFilename.length();
 	sExtension = sFilename.c_str()+iFileLength-4;
-	sExtension.make_lower();
+	sExtension.tolower();
 
 	if (sExtension == ".obj")
 		return ReadOBJ(sFilename);
@@ -36,7 +36,7 @@ bool CModelConverter::SaveModel(const tstring& sFilename)
 
 	size_t iFileLength = sFilename.length();
 	sExtension = sFilename.c_str()+iFileLength-4;
-	sExtension.make_lower();
+	sExtension.tolower();
 
 	if (sExtension == ".obj")
 		SaveOBJ(sFilename);

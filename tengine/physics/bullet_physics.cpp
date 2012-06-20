@@ -30,7 +30,7 @@ CBulletPhysics::CBulletPhysics()
 CBulletPhysics::~CBulletPhysics()
 {
 	delete m_pDynamicsWorld;
-	for (eastl::map<size_t, CCollisionMesh>::iterator it = m_apCollisionMeshes.begin(); it != m_apCollisionMeshes.end(); it++)
+	for (tmap<size_t, CCollisionMesh>::iterator it = m_apCollisionMeshes.begin(); it != m_apCollisionMeshes.end(); it++)
 	{
 		delete it->second.m_pCollisionShape;
 		delete it->second.m_pIndexVertexArray;

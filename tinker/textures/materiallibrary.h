@@ -1,6 +1,6 @@
 #pragma once
 
-#include <EASTL/map.h>
+#include <tmap.h>
 
 #include <tstring.h>
 #include <vector.h>
@@ -93,7 +93,7 @@ public:
 	static CMaterialLibrary*	Get() { return s_pMaterialLibrary; };
 
 protected:
-	eastl::map<tstring, CMaterial>	m_aMaterials;
+	tmap<tstring, CMaterial>	m_aMaterials;
 
 private:
 	static CMaterialLibrary*	s_pMaterialLibrary;

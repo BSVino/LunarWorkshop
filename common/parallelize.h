@@ -1,8 +1,6 @@
 #ifndef _LW_PARALLELIZE_H
 #define _LW_PARALLELIZE_H
 
-#include <EASTL/list.h>
-
 #include <tvector.h>
 #include <pthread.h>
 

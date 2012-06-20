@@ -13,7 +13,7 @@ CTextureLibrary::CTextureLibrary()
 
 CTextureLibrary::~CTextureLibrary()
 {
-	for (eastl::map<tstring, CTexture>::iterator it = m_aTextures.begin(); it != m_aTextures.end(); it++)
+	for (tmap<tstring, CTexture>::iterator it = m_aTextures.begin(); it != m_aTextures.end(); it++)
 		CRenderer::UnloadTextureFromGL(it->second.m_iGLID);
 
 	s_pTextureLibrary = NULL;
@@ -76,7 +76,7 @@ CTexture* CTextureLibrary::AddAsset(const tstring& sTexture, Vector* vecColors, 
 
 CTextureHandle CTextureLibrary::FindAsset(const tstring& sTexture)
 {
-	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
+	tmap<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
 	if (it == Get()->m_aTextures.end())
 		return CTextureHandle();
 
@@ -90,7 +90,7 @@ size_t CTextureLibrary::FindTextureID(const tstring& sTexture)
 
 size_t CTextureLibrary::GetTextureGLID(const tstring& sTexture)
 {
-	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
+	tmap<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
 	if (it == Get()->m_aTextures.end())
 		return ~0;
 
@@ -99,7 +99,7 @@ size_t CTextureLibrary::GetTextureGLID(const tstring& sTexture)
 
 size_t CTextureLibrary::GetTextureWidth(const tstring& sTexture)
 {
-	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
+	tmap<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
 	if (it == Get()->m_aTextures.end())
 		return 0;
 
@@ -108,7 +108,7 @@ size_t CTextureLibrary::GetTextureWidth(const tstring& sTexture)
 
 size_t CTextureLibrary::GetTextureHeight(const tstring& sTexture)
 {
-	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
+	tmap<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
 	if (it == Get()->m_aTextures.end())
 		return 0;
 
@@ -120,7 +120,7 @@ bool CTextureLibrary::IsAssetLoaded(const tstring& sTexture)
 	if (!Get())
 		return false;
 
-	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
+	tmap<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
 	if (it == Get()->m_aTextures.end())
 		return false;
 
@@ -129,7 +129,7 @@ bool CTextureLibrary::IsAssetLoaded(const tstring& sTexture)
 
 void CTextureLibrary::UnloadTexture(const tstring& sTexture)
 {
-	eastl::map<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
+	tmap<tstring, CTexture>::iterator it = Get()->m_aTextures.find(sTexture);
 	if (it == Get()->m_aTextures.end())
 		return;
 

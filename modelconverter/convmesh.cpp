@@ -1,7 +1,5 @@
-#include <EASTL/algorithm.h>
-#include <EASTL/utility.h>
-
 #include "convmesh.h"
+
 #include <common.h>
 #include <geometry.h>
 
@@ -87,9 +85,9 @@ void CConversionMesh::CalculateEdgeData()
 					// By Jove we found it.
 					iEdge = AddEdge(pFace->GetVertex(iVertex)->v, pFace->GetVertex(iAdjVertex)->v);
 					CConversionEdge* pEdge = GetEdge(iEdge);
-					if (eastl::find(pEdge->m_aiFaces.begin(), pEdge->m_aiFaces.end(), iFace) == pEdge->m_aiFaces.end())
+					if (find(pEdge->m_aiFaces.begin(), pEdge->m_aiFaces.end(), iFace) == pEdge->m_aiFaces.end())
 						pEdge->m_aiFaces.push_back(iFace);
-					if (eastl::find(pEdge->m_aiFaces.begin(), pEdge->m_aiFaces.end(), aFaces[iFace2]) == pEdge->m_aiFaces.end())
+					if (find(pEdge->m_aiFaces.begin(), pEdge->m_aiFaces.end(), aFaces[iFace2]) == pEdge->m_aiFaces.end())
 						pEdge->m_aiFaces.push_back(aFaces[iFace2]);
 					AddEdgeToFace(iFace, iEdge);
 					AddEdgeToFace(aFaces[iFace2], iEdge);
@@ -467,7 +465,7 @@ size_t CConversionScene::AddDefaultSceneMaterial(CConversionSceneNode* pScene, C
 
 	size_t iMaterialStub = pMesh->AddMaterialStub(sName);
 	size_t iMaterial = AddMaterial(sName);
-	pMeshInstance->m_aiMaterialsMap.insert(eastl::pair<size_t, CConversionMaterialMap>(iMaterialStub, CConversionMaterialMap(iMaterialStub, iMaterial)));
+	pMeshInstance->m_aiMaterialsMap[iMaterialStub] = CConversionMaterialMap(iMaterialStub, iMaterial);
 
 	return iMaterialStub;
 }
@@ -657,7 +655,7 @@ CConversionMesh* CConversionMeshInstance::GetMesh()
 
 void CConversionMeshInstance::AddMappedMaterial(size_t s, size_t m)
 {
-	m_aiMaterialsMap.insert(eastl::pair<size_t, CConversionMaterialMap>(s, CConversionMaterialMap(s, m)));
+	m_aiMaterialsMap[s] = CConversionMaterialMap(s, m);
 }
 
 CConversionMaterialMap* CConversionMeshInstance::GetMappedMaterial(size_t m)
@@ -665,7 +663,7 @@ CConversionMaterialMap* CConversionMeshInstance::GetMappedMaterial(size_t m)
 	if (m == m_iLastMap)
 		return m_pLastMap;
 
-	eastl::map<size_t, CConversionMaterialMap>::iterator i = m_aiMaterialsMap.find(m);
+	tmap<size_t, CConversionMaterialMap>::iterator i = m_aiMaterialsMap.find(m);
 
 	m_iLastMap = m;
 
@@ -904,7 +902,7 @@ void CConversionFace::FindAdjacentFacesInternal(tvector<size_t>& aResult, size_t
 		size_t iFaces = pEdge->m_aiFaces.size();
 		for (size_t iEdgeFace = 0; iEdgeFace < iFaces; iEdgeFace++)
 		{
-			tvector<size_t>::iterator it = eastl::find(aResult.begin(), aResult.end(), pEdge->m_aiFaces[iEdgeFace]);
+			tvector<size_t>::iterator it = find(aResult.begin(), aResult.end(), pEdge->m_aiFaces[iEdgeFace]);
 			if (it == aResult.end())
 			{
 				aResult.push_back(pEdge->m_aiFaces[iEdgeFace]);

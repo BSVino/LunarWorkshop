@@ -1,6 +1,8 @@
 #ifndef TENGINE_GAME_RENDERER_H
 #define TENGINE_GAME_RENDERER_H
 
+#include <tmap.h>
+
 #include <renderer/renderer.h>
 #include <textures/materialhandle.h>
 #include <textures/texturehandle.h>
@@ -76,11 +78,11 @@ protected:
 
 	bool			m_bBatchThisFrame;
 	bool			m_bBatching;
-	eastl::map<CMaterialHandle, tvector<CRenderBatch> > m_aBatches;
+	tmap<CMaterialHandle, tvector<CRenderBatch> > m_aBatches;
 
 	const CBaseEntity*	m_pRendering;
 
-	eastl::map<tstring, size_t> m_aiCurrentSceneAreas;
+	tmap<tstring, size_t> m_aiCurrentSceneAreas;
 
 	static size_t	s_iTexturesLoaded;
 };

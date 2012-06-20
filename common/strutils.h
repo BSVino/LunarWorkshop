@@ -4,15 +4,31 @@
 #pragma once
 #endif
 
-#include <EASTL/string.h>
 #include <functional>
 #include <algorithm>
 #include <cctype>
 #include <iostream>
 #include <sstream>
 
+#ifdef WITH_EASTL
+#include <EASTL/string.h>
+
+#define TSTRING_BASE_T eastl::basic_string
+using eastl::find_if;
+using eastl::not1;
+using eastl::ptr_fun;
+#else
+#include <string>
+#include <stdarg.h>
+
+#define TSTRING_BASE_T std::basic_string
+using std::find_if;
+using std::not1;
+using std::ptr_fun;
+#endif
+
 template <class F, class T>
-inline eastl::basic_string<T> convertstring(const eastl::basic_string<F>& s);
+inline TSTRING_BASE_T<T> convertstring(const TSTRING_BASE_T<F>& s);
 
 #include "tstring.h"
 #include "tvector.h"
@@ -96,13 +112,13 @@ inline int isspace(int i)
 
 inline tstring ltrim(tstring s)
 {
-	s.erase(s.begin(), eastl::find_if(s.begin(), s.end(), eastl::not1(eastl::ptr_fun<int, int>(isspace))));
+	s.erase(s.begin(), find_if(s.begin(), s.end(), not1(ptr_fun<int, int>(isspace))));
 	return s;
 }
 
 inline tstring rtrim(tstring s)
 {
-	s.erase(eastl::find_if(s.rbegin(), s.rend(), eastl::not1(eastl::ptr_fun<int, int>(isspace))).base(), s.end());
+	s.erase(find_if(s.rbegin(), s.rend(), not1(ptr_fun<int, int>(isspace))).base(), s.end());
 	return s;
 }
 
@@ -160,12 +176,12 @@ inline tstring readtstring(std::istream& i)
 }
 
 template <class F, class T>
-inline eastl::basic_string<T> convertstring(const eastl::basic_string<F>& s)
+inline TSTRING_BASE_T<T> convertstring(const TSTRING_BASE_T<F>& s)
 {
 	if (sizeof(F) == sizeof(T))
 		return (T*)s.c_str();
 
-	eastl::basic_string<T> t;
+	TSTRING_BASE_T<T> t;
 	size_t iSize = s.size();
 	t.resize(iSize);
 
@@ -205,22 +221,39 @@ inline tstring sprintf(tstring s, ...)
 	va_start(arguments, s);
 
 	tstring p;
+
+#ifdef WITH_EASTL
 	p.sprintf_va_list(s.c_str(), arguments);
+#else
+
+#ifdef _MSC_VER
+#define VSNPRINTF8 _vsnprintf
+#else
+#define VSNPRINTF8 vsnprintf
+#endif
+	tstring q = " ";
+	int iCharacters = VSNPRINTF8(&q[0], 0, s.c_str(), arguments);
+
+	if(iCharacters >= (int)q.length())
+	{
+		q.resize(iCharacters*2);
+		iCharacters = VSNPRINTF8(&q[0], q.size()-1, s.c_str(), arguments);
+	}
+	else if(iCharacters < 0)
+	{
+		while (iCharacters < 0)
+		{
+			q.resize(q.size()*2);
+			iCharacters = VSNPRINTF8(&q[0], q.size()-1, s.c_str(), arguments);
+		}
+	}
+
+	p = &q[0];
+#endif
 
 	va_end(arguments);
 
 	return p;
-}
-
-inline tstring str_replace(const tstring& s, const tstring& f, const tstring& r)
-{
-	tstring sResult = s;
-
-	size_t iPosition;
-	while ((iPosition = sResult.find(f)) != tstring::npos)
-		sResult = sResult.substr(0, iPosition) + r + (sResult.c_str()+iPosition+f.length());
-
-	return sResult;
 }
 
 inline int stoi(const tstring& s)
@@ -300,22 +333,6 @@ inline C* strdup(const C* s)
   	return p ? (C*)memcpy(p, s, len) : NULL;
 }
 
-inline tstring tolower(tstring s)
-{
-	for (size_t i = 0; i < s.length(); i++)
-		s[i] = tolower(s[i]);
-
-	return s;
-}
-
-inline tstring toupper(tstring s)
-{
-	for (size_t i = 0; i < s.length(); i++)
-		s[i] = toupper(s[i]);
-
-	return s;
-}
-
 inline tstring pretty_float(float f, int iMaxLength=8)
 {
 	tstring s = sprintf("%." + sprintf("%d", iMaxLength) + "f", f);
@@ -330,20 +347,70 @@ inline tstring pretty_float(float f, int iMaxLength=8)
 	return s.substr(0, i);
 }
 
-inline bool tstr_startswith(const tstring& sString, const tstring& sBeginning)
-{
-	if (sString.length() < sBeginning.length())
-		return false;
+#include <string>
 
-	return (sString.substr(0, sBeginning.length()) == sBeginning);
+inline FILE* tfopen(const tstring& sFile, const tstring& sMode)
+{
+	tstring sBinaryMode = sMode;
+	bool bHasB = false;
+	for (size_t i = 0; i < sBinaryMode.length(); i++)
+	{
+		if (sMode[i] == 'b')
+		{
+			bHasB = true;
+			break;
+		}
+	}
+
+	// Open all files in binary mode to preserve unicodeness.
+	if (!bHasB)
+		sBinaryMode = sMode + "b";
+
+	return fopen(sFile.c_str(), convertstring<tchar, char>(sBinaryMode).c_str());
 }
 
-inline bool tstr_endswith(const tstring& sString, const tstring& sEnding)
+inline bool fgetts(tstring& str, FILE* fp)
 {
-	if (sString.length() < sEnding.length())
+	static char szLine[1024];
+	char* r = fgets(szLine, 1023, fp);
+
+	if (!r)
 		return false;
 
-	return (sString.substr(sString.length() - sEnding.length()) == sEnding);
+	str = szLine;
+	return !!r;
+}
+
+inline tchar* tstrncpy(tchar* d, size_t d_size, const tchar* s, size_t n)
+{
+#ifdef _WIN32
+	return std::char_traits<tchar>::_Copy_s(d, d_size, s, n);
+#else
+	if (d_size < n)
+		n = d_size;
+
+	return std::char_traits<tchar>::copy(d, s, n);
+#endif
+}
+
+inline size_t tstrlen(const tchar* s)
+{
+	return std::char_traits<tchar>::length(s);
+}
+
+inline int tstrncmp(const tchar* s1, const tchar* s2, size_t n)
+{
+	return std::char_traits<tchar>::compare(s1, s2, n);
+}
+
+inline void TMsgStdOut(const tstring& sOut)
+{
+	puts(sOut.c_str());
+}
+
+inline void TErrorStdOut(const tstring& sOut)
+{
+	puts(("ERROR: " + sOut).c_str());
 }
 
 #endif

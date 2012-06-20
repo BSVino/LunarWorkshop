@@ -1,8 +1,6 @@
 #ifndef _TINKER_REPLICATION_H
 #define _TINKER_REPLICATION_H
 
-#include <EASTL/map.h>
-
 #include <common.h>
 #include <color.h>
 #include <tengine_config.h>

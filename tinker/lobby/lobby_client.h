@@ -62,7 +62,7 @@ public:
 protected:
 	static bool							s_bInLobby;
 	static tvector<CLobbyPlayer>		s_aClients;
-	static eastl::map<tstring, tstring> s_asInfo;
+	static tmap<tstring, tstring>		s_asInfo;
 
 	static INetworkListener::Callback	s_pfnLobbyUpdateCallback;
 	static INetworkListener::Callback	s_pfnLobbyJoinCallback;

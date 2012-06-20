@@ -43,12 +43,12 @@
 #ifndef CONFIGFILE_H
 #define CONFIGFILE_H
 
-#include <EASTL/map.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
 #include "tstring.h"
+#include "tmap.h"
 
 class ConfigFile {
 // Data
@@ -56,12 +56,12 @@ protected:
 	tstring myDelimiter;  // separator between key and value
 	tstring myComment;    // separator between value and comments
 	tstring mySentry;     // optional string to signal end of file
-	eastl::map<tstring,tstring> myContents;  // extracted keys and values
+	tmap<tstring,tstring> myContents;  // extracted keys and values
 
 	bool fileValid;
 
-	typedef eastl::map<tstring,tstring>::iterator mapi;
-	typedef eastl::map<tstring,tstring>::const_iterator mapci;
+	typedef tmap<tstring,tstring>::iterator mapi;
+	typedef tmap<tstring,tstring>::const_iterator mapci;
 
 // Methods
 public:

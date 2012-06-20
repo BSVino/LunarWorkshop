@@ -3,7 +3,7 @@
 
 #include "basecontrol.h"
 
-#include <EASTL/map.h>
+#include <tmap.h>
 
 class FTFont;
 
@@ -148,8 +148,8 @@ namespace glgui
 		tstring			m_sFontName;
 		int				m_iFontFaceSize;
 
-		static eastl::map<tstring, eastl::map<size_t, class ::FTFont*> >	s_apFonts;
-		static eastl::map<tstring, tstring>									s_apFontNames;
+		static tmap<tstring, tmap<size_t, class ::FTFont*> >	s_apFonts;
+		static tmap<tstring, tstring>							s_apFontNames;
 
 		IEventListener::Callback m_pfnLinkClickCallback;
 		IEventListener*	m_pLinkClickListener;

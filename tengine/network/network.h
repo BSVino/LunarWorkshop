@@ -3,8 +3,7 @@
 
 #include <common.h>
 
-#include <EASTL/map.h>
-
+#include <tmap.h>
 #include <tvector.h>
 #include <color.h>
 #include <vector.h>
@@ -233,7 +232,7 @@ protected:
 	int					m_iConnection;
 	bool				m_bConnected;
 	bool				m_bLoading;
-	eastl::map<tstring, CRegisteredFunction> m_aFunctions;
+	tmap<tstring, CRegisteredFunction> m_aFunctions;
 	INetworkListener*	m_pClientListener;
 	INetworkListener::Callback m_pfnClientConnect;
 	INetworkListener::Callback m_pfnClientEnterGame;

@@ -182,15 +182,15 @@ float CNetworkCommand::ArgAsFloat(size_t iArg)
 	return (float)stof(m_asArguments[iArg].c_str());
 }
 
-eastl::map<tstring, CNetworkCommand*>& CNetworkCommand::GetCommands()
+tmap<tstring, CNetworkCommand*>& CNetworkCommand::GetCommands()
 {
-	static eastl::map<tstring, CNetworkCommand*> aCommands;
+	static tmap<tstring, CNetworkCommand*> aCommands;
 	return aCommands;
 }
 
 CNetworkCommand* CNetworkCommand::GetCommand(const tstring& sName)
 {
-	eastl::map<tstring, CNetworkCommand*>::iterator it = GetCommands().find(sName);
+	tmap<tstring, CNetworkCommand*>::iterator it = GetCommands().find(sName);
 	if (it == GetCommands().end())
 		return NULL;
 

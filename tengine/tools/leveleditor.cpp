@@ -58,7 +58,7 @@ void CEntityPropertiesPanel::Layout()
 	// If we're ready to create then a class has been chosen.
 	const tchar* pszClassName = m_sClass.c_str();
 	CEntityRegistration* pRegistration = NULL;
-	eastl::map<tstring, bool> abHandlesSet;
+	tmap<tstring, bool> abHandlesSet;
 
 	do
 	{
@@ -144,7 +144,7 @@ void CEntityPropertiesPanel::Layout()
 
 				if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
 					pTextField->SetContentsChangedListener(this, ModelChanged, sprintf("%d", m_apPropertyOptions.size()));
-				else if (tstr_startswith(pSaveData->m_pszType, "CEntityHandle"))
+				else if (tstring(pSaveData->m_pszType).startswith("CEntityHandle"))
 					pTextField->SetContentsChangedListener(this, TargetChanged, sprintf("%d ", m_apPropertyOptions.size()) + pSaveData->m_pszType);
 				else
 					pTextField->SetContentsChangedListener(this, PropertyChanged);

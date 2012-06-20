@@ -41,7 +41,7 @@ CMaterial* CMaterialLibrary::AddAsset(const tstring& sMaterial, int iClamp)
 	if (!sMaterial.length())
 		return nullptr;
 
-	if (!tstr_endswith(sMaterial, ".mat"))
+	if (!sMaterial.endswith(".mat"))
 		return nullptr;
 
 	std::basic_ifstream<tchar> f(sMaterial.c_str());
@@ -127,7 +127,7 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 CMaterialHandle CMaterialLibrary::FindAsset(const tstring& sMaterial)
 {
 	tstring sMaterialForward = ToForwardSlashes(sMaterial);
-	eastl::map<tstring, CMaterial>::iterator it = Get()->m_aMaterials.find(sMaterialForward);
+	tmap<tstring, CMaterial>::iterator it = Get()->m_aMaterials.find(sMaterialForward);
 	if (it == Get()->m_aMaterials.end())
 		return CMaterialHandle();
 
@@ -140,7 +140,7 @@ bool CMaterialLibrary::IsAssetLoaded(const tstring& sMaterial)
 		return false;
 
 	tstring sMaterialForward = ToForwardSlashes(sMaterial);
-	eastl::map<tstring, CMaterial>::iterator it = Get()->m_aMaterials.find(sMaterialForward);
+	tmap<tstring, CMaterial>::iterator it = Get()->m_aMaterials.find(sMaterialForward);
 	if (it == Get()->m_aMaterials.end())
 		return false;
 

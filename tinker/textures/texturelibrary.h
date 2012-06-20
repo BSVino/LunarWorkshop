@@ -1,8 +1,7 @@
 #ifndef DT_TEXTURE_LIBRARY_H
 #define DT_TEXTURE_LIBRARY_H
 
-#include <EASTL/map.h>
-
+#include <tmap.h>
 #include <tstring.h>
 #include <vector.h>
 
@@ -58,7 +57,7 @@ public:
 	static CTextureLibrary*	Get() { return s_pTextureLibrary; };
 
 protected:
-	eastl::map<tstring, CTexture>	m_aTextures;
+	tmap<tstring, CTexture>	m_aTextures;
 
 private:
 	static CTextureLibrary*	s_pTextureLibrary;

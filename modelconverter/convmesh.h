@@ -1,8 +1,7 @@
 #ifndef LW_CONVMESH_H
 #define LW_CONVMESH_H
 
-#include <EASTL/map.h>
-
+#include <tmap.h>
 #include <tvector.h>
 #include <worklistener.h>
 #include <vector.h>
@@ -282,7 +281,7 @@ public:
 public:
 	size_t							m_iMesh;	// Index into CConversionScene::m_aMeshes
 
-	eastl::map<size_t, CConversionMaterialMap>	m_aiMaterialsMap;	// Maps CConversionMesh::m_aMaterialStubs to CConversionScene::m_aMaterials
+	tmap<size_t, CConversionMaterialMap>	m_aiMaterialsMap;	// Maps CConversionMesh::m_aMaterialStubs to CConversionScene::m_aMaterials
 
 	class CConversionScene*			m_pScene;
 	class CConversionSceneNode*		m_pParent;

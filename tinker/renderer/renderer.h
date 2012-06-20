@@ -1,7 +1,6 @@
 #ifndef TINKER_RENDERER_H
 #define TINKER_RENDERER_H
 
-#include <EASTL/map.h>
 #include <tvector.h>
 
 #include <tstring.h>

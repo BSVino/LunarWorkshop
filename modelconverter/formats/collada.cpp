@@ -546,7 +546,7 @@ void CModelConverter::SaveDAEScene(class FCDSceneNode* pNode, CConversionSceneNo
 
 		FCDMaterialLibrary* pMatLib = pNode->GetDocument()->GetMaterialLibrary();
 
-		eastl::map<size_t, CConversionMaterialMap>::iterator j;
+		tmap<size_t, CConversionMaterialMap>::iterator j;
 		for (j = pMeshInstance->m_aiMaterialsMap.begin(); j != pMeshInstance->m_aiMaterialsMap.end(); j++)
 		{
 			CConversionMaterialMap* pMap = &j->second;

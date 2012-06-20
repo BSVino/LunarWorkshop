@@ -292,7 +292,6 @@ const tchar* CModelConverter::ReadSIAShape(const tchar* pszLine, const tchar* ps
 		sToken.reserve(iLineLength);
 		sToken.clear();
 		sToken.append(pszLine, pszToken-pszLine);
-		sToken[pszToken-pszLine] = '\0';
 		pszToken = sToken.c_str();
 
 		if (!bCare)

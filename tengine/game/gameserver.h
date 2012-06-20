@@ -133,7 +133,7 @@ public:
 
 protected:
 	bool										m_bAllowPrecaches;
-	static eastl::map<tstring, CPrecacheItem>	s_aPrecacheClasses;
+	static tmap<tstring, CPrecacheItem>			s_aPrecacheClasses;
 
 	tstring										m_sNickname;
 

@@ -13,7 +13,6 @@ endif (WIN32)
 
 set (LWBASE_SOURCES
 	../common/configfile.cpp
-	../common/eastl.cpp
 	../common/mempool.cpp
 	../common/mtrand.cpp
 	../common/stb_image.cpp
@@ -29,6 +28,12 @@ set (LWBASE_SOURCES
 	../datamanager/data.cpp
 	../datamanager/dataserializer.cpp
 )
+
+if (WITH_EASTL)
+	set (LWBASE_SOURCES ${LWBASE_SOURCES}
+		../common/eastl.cpp
+	)
+endif (WITH_EASTL)
 
 if (WIN32)
 	set (LWBASE_SOURCES ${LWBASE_SOURCES}
@@ -48,6 +53,8 @@ if (WIN32)
 	target_link_libraries(lwbase iphlpapi ws2_32 dbghelp)
 endif (WIN32)
 
-add_subdirectory (eastl)
+if (WITH_EASTL)
+	add_subdirectory (eastl)
 
-target_link_libraries(lwbase eastl)
+	target_link_libraries(lwbase eastl)
+endif (WITH_EASTL)

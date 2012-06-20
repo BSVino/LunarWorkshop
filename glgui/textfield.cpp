@@ -492,7 +492,7 @@ void CTextField::SetAutoCompleteFiles(const tstring& sBaseDirectory, const tvect
 				bool bFound = false;
 				for (size_t j = 0; j < asExtensions.size(); j++)
 				{
-					if (!tstr_endswith(asFiles[i], asExtensions[j]))
+					if (!asFiles[i].endswith(asExtensions[j]))
 						continue;
 
 					bFound = true;
