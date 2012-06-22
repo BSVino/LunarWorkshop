@@ -436,10 +436,8 @@ void CSMAKWindow::ClearDebugLines()
 
 void CSMAKWindow::AddDebugLine(Vector vecStart, Vector vecEnd, Color clrLine)
 {
-	DebugLine l;
+	DebugLine& l = m_aDebugLines.push_back();
 	l.vecStart = vecStart;
 	l.vecEnd = vecEnd;
 	l.clrLine = clrLine;
-
-	m_aDebugLines.push_back(l);
 }

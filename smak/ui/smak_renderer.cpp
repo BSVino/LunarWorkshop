@@ -126,7 +126,8 @@ void CSMAKRenderer::Render3D()
 	// Render light source on top of objects, since it doesn't use the depth buffer.
 	RenderLightSource();
 
-	if (SMAKWindow()->GetDebugLines().size())
+	// Don't render while generating since it's multithreaded and that does nasty stuff.
+	if (SMAKWindow()->GetDebugLines().size() && !CComboGeneratorPanel::Get()->IsGenerating())
 	{
 		CRenderingContext c(this, true);
 

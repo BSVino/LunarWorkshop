@@ -765,7 +765,7 @@ size_t CConversionMesh::AddBitangent(float x, float y, float z)
 
 size_t CConversionMesh::AddUV(float u, float v)
 {
-	m_aUVs.push_back(Vector(u, v, 0));
+	m_aUVs.push_back(Vector2D(u, v));
 	return m_aUVs.size()-1;
 }
 
@@ -1056,17 +1056,14 @@ size_t CConversionMesh::AddFace(size_t iMaterial)
 void CConversionMesh::AddVertexToFace(size_t iFace, size_t v, size_t vu, size_t vn)
 {
 	m_aaVertexFaceMap[v].push_back(iFace);
-	m_aFaces[iFace].m_aVertices.push_back();
+	CConversionVertex& oVertex = m_aFaces[iFace].m_aVertices.push_back();
 	m_aFaces[iFace].m_bFaceNormal = false;
 
-	size_t iSize = m_aFaces[iFace].m_aVertices.size()-1;
-	CConversionVertex* pVertex = &m_aFaces[iFace].m_aVertices[iSize];
-
-	pVertex->m_pScene = m_pScene;
-	pVertex->m_iMesh = m_pScene->FindMesh(this);
-	pVertex->v = v;
-	pVertex->vu = vu;
-	pVertex->vn = vn;
+	oVertex.m_pScene = m_pScene;
+	oVertex.m_iMesh = m_pScene->FindMesh(this);
+	oVertex.v = v;
+	oVertex.vu = vu;
+	oVertex.vn = vn;
 }
 
 void CConversionMesh::AddEdgeToFace(size_t iFace, size_t iEdge)

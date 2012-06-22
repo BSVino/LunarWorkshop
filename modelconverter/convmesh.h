@@ -198,7 +198,7 @@ public:
 	size_t							GetNumBitangents() { return m_aBitangents.size(); };
 	Vector							GetBitangent(size_t i) { if (i >= m_aBitangents.size()) return Vector(0,0,1); return m_aBitangents[i]; }
 	size_t							GetNumUVs() { return m_aUVs.size(); };
-	Vector							GetUV(size_t i) { if (i >= m_aUVs.size()) return Vector(0,0,0); return m_aUVs[i]; }
+	Vector2D						GetUV(size_t i) { if (i >= m_aUVs.size()) return Vector2D(0,0); return m_aUVs[i]; }
 	Vector							GetBaseVector(int iVector, CConversionVertex* pVertex);
 
 	size_t							GetNumBones() { return m_aBones.size(); };
@@ -227,7 +227,7 @@ public:
 	tvector<Vector>					m_aNormals;
 	tvector<Vector>					m_aTangents;
 	tvector<Vector>					m_aBitangents;	// Binormals can kiss my ass.
-	tvector<Vector>					m_aUVs;		// Really don't feel like making a 2d vector just for this.
+	tvector<Vector2D>				m_aUVs;
 	tvector<CConversionBone>		m_aBones;
 	tvector<CConversionEdge>		m_aEdges;
 	tvector<CConversionFace>		m_aFaces;

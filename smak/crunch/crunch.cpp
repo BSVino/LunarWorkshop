@@ -1,5 +1,7 @@
 #include "crunch.h"
 
+#include <matrix.h>
+
 #include <raytracer/raytracer.h>
 #include <common/stb_image_write.h>
 #include <textures/texturelibrary.h>
@@ -384,10 +386,12 @@ void CTexelGenerator::FindHiResMeshLocation(CConversionMeshInstance* pMeshInstan
 	bool bHitBack = pTracer->Raytrace(Ray(vecUVPosition, -vecNormal), &trBack);
 
 #ifdef NORMAL_DEBUG
+	GetParallelizer()->LockData();
 	if (bHitFront && (vecUVPosition - trFront.m_vecHit).LengthSqr() > 0.001f)
 		SMAKWindow()->AddDebugLine(vecUVPosition, trFront.m_vecHit);
 	if (bHitBack && (vecUVPosition - trBack.m_vecHit).LengthSqr() > 0.001f)
 		SMAKWindow()->AddDebugLine(vecUVPosition, trBack.m_vecHit);
+	GetParallelizer()->UnlockData();
 #endif
 
 	if (!bHitBack && !bHitFront)
@@ -411,11 +415,13 @@ void CTexelGenerator::FindHiResMeshLocation(CConversionMeshInstance* pMeshInstan
 	}
 
 #ifdef NORMAL_DEBUG
+	GetParallelizer()->LockData();
 //	SMAKWindow()->AddDebugLine(vecUVPosition, vecUVPosition+vecHitNormal);
 	if (bHitFront && (vecUVPosition - trFront.m_vecHit).LengthSqr() > 0.001f)
 		SMAKWindow()->AddDebugLine(trFront.m_vecHit, trFront.m_vecHit + trFront.m_pFace->GetNormal(trFront.m_vecHit, trFront.m_pMeshInstance));
 	if (bHitBack && (vecUVPosition - trBack.m_vecHit).LengthSqr() > 0.001f)
 		SMAKWindow()->AddDebugLine(trBack.m_vecHit, trBack.m_vecHit + trBack.m_pFace->GetNormal(trBack.m_vecHit, trBack.m_pMeshInstance));
+	GetParallelizer()->UnlockData();
 #endif
 
 	for (size_t i = 0; i < m_apMethods.size(); i++)
@@ -585,6 +591,7 @@ void CTexelDiffuseMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* 
 
 	CConversionMesh* pHitMesh = tr->m_pMeshInstance->GetMesh();
 
+	// TODO: Use the nearest triangle in this face.
 	CConversionVertex* pHitV1 = tr->m_pFace->GetVertex(0);
 	CConversionVertex* pHitV2 = tr->m_pFace->GetVertex(1);
 	CConversionVertex* pHitV3 = tr->m_pFace->GetVertex(2);
@@ -597,50 +604,32 @@ void CTexelDiffuseMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* 
 	Vector v2 = tr->m_pMeshInstance->GetVertex(pHitV2->v);
 	Vector v3 = tr->m_pMeshInstance->GetVertex(pHitV3->v);
 
-	// Find where the UV is in world space.
+	// Find where the world point is in UV space.
 
-	// First build 2x2 a "matrix" of the UV values.
-	float mta = vu2.x - vu1.x;
-	float mtb = vu3.x - vu1.x;
-	float mtc = vu2.y - vu1.y;
-	float mtd = vu3.y - vu1.y;
+	// First convert to barycentric coordinates.
+	Vector u = v2 - v1;
+	Vector v = v3 - v1;
+	float uu = u.Dot(u);
+	float uv = u.Dot(v);
+	float vv = v.Dot(v);
+	Vector w = tr->m_vecHit - v1;
+	float wu = w.Dot(u);
+	float wv = w.Dot(v);
 
-	// Now build a 2x3 "matrix" of the vertices.
-	float mva = v2.x - v1.x;
-	float mvb = v3.x - v1.x;
-	float mvc = v2.y - v1.y;
-	float mvd = v3.y - v1.y;
-	float mve = v2.z - v1.z;
-	float mvf = v3.z - v1.z;
+	float D = uv * uv - uu * vv;
 
-	// Multiply them together.
-	// [a b]   [a b c]   [a b c]
-	// [c d] * [d e f] = [d e f]
-	// Really wish I had a matrix math library about now!
-	float mra = mta*mva + mtb*mvd;
-	float mrb = mta*mvb + mtb*mve;
-	float mrc = mta*mvc + mtb*mvf;
-	float mrd = mtc*mva + mtd*mvd;
-	float mre = mtc*mvb + mtd*mve;
-	float mrf = mtc*mvc + mtd*mvf;
+	float b1, b2, b3;
 
-	// These vectors should be the X Y and Z axis in UV space.
-	Vector2D vecXAxis(mra, mrd);
-	Vector2D vecYAxis(mrb, mre);
-	Vector2D vecZAxis(mrc, mrf);
-
-	// The world origin in (u, v) texture space
-	Vector2D vecWorldOrigin = vu1 - vecXAxis * v1.x - vecYAxis * v1.y - vecZAxis * v1.z;
+	b1 = (uv * wu - uu * wv) / D;
+	b2 = (uv * wv - vv * wu) / D;
+	b3 = 1 - b1 - b2;
 
 	// The position of the traceline's hit in (u, v) texture space
-	Vector2D vecWorldPosition = vecWorldOrigin + vecXAxis * tr->m_vecHit.x + vecYAxis * tr->m_vecHit.y + vecZAxis * tr->m_vecHit.z;
+	Vector2D vecWorldPosition = vu1 * b1 + vu2 * b2 + vu3 * b3;
 
 	// Mutex may be dead, try to bail before.
 	if (m_pGenerator->IsStopped())
 		return;
-
-	// Lock for il texture access so multiple threads don't bind different textures and confuse each other.
-	m_pGenerator->GetParallelizer()->LockData();
 
 	size_t iU = (size_t)((vecWorldPosition.x * oTexture.m_iWidth) - 0.5f);
 	size_t iV = (size_t)((vecWorldPosition.y * oTexture.m_iHeight) - 0.5f);
@@ -648,8 +637,12 @@ void CTexelDiffuseMethod::GenerateTexel(size_t iTexel, CConversionMeshInstance* 
 	iU %= oTexture.m_iWidth;
 	iV %= oTexture.m_iHeight;
 
-	size_t iColorTexel = iU + iV*oTexture.m_iHeight;
+	size_t iColorTexel;
+	m_pGenerator->Texel(iU, iV, iColorTexel, oTexture.m_iWidth, oTexture.m_iHeight);
+
 	Color clrData = oTexture.m_pclrData[iColorTexel];
+
+	m_pGenerator->GetParallelizer()->LockData();
 
 	m_avecDiffuseValues[iTexel] += Vector(clrData);
 	m_aiDiffuseReads[iTexel]++;

@@ -139,7 +139,10 @@ bool CModel::Load(class CConversionScene* pScene, size_t iMesh)
 		m_aiVertexBuffers[i] = CRenderer::LoadVertexDataIntoGL(g_aaflData[i].size()*4, &g_aaflData[i][0]);
 		m_aiVertexBufferSizes[i] = g_aaflData[i].size()/FloatsPerVertex();
 
-		m_asMaterialStubs[i] = pScene->GetMesh(iMesh)->GetMaterialStub(i)->GetName();
+		if (i < pScene->GetMesh(iMesh)->GetNumMaterialStubs())
+			m_asMaterialStubs[i] = pScene->GetMesh(iMesh)->GetMaterialStub(i)->GetName();
+		else
+			m_asMaterialStubs[i] = "";
 	}
 
 	m_aabbBoundingBox = g_aabbBounds;
