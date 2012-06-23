@@ -63,7 +63,7 @@ void CTree::Think()
 	m_iHilighted = ~0;
 	for (size_t i = 0; i < m_apAllNodes.size(); i++)
 	{
-		IControl* pNode = m_apAllNodes[i];
+		CBaseControl* pNode = m_apAllNodes[i];
 
 		if (!pNode->IsVisible())
 			continue;
@@ -118,7 +118,7 @@ void CTree::Paint(float x, float y, float w, float h)
 
 	if (m_iHilighted != ~0)
 	{
-		IControl* pNode = m_apAllNodes[m_iHilighted];
+		CBaseControl* pNode = m_apAllNodes[m_iHilighted];
 		float cx, cy, cw, ch;
 		pNode->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::PaintRect(cx, cy, cw, ch, clrHilight, 2);
@@ -126,7 +126,7 @@ void CTree::Paint(float x, float y, float w, float h)
 
 	if (m_iSelected < m_apAllNodes.size() && m_apAllNodes[m_iSelected]->IsVisible())
 	{
-		IControl* pNode = m_apAllNodes[m_iSelected];
+		CBaseControl* pNode = m_apAllNodes[m_iSelected];
 		float cx, cy, cw, ch;
 		pNode->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::PaintRect(cx, cy, cw, ch, clrSelected, 2);
@@ -147,7 +147,7 @@ bool CTree::MousePressed(int code, int mx, int my)
 	m_iSelected = ~0;
 	for (size_t i = 0; i < m_apAllNodes.size(); i++)
 	{
-		IControl* pNode = m_apAllNodes[i];
+		CBaseControl* pNode = m_apAllNodes[i];
 
 		if (!pNode->IsVisible())
 			continue;
@@ -188,7 +188,7 @@ bool CTree::MouseDoubleClicked(int code, int mx, int my)
 	m_iSelected = ~0;
 	for (size_t i = 0; i < m_apAllNodes.size(); i++)
 	{
-		IControl* pNode = m_apAllNodes[i];
+		CBaseControl* pNode = m_apAllNodes[i];
 
 		if (!pNode->IsVisible())
 			continue;
@@ -212,7 +212,7 @@ bool CTree::MouseDoubleClicked(int code, int mx, int my)
 	return false;
 }
 
-size_t CTree::AddControl(IControl* pControl, bool bToTail)
+size_t CTree::AddControl(CBaseControl* pControl, bool bToTail)
 {
 	size_t iControl = BaseClass::AddControl(pControl, bToTail);
 
@@ -226,7 +226,7 @@ size_t CTree::AddControl(IControl* pControl, bool bToTail)
 	return iControl;
 }
 
-void CTree::RemoveControl(IControl* pControl)
+void CTree::RemoveControl(CBaseControl* pControl)
 {
 	BaseClass::RemoveControl(pControl);
 
@@ -234,7 +234,7 @@ void CTree::RemoveControl(IControl* pControl)
 	{
 		for (size_t i = m_apAllNodes.size()-1; i < m_apAllNodes.size(); i--)
 		{
-			IControl* pNode = m_apAllNodes[i];
+			CBaseControl* pNode = m_apAllNodes[i];
 
 			if (pControl == pNode)
 			{
@@ -255,7 +255,7 @@ void CTree::ClearTree()
 
 	for (size_t i = m_apAllNodes.size()-1; i < m_apAllNodes.size(); i--)
 	{
-		IControl* pNode = m_apAllNodes[i];
+		CBaseControl* pNode = m_apAllNodes[i];
 
 		RemoveControl(pNode);
 		delete pNode;
@@ -283,8 +283,8 @@ size_t CTree::AddNode(CTreeNode* pNode, size_t iPosition)
 
 void CTree::RemoveNode(CTreeNode* pNode)
 {
-	IControl* pHilighted = NULL;
-	IControl* pSelected = NULL;
+	CBaseControl* pHilighted = NULL;
+	CBaseControl* pSelected = NULL;
 
 	// Tuck these away so we can find them again after the controls list has changed.
 	if (m_iHilighted != ~0)

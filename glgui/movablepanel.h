@@ -49,7 +49,7 @@ namespace glgui
 		virtual void			HasCloseButton(bool bHasClose) { m_bHasCloseButton = bHasClose; };
 		virtual void			Minimize();
 
-		virtual bool			IsChildVisible(IControl* pChild);
+		virtual bool			IsChildVisible(CBaseControl* pChild);
 
 		virtual void			SetClearBackground(bool bClearBackground);
 		virtual void			SetHeaderColor(const Color& clrHeader) { m_clrHeader = clrHeader; }

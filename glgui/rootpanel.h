@@ -35,8 +35,6 @@ namespace glgui
 
 		bool						SetFocus(CBaseControl* pControl);
 
-		virtual void				Popup(IPopup* pControl);
-
 		void						SetButtonDown(class CButton* pButton);
 		class CButton*				GetButtonDown();
 
@@ -59,8 +57,6 @@ namespace glgui
 
 		tvector<IDroppable*>		m_apDroppables;
 		IDroppable*					m_pDragging;
-
-		IPopup*						m_pPopup;
 
 		// If the mouse is released over nothing, then try popping this button.
 		class CButton*				m_pButtonDown;

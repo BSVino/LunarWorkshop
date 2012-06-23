@@ -61,7 +61,7 @@ bool CPanel::KeyPressed(int code, bool bCtrlDown)
 	// Start at the end of the list so that items drawn last are tested for keyboard events first.
 	for (int i = iCount-1; i >= 0; i--)
 	{
-		IControl* pControl = m_apControls[i];
+		CBaseControl* pControl = m_apControls[i];
 
 		if (!pControl->IsVisible())
 			continue;
@@ -88,7 +88,7 @@ bool CPanel::KeyReleased(int code)
 	// Start at the end of the list so that items drawn last are tested for keyboard events first.
 	for (int i = iCount-1; i >= 0; i--)
 	{
-		IControl* pControl = m_apControls[i];
+		CBaseControl* pControl = m_apControls[i];
 
 		if (!pControl->IsVisible())
 			continue;
@@ -106,7 +106,7 @@ bool CPanel::CharPressed(int code)
 	// Start at the end of the list so that items drawn last are tested for keyboard events first.
 	for (int i = iCount-1; i >= 0; i--)
 	{
-		IControl* pControl = m_apControls[i];
+		CBaseControl* pControl = m_apControls[i];
 
 		if (!pControl->IsVisible())
 			continue;
@@ -124,7 +124,7 @@ bool CPanel::MousePressed(int code, int mx, int my)
 	// Start at the end of the list so that items drawn last are tested for mouse events first.
 	for (int i = iCount-1; i >= 0; i--)
 	{
-		IControl* pControl = m_apControls[i];
+		CBaseControl* pControl = m_apControls[i];
 
 		if (!pControl->IsVisible())
 			continue;
@@ -149,7 +149,7 @@ bool CPanel::MouseReleased(int code, int mx, int my)
 	// Start at the end of the list so that items drawn last are tested for mouse events first.
 	for (int i = iCount-1; i >= 0; i--)
 	{
-		IControl* pControl = m_apControls[i];
+		CBaseControl* pControl = m_apControls[i];
 
 		if (!pControl->IsVisible())
 			continue;
@@ -174,7 +174,7 @@ bool CPanel::MouseDoubleClicked(int code, int mx, int my)
 	// Start at the end of the list so that items drawn last are tested for mouse events first.
 	for (int i = iCount-1; i >= 0; i--)
 	{
-		IControl* pControl = m_apControls[i];
+		CBaseControl* pControl = m_apControls[i];
 
 		if (!pControl->IsVisible())
 			continue;
@@ -201,7 +201,7 @@ void CPanel::CursorMoved(int mx, int my)
 	// Start at the end of the list so that items drawn last are tested for mouse events first.
 	for (int i = iCount-1; i >= 0; i--)
 	{
-		IControl* pControl = m_apControls[i];
+		CBaseControl* pControl = m_apControls[i];
 
 		if (!pControl->IsVisible() || !pControl->IsCursorListener())
 			continue;
@@ -261,7 +261,7 @@ void CPanel::CursorOut()
 	BaseClass::CursorOut();
 }
 
-IControl* CPanel::GetHasCursor()
+CBaseControl* CPanel::GetHasCursor()
 {
 	if (!m_pHasCursor)
 		return this;
@@ -275,7 +275,7 @@ void CPanel::NextTabStop()
 
 	for (size_t i = 0; i < m_apControls.size(); i++)
 	{
-		IControl* pControl = m_apControls[i];
+		CBaseControl* pControl = m_apControls[i];
 
 		if (!pControl->IsVisible())
 			continue;
@@ -290,7 +290,7 @@ void CPanel::NextTabStop()
 	for (size_t i = 0; i < m_apControls.size()-1; i++)
 	{
 		size_t iControl = (iOriginalFocus + i + 1)%m_apControls.size();
-		IControl* pControl = m_apControls[iControl];
+		CBaseControl* pControl = m_apControls[iControl];
 
 		if (!pControl->IsVisible())
 			continue;
@@ -307,7 +307,7 @@ void CPanel::NextTabStop()
 	}
 }
 
-size_t CPanel::AddControl(IControl* pControl, bool bToTail)
+size_t CPanel::AddControl(CBaseControl* pControl, bool bToTail)
 {
 	if (!pControl)
 		return ~0;
@@ -333,7 +333,7 @@ size_t CPanel::AddControl(IControl* pControl, bool bToTail)
 	}
 }
 
-void CPanel::RemoveControl(IControl* pControl)
+void CPanel::RemoveControl(CBaseControl* pControl)
 {
 	// If we are destructing then this RemoveControl is being called from this CPanel's
 	// destructor's m_apControls[i]->Destructor() so we should not delete this element
@@ -353,7 +353,7 @@ void CPanel::RemoveControl(IControl* pControl)
 		m_pHasCursor = NULL;
 }
 
-void CPanel::MoveToTop(IControl* pControl)
+void CPanel::MoveToTop(CBaseControl* pControl)
 {
 	for (size_t i = 0; i < m_apControls.size(); i++)
 	{
@@ -443,7 +443,7 @@ void CPanel::Paint(float x, float y, float w, float h)
 	size_t iCount = m_apControls.size();
 	for (size_t i = 0; i < iCount; i++)
 	{
-		IControl* pControl = m_apControls[i];
+		CBaseControl* pControl = m_apControls[i];
 		if (!pControl->IsVisible())
 			continue;
 
@@ -487,7 +487,7 @@ void CPanel::PostPaint()
 	size_t iCount = m_apControls.size();
 	for (size_t i = 0; i < iCount; i++)
 	{
-		IControl* pControl = m_apControls[i];
+		CBaseControl* pControl = m_apControls[i];
 		if (!pControl->IsVisible())
 			continue;
 
@@ -506,7 +506,7 @@ void CPanel::PostPaint()
 	BaseClass::PostPaint();
 }
 
-bool CPanel::ShouldControlOffset(IControl* pControl) const
+bool CPanel::ShouldControlOffset(CBaseControl* pControl) const
 {
 	if (pControl == m_pVerticalScrollBar || pControl == m_pHorizontalScrollBar)
 		return false;

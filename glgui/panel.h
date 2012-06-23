@@ -44,14 +44,14 @@ namespace glgui
 		virtual void			CursorMoved(int mx, int my);
 		virtual void			CursorOut();
 
-		virtual IControl*		GetHasCursor();
+		virtual CBaseControl*	GetHasCursor();
 
 		void					NextTabStop();
 
-		virtual size_t			AddControl(IControl* pControl, bool bToTail = false);
-		virtual void			RemoveControl(IControl* pControl);
-		virtual tvector<IControl*>&	GetControls() { return m_apControls; };
-		virtual void			MoveToTop(IControl* pControl);
+		virtual size_t			AddControl(CBaseControl* pControl, bool bToTail = false);
+		virtual void			RemoveControl(CBaseControl* pControl);
+		virtual tvector<CBaseControl*>&	GetControls() { return m_apControls; };
+		virtual void			MoveToTop(CBaseControl* pControl);
 
 		virtual void			SetHighlighted(bool bHighlight) { m_bHighlight = bHighlight; };
 		virtual bool			IsHighlighted() { return m_bHighlight; };
@@ -65,16 +65,16 @@ namespace glgui
 		void					SetVerticalScrollBarEnabled(bool b);
 		void					SetHorizontalScrollBarEnabled(bool b);
 
-		bool					ShouldControlOffset(IControl* pControl) const;
+		bool					ShouldControlOffset(CBaseControl* pControl) const;
 
 	protected:
-		tvector<IControl*>		m_apControls;
+		tvector<CBaseControl*>	m_apControls;
 
 		float					m_flMargin;
 
 		// If two controls in the same panel are never layered, a single
 		// pointer should suffice. Otherwise a list must be created.
-		IControl*				m_pHasCursor;
+		CBaseControl*			m_pHasCursor;
 
 		bool					m_bHighlight;
 		bool					m_bScissoring;

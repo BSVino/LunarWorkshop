@@ -21,7 +21,6 @@ CRootPanel::CRootPanel() :
 	m_pButtonDown = NULL;
 	m_pFocus = NULL;
 	m_pDragging = NULL;
-	m_pPopup = NULL;
 
 	m_pMenuBar = new CMenuBar();
 	AddControl(m_pMenuBar, true);
@@ -131,20 +130,6 @@ bool CRootPanel::MousePressed(int code, int mx, int my, bool bInsideControl)
 {
 	TAssert(!m_pDragging);
 
-	if (m_pPopup)
-	{
-		float x = 0, y = 0, w = 0, h = 0;
-		m_pPopup->GetAbsDimensions(x, y, w, h);
-		if (!(mx >= x &&
-			my >= y &&
-			mx < x + w &&
-			my < y + h))
-		{
-			m_pPopup->Close();
-			m_pPopup = NULL;
-		}
-	}
-
 	if (CPanel::MousePressed(code, mx, my))
 		return true;
 
@@ -154,7 +139,7 @@ bool CRootPanel::MousePressed(int code, int mx, int my, bool bInsideControl)
 	int iCount = (int)m_apControls.size();
 	for (int i = 0; i < iCount; i++)
 	{
-		IControl* pControl = m_apControls[i];
+		CBaseControl* pControl = m_apControls[i];
 
 		if (!pControl->IsVisible())
 			continue;
@@ -307,11 +292,6 @@ bool CRootPanel::SetFocus(CBaseControl* pFocus)
 		return pFocus->SetFocus(true);
 
 	return false;
-}
-
-void CRootPanel::Popup(IPopup* pPopup)
-{
-	m_pPopup = pPopup;
 }
 
 void CRootPanel::GetFullscreenMousePos(int& mx, int& my)

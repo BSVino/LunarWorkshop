@@ -327,7 +327,7 @@ void CButtonPanel::Layout()
 
 	for (size_t i = 0; i < m_apButtons.size(); i++)
 	{
-		IControl* pButton = m_apButtons[i];
+		CBaseControl* pButton = m_apButtons[i];
 
 		if (!pButton->IsVisible())
 			continue;
@@ -335,7 +335,7 @@ void CButtonPanel::Layout()
 		pButton->SetSize(BTN_HEIGHT, BTN_HEIGHT);
 		pButton->SetPos(flX, 0);
 
-		IControl* pHint = m_apHints[i];
+		CBaseControl* pHint = m_apHints[i];
 		pHint->SetPos(flX + BTN_HEIGHT/2 - pHint->GetWidth()/2, -18);
 
 		flX += BTN_HEIGHT + m_aflSpaces[i];

@@ -13,7 +13,7 @@ public:
 
 public:
 	virtual bool			IsVisible();
-	virtual bool			IsChildVisible(IControl* pChild);
+	virtual bool			IsChildVisible(CBaseControl* pChild);
 	virtual void			SetVisible(bool bVisible);
 	virtual bool			IsOpen();
 

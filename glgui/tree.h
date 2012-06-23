@@ -116,8 +116,8 @@ namespace glgui
 		virtual bool						MouseReleased(int iButton, int mx, int my);
 		virtual bool						MouseDoubleClicked(int iButton, int mx, int my);
 
-		virtual size_t						AddControl(IControl* pControl, bool bToTail = false);
-		virtual void						RemoveControl(IControl* pControl);
+		virtual size_t						AddControl(CBaseControl* pControl, bool bToTail = false);
+		virtual void						RemoveControl(CBaseControl* pControl);
 
 		void								ClearTree();
 

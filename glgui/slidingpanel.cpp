@@ -74,7 +74,7 @@ bool CSlidingPanel::MousePressed(int code, int mx, int my)
 	}
 }
 
-size_t CSlidingPanel::AddControl(IControl* pControl, bool bToTail)
+size_t CSlidingPanel::AddControl(CBaseControl* pControl, bool bToTail)
 {
 	// The title and inner panel should be added to this panel.
 	// All other controls should be added to the inner panel.
@@ -131,7 +131,7 @@ void CSlidingContainer::Layout()
 	CPanel::Layout();
 }
 
-size_t CSlidingContainer::AddControl(IControl* pControl, bool bToTail)
+size_t CSlidingContainer::AddControl(CBaseControl* pControl, bool bToTail)
 {
 	if (!pControl)
 		return ~0;

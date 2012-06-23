@@ -7,7 +7,7 @@
 
 namespace glgui
 {
-	class CBaseControl : public IControl
+	class CBaseControl
 	{
 	public:
 						CBaseControl(float x, float y, float w, float h);
@@ -15,8 +15,8 @@ namespace glgui
 		virtual			~CBaseControl();
 
 	public:
-		virtual IControl*	GetParent() { return m_pParent; };
-		virtual void	SetParent(IControl* pParent) { m_pParent = pParent; };
+		virtual CBaseControl*	GetParent() { return m_pParent; };
+		virtual void	SetParent(CBaseControl* pParent) { m_pParent = pParent; };
 
 		virtual void	LoadTextures() {};
 
@@ -67,7 +67,7 @@ namespace glgui
 
 		virtual void	SetVisible(bool bVis);
 		virtual bool	IsVisible();
-		virtual bool	IsChildVisible(IControl* pChild) { return true; }
+		virtual bool	IsChildVisible(CBaseControl* pChild) { return true; }
 
 		virtual void	LevelShutdown( void ) { return; };
 		virtual bool	KeyPressed(int iKey, bool bCtrlDown = false) { return false; };
@@ -81,7 +81,7 @@ namespace glgui
 		virtual void	CursorIn();
 		virtual void	CursorOut();
 
-		virtual IControl*	GetHasCursor();
+		virtual CBaseControl*	GetHasCursor();
 
 		virtual bool	TakesFocus() { return false; }
 		virtual bool	SetFocus(bool bFocus) { m_bFocus = bFocus; return TakesFocus(); };
@@ -109,7 +109,7 @@ namespace glgui
 		static void		MakeQuad();
 
 	protected:
-		IControl*		m_pParent;
+		CBaseControl*	m_pParent;
 
 		float			m_flX;
 		float			m_flY;

@@ -141,7 +141,7 @@ void CMenu::Layout()
 {
 	float iHeight = 0;
 	float iWidth = 0;
-	tvector<IControl*> apControls = m_pMenu->GetControls();
+	tvector<CBaseControl*> apControls = m_pMenu->GetControls();
 	for (size_t i = 0; i < apControls.size(); i++)
 	{
 		apControls[i]->SetPos(5, (float)(i*MENU_HEIGHT));
@@ -328,7 +328,7 @@ void CMenu::CSubmenuPanel::Think()
 
 	for (size_t i = 0; i < m_apControls.size(); i++)
 	{
-		IControl* pControl = m_apControls[i];
+		CBaseControl* pControl = m_apControls[i];
 
 		float x, y;
 		pControl->GetPos(x, y);

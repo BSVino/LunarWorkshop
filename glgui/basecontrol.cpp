@@ -50,8 +50,6 @@ CBaseControl::~CBaseControl()
 		if (pPanel)
 			pPanel->RemoveControl(this);
 	}
-
-	// Parent is IControl, which is virtual.
 }
 
 void CBaseControl::GetAbsPos(float &x, float &y)
@@ -448,7 +446,7 @@ void CBaseControl::SetTooltip(const tstring& sTip)
 		m_flMouseInTime = CRootPanel::Get()->GetTime();
 }
 
-IControl* CBaseControl::GetHasCursor()
+CBaseControl* CBaseControl::GetHasCursor()
 {
 	if (m_flMouseInTime > 0)
 		return this;

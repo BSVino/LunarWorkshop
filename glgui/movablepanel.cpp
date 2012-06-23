@@ -184,7 +184,7 @@ void CMovablePanel::Minimize()
 		Layout();
 }
 
-bool CMovablePanel::IsChildVisible(IControl* pChild)
+bool CMovablePanel::IsChildVisible(CBaseControl* pChild)
 {
 	if (!m_bMinimized)
 		return true;
