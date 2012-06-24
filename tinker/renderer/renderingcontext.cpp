@@ -984,15 +984,25 @@ void CRenderingContext::EndRenderVertexArrayTriangles(size_t iTriangles, int* pi
 
 void CRenderingContext::RenderText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize)
 {
+	FTFont* pFont = glgui::CLabel::GetFont(sFontName, iFontFaceSize);
+
+	if (!pFont)
+	{
+		glgui::CLabel::AddFontSize(sFontName, iFontFaceSize);
+		pFont = glgui::CLabel::GetFont(sFontName, iFontFaceSize);
+	}
+
+	RenderText(sText, iLength, pFont);
+}
+
+void CRenderingContext::RenderText(const tstring& sText, unsigned iLength, FTFont* pFont)
+{
 	TAssert(m_pShader);
 	if (!m_pShader)
 		return;
 
 	TAssert(m_pShader->m_iPositionAttribute >= 0);
 	TAssert(m_pShader->m_iTexCoordAttribute >= 0);
-
-	if (!glgui::CLabel::GetFont(sFontName, iFontFaceSize))
-		glgui::CLabel::AddFontSize(sFontName, iFontFaceSize);
 
 	SetUniform("mProjection", GetContext().m_mProjection);
 	SetUniform("mView", GetContext().m_mView);
@@ -1004,7 +1014,7 @@ void CRenderingContext::RenderText(const tstring& sText, unsigned iLength, const
 	SetUniform("mGlobal", mTransformations);
 
 	ftglSetAttributeLocations(m_pShader->m_iPositionAttribute, m_pShader->m_iTexCoordAttribute);
-	glgui::CLabel::GetFont(sFontName, iFontFaceSize)->Render(sText.c_str(), iLength, FTPoint(vecPosition.x, vecPosition.y, vecPosition.z));
+	pFont->Render(sText.c_str(), iLength, FTPoint(vecPosition.x, vecPosition.y, vecPosition.z));
 }
 
 void CRenderingContext::ReadPixels(size_t x, size_t y, size_t w, size_t h, Vector4D* pvecPixels)

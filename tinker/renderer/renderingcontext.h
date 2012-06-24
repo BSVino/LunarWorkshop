@@ -130,6 +130,7 @@ public:
 	void					EndRenderVertexArrayTriangles(size_t iTriangles, int* piIndices);
 
 	void					RenderText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize);
+	void					RenderText(const tstring& sText, unsigned iLength, class FTFont* pFont);
 
 	// Reads w*h RGBA pixels in float format
 	void					ReadPixels(size_t x, size_t y, size_t w, size_t h, Vector4D* pvecPixels);

@@ -121,8 +121,8 @@ void CLabel::Paint(float x, float y, float w, float h)
 
 						if (Is3D())
 						{
-							float flHeight = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->LineHeight();
-							float flDescender = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Descender();
+							float flHeight = oSection.m_pFont->LineHeight();
+							float flDescender = oSection.m_pFont->Descender();
 
 							float x = oSection.m_rArea.x + ax + ox;
 							float y = oSection.m_rArea.h - (oSection.m_rArea.y + ay + oy) - flHeight + flDescender;
@@ -217,7 +217,7 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 			}
 		}
 
-		PaintText(s.m_sText, iDrawChars, s.m_sFont, s.m_iFontSize, vecPosition.x, vecPosition.y, clrText, r);
+		PaintText(s.m_sText, iDrawChars, s.m_pFont, vecPosition.x, vecPosition.y, clrText, r);
 	}
 
 	m_iCharsDrawn += s.m_sText.length()+1;
@@ -290,12 +290,22 @@ float CLabel::GetFontHeight(const tstring& sFontName, int iFontFaceSize)
 
 void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, float x, float y, const Color& clrText, const FRect& rStencil)
 {
-	if (!GetFont(sFontName, iFontFaceSize))
-		AddFontSize(sFontName, iFontFaceSize);
+	FTFont* pFont = glgui::CLabel::GetFont(sFontName, iFontFaceSize);
 
+	if (!pFont)
+	{
+		glgui::CLabel::AddFontSize(sFontName, iFontFaceSize);
+		pFont = glgui::CLabel::GetFont(sFontName, iFontFaceSize);
+	}
+
+	PaintText(sText, iLength, pFont, x, y, clrText, rStencil);
+}
+
+void CLabel::PaintText(const tstring& sText, unsigned iLength, class ::FTFont* pFont, float x, float y, const Color& clrText, const FRect& rStencil)
+{
 	Matrix4x4 mFontProjection = Matrix4x4::ProjectOrthographic(0, CRootPanel::Get()->GetWidth(), 0, CRootPanel::Get()->GetHeight(), -1, 1);
 
-	float flBaseline = GetFont(sFontName, iFontFaceSize)->Ascender();
+	float flBaseline = pFont->Ascender();
 
 	::CRenderingContext c(nullptr, true);
 
@@ -316,7 +326,7 @@ void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sF
 	else
 		c.SetUniform("bScissor", false);
 
-	c.RenderText(sText, iLength, sFontName, iFontFaceSize);
+	c.RenderText(sText, iLength, pFont);
 }
 
 void CLabel::PaintText3D(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, Vector vecPosition, const Color& clrText)
@@ -385,8 +395,8 @@ bool CLabel::MouseIsInside(const CLine& oLine, const CLineSection& oSection)
 
 	if (Is3D())
 	{
-		float flHeight = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->LineHeight();
-		float flDescender = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Descender();
+		float flHeight = oSection.m_pFont->LineHeight();
+		float flDescender = oSection.m_pFont->Descender();
 		flTop -= flHeight;
 		flTop -= flDescender;
 
@@ -452,15 +462,18 @@ void CLabel::SetFont(const tstring& sFontName, int iSize)
 	m_sFontName = sFontName;
 	m_iFontFaceSize = iSize;
 
-	if (!GetFont(m_sFontName, m_iFontFaceSize))
+	if (!(m_pFont = GetFont(m_sFontName, m_iFontFaceSize)))
+	{
 		AddFontSize(m_sFontName, m_iFontFaceSize);
+		m_pFont = GetFont(m_sFontName, m_iFontFaceSize);
+	}
 
 	m_bNeedsCompute = true;
 }
 
 float CLabel::GetTextWidth() const
 {
-	return s_apFonts[m_sFontName][m_iFontFaceSize]->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str());
+	return m_pFont->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str());
 }
 
 float CLabel::GetTextHeight()
@@ -509,6 +522,9 @@ void CLabel::ComputeLines(float w, float h)
 	CLineSection oSection;
 	oSection.m_sFont = m_sFontName;
 	oSection.m_iFontSize = m_iFontFaceSize;
+	oSection.m_pFont = GetFont(m_sFontName, m_iFontFaceSize);
+
+	TAssert(oSection.m_pFont);
 
 	// This stack is so that markups can be nested.
 	// ie [size=20]big[size=20]bigger[/size][/size]
@@ -527,7 +543,7 @@ void CLabel::ComputeLines(float w, float h)
 		m_aLines.push_back(oLine);
 
 		// Default the line height to whatever's on the top of the section stack.
-		m_aLines.back().m_flLineHeight = s_apFonts[aSectionStack.back().m_sFont][aSectionStack.back().m_iFontSize]->LineHeight();
+		m_aLines.back().m_flLineHeight = aSectionStack.back().m_pFont->LineHeight();
 
 		float lw = 0;
 		unsigned int iChar = 0;
@@ -558,6 +574,7 @@ void CLabel::ComputeLines(float w, float h)
 				oSection.m_sText.clear();
 				aSectionStack.push_back(oSection);
 				AddFontSize(oSection.m_sFont, oSection.m_iFontSize);
+				aSectionStack.back().m_pFont = GetFont(oSection.m_sFont, iSize);
 
 				iLastBreak = iChar;
 			}
@@ -597,6 +614,7 @@ void CLabel::ComputeLines(float w, float h)
 				oSection.m_sText.clear();
 				aSectionStack.push_back(oSection);
 				AddFontSize(oSection.m_sFont, oSection.m_iFontSize);
+				aSectionStack.back().m_pFont = GetFont(oSection.m_sFont, oSection.m_iFontSize);
 
 				iLastBreak = iChar;
 			}
@@ -630,12 +648,12 @@ void CLabel::ComputeLines(float w, float h)
 
 			CLineSection& oTopSection = aSectionStack.back();
 
-			float lh = s_apFonts[oTopSection.m_sFont][oTopSection.m_iFontSize]->LineHeight();
+			float lh = oTopSection.m_pFont->LineHeight();
 
 			FTGLchar szChar[2];
 			szChar[0] = FTGLchar(sLine[iChar]);
 			szChar[1] = '\0';
-			float cw = s_apFonts[oTopSection.m_sFont][oTopSection.m_iFontSize]->Advance(szChar);
+			float cw = oTopSection.m_pFont->Advance(szChar);
 
 			// If we make it this far then we are now adding to a block.
 			if (m_aLines.back().m_flLineHeight < lh)
@@ -707,8 +725,8 @@ void CLabel::PushSection(const CLineSection& oSection, const tstring& sLine)
 
 	CLineSection s = oSection;
 
-	float flSectionWidth = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->Advance(sLine.c_str());
-	float flSectionHeight = s_apFonts[oSection.m_sFont][oSection.m_iFontSize]->LineHeight();
+	float flSectionWidth = oSection.m_pFont->Advance(sLine.c_str());
+	float flSectionHeight = oSection.m_pFont->LineHeight();
 
 	s.m_sText = sLine;
 	s.m_rArea.x = m_aLines.back().m_flLineWidth;
