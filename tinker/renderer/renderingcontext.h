@@ -24,6 +24,7 @@ protected:
 		CMaterialHandle		m_hMaterial;
 		const class CFrameBuffer*	m_pFrameBuffer;
 		tstring				m_sProgram;
+		class CShader*		m_pShader;
 
 		Rect				m_rViewport;
 		blendtype_t			m_eBlend;
@@ -79,6 +80,7 @@ public:
 	void					UseFrameBuffer(const class CFrameBuffer* pBuffer);
 	const class CFrameBuffer* GetActiveFrameBuffer() { return GetContext().m_pFrameBuffer; }
 	void					UseProgram(const tstring& sProgram);
+	void					UseProgram(class CShader* pShader);		// Can save on the program name lookup
 	void					UseMaterial(const CMaterialHandle& hMaterial);
 	void					UseMaterial(const tstring& sName);
 	void					SetupMaterial();

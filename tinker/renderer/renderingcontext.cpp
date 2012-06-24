@@ -38,6 +38,7 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 		GetContext().m_hMaterial = oLastContext.m_hMaterial;
 		GetContext().m_pFrameBuffer = oLastContext.m_pFrameBuffer;
 		GetContext().m_sProgram = oLastContext.m_sProgram;
+		GetContext().m_pShader = oLastContext.m_pShader;
 
 		GetContext().m_rViewport = oLastContext.m_rViewport;
 		GetContext().m_eBlend = oLastContext.m_eBlend;
@@ -48,7 +49,7 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 		GetContext().m_bCull = oLastContext.m_bCull;
 		GetContext().m_bWinding = oLastContext.m_bWinding;
 
-		m_pShader = CShaderLibrary::GetShader(GetContext().m_sProgram);
+		m_pShader = GetContext().m_pShader;
 
 		if (m_pShader)
 			m_iProgram = m_pShader->m_iProgram;
@@ -85,7 +86,7 @@ CRenderingContext::~CRenderingContext()
 	{
 		UseMaterial(GetContext().m_hMaterial);
 		UseFrameBuffer(GetContext().m_pFrameBuffer);
-		UseProgram(GetContext().m_sProgram);
+		UseProgram(GetContext().m_pShader);
 
 		if (GetContext().m_sProgram.length())
 		{
@@ -343,16 +344,27 @@ void CRenderingContext::UseFrameBuffer(const CFrameBuffer* pBuffer)
 void CRenderingContext::UseProgram(const tstring& sProgram)
 {
 	GetContext().m_sProgram = sProgram;
+	GetContext().m_pShader = m_pShader = CShaderLibrary::GetShader(sProgram);
 
-	m_pShader = CShaderLibrary::GetShader(sProgram);
 	if (sProgram.length())
 		TAssert(m_pShader);
+
+	UseProgram(m_pShader);
+}
+
+void CRenderingContext::UseProgram(class CShader* pShader)
+{
+	GetContext().m_pShader = m_pShader = pShader;
+
 	if (!m_pShader)
 	{
+		GetContext().m_sProgram = "";
 		m_iProgram = 0;
 		glUseProgram(0);
 		return;
 	}
+
+	GetContext().m_sProgram = pShader->m_sName;
 
 	m_iProgram = m_pShader->m_iProgram;
 	glUseProgram((GLuint)m_pShader->m_iProgram);
@@ -368,7 +380,7 @@ void CRenderingContext::UseMaterial(const CMaterialHandle& hMaterial)
 
 	GetContext().m_hMaterial = hMaterial;
 
-	UseProgram(hMaterial->m_sShader);
+	UseProgram(hMaterial->m_pShader);
 
 	SetupMaterial();
 }

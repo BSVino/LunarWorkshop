@@ -68,6 +68,8 @@ public:
 
 	tvector<CParameter>		m_aParameters;
 	tvector<CTextureHandle>	m_ahTextures;
+
+	class CShader*			m_pShader;
 };
 
 class CMaterialLibrary

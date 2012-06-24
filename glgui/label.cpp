@@ -767,11 +767,15 @@ void CLabel::SetSectionHoverListener(IEventListener* pListener, IEventListener::
 
 ::FTFont* CLabel::GetFont(const tstring& sName, size_t iSize)
 {
+	auto it = s_apFontNames.find(sName);
 	tstring sRealName = sName;
-	if (s_apFontNames.find(sName) == s_apFontNames.end())
+	if (it == s_apFontNames.end())
+	{
 		sRealName = "sans-serif";
+		it = s_apFontNames.find(sRealName);
+	}
 
-	if (s_apFontNames.find(sRealName) == s_apFontNames.end())
+	if (it == s_apFontNames.end())
 	{
 		tstring sFont;
 

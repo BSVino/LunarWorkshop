@@ -49,7 +49,7 @@ namespace glgui
 			TA_BOTTOMLEFT	= 6,
 		} TextAlign;
 
-		virtual void	Paint() { float x = 0, y = 0; GetAbsPos(x, y); Paint(x, y); };
+		virtual void	Paint() { float x = 0, y = 0; GetAbsPos(x, y); Paint(x, y, m_flW, m_flH); };
 		virtual void	Paint(float x, float y) { Paint(x, y, m_flW, m_flH); };
 		virtual void	Paint(float x, float y, float w, float h);
 		virtual void	DrawSection(const CLine& l, const CLineSection& s, float x, float y, float w, float h);

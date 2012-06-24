@@ -86,6 +86,7 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 	oMat.m_sFile = sMaterial;
 
 	oMat.m_sShader = pShaderData->GetValueString();
+	oMat.m_pShader = pShader;
 	oMat.m_ahTextures.resize(pShader->m_asTextures.size());
 
 	for (size_t i = 0; i < pShaderData->GetNumChildren(); i++)

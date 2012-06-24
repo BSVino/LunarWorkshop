@@ -61,7 +61,7 @@ public:
 	{
 	}
 
-	CHandle(CResource<C>& r)
+	CHandle(const CResource<C>& r)
 		: std::weak_ptr<C>(r)
 	{
 	}
