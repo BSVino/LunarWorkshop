@@ -23,16 +23,6 @@ CVar developer("developer", DEV_VALUE);
 CConsole::CConsole()
 	: glgui::CPanel(0, 0, 100, 100)
 {
-	glgui::CRootPanel::Get()->AddControl(this, true);
-
-	m_pOutput = new glgui::CLabel(0, 0, 100, 100, "");
-	m_pOutput->SetAlign(glgui::CLabel::TA_BOTTOMLEFT);
-	AddControl(m_pOutput);
-
-	m_pInput = new glgui::CTextField();
-	m_pInput->SetContentsChangedListener(this, CommandChanged);
-	AddControl(m_pInput);
-
 	m_bBackground = true;
 
 	m_iHistory = -1;
@@ -40,7 +30,19 @@ CConsole::CConsole()
 
 CConsole::~CConsole()
 {
-	glgui::CRootPanel::Get()->RemoveControl(this);
+}
+
+void CConsole::CreateControls(CResource<CBaseControl> pThis)
+{
+	glgui::RootPanel()->AddControl(pThis, true);
+
+	m_hOutput = AddControl(CreateControl(new glgui::CLabel(0, 0, 100, 100, "")));
+	m_hOutput->SetAlign(glgui::CLabel::TA_BOTTOMLEFT);
+
+	m_hInput = AddControl(CreateControl(new glgui::CTextField()));
+	m_hInput->SetContentsChangedListener(this, CommandChanged);
+
+	BaseClass::CreateControls(pThis);
 }
 
 bool CConsole::IsVisible()
@@ -53,7 +55,7 @@ bool CConsole::IsVisible()
 
 bool CConsole::IsChildVisible(CBaseControl* pChild)
 {
-	if (!BaseClass::IsVisible() && pChild == m_pInput)
+	if (!BaseClass::IsVisible() && pChild == m_hInput)
 		return false;
 
 	return true;
@@ -63,7 +65,7 @@ void CConsole::SetVisible(bool bVisible)
 {
 	BaseClass::SetVisible(bVisible);
 
-	m_pInput->SetFocus(bVisible);
+	m_hInput->SetFocus(bVisible);
 }
 
 bool CConsole::IsOpen()
@@ -85,11 +87,11 @@ void CConsole::Layout()
 	SetSize(glgui::CRootPanel::Get()->GetWidth()/3, glgui::CRootPanel::Get()->GetHeight()-150);
 	SetPos(glgui::CRootPanel::Get()->GetWidth()/6, 0);
 
-	m_pInput->SetSize(GetWidth(), 20);
-	m_pInput->SetPos(0, GetHeight()-20);
+	m_hInput->SetSize(GetWidth(), 20);
+	m_hInput->SetPos(0, GetHeight()-20);
 
-	m_pOutput->SetSize(GetWidth(), GetHeight()-24);
-	m_pOutput->SetPos(0, 0);
+	m_hOutput->SetSize(GetWidth(), GetHeight()-24);
+	m_hOutput->SetPos(0, 0);
 
 	BaseClass::Layout();
 }
@@ -101,10 +103,10 @@ void CConsole::Paint(float x, float y, float w, float h)
 
 	if (!BaseClass::IsVisible() && developer.GetBool())
 	{
-		int iAlpha = m_pOutput->GetAlpha();
-		m_pOutput->SetAlpha(100);
-		m_pOutput->Paint();
-		m_pOutput->SetAlpha(iAlpha);
+		int iAlpha = m_hOutput->GetAlpha();
+		m_hOutput->SetAlpha(100);
+		m_hOutput->Paint();
+		m_hOutput->SetAlpha(iAlpha);
 		return;
 	}
 
@@ -119,10 +121,10 @@ void CConsole::Paint(float x, float y, float w, float h)
 void CConsole::PrintConsole(const tstring& sText)
 {
 	DebugPrint(sText);
-	m_pOutput->AppendText(sText);
+	m_hOutput->AppendText(sText);
 
-	if (m_pOutput->GetText().length() > 2500)
-		m_pOutput->SetText(m_pOutput->GetText().substr(500));
+	if (m_hOutput->GetText().length() > 2500)
+		m_hOutput->SetText(m_hOutput->GetText().substr(500));
 
 	if (!CApplication::Get()->IsOpen())
 		return;
@@ -138,7 +140,7 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 
 	if (code == TINKER_KEY_ESCAPE)
 	{
-		m_pInput->SetText("");
+		m_hInput->SetText("");
 		CApplication::Get()->CloseConsole();
 		return true;
 	}
@@ -151,13 +153,13 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 			{
 				m_iHistory++;
 
-				m_pInput->SetText(m_asHistory[m_iHistory]);
-				m_pInput->SetCursorPosition(-1);
+				m_hInput->SetText(m_asHistory[m_iHistory]);
+				m_hInput->SetCursorPosition(-1);
 			}
 			else if (m_iHistory == (int)m_asHistory.size()-1)
 			{
 				m_iHistory = -1;
-				m_pInput->SetText("");
+				m_hInput->SetText("");
 			}
 		}
 		else if (code == TINKER_KEY_UP)
@@ -167,8 +169,8 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 			else if (m_iHistory > 1)
 				m_iHistory--;
 
-			m_pInput->SetText(m_asHistory[m_iHistory]);
-			m_pInput->SetCursorPosition(-1);
+			m_hInput->SetText(m_asHistory[m_iHistory]);
+			m_hInput->SetCursorPosition(-1);
 		}
 		else
 			m_iHistory = -1;
@@ -181,8 +183,8 @@ bool CConsole::KeyPressed(int code, bool bCtrlDown)
 
 	if (code == TINKER_KEY_ENTER || code == TINKER_KEY_KP_ENTER)
 	{
-		tstring sText = m_pInput->GetText();
-		m_pInput->SetText("");
+		tstring sText = m_hInput->GetText();
+		m_hInput->SetText("");
 
 		PrintConsole(tstring("] ") + sText + "\n");
 
@@ -214,14 +216,21 @@ bool CConsole::CharPressed(int iKey)
 
 void CConsole::CommandChangedCallback(const tstring& sArgs)
 {
-	tstring sInput = m_pInput->GetText();
+	tstring sInput = m_hInput->GetText();
 	if (sInput.find(' ') != ~0)
 	{
-		m_pInput->ClearAutoCompleteCommands();
+		m_hInput->ClearAutoCompleteCommands();
 		return;
 	}
 
-	m_pInput->SetAutoCompleteCommands(CCommand::GetCommandsBeginningWith(sInput));
+	m_hInput->SetAutoCompleteCommands(CCommand::GetCommandsBeginningWith(sInput));
+}
+
+CConsole* CConsole::CreateConsole()
+{
+	CConsole* pConsole = new CConsole();
+	CreateControl(pConsole);
+	return pConsole;
 }
 
 void CApplication::OpenConsole()
@@ -270,7 +279,7 @@ CConsole* CApplication::GetConsole()
 {
 	if (m_pConsole == NULL)
 	{
-		m_pConsole = new CConsole();
+		m_pConsole = CConsole::CreateConsole();
 		m_pConsole->SetVisible(false);
 
 		if (developer.GetBool())

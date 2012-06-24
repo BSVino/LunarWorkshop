@@ -1,11 +1,13 @@
 #ifndef SMAK_MODELWINDOW_H
 #define SMAK_MODELWINDOW_H
 
+#include <common.h>
+
 #include <modelconverter/convmesh.h>
 #include <glgui/glgui.h>
+#include <glgui/basecontrol.h>
 #include <worklistener.h>
 #include <tinker/application.h>
-#include <common.h>
 #include <textures/materialhandle.h>
 
 class CSMAKWindow : public CApplication, glgui::IEventListener, IWorkListener
@@ -191,18 +193,18 @@ protected:
 	bool					m_bDisplayColorAO;
 
 	// Controls
-	glgui::CButton*			m_pRender3D;
-	glgui::CButton*			m_pRenderUV;
+	glgui::CControl<glgui::CButton>			m_hRender3D;
+	glgui::CControl<glgui::CButton>			m_hRenderUV;
 
-	glgui::CButton*			m_pWireframe;
-	glgui::CButton*			m_pFlat;
-	glgui::CButton*			m_pSmooth;
-	glgui::CButton*			m_pUVWireframe;
-	glgui::CButton*			m_pLight;
-	glgui::CButton*			m_pTexture;
-	glgui::CButton*			m_pNormal;
-	glgui::CButton*			m_pAO;
-	glgui::CButton*			m_pColorAO;
+	glgui::CControl<glgui::CButton>			m_hWireframe;
+	glgui::CControl<glgui::CButton>			m_hFlat;
+	glgui::CControl<glgui::CButton>			m_hSmooth;
+	glgui::CControl<glgui::CButton>			m_hUVWireframe;
+	glgui::CControl<glgui::CButton>			m_hLight;
+	glgui::CControl<glgui::CButton>			m_hTexture;
+	glgui::CControl<glgui::CButton>			m_hNormal;
+	glgui::CControl<glgui::CButton>			m_hAO;
+	glgui::CControl<glgui::CButton>			m_hColorAO;
 
 	static CSMAKWindow*		s_pSMAKWindow;
 };

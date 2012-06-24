@@ -12,8 +12,6 @@ public:
 	virtual					~CChatBox();
 
 public:
-	virtual void			Delete() { delete this; };
-
 	virtual bool			IsVisible();
 	virtual void			SetVisible(bool bVisible);
 	virtual bool			IsOpen();

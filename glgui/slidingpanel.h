@@ -14,22 +14,22 @@ namespace glgui
 		class CInnerPanel : public CPanel
 		{
 		public:
-									CInnerPanel(CSlidingContainer* pMaster);
+									CInnerPanel(CControl<CSlidingContainer> hMaster);
 	
 		public:
 			virtual bool			IsVisible();
 
-			CSlidingContainer*		m_pMaster;
+			CControl<CSlidingContainer>	m_hMaster;
 		};
 
 	public:
-									CSlidingPanel(CSlidingContainer* pParent, char* pszTitle);
+									CSlidingPanel(CControl<CSlidingContainer> hParent, char* pszTitle);
 
 	public:
 		virtual void				Layout();
 		virtual void				Paint(float x, float y, float w, float h);
 
-		virtual size_t				AddControl(CBaseControl* pControl, bool bToTail = false);
+		virtual CControlHandle		AddControl(CResource<CBaseControl> pControl, bool bToTail = false);
 
 		virtual bool				MousePressed(int iButton, int mx, int my);
 
@@ -40,9 +40,9 @@ namespace glgui
 	protected:
 		bool						m_bCurrent;
 
-		CLabel*						m_pTitle;
+		CControl<CLabel>			m_hTitle;
 
-		CPanel*						m_pInnerPanel;
+		CControl<CPanel>			m_hInnerPanel;
 	};
 
 	class CSlidingContainer : public CPanel
@@ -54,7 +54,7 @@ namespace glgui
 	public:
 		virtual void				Layout();
 
-		virtual size_t				AddControl(CBaseControl* pControl, bool bToTail = false);
+		virtual CControlHandle		AddControl(CResource<CBaseControl> pControl, bool bToTail = false);
 
 		virtual bool				IsCurrent(int iPanel);
 		virtual void				SetCurrent(int iPanel);

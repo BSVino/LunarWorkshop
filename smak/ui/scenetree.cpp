@@ -17,9 +17,6 @@ CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
 	: CMovablePanel("Scene Tree")
 {
 	m_pScene = pScene;
-	m_pTree = new CTree(SMAKWindow()->GetSMAKRenderer()->GetArrowTexture(), SMAKWindow()->GetSMAKRenderer()->GetEditTexture(), SMAKWindow()->GetSMAKRenderer()->GetVisibilityTexture());
-	m_pTree->SetSelectedListener(this, Selected);
-	AddControl(m_pTree);
 
 	HasCloseButton(false);
 	SetClearBackground(true);
@@ -33,16 +30,20 @@ CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
 
 CSceneTreePanel::~CSceneTreePanel()
 {
-	delete m_pTree;
+}
 
-	if (m_pMaterialEditor)
-		delete m_pMaterialEditor;
+void CSceneTreePanel::CreateControls(CResource<glgui::CBaseControl> pThis)
+{
+	m_hTree = AddControl(new CTree(SMAKWindow()->GetSMAKRenderer()->GetArrowTexture(), SMAKWindow()->GetSMAKRenderer()->GetEditTexture(), SMAKWindow()->GetSMAKRenderer()->GetVisibilityTexture()));
+	m_hTree->SetSelectedListener(this, Selected);
+
+	BaseClass::CreateControls(pThis);
 }
 
 void CSceneTreePanel::Layout()
 {
-	m_pTree->SetPos(5, HEADER_HEIGHT);
-	m_pTree->SetSize(GetWidth() - 5, GetHeight() - HEADER_HEIGHT - 20);
+	m_hTree->SetPos(5, HEADER_HEIGHT);
+	m_hTree->SetSize(GetWidth() - 5, GetHeight() - HEADER_HEIGHT - 20);
 
 	CMovablePanel::Layout();
 }
@@ -51,7 +52,7 @@ void CSceneTreePanel::UpdateTree()
 {
 	m_iLastSelectedMaterial = ~0;
 
-	m_pTree->ClearTree();
+	m_hTree->ClearTree();
 
 	AddAllToTree();
 
@@ -65,8 +66,8 @@ void CSceneTreePanel::Paint(float x, float y, float w, float h)
 
 void CSceneTreePanel::AddAllToTree()
 {
-	size_t iMaterialsNode = m_pTree->AddNode("Materials");
-	CTreeNode* pMaterialsNode = m_pTree->GetNode(iMaterialsNode);
+	size_t iMaterialsNode = m_hTree->AddNode("Materials");
+	CTreeNode* pMaterialsNode = m_hTree->GetNode(iMaterialsNode);
 	pMaterialsNode->SetIcon(SMAKWindow()->GetSMAKRenderer()->GetMaterialsNodeTexture());
 
 	size_t i;
@@ -79,27 +80,27 @@ void CSceneTreePanel::AddAllToTree()
 	}
 
 	// Don't overload the screen.
-	if (pMaterialsNode->m_apNodes.size() > 10)
+	if (pMaterialsNode->m_ahNodes.size() > 10)
 		pMaterialsNode->SetExpanded(false);
 
-	size_t iMeshesNode = m_pTree->AddNode("Meshes");
-	CTreeNode* pMeshesNode = m_pTree->GetNode(iMeshesNode);
+	size_t iMeshesNode = m_hTree->AddNode("Meshes");
+	CTreeNode* pMeshesNode = m_hTree->GetNode(iMeshesNode);
 	pMeshesNode->SetIcon(SMAKWindow()->GetSMAKRenderer()->GetMeshesNodeTexture());
 
 	for (i = 0; i < m_pScene->GetNumMeshes(); i++)
 		pMeshesNode->AddNode<CConversionMesh>(m_pScene->GetMesh(i)->GetName(), m_pScene->GetMesh(i));
 
-	if (pMeshesNode->m_apNodes.size() > 10)
+	if (pMeshesNode->m_ahNodes.size() > 10)
 		pMeshesNode->SetExpanded(false);
 
-	size_t iScenesNode = m_pTree->AddNode("Scenes");
-	CTreeNode* pScenesNode = m_pTree->GetNode(iScenesNode);
+	size_t iScenesNode = m_hTree->AddNode("Scenes");
+	CTreeNode* pScenesNode = m_hTree->GetNode(iScenesNode);
 	pScenesNode->SetIcon(SMAKWindow()->GetSMAKRenderer()->GetScenesNodeTexture());
 
 	for (i = 0; i < m_pScene->GetNumScenes(); i++)
 		AddNodeToTree(pScenesNode, m_pScene->GetScene(i));
 
-	if (pScenesNode->m_apNodes.size() > 10)
+	if (pScenesNode->m_ahNodes.size() > 10)
 		pScenesNode->SetExpanded(false);
 }
 
@@ -141,10 +142,10 @@ void OpenMaterialEditor(CConversionMaterial* pMaterial, const tstring& sArgs)
 
 void CSceneTreePanel::OpenMaterialEditor(CConversionMaterial* pMaterial)
 {
-	if (m_pMaterialEditor)
-		delete m_pMaterialEditor;
+	if (m_pMaterialEditor.get())
+		m_pMaterialEditor.DowncastStatic<CMaterialEditor>()->Close();
 
-	m_pMaterialEditor = new CMaterialEditor(pMaterial, this);
+	m_pMaterialEditor = CreateControl(new CMaterialEditor(pMaterial, m_hThis));
 
 	if (!m_pMaterialEditor)
 		return;
@@ -155,10 +156,10 @@ void CSceneTreePanel::OpenMaterialEditor(CConversionMaterial* pMaterial)
 
 void CSceneTreePanel::SelectedCallback(const tstring& sArgs)
 {
-	if (!m_pTree->GetSelectedNode())
+	if (!m_hTree->GetSelectedNode())
 		return;
 
-	CTreeNodeObject<CConversionMaterial>* pMaterialNode = dynamic_cast<CTreeNodeObject<CConversionMaterial>*>(m_pTree->GetSelectedNode());
+	CTreeNodeObject<CConversionMaterial>* pMaterialNode = m_hTree->GetSelectedNode().Downcast<CTreeNodeObject<CConversionMaterial>>();
 	if (pMaterialNode)
 	{
 		CConversionMaterial* pMaterial = pMaterialNode->GetObject();
@@ -180,7 +181,7 @@ void CSceneTreePanel::Open(CConversionScene* pScene)
 	CSceneTreePanel* pPanel = Get();
 
 	if (!pPanel)
-		pPanel = s_pSceneTreePanel = new CSceneTreePanel(pScene);
+		pPanel = s_pSceneTreePanel = CreateControl(new CSceneTreePanel(pScene)).DowncastStatic<CSceneTreePanel>();
 
 	if (!pPanel)
 		return;
@@ -194,11 +195,11 @@ CSceneTreePanel* CSceneTreePanel::Get()
 	return s_pSceneTreePanel;
 }
 
-CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel* pSceneTree)
+CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CControl<CSceneTreePanel> hSceneTree)
 	: CMovablePanel("Material Properties")
 {
 	m_pMaterial = pMaterial;
-	m_pSceneTree = pSceneTree;
+	m_hSceneTree = hSceneTree;
 
 	m_pScene = CSMAKWindow::Get()->GetScene();
 
@@ -212,102 +213,83 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel
 	}
 
 	float x, y;
-	m_pSceneTree->GetAbsPos(x, y);
+	m_hSceneTree->GetAbsPos(x, y);
 
-	SetPos(x + m_pSceneTree->GetWidth(), y);
+	SetPos(x + m_hSceneTree->GetWidth(), y);
 	SetSize(500, 300);
+}
 
-	m_pName->AppendText(" - ");
-	m_pName->AppendText(pMaterial->GetName().c_str());
+void CMaterialEditor::CreateControls(CResource<CBaseControl> pThis)
+{
+	m_hDiffuseLabel = AddControl(new CLabel(0, 0, 1, 1, "Diffuse map: "));
+	m_hDiffuseFile = AddControl(new CButton(0, 0, 1, 1, ""));
+	m_hDiffuseFile->SetAlign(CLabel::TA_LEFTCENTER);
+	m_hDiffuseFile->SetWrap(false);
+	m_hDiffuseFile->SetClickedListener(this, ChooseDiffuse);
+	m_hDiffuseRemove = AddControl(new CButton(0, 0, 70, 20, "Remove"));
+	m_hDiffuseRemove->SetClickedListener(this, RemoveDiffuse);
 
-	m_pDiffuseLabel = new CLabel(0, 0, 1, 1, "Diffuse map: ");
-	AddControl(m_pDiffuseLabel);
-	m_pDiffuseFile = new CButton(0, 0, 1, 1, "");
-	m_pDiffuseFile->SetAlign(CLabel::TA_LEFTCENTER);
-	m_pDiffuseFile->SetWrap(false);
-	m_pDiffuseFile->SetClickedListener(this, ChooseDiffuse);
-	AddControl(m_pDiffuseFile);
-	m_pDiffuseRemove = new CButton(0, 0, 70, 20, "Remove");
-	m_pDiffuseRemove->SetClickedListener(this, RemoveDiffuse);
-	AddControl(m_pDiffuseRemove);
+	m_hNormalLabel = AddControl(new CLabel(0, 0, 1, 1, "Normal map: "));
+	m_hNormalFile = AddControl(new CButton(0, 0, 1, 1, ""));
+	m_hNormalFile->SetAlign(CLabel::TA_LEFTCENTER);
+	m_hNormalFile->SetWrap(false);
+	m_hNormalFile->SetClickedListener(this, ChooseNormal);
+	m_hNormalRemove = AddControl(new CButton(0, 0, 70, 20, "Remove"));
+	m_hNormalRemove->SetClickedListener(this, RemoveNormal);
 
-	m_pNormalLabel = new CLabel(0, 0, 1, 1, "Normal map: ");
-	AddControl(m_pNormalLabel);
-	m_pNormalFile = new CButton(0, 0, 1, 1, "");
-	m_pNormalFile->SetAlign(CLabel::TA_LEFTCENTER);
-	m_pNormalFile->SetWrap(false);
-	m_pNormalFile->SetClickedListener(this, ChooseNormal);
-	AddControl(m_pNormalFile);
-	m_pNormalRemove = new CButton(0, 0, 70, 20, "Remove");
-	m_pNormalRemove->SetClickedListener(this, RemoveNormal);
-	AddControl(m_pNormalRemove);
+	m_hAmbientLabel = AddControl(new CLabel(0, 0, 1, 1, "Ambient: "));
+	m_hAmbientRedSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hAmbientRedSelector, 1);
+	m_hAmbientRedSelector->SetSelectedListener(this, SetAmbientRed);
+	m_hAmbientGreenSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hAmbientGreenSelector, 1);
+	m_hAmbientGreenSelector->SetSelectedListener(this, SetAmbientGreen);
+	m_hAmbientBlueSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hAmbientBlueSelector, 1);
+	m_hAmbientBlueSelector->SetSelectedListener(this, SetAmbientBlue);
 
-	m_pAmbientLabel = new CLabel(0, 0, 1, 1, "Ambient: ");
-	AddControl(m_pAmbientLabel);
-	m_pAmbientRedSelector = new CScrollSelector<float>();
-	SetupSelector(m_pAmbientRedSelector, 1);
-	m_pAmbientRedSelector->SetSelectedListener(this, SetAmbientRed);
-	AddControl(m_pAmbientRedSelector);
-	m_pAmbientGreenSelector = new CScrollSelector<float>();
-	SetupSelector(m_pAmbientGreenSelector, 1);
-	m_pAmbientGreenSelector->SetSelectedListener(this, SetAmbientGreen);
-	AddControl(m_pAmbientGreenSelector);
-	m_pAmbientBlueSelector = new CScrollSelector<float>();
-	SetupSelector(m_pAmbientBlueSelector, 1);
-	m_pAmbientBlueSelector->SetSelectedListener(this, SetAmbientBlue);
-	AddControl(m_pAmbientBlueSelector);
+	m_hDiffuseSelectorLabel = AddControl(new CLabel(0, 0, 1, 1, "Diffuse: "));
+	m_hDiffuseRedSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hDiffuseRedSelector, 1);
+	m_hDiffuseRedSelector->SetSelectedListener(this, SetDiffuseRed);
+	m_hDiffuseGreenSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hDiffuseGreenSelector, 1);
+	m_hDiffuseGreenSelector->SetSelectedListener(this, SetDiffuseGreen);
+	m_hDiffuseBlueSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hDiffuseBlueSelector, 1);
+	m_hDiffuseBlueSelector->SetSelectedListener(this, SetDiffuseBlue);
 
-	m_pDiffuseSelectorLabel = new CLabel(0, 0, 1, 1, "Diffuse: ");
-	AddControl(m_pDiffuseSelectorLabel);
-	m_pDiffuseRedSelector = new CScrollSelector<float>();
-	SetupSelector(m_pDiffuseRedSelector, 1);
-	m_pDiffuseRedSelector->SetSelectedListener(this, SetDiffuseRed);
-	AddControl(m_pDiffuseRedSelector);
-	m_pDiffuseGreenSelector = new CScrollSelector<float>();
-	SetupSelector(m_pDiffuseGreenSelector, 1);
-	m_pDiffuseGreenSelector->SetSelectedListener(this, SetDiffuseGreen);
-	AddControl(m_pDiffuseGreenSelector);
-	m_pDiffuseBlueSelector = new CScrollSelector<float>();
-	SetupSelector(m_pDiffuseBlueSelector, 1);
-	m_pDiffuseBlueSelector->SetSelectedListener(this, SetDiffuseBlue);
-	AddControl(m_pDiffuseBlueSelector);
+	m_hSpecularLabel = AddControl(new CLabel(0, 0, 1, 1, "Specular: "));
+	m_hSpecularRedSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hSpecularRedSelector, 1);
+	m_hSpecularRedSelector->SetSelectedListener(this, SetSpecularRed);
+	m_hSpecularGreenSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hSpecularGreenSelector, 1);
+	m_hSpecularGreenSelector->SetSelectedListener(this, SetSpecularGreen);
+	m_hSpecularBlueSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hSpecularBlueSelector, 1);
+	m_hSpecularBlueSelector->SetSelectedListener(this, SetSpecularBlue);
 
-	m_pSpecularLabel = new CLabel(0, 0, 1, 1, "Specular: ");
-	AddControl(m_pSpecularLabel);
-	m_pSpecularRedSelector = new CScrollSelector<float>();
-	SetupSelector(m_pSpecularRedSelector, 1);
-	m_pSpecularRedSelector->SetSelectedListener(this, SetSpecularRed);
-	AddControl(m_pSpecularRedSelector);
-	m_pSpecularGreenSelector = new CScrollSelector<float>();
-	SetupSelector(m_pSpecularGreenSelector, 1);
-	m_pSpecularGreenSelector->SetSelectedListener(this, SetSpecularGreen);
-	AddControl(m_pSpecularGreenSelector);
-	m_pSpecularBlueSelector = new CScrollSelector<float>();
-	SetupSelector(m_pSpecularBlueSelector, 1);
-	m_pSpecularBlueSelector->SetSelectedListener(this, SetSpecularBlue);
-	AddControl(m_pSpecularBlueSelector);
+	m_hEmissiveLabel = AddControl(new CLabel(0, 0, 1, 1, "Emissive: "));
+	m_hEmissiveRedSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hEmissiveRedSelector, 1);
+	m_hEmissiveRedSelector->SetSelectedListener(this, SetEmissiveRed);
+	m_hEmissiveGreenSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hEmissiveGreenSelector, 1);
+	m_hEmissiveGreenSelector->SetSelectedListener(this, SetEmissiveGreen);
+	m_hEmissiveBlueSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hEmissiveBlueSelector, 1);
+	m_hEmissiveBlueSelector->SetSelectedListener(this, SetEmissiveBlue);
 
-	m_pEmissiveLabel = new CLabel(0, 0, 1, 1, "Emissive: ");
-	AddControl(m_pEmissiveLabel);
-	m_pEmissiveRedSelector = new CScrollSelector<float>();
-	SetupSelector(m_pEmissiveRedSelector, 1);
-	m_pEmissiveRedSelector->SetSelectedListener(this, SetEmissiveRed);
-	AddControl(m_pEmissiveRedSelector);
-	m_pEmissiveGreenSelector = new CScrollSelector<float>();
-	SetupSelector(m_pEmissiveGreenSelector, 1);
-	m_pEmissiveGreenSelector->SetSelectedListener(this, SetEmissiveGreen);
-	AddControl(m_pEmissiveGreenSelector);
-	m_pEmissiveBlueSelector = new CScrollSelector<float>();
-	SetupSelector(m_pEmissiveBlueSelector, 1);
-	m_pEmissiveBlueSelector->SetSelectedListener(this, SetEmissiveBlue);
-	AddControl(m_pEmissiveBlueSelector);
+	m_hShininessLabel = AddControl(new CLabel(0, 0, 1, 1, "Shininess: "));
+	m_hShininessSelector = AddControl(new CScrollSelector<float>());
+	SetupSelector(m_hShininessSelector, 128);
+	m_hShininessSelector->SetSelectedListener(this, SetShininess);
 
-	m_pShininessLabel = new CLabel(0, 0, 1, 1, "Shininess: ");
-	AddControl(m_pShininessLabel);
-	m_pShininessSelector = new CScrollSelector<float>();
-	SetupSelector(m_pShininessSelector, 128);
-	m_pShininessSelector->SetSelectedListener(this, SetShininess);
-	AddControl(m_pShininessSelector);
+	BaseClass::CreateControls(pThis);
+
+	m_hName->AppendText(" - ");
+	m_hName->AppendText(m_pMaterial->GetName().c_str());
 
 	Layout();
 }
@@ -341,155 +323,155 @@ void CMaterialEditor::Layout()
 {
 	float flHeight = HEADER_HEIGHT+10;
 
-	m_pDiffuseLabel->SetPos(10, flHeight);
-	m_pDiffuseLabel->EnsureTextFits();
+	m_hDiffuseLabel->SetPos(10, flHeight);
+	m_hDiffuseLabel->EnsureTextFits();
 
 	float x, y;
-	m_pDiffuseLabel->GetPos(x, y);
+	m_hDiffuseLabel->GetPos(x, y);
 
 	float flControlHeight = y;
 
-	float flDiffuseRight = x + m_pDiffuseLabel->GetWidth();
+	float flDiffuseRight = x + m_hDiffuseLabel->GetWidth();
 
-	m_pDiffuseFile->SetPos(flDiffuseRight, flHeight);
+	m_hDiffuseFile->SetPos(flDiffuseRight, flHeight);
 	if (m_pMaterial->GetDiffuseTexture().length())
-		m_pDiffuseFile->SetText(m_pMaterial->GetDiffuseTexture().c_str());
+		m_hDiffuseFile->SetText(m_pMaterial->GetDiffuseTexture().c_str());
 	else
-		m_pDiffuseFile->SetText("Choose...");
-	m_pDiffuseFile->SetSize(0, 0);
-	m_pDiffuseFile->EnsureTextFits();
-	if (m_pDiffuseFile->GetWidth() + m_pDiffuseLabel->GetWidth() + 10 > GetWidth())
-		m_pDiffuseFile->SetSize(GetWidth() - m_pDiffuseLabel->GetWidth() - 10, m_pDiffuseFile->GetHeight());
+		m_hDiffuseFile->SetText("Choose...");
+	m_hDiffuseFile->SetSize(0, 0);
+	m_hDiffuseFile->EnsureTextFits();
+	if (m_hDiffuseFile->GetWidth() + m_hDiffuseLabel->GetWidth() + 10 > GetWidth())
+		m_hDiffuseFile->SetSize(GetWidth() - m_hDiffuseLabel->GetWidth() - 10, m_hDiffuseFile->GetHeight());
 
 	flHeight += flControlHeight;
 
-	m_pDiffuseRemove->SetPos(GetWidth() - m_pDiffuseRemove->GetWidth() - 10, flHeight);
+	m_hDiffuseRemove->SetPos(GetWidth() - m_hDiffuseRemove->GetWidth() - 10, flHeight);
 
 	flHeight += flControlHeight;
 
-	m_pNormalLabel->SetPos(10, flHeight);
-	m_pNormalLabel->EnsureTextFits();
+	m_hNormalLabel->SetPos(10, flHeight);
+	m_hNormalLabel->EnsureTextFits();
 
-	m_pNormalLabel->GetPos(x, y);
-	float flNormalRight = x + m_pNormalLabel->GetWidth();
+	m_hNormalLabel->GetPos(x, y);
+	float flNormalRight = x + m_hNormalLabel->GetWidth();
 
-	m_pNormalFile->SetPos(flNormalRight, flHeight);
+	m_hNormalFile->SetPos(flNormalRight, flHeight);
 	if (m_pMaterial->GetNormalTexture().length())
-		m_pNormalFile->SetText(m_pMaterial->GetNormalTexture().c_str());
+		m_hNormalFile->SetText(m_pMaterial->GetNormalTexture().c_str());
 	else
-		m_pNormalFile->SetText("Choose...");
-	m_pNormalFile->SetSize(0, 0);
-	m_pNormalFile->EnsureTextFits();
-	if (m_pNormalFile->GetWidth() + m_pNormalLabel->GetWidth() + 10 > GetWidth())
-		m_pNormalFile->SetSize(GetWidth() - m_pNormalLabel->GetWidth() - 10, m_pNormalFile->GetHeight());
+		m_hNormalFile->SetText("Choose...");
+	m_hNormalFile->SetSize(0, 0);
+	m_hNormalFile->EnsureTextFits();
+	if (m_hNormalFile->GetWidth() + m_hNormalLabel->GetWidth() + 10 > GetWidth())
+		m_hNormalFile->SetSize(GetWidth() - m_hNormalLabel->GetWidth() - 10, m_hNormalFile->GetHeight());
 
 	flHeight += flControlHeight;
 
-	m_pNormalRemove->SetPos(GetWidth() - m_pNormalRemove->GetWidth() - 10, flHeight);
+	m_hNormalRemove->SetPos(GetWidth() - m_hNormalRemove->GetWidth() - 10, flHeight);
 
 	flHeight += flControlHeight;
 
 	float flAmbientHeight = flHeight;
 
-	m_pAmbientLabel->SetPos(10, flHeight);
-	m_pAmbientLabel->EnsureTextFits();
+	m_hAmbientLabel->SetPos(10, flHeight);
+	m_hAmbientLabel->EnsureTextFits();
 
-	m_pAmbientLabel->GetPos(x, y);
-	float flAmbientRight = x + m_pAmbientLabel->GetWidth();
+	m_hAmbientLabel->GetPos(x, y);
+	float flAmbientRight = x + m_hAmbientLabel->GetWidth();
 
-	m_pAmbientRedSelector->SetPos(flAmbientRight, flHeight);
-	m_pAmbientRedSelector->SetSelection((int)(m_pMaterial->m_vecAmbient.x*20));
-	m_pAmbientRedSelector->SetRight(GetWidth()/2-5);
-
-	flHeight += 20;
-	m_pAmbientGreenSelector->SetPos(flAmbientRight, flHeight);
-	m_pAmbientGreenSelector->SetSelection((int)(m_pMaterial->m_vecAmbient.y*20));
-	m_pAmbientGreenSelector->SetRight(GetWidth()/2-5);
+	m_hAmbientRedSelector->SetPos(flAmbientRight, flHeight);
+	m_hAmbientRedSelector->SetSelection((int)(m_pMaterial->m_vecAmbient.x*20));
+	m_hAmbientRedSelector->SetRight(GetWidth()/2-5);
 
 	flHeight += 20;
-	m_pAmbientBlueSelector->SetPos(flAmbientRight, flHeight);
-	m_pAmbientBlueSelector->SetSelection((int)(m_pMaterial->m_vecAmbient.z*20));
-	m_pAmbientBlueSelector->SetRight(GetWidth()/2-5);
+	m_hAmbientGreenSelector->SetPos(flAmbientRight, flHeight);
+	m_hAmbientGreenSelector->SetSelection((int)(m_pMaterial->m_vecAmbient.y*20));
+	m_hAmbientGreenSelector->SetRight(GetWidth()/2-5);
+
+	flHeight += 20;
+	m_hAmbientBlueSelector->SetPos(flAmbientRight, flHeight);
+	m_hAmbientBlueSelector->SetSelection((int)(m_pMaterial->m_vecAmbient.z*20));
+	m_hAmbientBlueSelector->SetRight(GetWidth()/2-5);
 
 	flHeight = flAmbientHeight;
 
-	m_pDiffuseSelectorLabel->SetPos(GetWidth()/2+5, flHeight);
-	m_pDiffuseSelectorLabel->EnsureTextFits();
+	m_hDiffuseSelectorLabel->SetPos(GetWidth()/2+5, flHeight);
+	m_hDiffuseSelectorLabel->EnsureTextFits();
 
-	m_pDiffuseSelectorLabel->GetPos(x, y);
-	float flDiffuseSelectorX = x + m_pDiffuseSelectorLabel->GetWidth();
+	m_hDiffuseSelectorLabel->GetPos(x, y);
+	float flDiffuseSelectorX = x + m_hDiffuseSelectorLabel->GetWidth();
 
-	m_pDiffuseRedSelector->SetPos(flDiffuseSelectorX, flHeight);
-	m_pDiffuseRedSelector->SetSelection((int)(m_pMaterial->m_vecDiffuse.x*20));
-	m_pDiffuseRedSelector->SetRight(GetWidth()-10);
-
-	flHeight += 20;
-	m_pDiffuseGreenSelector->SetPos(flDiffuseSelectorX, flHeight);
-	m_pDiffuseGreenSelector->SetSelection((int)(m_pMaterial->m_vecDiffuse.y*20));
-	m_pDiffuseGreenSelector->SetRight(GetWidth()-10);
+	m_hDiffuseRedSelector->SetPos(flDiffuseSelectorX, flHeight);
+	m_hDiffuseRedSelector->SetSelection((int)(m_pMaterial->m_vecDiffuse.x*20));
+	m_hDiffuseRedSelector->SetRight(GetWidth()-10);
 
 	flHeight += 20;
-	m_pDiffuseBlueSelector->SetPos(flDiffuseSelectorX, flHeight);
-	m_pDiffuseBlueSelector->SetSelection((int)(m_pMaterial->m_vecDiffuse.z*20));
-	m_pDiffuseBlueSelector->SetRight(GetWidth()-10);
+	m_hDiffuseGreenSelector->SetPos(flDiffuseSelectorX, flHeight);
+	m_hDiffuseGreenSelector->SetSelection((int)(m_pMaterial->m_vecDiffuse.y*20));
+	m_hDiffuseGreenSelector->SetRight(GetWidth()-10);
+
+	flHeight += 20;
+	m_hDiffuseBlueSelector->SetPos(flDiffuseSelectorX, flHeight);
+	m_hDiffuseBlueSelector->SetSelection((int)(m_pMaterial->m_vecDiffuse.z*20));
+	m_hDiffuseBlueSelector->SetRight(GetWidth()-10);
 
 	flHeight += flControlHeight;
 
 	float flSpecularHeight = flHeight;
 
-	m_pSpecularLabel->SetPos(10, flHeight);
-	m_pSpecularLabel->EnsureTextFits();
+	m_hSpecularLabel->SetPos(10, flHeight);
+	m_hSpecularLabel->EnsureTextFits();
 
-	m_pSpecularLabel->GetPos(x, y);
-	float flSpecularRight = x + m_pSpecularLabel->GetWidth();
+	m_hSpecularLabel->GetPos(x, y);
+	float flSpecularRight = x + m_hSpecularLabel->GetWidth();
 
-	m_pSpecularRedSelector->SetPos(flSpecularRight, flHeight);
-	m_pSpecularRedSelector->SetSelection((int)(m_pMaterial->m_vecSpecular.x*20));
-	m_pSpecularRedSelector->SetRight(GetWidth()/2-5);
-
-	flHeight += 20;
-	m_pSpecularGreenSelector->SetPos(flSpecularRight, flHeight);
-	m_pSpecularGreenSelector->SetSelection((int)(m_pMaterial->m_vecSpecular.y*20));
-	m_pSpecularGreenSelector->SetRight(GetWidth()/2-5);
+	m_hSpecularRedSelector->SetPos(flSpecularRight, flHeight);
+	m_hSpecularRedSelector->SetSelection((int)(m_pMaterial->m_vecSpecular.x*20));
+	m_hSpecularRedSelector->SetRight(GetWidth()/2-5);
 
 	flHeight += 20;
-	m_pSpecularBlueSelector->SetPos(flSpecularRight, flHeight);
-	m_pSpecularBlueSelector->SetSelection((int)(m_pMaterial->m_vecSpecular.z*20));
-	m_pSpecularBlueSelector->SetRight(GetWidth()/2-5);
+	m_hSpecularGreenSelector->SetPos(flSpecularRight, flHeight);
+	m_hSpecularGreenSelector->SetSelection((int)(m_pMaterial->m_vecSpecular.y*20));
+	m_hSpecularGreenSelector->SetRight(GetWidth()/2-5);
+
+	flHeight += 20;
+	m_hSpecularBlueSelector->SetPos(flSpecularRight, flHeight);
+	m_hSpecularBlueSelector->SetSelection((int)(m_pMaterial->m_vecSpecular.z*20));
+	m_hSpecularBlueSelector->SetRight(GetWidth()/2-5);
 
 	flHeight = flSpecularHeight;
 
-	m_pEmissiveLabel->SetPos(GetWidth()/2+5, flHeight);
-	m_pEmissiveLabel->EnsureTextFits();
+	m_hEmissiveLabel->SetPos(GetWidth()/2+5, flHeight);
+	m_hEmissiveLabel->EnsureTextFits();
 
-	m_pEmissiveLabel->GetPos(x, y);
-	float flEmissiveRight = x + m_pEmissiveLabel->GetWidth();
+	m_hEmissiveLabel->GetPos(x, y);
+	float flEmissiveRight = x + m_hEmissiveLabel->GetWidth();
 
-	m_pEmissiveRedSelector->SetPos(flEmissiveRight, flHeight);
-	m_pEmissiveRedSelector->SetSelection((int)(m_pMaterial->m_vecEmissive.x*20));
-	m_pEmissiveRedSelector->SetRight(GetWidth()-10);
-
-	flHeight += 20;
-	m_pEmissiveGreenSelector->SetPos(flEmissiveRight, flHeight);
-	m_pEmissiveGreenSelector->SetSelection((int)(m_pMaterial->m_vecEmissive.y*20));
-	m_pEmissiveGreenSelector->SetRight(GetWidth()-10);
+	m_hEmissiveRedSelector->SetPos(flEmissiveRight, flHeight);
+	m_hEmissiveRedSelector->SetSelection((int)(m_pMaterial->m_vecEmissive.x*20));
+	m_hEmissiveRedSelector->SetRight(GetWidth()-10);
 
 	flHeight += 20;
-	m_pEmissiveBlueSelector->SetPos(flEmissiveRight, flHeight);
-	m_pEmissiveBlueSelector->SetSelection((int)(m_pMaterial->m_vecEmissive.z*20));
-	m_pEmissiveBlueSelector->SetRight(GetWidth()-10);
+	m_hEmissiveGreenSelector->SetPos(flEmissiveRight, flHeight);
+	m_hEmissiveGreenSelector->SetSelection((int)(m_pMaterial->m_vecEmissive.y*20));
+	m_hEmissiveGreenSelector->SetRight(GetWidth()-10);
+
+	flHeight += 20;
+	m_hEmissiveBlueSelector->SetPos(flEmissiveRight, flHeight);
+	m_hEmissiveBlueSelector->SetSelection((int)(m_pMaterial->m_vecEmissive.z*20));
+	m_hEmissiveBlueSelector->SetRight(GetWidth()-10);
 
 	flHeight += flControlHeight;
 
-	m_pShininessLabel->SetPos(10, flHeight);
-	m_pShininessLabel->EnsureTextFits();
+	m_hShininessLabel->SetPos(10, flHeight);
+	m_hShininessLabel->EnsureTextFits();
 
-	m_pShininessLabel->GetPos(x, y);
-	float flShininessRight = x + m_pShininessLabel->GetWidth();
+	m_hShininessLabel->GetPos(x, y);
+	float flShininessRight = x + m_hShininessLabel->GetWidth();
 
-	m_pShininessSelector->SetPos(flShininessRight, flHeight);
-	m_pShininessSelector->SetSelection((int)(m_pMaterial->m_flShininess/127*20));
-	m_pShininessSelector->SetRight(GetWidth()/2-5);
+	m_hShininessSelector->SetPos(flShininessRight, flHeight);
+	m_hShininessSelector->SetSelection((int)(m_pMaterial->m_flShininess/127*20));
+	m_hShininessSelector->SetRight(GetWidth()/2-5);
 
 	CMovablePanel::Layout();
 }
@@ -566,65 +548,65 @@ void CMaterialEditor::RemoveNormalCallback(const tstring& sArgs)
 
 void CMaterialEditor::SetAmbientRedCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_vecAmbient.x = m_pAmbientRedSelector->GetSelectionValue();
+	m_pMaterial->m_vecAmbient.x = m_hAmbientRedSelector->GetSelectionValue();
 }
 
 void CMaterialEditor::SetAmbientGreenCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_vecAmbient.y = m_pAmbientGreenSelector->GetSelectionValue();
+	m_pMaterial->m_vecAmbient.y = m_hAmbientGreenSelector->GetSelectionValue();
 }
 
 void CMaterialEditor::SetAmbientBlueCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_vecAmbient.z = m_pAmbientBlueSelector->GetSelectionValue();
+	m_pMaterial->m_vecAmbient.z = m_hAmbientBlueSelector->GetSelectionValue();
 }
 
 void CMaterialEditor::SetDiffuseRedCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_vecDiffuse.x = m_pDiffuseRedSelector->GetSelectionValue();
+	m_pMaterial->m_vecDiffuse.x = m_hDiffuseRedSelector->GetSelectionValue();
 }
 
 void CMaterialEditor::SetDiffuseGreenCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_vecDiffuse.y = m_pDiffuseGreenSelector->GetSelectionValue();
+	m_pMaterial->m_vecDiffuse.y = m_hDiffuseGreenSelector->GetSelectionValue();
 }
 
 void CMaterialEditor::SetDiffuseBlueCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_vecDiffuse.z = m_pDiffuseBlueSelector->GetSelectionValue();
+	m_pMaterial->m_vecDiffuse.z = m_hDiffuseBlueSelector->GetSelectionValue();
 }
 
 void CMaterialEditor::SetSpecularRedCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_vecSpecular.x = m_pSpecularRedSelector->GetSelectionValue();
+	m_pMaterial->m_vecSpecular.x = m_hSpecularRedSelector->GetSelectionValue();
 }
 
 void CMaterialEditor::SetSpecularGreenCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_vecSpecular.y = m_pSpecularGreenSelector->GetSelectionValue();
+	m_pMaterial->m_vecSpecular.y = m_hSpecularGreenSelector->GetSelectionValue();
 }
 
 void CMaterialEditor::SetSpecularBlueCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_vecSpecular.z = m_pSpecularBlueSelector->GetSelectionValue();
+	m_pMaterial->m_vecSpecular.z = m_hSpecularBlueSelector->GetSelectionValue();
 }
 
 void CMaterialEditor::SetEmissiveRedCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_vecEmissive.x = m_pEmissiveRedSelector->GetSelectionValue();
+	m_pMaterial->m_vecEmissive.x = m_hEmissiveRedSelector->GetSelectionValue();
 }
 
 void CMaterialEditor::SetEmissiveGreenCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_vecEmissive.y = m_pEmissiveGreenSelector->GetSelectionValue();
+	m_pMaterial->m_vecEmissive.y = m_hEmissiveGreenSelector->GetSelectionValue();
 }
 
 void CMaterialEditor::SetEmissiveBlueCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_vecEmissive.z = m_pEmissiveBlueSelector->GetSelectionValue();
+	m_pMaterial->m_vecEmissive.z = m_hEmissiveBlueSelector->GetSelectionValue();
 }
 
 void CMaterialEditor::SetShininessCallback(const tstring& sArgs)
 {
-	m_pMaterial->m_flShininess = m_pShininessSelector->GetSelectionValue();
+	m_pMaterial->m_flShininess = m_hShininessSelector->GetSelectionValue();
 }

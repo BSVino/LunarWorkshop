@@ -268,18 +268,18 @@ size_t CSMAKWindow::GetNextObjectId()
 
 void CSMAKWindow::SetRenderMode(bool bUV)
 {
-	m_pRender3D->SetState(false, false);
-	m_pRenderUV->SetState(false, false);
+	m_hRender3D->SetState(false, false);
+	m_hRenderUV->SetState(false, false);
 
 	if (bUV)
-		m_pRenderUV->SetState(true, false);
+		m_hRenderUV->SetState(true, false);
 	else
-		m_pRender3D->SetState(true, false);
+		m_hRender3D->SetState(true, false);
 
 	m_bRenderUV = bUV;
 
-	m_pWireframe->SetVisible(!m_bRenderUV);
-	m_pUVWireframe->SetVisible(m_bRenderUV);
+	m_hWireframe->SetVisible(!m_bRenderUV);
+	m_hUVWireframe->SetVisible(m_bRenderUV);
 
 	Layout();
 }
@@ -287,43 +287,43 @@ void CSMAKWindow::SetRenderMode(bool bUV)
 void CSMAKWindow::SetDisplayWireframe(bool bWire)
 {
 	m_bDisplayWireframe = bWire;
-	m_pWireframe->SetState(bWire, false);
+	m_hWireframe->SetState(bWire, false);
 }
 
 void CSMAKWindow::SetDisplayUVWireframe(bool bWire)
 {
 	m_bDisplayUV = bWire;
-	m_pUVWireframe->SetState(bWire, false);
+	m_hUVWireframe->SetState(bWire, false);
 }
 
 void CSMAKWindow::SetDisplayLight(bool bLight)
 {
 	m_bDisplayLight = bLight;
-	m_pLight->SetState(bLight, false);
+	m_hLight->SetState(bLight, false);
 }
 
 void CSMAKWindow::SetDisplayTexture(bool bTexture)
 {
 	m_bDisplayTexture = bTexture;
-	m_pTexture->SetState(bTexture, false);
+	m_hTexture->SetState(bTexture, false);
 }
 
 void CSMAKWindow::SetDisplayNormal(bool bNormal)
 {
 	m_bDisplayNormal = bNormal;
-	m_pNormal->SetState(bNormal, false);
+	m_hNormal->SetState(bNormal, false);
 }
 
 void CSMAKWindow::SetDisplayAO(bool bAO)
 {
 	m_bDisplayAO = bAO;
-	m_pAO->SetState(bAO, false);
+	m_hAO->SetState(bAO, false);
 }
 
 void CSMAKWindow::SetDisplayColorAO(bool bColorAO)
 {
 	m_bDisplayColorAO = bColorAO;
-	m_pColorAO->SetState(bColorAO, false);
+	m_hColorAO->SetState(bColorAO, false);
 }
 
 // Returns a normalized vector from the specified image file with dimensions iNormalWidth by iNormalHeight

@@ -12,7 +12,7 @@
 
 using namespace glgui;
 
-CFileDialog* CFileDialog::s_pDialog = NULL;
+CResource<CBaseControl> CFileDialog::s_pDialog;
 
 CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, bool bSave)
 	: CMovablePanel(bSave?"Save File...":"Open File...")
@@ -24,77 +24,72 @@ CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, b
 	SetBorder(BT_SOME);
 
 	strtok(sExtension, m_asExtensions, ";");
+}
 
-	m_pDirectoryLabel = new CLabel(5, 5, 1, 1, "Folder:");
-	AddControl(m_pDirectoryLabel);
-	m_pDirectory = new CTextField();
-	m_pDirectory->SetContentsChangedListener(this, NewDirectory);
-	m_pDirectory->SetText(m_sDirectory);
-	AddControl(m_pDirectory);
-	m_pOpenInExplorer = new CButton(0, 0, 20, 20, "Open in explorer", false, "sans-serif", 8);
-	m_pOpenInExplorer->SetClickedListener(this, Explore);
-	AddControl(m_pOpenInExplorer);
+void CFileDialog::CreateControls(CResource<CBaseControl> pThis)
+{
+	m_hDirectoryLabel = AddControl(CreateControl(new CLabel(5, 5, 1, 1, "Folder:")));
+	m_hDirectory = AddControl(CreateControl(new CTextField()));
+	m_hDirectory->SetContentsChangedListener(this, NewDirectory);
+	m_hDirectory->SetText(m_sDirectory);
+	m_hOpenInExplorer = AddControl(CreateControl(new CButton(0, 0, 20, 20, "Open in explorer", false, "sans-serif", 8)));
+	m_hOpenInExplorer->SetClickedListener(this, Explore);
 
-	m_pFilesLabel = new CLabel(5, 5, 1, 1, "Files:");
-	AddControl(m_pFilesLabel);
-	m_pFileList = new CTree();
-	m_pFileList->SetSelectedListener(this, FileSelected);
-	m_pFileList->SetConfirmedListener(this, FileConfirmed);
-	m_pFileList->SetBackgroundColor(g_clrBox);
-	AddControl(m_pFileList);
+	m_hFilesLabel = AddControl(CreateControl(new CLabel(5, 5, 1, 1, "Files:")));
+	m_hFileList = AddControl(CreateControl(new CTree()));
+	m_hFileList->SetSelectedListener(this, FileSelected);
+	m_hFileList->SetConfirmedListener(this, FileConfirmed);
+	m_hFileList->SetBackgroundColor(g_clrBox);
 
-	m_pNewFile = new CTextField();
-	m_pNewFile->SetContentsChangedListener(this, NewFileChanged);
-	m_pNewFile->SetVisible(bSave);
-	AddControl(m_pNewFile);
-	m_pSelect = new CButton(0, 0, 20, 20, bSave?"Save":"Open");
-	m_pSelect->SetClickedListener(this, Select);
-	m_pSelect->SetEnabled(false);
-	AddControl(m_pSelect);
-	m_pCancel = new CButton(0, 0, 20, 20, "Cancel");
-	m_pCancel->SetClickedListener(this, Close);
-	AddControl(m_pCancel);
+	m_hNewFile = AddControl(CreateControl(new CTextField()));
+	m_hNewFile->SetContentsChangedListener(this, NewFileChanged);
+	m_hNewFile->SetVisible(m_bSave);
+	m_hSelect = AddControl(CreateControl(new CButton(0, 0, 20, 20, m_bSave?"Save":"Open")));
+	m_hSelect->SetClickedListener(this, Select);
+	m_hSelect->SetEnabled(false);
+	m_hCancel = AddControl(CreateControl(new CButton(0, 0, 20, 20, "Cancel")));
+	m_hCancel->SetClickedListener(this, Close);
+
+	BaseClass::CreateControls(pThis);
 }
 
 CFileDialog::~CFileDialog()
 {
-	TAssertNoMsg(s_pDialog == this);
-	s_pDialog = NULL;
 }
 
 void CFileDialog::Layout()
 {
-	m_pDirectory->SetText(m_sDirectory);
+	m_hDirectory->SetText(m_sDirectory);
 
 	SetSize(400, 300);
 	SetPos(CRootPanel::Get()->GetWidth()/2-GetWidth()/2, CRootPanel::Get()->GetHeight()/2-GetHeight()/2);
 
-	m_pDirectoryLabel->EnsureTextFits();
-	m_pFilesLabel->EnsureTextFits();
+	m_hDirectoryLabel->EnsureTextFits();
+	m_hFilesLabel->EnsureTextFits();
 
-	m_pDirectoryLabel->SetPos(5, 15);
-	m_pDirectory->SetPos(5, m_pDirectoryLabel->GetBottom());
-	m_pDirectory->SetSize(GetWidth()-55, m_pDirectory->GetHeight());
+	m_hDirectoryLabel->SetPos(5, 15);
+	m_hDirectory->SetPos(5, m_hDirectoryLabel->GetBottom());
+	m_hDirectory->SetSize(GetWidth()-55, m_hDirectory->GetHeight());
 
-	m_pOpenInExplorer->SetSize(40, m_pDirectory->GetHeight());
-	m_pOpenInExplorer->SetPos(GetWidth()-45, m_pDirectoryLabel->GetBottom());
+	m_hOpenInExplorer->SetSize(40, m_hDirectory->GetHeight());
+	m_hOpenInExplorer->SetPos(GetWidth()-45, m_hDirectoryLabel->GetBottom());
 
-	m_pFilesLabel->SetPos(5, m_pDirectory->GetBottom()+5);
-	m_pFileList->SetPos(5, m_pFilesLabel->GetBottom());
-	m_pFileList->SetSize(200, 170);
+	m_hFilesLabel->SetPos(5, m_hDirectory->GetBottom()+5);
+	m_hFileList->SetPos(5, m_hFilesLabel->GetBottom());
+	m_hFileList->SetSize(200, 170);
 
-	m_pFileList->ClearTree();
+	m_hFileList->ClearTree();
 
 	tvector<tstring> asFiles = ListDirectory(m_sDirectory, true);
 
-	m_pFileList->AddNode("..");
+	m_hFileList->AddNode("..");
 	for (size_t i = 0; i < asFiles.size(); i++)
 	{
 		tstring sFile = asFiles[i];
 
 		if (IsDirectory(m_sDirectory + DIR_SEP + sFile))
 		{
-			m_pFileList->AddNode(sFile + DIR_SEP);
+			m_hFileList->AddNode(sFile + DIR_SEP);
 			continue;
 		}
 
@@ -103,30 +98,30 @@ void CFileDialog::Layout()
 			if (!sFile.endswith(m_asExtensions[j]))
 				continue;
 
-			m_pFileList->AddNode(sFile);
+			m_hFileList->AddNode(sFile);
 			break;
 		}
 	}
 
-	m_pSelect->SetSize(60, m_pNewFile->GetHeight());
-	m_pSelect->SetPos(GetWidth() - 130, GetHeight() - m_pNewFile->GetHeight() - 5);
-	m_pSelect->SetEnabled(false);
+	m_hSelect->SetSize(60, m_hNewFile->GetHeight());
+	m_hSelect->SetPos(GetWidth() - 130, GetHeight() - m_hNewFile->GetHeight() - 5);
+	m_hSelect->SetEnabled(false);
 
-	m_pCancel->SetSize(60, m_pNewFile->GetHeight());
-	m_pCancel->SetPos(GetWidth() - 65, GetHeight() - m_pNewFile->GetHeight() - 5);
+	m_hCancel->SetSize(60, m_hNewFile->GetHeight());
+	m_hCancel->SetPos(GetWidth() - 65, GetHeight() - m_hNewFile->GetHeight() - 5);
 
-	m_pNewFile->SetPos(5, GetHeight() - m_pNewFile->GetHeight() - 5);
-	m_pNewFile->SetSize(GetWidth() - 140, m_pNewFile->GetHeight());
+	m_hNewFile->SetPos(5, GetHeight() - m_hNewFile->GetHeight() - 5);
+	m_hNewFile->SetSize(GetWidth() - 140, m_hNewFile->GetHeight());
 
 	BaseClass::Layout();
 }
 
 void CFileDialog::NewDirectoryCallback(const tstring& sArgs)
 {
-	m_sDirectory = m_pDirectory->GetText();
+	m_sDirectory = m_hDirectory->GetText();
 	Layout();
 
-	m_pDirectory->SetAutoCompleteFiles("", m_asExtensions);
+	m_hDirectory->SetAutoCompleteFiles("", m_asExtensions);
 
 	if (IsFile(m_sDirectory))
 	{
@@ -148,16 +143,16 @@ void CFileDialog::ExploreCallback(const tstring& sArgs)
 
 void CFileDialog::FileSelectedCallback(const tstring& sArgs)
 {
-	m_pNewFile->SetText("");
+	m_hNewFile->SetText("");
 
-	m_pSelect->SetEnabled(!!m_pFileList->GetSelectedNode());
+	m_hSelect->SetEnabled(!!m_hFileList->GetSelectedNode());
 }
 
 void CFileDialog::NewFileChangedCallback(const tstring& sArgs)
 {
-	m_pFileList->Unselect();
+	m_hFileList->Unselect();
 
-	m_pSelect->SetEnabled(m_pNewFile->GetText().length() > 0);
+	m_hSelect->SetEnabled(m_hNewFile->GetText().length() > 0);
 }
 
 void CFileDialog::SelectCallback(const tstring& sArgs)
@@ -201,50 +196,56 @@ void CFileDialog::FileConfirmed(const tstring& sFile)
 
 void CFileDialog::ShowOpenDialog(const tstring& sDirectory, const tstring& sExtension, IEventListener* pListener, IEventListener::Callback pfnCallback)
 {
-	if (s_pDialog)
-		delete s_pDialog;
+	if (s_pDialog.get())
+		s_pDialog.DowncastStatic<CFileDialog>()->Close();
 
-	s_pDialog = new CFileDialog(sDirectory, sExtension, false);
+	s_pDialog = CreateControl(new CFileDialog(sDirectory, sExtension, false));
 	s_pDialog->Layout();
-	s_pDialog->m_pSelectListener = pListener;
-	s_pDialog->m_pfnSelectCallback = pfnCallback;
+
+	CFileDialog* pDialog = s_pDialog.DowncastStatic<CFileDialog>();
+	pDialog->m_pSelectListener = pListener;
+	pDialog->m_pfnSelectCallback = pfnCallback;
 }
 
 void CFileDialog::ShowSaveDialog(const tstring& sDirectory, const tstring& sExtension, IEventListener* pListener, IEventListener::Callback pfnCallback)
 {
-	if (s_pDialog)
-		delete s_pDialog;
+	if (s_pDialog.get())
+		s_pDialog.DowncastStatic<CFileDialog>()->Close();
 
-	s_pDialog = new CFileDialog(sDirectory, sExtension, true);
+	s_pDialog = CreateControl(new CFileDialog(sDirectory, sExtension, true));
 	s_pDialog->Layout();
-	s_pDialog->m_pSelectListener = pListener;
-	s_pDialog->m_pfnSelectCallback = pfnCallback;
+
+	CFileDialog* pDialog = s_pDialog.DowncastStatic<CFileDialog>();
+	pDialog->m_pSelectListener = pListener;
+	pDialog->m_pfnSelectCallback = pfnCallback;
 }
 
 tstring CFileDialog::GetFile()
 {
-	if (!s_pDialog)
+	CFileDialog* pDialog = s_pDialog.DowncastStatic<CFileDialog>();
+
+	if (!pDialog)
 		return "";
 
-	if (s_pDialog->m_bSave && s_pDialog->m_pNewFile->GetText().length())
+	if (pDialog->m_bSave && pDialog->m_hNewFile->GetText().length())
 	{
-		tstring sName = s_pDialog->m_pNewFile->GetText();
+		tstring sName = pDialog->m_hNewFile->GetText();
 
-		for (size_t j = 0; j < s_pDialog->m_asExtensions.size(); j++)
+		for (size_t j = 0; j < pDialog->m_asExtensions.size(); j++)
 		{
-			if (sName.length() <= s_pDialog->m_asExtensions[j].length())
-				return FindAbsolutePath(s_pDialog->m_sDirectory + DIR_SEP + s_pDialog->m_pNewFile->GetText() + s_pDialog->m_asExtensions[j]);
+			if (sName.length() <= pDialog->m_asExtensions[j].length())
+				return FindAbsolutePath(pDialog->m_sDirectory + DIR_SEP + pDialog->m_hNewFile->GetText() + pDialog->m_asExtensions[j]);
 
-			tstring sNameExtension = sName.substr(sName.length() - s_pDialog->m_asExtensions[j].length());
-			if (sNameExtension == s_pDialog->m_asExtensions[j])
-				return FindAbsolutePath(s_pDialog->m_sDirectory + DIR_SEP + s_pDialog->m_pNewFile->GetText());
+			tstring sNameExtension = sName.substr(sName.length() - pDialog->m_asExtensions[j].length());
+			if (sNameExtension == pDialog->m_asExtensions[j])
+				return FindAbsolutePath(pDialog->m_sDirectory + DIR_SEP + pDialog->m_hNewFile->GetText());
 		}
 
-		return FindAbsolutePath(s_pDialog->m_sDirectory + DIR_SEP + s_pDialog->m_pNewFile->GetText() + s_pDialog->m_asExtensions[0]);
+		return FindAbsolutePath(pDialog->m_sDirectory + DIR_SEP + pDialog->m_hNewFile->GetText() + pDialog->m_asExtensions[0]);
 	}
 
-	if (!s_pDialog->m_pFileList->GetSelectedNode())
+	if (!pDialog->m_hFileList->GetSelectedNode())
 		return "";
 
-	return FindAbsolutePath(s_pDialog->m_sDirectory + DIR_SEP + s_pDialog->m_pFileList->GetSelectedNode()->m_pLabel->GetText());
+	return FindAbsolutePath(pDialog->m_sDirectory + DIR_SEP + pDialog->m_hFileList->GetSelectedNode()->m_hLabel->GetText());
 }

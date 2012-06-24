@@ -126,7 +126,7 @@ bool CButton::MousePressed(int code, int mx, int my)
 	if (code == TINKER_KEY_MOUSE_LEFT)
 	{
 		bUsed = Push();
-		CRootPanel::Get()->SetButtonDown(this);
+		CRootPanel::Get()->SetButtonDown(m_hThis);
 	}
 	return bUsed;
 }
@@ -143,7 +143,7 @@ bool CButton::MouseReleased(int code, int mx, int my)
 	if (code == TINKER_KEY_MOUSE_LEFT)
 	{
 		bUsed = Pop();
-		CRootPanel::Get()->SetButtonDown(NULL);
+		CRootPanel::Get()->SetButtonDown(CControlHandle());
 	}
 	return bUsed;
 }

@@ -7,51 +7,49 @@
 
 using namespace glgui;
 
-CRootPanel*	CRootPanel::s_pRootPanel = NULL;
+CResource<CBaseControl> CRootPanel::s_pRootPanel;
+bool CRootPanel::s_bRootPanelValid;
 
 CRootPanel::CRootPanel() :
 	CPanel(0, 0, 800, 600)
 {
 	TAssert(!s_pRootPanel);
 
-	s_pRootPanel = this;
-
 	CPanel::SetBorder(BT_NONE);
 
-	m_pButtonDown = NULL;
-	m_pFocus = NULL;
-	m_pDragging = NULL;
-
-	m_pMenuBar = new CMenuBar();
-	AddControl(m_pMenuBar, true);
+	m_pDragging = nullptr;
 
 	m_flFrameTime = 0;
 	m_flTime = 0;
 
 	m_bUseLighting = true;
+
+	s_bRootPanelValid = true;
 }
 
 CRootPanel::~CRootPanel( )
 {
-	m_bDestructing = true;
+	s_bRootPanelValid = false;
 
-	size_t iCount = m_apDroppables.size();
-	for (size_t i = 0; i < iCount; i++)
-		delete m_apDroppables[i];
+	TAssert(s_pRootPanel == this);
+}
 
-	m_apDroppables.clear();
+void CRootPanel::CreateControls(CResource<CBaseControl> pThis)
+{
+	m_hMenuBar = AddControl(CreateControl(new CMenuBar()), true);
 
-	m_bDestructing = false;
-
-	s_pRootPanel = NULL;
+	BaseClass::CreateControls(pThis);
 }
 
 CRootPanel*	CRootPanel::Get()
 {
 	if (!s_pRootPanel)
-		s_pRootPanel = new CRootPanel();
+		s_pRootPanel = CreateControl(new CRootPanel());
 
-	return s_pRootPanel;
+	if (!s_bRootPanelValid)
+		return nullptr;
+
+	return s_pRootPanel.DowncastStatic<CRootPanel>();
 }
 
 void CRootPanel::Think(double flNewTime)
@@ -116,14 +114,14 @@ void CRootPanel::Layout()
 	CPanel::Layout();
 }
 
-void CRootPanel::SetButtonDown(CButton* pButton)
+void CRootPanel::SetButtonDown(CControl<CButton> hButton)
 {
-	m_pButtonDown = pButton;
+	m_hButtonDown = hButton;
 }
 
-CButton* CRootPanel::GetButtonDown()
+CControl<CButton> CRootPanel::GetButtonDown() const
 {
-	return m_pButtonDown;
+	return m_hButtonDown;
 }
 
 bool CRootPanel::MousePressed(int code, int mx, int my, bool bInsideControl)
@@ -222,12 +220,9 @@ void CRootPanel::AddDroppable(IDroppable* pDroppable)
 void CRootPanel::RemoveDroppable(IDroppable* pDroppable)
 {
 	TAssert(pDroppable);
-	if (!m_bDestructing)
-	{
-		for (size_t i = 0; i < m_apDroppables.size(); i++)
-			if (m_apDroppables[i] == pDroppable)
-				m_apDroppables.erase(remove(m_apDroppables.begin(), m_apDroppables.end(), pDroppable), m_apDroppables.end());
-	}
+	for (size_t i = 0; i < m_apDroppables.size(); i++)
+		if (m_apDroppables[i] == pDroppable)
+			m_apDroppables.erase(remove(m_apDroppables.begin(), m_apDroppables.end(), pDroppable), m_apDroppables.end());
 }
 
 bool CRootPanel::DropDraggable()
@@ -281,15 +276,15 @@ bool CRootPanel::DropDraggable()
 	return false;
 }
 
-bool CRootPanel::SetFocus(CBaseControl* pFocus)
+bool CRootPanel::SetFocus(CControlHandle hFocus)
 {
-	if (m_pFocus)
-		m_pFocus->SetFocus(false);
+	if (m_hFocus)
+		m_hFocus->SetFocus(false);
 
-	m_pFocus = pFocus;
+	m_hFocus = hFocus;
 
-	if (pFocus)
-		return pFocus->SetFocus(true);
+	if (hFocus)
+		return hFocus->SetFocus(true);
 
 	return false;
 }

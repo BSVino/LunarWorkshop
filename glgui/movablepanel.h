@@ -36,6 +36,9 @@ namespace glgui
 								CMovablePanel(const tstring& sName);
 								~CMovablePanel();
 
+	public:
+		virtual void			CreateControls(CResource<CBaseControl> pThis);
+
 		virtual void			Layout();
 
 		virtual void			Think();
@@ -57,6 +60,8 @@ namespace glgui
 		EVENT_CALLBACK(CMovablePanel, MinimizeWindow);
 		EVENT_CALLBACK(CMovablePanel, CloseWindow);
 
+		void					Close();
+
 	protected:
 		int						m_iMouseStartX;
 		int						m_iMouseStartY;
@@ -71,10 +76,11 @@ namespace glgui
 
 		bool					m_bClearBackground;
 
-		glgui::CLabel*			m_pName;
+		tstring					m_sName;
+		CControl<CLabel>		m_hName;
 
-		CCloseButton*			m_pCloseButton;
-		CMinimizeButton*		m_pMinimizeButton;
+		CControl<CCloseButton>	m_hCloseButton;
+		CControl<CMinimizeButton>	m_hMinimizeButton;
 
 		Color					m_clrHeader;
 	};

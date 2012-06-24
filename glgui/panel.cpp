@@ -14,13 +14,8 @@ CPanel::CPanel()
 {
 	m_flMargin = 15;
 
-	m_pHasCursor = NULL;
 	m_bHighlight = false;
-	m_bDestructing = false;
 	m_bScissoring = false;
-
-	m_pVerticalScrollBar = nullptr;
-	m_pHorizontalScrollBar = nullptr;
 }
 
 CPanel::CPanel(float x, float y, float w, float h)
@@ -30,28 +25,12 @@ CPanel::CPanel(float x, float y, float w, float h)
 
 	SetBorder(BT_NONE);
 	SetBackgroundColor(Color(0, 0, 0, 0));
-	m_pHasCursor = NULL;
 	m_bHighlight = false;
-	m_bDestructing = false;
 	m_bScissoring = false;
-
-	m_pVerticalScrollBar = nullptr;
-	m_pHorizontalScrollBar = nullptr;
 }
 
 CPanel::~CPanel()
 {
-	// Protect m_apControls from accesses elsewhere.
-	m_bDestructing = true;
-
-	size_t iCount = m_apControls.size();
-	size_t i;
-	for (i = 0; i < iCount; i++)
-		delete m_apControls[i];
-
-	m_apControls.clear();
-
-	m_bDestructing = false;
 }
 
 bool CPanel::KeyPressed(int code, bool bCtrlDown)
@@ -209,15 +188,15 @@ void CPanel::CursorMoved(int mx, int my)
 		float x, y, w, h;
 		pControl->GetAbsDimensions(x, y, w, h);
 
-		if (m_pVerticalScrollBar && pControl != m_pVerticalScrollBar)
+		if (m_hVerticalScrollBar && pControl != m_hVerticalScrollBar)
 		{
-			if (mx >= m_pVerticalScrollBar->GetLeft())
+			if (mx >= m_hVerticalScrollBar->GetLeft())
 				continue;
 		}
 
-		if (m_pHorizontalScrollBar && pControl != m_pHorizontalScrollBar)
+		if (m_hHorizontalScrollBar && pControl != m_hHorizontalScrollBar)
 		{
-			if (my >= m_pHorizontalScrollBar->GetTop())
+			if (my >= m_hHorizontalScrollBar->GetTop())
 				continue;
 		}
 
@@ -226,14 +205,12 @@ void CPanel::CursorMoved(int mx, int my)
 			mx < x + w &&
 			my < y + h)
 		{
-			if (m_pHasCursor != pControl)
+			if (m_hHasCursor != pControl)
 			{
-				if (m_pHasCursor)
-				{
-					m_pHasCursor->CursorOut();
-				}
-				m_pHasCursor = pControl;
-				m_pHasCursor->CursorIn();
+				if (m_hHasCursor)
+					m_hHasCursor->CursorOut();
+				m_hHasCursor = pControl->GetHandle();
+				m_hHasCursor->CursorIn();
 			}
 
 			pControl->CursorMoved(mx, my);
@@ -243,30 +220,30 @@ void CPanel::CursorMoved(int mx, int my)
 		}
 	}
 
-	if (!bFoundControlWithCursor && m_pHasCursor)
+	if (!bFoundControlWithCursor && m_hHasCursor)
 	{
-		m_pHasCursor->CursorOut();
-		m_pHasCursor = NULL;
+		m_hHasCursor->CursorOut();
+		m_hHasCursor.reset();
 	}
 }
 
 void CPanel::CursorOut()
 {
-	if (m_pHasCursor)
+	if (m_hHasCursor)
 	{
-		m_pHasCursor->CursorOut();
-		m_pHasCursor = NULL;
+		m_hHasCursor->CursorOut();
+		m_hHasCursor.reset();
 	}
 
 	BaseClass::CursorOut();
 }
 
-CBaseControl* CPanel::GetHasCursor()
+CControlHandle CPanel::GetHasCursor()
 {
-	if (!m_pHasCursor)
-		return this;
+	if (!m_hHasCursor)
+		return m_hThis;
 
-	return m_pHasCursor->GetHasCursor();
+	return m_hHasCursor->GetHasCursor();
 }
 
 void CPanel::NextTabStop()
@@ -301,56 +278,62 @@ void CPanel::NextTabStop()
 			if (!pBaseControl)
 				continue;
 
-			CRootPanel::Get()->SetFocus(pBaseControl);
+			CRootPanel::Get()->SetFocus(pBaseControl->GetHandle());
 			return;
 		}
 	}
 }
 
-size_t CPanel::AddControl(CBaseControl* pControl, bool bToTail)
+CControlHandle CPanel::AddControl(CBaseControl* pControl, bool bToTail)
 {
-	if (!pControl)
-		return ~0;
+	if (pControl)
+		TAssertNoMsg(pControl->GetHandle() == nullptr)	// If you hit this assert, don't create the control with CreateControl() this function does that.
+	else
+		return CControlHandle();
 
-	TAssert(pControl != this);
+	return AddControl(CreateControl(pControl), bToTail);
+}
+
+CControlHandle CPanel::AddControl(CResource<CBaseControl> pControl, bool bToTail)
+{
+	if (pControl.get())
+		TAssertNoMsg(pControl->GetHandle() != nullptr)	// If you hit this assert, you didn't create the control with CreateControl(new CYadeya)
+	else
+		return CControlHandle();
+
+	TAssertNoMsg(pControl != this);
 
 #ifdef _DEBUG
 	for (size_t i = 0; i < m_apControls.size(); i++)
-		TAssert(m_apControls[i] != pControl);	// You're adding a control to the panel twice! Quit it!
+		TAssertNoMsg(m_apControls[i] != pControl);	// You're adding a control to the panel twice! Quit it!
 #endif
 
-	pControl->SetParent(this);
+	// If you hit this assert then you're adding a control to a panel that hasn't had CreateControl called on it yet.
+	// Don't create child controls for a panel in its constructor, do it in CreateControls()
+	TAssertNoMsg(m_hThis);
+
+	pControl->SetParent(m_hThis);
 
 	if (bToTail)
-	{
 		m_apControls.push_back(pControl);
-		return m_apControls.size()-1;
-	}
 	else
-	{
 		m_apControls.insert(m_apControls.begin(), pControl);
-		return 0;
-	}
+
+	return CControlHandle(pControl);
 }
 
 void CPanel::RemoveControl(CBaseControl* pControl)
 {
-	// If we are destructing then this RemoveControl is being called from this CPanel's
-	// destructor's m_apControls[i]->Destructor() so we should not delete this element
-	// because it will be m_apControls.Purge()'d later.
-	if (!m_bDestructing)
+	pControl->SetParent(CControlHandle());
+
+	for (size_t i = 0; i < m_apControls.size(); i++)
 	{
-		for (size_t i = 0; i < m_apControls.size(); i++)
-		{
-			if (m_apControls[i] == pControl)
-				m_apControls.erase(remove(m_apControls.begin(), m_apControls.end(), pControl), m_apControls.end());
-		}
+		if (m_apControls[i] == pControl)
+			m_apControls.erase(remove(m_apControls.begin(), m_apControls.end(), pControl), m_apControls.end());
 	}
 
-	pControl->SetParent(NULL);
-
-	if (m_pHasCursor == pControl)
-		m_pHasCursor = NULL;
+	if (m_hHasCursor == pControl)
+		m_hHasCursor.reset();
 }
 
 void CPanel::MoveToTop(CBaseControl* pControl)
@@ -393,14 +376,14 @@ void CPanel::Layout( void )
 
 	m_rControlBounds = rAllBounds;
 
-	if (m_pVerticalScrollBar)
+	if (m_hVerticalScrollBar)
 	{
-		m_pVerticalScrollBar->SetVisible((rAllBounds.y < rPanelBounds.y) || (rAllBounds.Bottom() > rPanelBounds.Bottom()));
+		m_hVerticalScrollBar->SetVisible((rAllBounds.y < rPanelBounds.y) || (rAllBounds.Bottom() > rPanelBounds.Bottom()));
 	}
 
-	if (m_pHorizontalScrollBar)
+	if (m_hHorizontalScrollBar)
 	{
-		m_pHorizontalScrollBar->SetVisible((rAllBounds.x < rPanelBounds.x) || (rAllBounds.Right() > rPanelBounds.Right()));
+		m_hHorizontalScrollBar->SetVisible((rAllBounds.x < rPanelBounds.x) || (rAllBounds.Right() > rPanelBounds.Right()));
 	}
 }
 
@@ -506,9 +489,9 @@ void CPanel::PostPaint()
 	BaseClass::PostPaint();
 }
 
-bool CPanel::ShouldControlOffset(CBaseControl* pControl) const
+bool CPanel::ShouldControlOffset(const CBaseControl* pControl) const
 {
-	if (pControl == m_pVerticalScrollBar || pControl == m_pHorizontalScrollBar)
+	if (pControl == m_hVerticalScrollBar || pControl == m_hHorizontalScrollBar)
 		return false;
 
 	return true;
@@ -524,59 +507,67 @@ void CPanel::Think()
 
 	m_rControlOffset = FRect(0, 0, 0, 0);
 
-	if (m_pVerticalScrollBar && m_pVerticalScrollBar->IsVisible())
+	if (m_hVerticalScrollBar && m_hVerticalScrollBar->IsVisible())
 	{
 		float flScrollable = m_rControlBounds.h - GetHeight();
-		m_rControlOffset.y = -m_pVerticalScrollBar->GetHandlePosition() * flScrollable;
+		m_rControlOffset.y = -GetVerticalScrollBar()->GetHandlePosition() * flScrollable;
 	}
 
-	if (m_pHorizontalScrollBar && m_pHorizontalScrollBar->IsVisible())
+	if (m_hHorizontalScrollBar && m_hHorizontalScrollBar->IsVisible())
 	{
 		float flScrollable = m_rControlBounds.w - GetWidth();
-		m_rControlOffset.x = -m_pHorizontalScrollBar->GetHandlePosition() * flScrollable;
+		m_rControlOffset.x = -GetHorizontalScrollBar()->GetHandlePosition() * flScrollable;
 	}
 }
 
 void CPanel::SetVerticalScrollBarEnabled(bool b)
 {
-	if (m_pVerticalScrollBar && b)
+	if (m_hVerticalScrollBar && b)
 		return;
 
-	if (!m_pVerticalScrollBar && !b)
+	if (!m_hVerticalScrollBar && !b)
 		return;
 
 	if (b)
 	{
-		m_pVerticalScrollBar = new CScrollBar(false);
-		AddControl(m_pVerticalScrollBar);
+		CResource<CBaseControl> pScrollbar = CreateControl(new CScrollBar(false));
+		m_hVerticalScrollBar = pScrollbar;
+		AddControl(pScrollbar);
 		Layout();
 	}
 	else
 	{
-		RemoveControl(m_pVerticalScrollBar);
-		delete m_pVerticalScrollBar;
-		m_pVerticalScrollBar = nullptr;
+		RemoveControl(m_hVerticalScrollBar);
 	}
 }
 
 void CPanel::SetHorizontalScrollBarEnabled(bool b)
 {
-	if (m_pHorizontalScrollBar && b)
+	if (m_hHorizontalScrollBar && b)
 		return;
 
-	if (!m_pHorizontalScrollBar && !b)
+	if (!m_hHorizontalScrollBar && !b)
 		return;
 
 	if (b)
 	{
-		m_pHorizontalScrollBar = new CScrollBar(true);
-		AddControl(m_pHorizontalScrollBar);
+		CResource<CBaseControl> pScrollBar = CreateControl(new CScrollBar(true));
+		m_hHorizontalScrollBar = pScrollBar;
+		AddControl(pScrollBar);
 		Layout();
 	}
 	else
 	{
-		RemoveControl(m_pHorizontalScrollBar);
-		delete m_pHorizontalScrollBar;
-		m_pHorizontalScrollBar = nullptr;
+		RemoveControl(m_hHorizontalScrollBar);
 	}
+}
+
+CControl<CScrollBar> CPanel::GetVerticalScrollBar() const
+{
+	return m_hVerticalScrollBar;
+}
+
+CControl<CScrollBar> CPanel::GetHorizontalScrollBar() const
+{
+	return m_hHorizontalScrollBar;
 }

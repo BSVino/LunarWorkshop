@@ -13,8 +13,8 @@ namespace glgui
 
 	public:
 		// It's already in CBaseControl, but we need this again for IDroppable.
-		virtual CBaseControl*	GetParent() { return CPanel::GetParent(); };
-		virtual void		SetParent(CBaseControl* pParent) { return CPanel::SetParent(pParent); };
+		virtual CControlHandle	GetParent() { return CPanel::GetParent(); };
+		virtual void		SetParent(CControlHandle hParent) { return CPanel::SetParent(hParent); };
 		virtual bool		IsVisible() { return CPanel::IsVisible(); };
 
 		virtual void		Paint(float x, float y, float w, float h);

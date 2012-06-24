@@ -27,21 +27,21 @@ CTree::CTree(const CMaterialHandle& hArrowMaterial, const CMaterialHandle& hEdit
 
 	m_bMouseDown = false;
 
-	m_pDragging = NULL;
-
 	CRootPanel::Get()->AddDroppable(this);
-
-	SetVerticalScrollBarEnabled(true);
-	SetScissoring(true);
 }
 
 CTree::~CTree()
 {
-	CRootPanel::Get()->RemoveDroppable(this);
+	if (RootPanel())
+		RootPanel()->RemoveDroppable(this);
+}
 
-	// CPanel destructor does this since they are controls.
-//	for (size_t i = 0; i < m_apNodes.size(); i++)
-//		delete m_apNodes[i];
+void CTree::CreateControls(CResource<CBaseControl> pThis)
+{
+	SetVerticalScrollBarEnabled(true);
+	SetScissoring(true);
+
+	BaseClass::CreateControls(pThis);
 }
 
 void CTree::Layout()
@@ -49,8 +49,8 @@ void CTree::Layout()
 	m_flCurrentHeight = 0;
 	m_flCurrentDepth = 0;
 
-	for (size_t i = 0; i < m_apNodes.size(); i++)
-		m_apNodes[i]->LayoutNode();
+	for (size_t i = 0; i < m_ahNodes.size(); i++)
+		m_ahNodes[i]->LayoutNode();
 
 	CPanel::Layout();
 }
@@ -61,9 +61,9 @@ void CTree::Think()
 	CRootPanel::GetFullscreenMousePos(mx, my);
 
 	m_iHilighted = ~0;
-	for (size_t i = 0; i < m_apAllNodes.size(); i++)
+	for (size_t i = 0; i < m_ahAllNodes.size(); i++)
 	{
-		CBaseControl* pNode = m_apAllNodes[i];
+		CBaseControl* pNode = m_ahAllNodes[i];
 
 		if (!pNode->IsVisible())
 			continue;
@@ -80,7 +80,7 @@ void CTree::Think()
 
 	if (m_bMouseDown && abs(mx - m_iMouseDownX) > 10 && abs(my - m_iMouseDownY) && GetSelectedNode() && !CRootPanel::Get()->GetCurrentDraggable())
 	{
-		m_pDragging = GetSelectedNode();
+		m_hDragging = GetSelectedNode();
 		CRootPanel::Get()->DragonDrop(this);
 		m_bMouseDown = false;
 	}
@@ -118,15 +118,15 @@ void CTree::Paint(float x, float y, float w, float h)
 
 	if (m_iHilighted != ~0)
 	{
-		CBaseControl* pNode = m_apAllNodes[m_iHilighted];
+		CBaseControl* pNode = m_ahAllNodes[m_iHilighted];
 		float cx, cy, cw, ch;
 		pNode->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::PaintRect(cx, cy, cw, ch, clrHilight, 2);
 	}
 
-	if (m_iSelected < m_apAllNodes.size() && m_apAllNodes[m_iSelected]->IsVisible())
+	if (m_iSelected < m_ahAllNodes.size() && m_ahAllNodes[m_iSelected]->IsVisible())
 	{
-		CBaseControl* pNode = m_apAllNodes[m_iSelected];
+		CBaseControl* pNode = m_ahAllNodes[m_iSelected];
 		float cx, cy, cw, ch;
 		pNode->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::PaintRect(cx, cy, cw, ch, clrSelected, 2);
@@ -145,9 +145,9 @@ bool CTree::MousePressed(int code, int mx, int my)
 		return true;
 
 	m_iSelected = ~0;
-	for (size_t i = 0; i < m_apAllNodes.size(); i++)
+	for (size_t i = 0; i < m_ahAllNodes.size(); i++)
 	{
-		CBaseControl* pNode = m_apAllNodes[i];
+		CBaseControl* pNode = m_ahAllNodes[i];
 
 		if (!pNode->IsVisible())
 			continue;
@@ -186,9 +186,9 @@ bool CTree::MouseDoubleClicked(int code, int mx, int my)
 		return true;
 
 	m_iSelected = ~0;
-	for (size_t i = 0; i < m_apAllNodes.size(); i++)
+	for (size_t i = 0; i < m_ahAllNodes.size(); i++)
 	{
-		CBaseControl* pNode = m_apAllNodes[i];
+		CBaseControl* pNode = m_ahAllNodes[i];
 
 		if (!pNode->IsVisible())
 			continue;
@@ -212,33 +212,33 @@ bool CTree::MouseDoubleClicked(int code, int mx, int my)
 	return false;
 }
 
-size_t CTree::AddControl(CBaseControl* pControl, bool bToTail)
+CControlHandle CTree::AddControl(CResource<CBaseControl> pControl, bool bToTail)
 {
-	size_t iControl = BaseClass::AddControl(pControl, bToTail);
+	CControlHandle hControl = BaseClass::AddControl(pControl, bToTail);
 
-	if (pControl != m_pVerticalScrollBar && pControl != m_pHorizontalScrollBar)
+	if (pControl != m_hVerticalScrollBar && pControl != m_hHorizontalScrollBar)
 	{
-		CTreeNode* pTreeNode = dynamic_cast<CTreeNode*>(pControl);
+		CTreeNode* pTreeNode = dynamic_cast<CTreeNode*>(pControl.get());
 		if (pTreeNode)
-			m_apAllNodes.push_back(pTreeNode);
+			m_ahAllNodes.push_back(CControl<CTreeNode>(pTreeNode->GetHandle()));
 	}
 
-	return iControl;
+	return hControl;
 }
 
 void CTree::RemoveControl(CBaseControl* pControl)
 {
 	BaseClass::RemoveControl(pControl);
 
-	if (pControl != m_pVerticalScrollBar && pControl != m_pHorizontalScrollBar)
+	if (pControl != m_hVerticalScrollBar && pControl != m_hHorizontalScrollBar)
 	{
-		for (size_t i = m_apAllNodes.size()-1; i < m_apAllNodes.size(); i--)
+		for (size_t i = m_ahAllNodes.size()-1; i < m_ahAllNodes.size(); i--)
 		{
-			CBaseControl* pNode = m_apAllNodes[i];
+			CBaseControl* pNode = m_ahAllNodes[i];
 
 			if (pControl == pNode)
 			{
-				m_apAllNodes.erase(m_apAllNodes.begin()+i);
+				m_ahAllNodes.erase(m_ahAllNodes.begin()+i);
 				break;
 			}
 		}
@@ -253,32 +253,31 @@ void CTree::ClearTree()
 	if (m_pSelectedListener)
 		m_pfnSelectedCallback(m_pSelectedListener, "-1");
 
-	for (size_t i = m_apAllNodes.size()-1; i < m_apAllNodes.size(); i--)
+	for (size_t i = m_ahAllNodes.size()-1; i < m_ahAllNodes.size(); i--)
 	{
-		CBaseControl* pNode = m_apAllNodes[i];
+		CBaseControl* pNode = m_ahAllNodes[i];
 
 		RemoveControl(pNode);
-		delete pNode;
 	}
 
-	m_apNodes.clear();
-	m_apAllNodes.clear();
+	m_ahNodes.clear();
+	m_ahAllNodes.clear();
 }
 
 size_t CTree::AddNode(const tstring& sName)
 {
-	return AddNode(new CTreeNode(NULL, this, sName, "sans-serif"));
+	return AddNode(CreateControl(new CTreeNode(CControl<CTreeNode>(), CControl<CTree>(m_hThis), sName, "sans-serif")));
 }
 
-size_t CTree::AddNode(CTreeNode* pNode, size_t iPosition)
+size_t CTree::AddNode(CResource<CBaseControl> pNode, size_t iPosition)
 {
 	if (iPosition == ~0)
-		m_apNodes.push_back(pNode);
+		m_ahNodes.push_back(CControl<CTreeNode>(pNode));
 	else
-		m_apNodes.insert(m_apNodes.begin()+iPosition, pNode);
+		m_ahNodes.insert(m_ahNodes.begin()+iPosition, CControl<CTreeNode>(pNode));
 
 	AddControl(pNode, true);
-	return m_apNodes.size()-1;
+	return m_ahNodes.size()-1;
 }
 
 void CTree::RemoveNode(CTreeNode* pNode)
@@ -288,39 +287,39 @@ void CTree::RemoveNode(CTreeNode* pNode)
 
 	// Tuck these away so we can find them again after the controls list has changed.
 	if (m_iHilighted != ~0)
-		pHilighted = m_apAllNodes[m_iHilighted];
+		pHilighted = m_ahAllNodes[m_iHilighted];
 	if (m_iSelected != ~0)
-		pSelected = m_apAllNodes[m_iSelected];
+		pSelected = m_ahAllNodes[m_iSelected];
 
 	m_iHilighted = ~0;
 	m_iSelected = ~0;
 
-	for (size_t i = 0; i < m_apNodes.size(); i++)
+	for (size_t i = 0; i < m_ahNodes.size(); i++)
 	{
-		if (m_apNodes[i] == pNode)
+		if (m_ahNodes[i] == pNode)
 		{
-			m_apNodes.erase(m_apNodes.begin()+i);
+			m_ahNodes.erase(m_ahNodes.begin()+i);
 			break;
 		}
 		else
-			m_apNodes[i]->RemoveNode(pNode);
+			m_ahNodes[i]->RemoveNode(pNode);
 	}
 
 	RemoveControl(pNode);
 
 	// Figure out if our hilighted or selected controls were deleted.
-	for (size_t c = 0; c < m_apAllNodes.size(); c++)
+	for (size_t c = 0; c < m_ahAllNodes.size(); c++)
 	{
-		if (m_apAllNodes[c] == pHilighted)
+		if (m_ahAllNodes[c] == pHilighted)
 			m_iHilighted = c;
-		if (m_apAllNodes[c] == pSelected)
+		if (m_ahAllNodes[c] == pSelected)
 			m_iSelected = c;
 	}
 }
 
-CTreeNode* CTree::GetNode(size_t i)
+CControl<CTreeNode> CTree::GetNode(size_t i)
 {
-	return m_apNodes[i];
+	return m_ahNodes[i];
 }
 
 void CTree::SetSelectedNode(size_t iNode)
@@ -365,26 +364,17 @@ void CTree::SetDraggable(IDraggable* pDraggable, bool bDelete)
 	AddNode(dynamic_cast<CTreeNode*>(pDraggable->MakeCopy()));
 }
 
-CTreeNode::CTreeNode(CTreeNode* pParent, CTree* pTree, const tstring& sText, const tstring& sFont)
+CTreeNode::CTreeNode(CControl<CTreeNode> hParent, CControl<CTree> hTree, const tstring& sText, const tstring& sFont)
 	: CPanel(0, 0, 10, 10)
 {
-	m_pParent = pParent;
-	m_pTree = pTree;
-
-	m_pVisibilityButton = NULL;
-	m_pEditButton = NULL;
+	m_hParent = hParent;
+	m_hTree = hTree;
 
 	m_pLabel = new CLabel(0, 0, GetWidth(), GetHeight(), "");
 	m_pLabel->SetAlign(CLabel::TA_LEFTCENTER);
 	m_pLabel->SetText(sText.c_str());
 	m_pLabel->SetFont(sFont, 11);
 	m_pLabel->SetWrap(false);
-	AddControl(m_pLabel);
-
-	m_pExpandButton = new CExpandButton(m_pTree->m_hArrowMaterial);
-	m_pExpandButton->SetExpanded(false);
-	m_pExpandButton->SetClickedListener(this, Expand);
-	AddControl(m_pExpandButton);
 
 	m_bDraggable = false;
 }
@@ -392,20 +382,12 @@ CTreeNode::CTreeNode(CTreeNode* pParent, CTree* pTree, const tstring& sText, con
 CTreeNode::CTreeNode(const CTreeNode& c)
 	: CPanel(GetLeft(), GetTop(), GetWidth(), GetHeight())
 {
-	m_pParent = c.m_pParent;
-	m_pTree = c.m_pTree;
-	m_pVisibilityButton = NULL;
-	m_pEditButton = NULL;
+	m_hParent = c.m_hParent;
+	m_hTree = c.m_hTree;
 
-	m_pLabel = new CLabel(c.m_pLabel->GetLeft(), c.m_pLabel->GetTop(), c.m_pLabel->GetWidth(), c.m_pLabel->GetHeight(), c.m_pLabel->GetText());
-	m_pLabel->SetAlign(c.m_pLabel->GetAlign());
-	m_pLabel->SetFont("sans-serif", c.m_pLabel->GetFontFaceSize());
-	AddControl(m_pLabel);
-
-	m_pExpandButton = new CExpandButton(m_pTree->m_hArrowMaterial);
-	m_pExpandButton->SetExpanded(false);
-	m_pExpandButton->SetClickedListener(this, Expand);
-	AddControl(m_pExpandButton);
+	m_pLabel = new CLabel(c.m_hLabel->GetLeft(), c.m_hLabel->GetTop(), c.m_hLabel->GetWidth(), c.m_hLabel->GetHeight(), c.m_hLabel->GetText());
+	m_pLabel->SetAlign(c.m_hLabel->GetAlign());
+	m_pLabel->SetFont("sans-serif", c.m_hLabel->GetFontFaceSize());
 
 	m_hIconMaterial = c.m_hIconMaterial;
 	m_bDraggable = false;
@@ -413,40 +395,48 @@ CTreeNode::CTreeNode(const CTreeNode& c)
 
 CTreeNode::~CTreeNode()
 {
-	// They are controls of CTree so it will deallocate them.
-//	for (size_t i = 0; i < m_apNodes.size(); i++)
-//		delete m_apNodes[i];
+}
+
+void CTreeNode::CreateControls(CResource<CBaseControl> pThis)
+{
+	m_hLabel = AddControl(CreateControl(m_pLabel));
+
+	m_hExpandButton = AddControl(CreateControl(new CExpandButton(m_hTree->m_hArrowMaterial)));
+	m_hExpandButton->SetExpanded(false);
+	m_hExpandButton->SetClickedListener(this, Expand);
+
+	BaseClass::CreateControls(pThis);
 }
 
 float CTreeNode::GetNodeHeight()
 {
-	return m_pLabel->GetTextHeight();
+	return m_hLabel->GetTextHeight();
 }
 
 void CTreeNode::LayoutNode()
 {
-	float& flCurrentDepth = m_pTree->m_flCurrentDepth;
-	float& flCurrentHeight = m_pTree->m_flCurrentHeight;
+	float& flCurrentDepth = m_hTree->m_flCurrentDepth;
+	float& flCurrentHeight = m_hTree->m_flCurrentHeight;
 
 	float flHeight = GetNodeHeight();
 
 	float x = flCurrentDepth*flHeight;
 	float y = flCurrentHeight;
-	float w = m_pTree->GetWidth() - flCurrentDepth*flHeight;
+	float w = m_hTree->GetWidth() - flCurrentDepth*flHeight;
 	float h = flHeight;
 
 	SetPos(x, y);
 	SetSize(w, h);
 
-	m_pLabel->SetHeight(h);
-	m_pLabel->SetWidth(w);
+	m_hLabel->SetHeight(h);
+	m_hLabel->SetWidth(w);
 	if (m_hIconMaterial.IsValid())
-		m_pLabel->SetPos(h+12, 0);
+		m_hLabel->SetPos(h+12, 0);
 	else
-		m_pLabel->SetPos(h, 0);
+		m_hLabel->SetPos(h, 0);
 
-	m_pExpandButton->SetPos(0, 0);
-	m_pExpandButton->SetSize(flHeight, flHeight);
+	m_hExpandButton->SetPos(0, 0);
+	m_hExpandButton->SetSize(flHeight, flHeight);
 
 	flCurrentHeight += flHeight;
 	flCurrentHeight += GetNodeSpacing();
@@ -454,8 +444,8 @@ void CTreeNode::LayoutNode()
 	if (IsExpanded())
 	{
 		flCurrentDepth += 1;
-		for (size_t i = 0; i < m_apNodes.size(); i++)
-			m_apNodes[i]->LayoutNode();
+		for (size_t i = 0; i < m_ahNodes.size(); i++)
+			m_ahNodes[i]->LayoutNode();
 		flCurrentDepth -= 1;
 	}
 }
@@ -470,8 +460,8 @@ void CTreeNode::Paint(float x, float y, float w, float h, bool bFloating)
 	if (!IsVisible())
 		return;
 
-	if (m_pTree->m_hArrowMaterial.IsValid() && m_apNodes.size())
-		m_pExpandButton->Paint();
+	if (m_hTree->m_hArrowMaterial.IsValid() && m_ahNodes.size())
+		m_hExpandButton->Paint();
 
 //	CBaseControl::PaintRect(x+15, y, w-25, h);
 
@@ -483,13 +473,13 @@ void CTreeNode::Paint(float x, float y, float w, float h, bool bFloating)
 		PaintTexture(m_hIconMaterial, x+12, y, flIconSize, flIconSize);
 	}
 
-	m_pLabel->Paint();
+	m_hLabel->Paint();
 
-	if (m_pVisibilityButton)
-		m_pVisibilityButton->Paint();
+	if (m_hVisibilityButton)
+		m_hVisibilityButton->Paint();
 
-	if (m_pEditButton)
-		m_pEditButton->Paint();
+	if (m_hEditButton)
+		m_hEditButton->Paint();
 
 	// Skip CPanel, controls are painted in other ways.
 	CBaseControl::Paint(x, y, w, h);
@@ -497,40 +487,40 @@ void CTreeNode::Paint(float x, float y, float w, float h, bool bFloating)
 
 size_t CTreeNode::AddNode(const tstring& sName)
 {
-	return AddNode(new CTreeNode(this, m_pTree, sName, "sans-serif"));
+	return AddNode(CreateControl(new CTreeNode(CControl<CTreeNode>(m_hThis), CControl<CTree>(m_hTree), sName, "sans-serif")));
 }
 
-size_t CTreeNode::AddNode(CTreeNode* pNode)
+size_t CTreeNode::AddNode(CResource<CBaseControl> pNode)
 {
-	if (!m_apNodes.size())
+	if (!m_ahNodes.size())
 		SetExpanded(true);
-	m_apNodes.push_back(pNode);
-	m_pTree->AddControl(pNode);
-	return m_apNodes.size()-1;
+	m_ahNodes.push_back(CControl<CTreeNode>(pNode));
+	m_hTree->AddControl(pNode);
+	return m_ahNodes.size()-1;
 }
 
 void CTreeNode::RemoveNode(CTreeNode* pNode)
 {
-	for (size_t i = 0; i < m_apNodes.size(); i++)
+	for (size_t i = 0; i < m_ahNodes.size(); i++)
 	{
-		if (m_apNodes[i] == pNode)
+		if (m_ahNodes[i] == pNode)
 		{
-			m_apNodes.erase(m_apNodes.begin()+i);
+			m_ahNodes.erase(m_ahNodes.begin()+i);
 			return;
 		}
-		m_apNodes[i]->RemoveNode(pNode);
+		m_ahNodes[i]->RemoveNode(pNode);
 	}
 }
 
-CTreeNode* CTreeNode::GetNode(size_t i)
+CControl<CTreeNode> CTreeNode::GetNode(size_t i)
 {
-	return m_apNodes[i];
+	return m_ahNodes[i];
 }
 
 void CTreeNode::Selected()
 {
-	if (m_pTree->m_pSelectedListener)
-		m_pTree->m_pfnSelectedCallback(m_pTree->m_pSelectedListener, sprintf("%d", m_pTree->GetSelectedNodeId()));
+	if (m_hTree->m_pSelectedListener)
+		m_hTree->m_pfnSelectedCallback(m_hTree->m_pSelectedListener, sprintf("%d", m_hTree->GetSelectedNodeId()));
 }
 
 bool CTreeNode::IsVisible()
@@ -538,16 +528,16 @@ bool CTreeNode::IsVisible()
 	if (!CPanel::IsVisible())
 		return false;
 
-	if (!m_pParent)
+	if (!m_hParent)
 		return true;
 
-	CTreeNode* pNode = m_pParent;
+	CTreeNode* pNode = m_hParent;
 	do
 	{
 		if (!pNode->IsExpanded())
 			return false;
 	}
-	while (pNode = pNode->m_pParent);
+	while (pNode = pNode->m_hParent);
 
 	return true;
 }
@@ -573,7 +563,7 @@ void CTreeNode::SetDroppable(IDroppable* pDroppable)
 void CTreeNode::ExpandCallback(const tstring& sArgs)
 {
 	SetExpanded(!IsExpanded());
-	m_pTree->Layout();
+	m_hTree->Layout();
 }
 
 CTreeNode::CExpandButton::CExpandButton(const CMaterialHandle& hMaterial)

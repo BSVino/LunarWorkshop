@@ -14,7 +14,7 @@ size_t CBaseControl::s_iQuad = ~0;
 
 CBaseControl::CBaseControl(float x, float y, float w, float h)
 {
-	SetParent(NULL);
+	SetParent(CControlHandle());
 	SetBorder(BT_NONE);
 	SetBackgroundColor(Color(0, 0, 0, 0));
 	m_flX = x;
@@ -42,22 +42,22 @@ CBaseControl::CBaseControl(const FRect& Rect)
 CBaseControl::~CBaseControl()
 {
 	if (HasFocus())
-		CRootPanel::Get()->SetFocus(NULL);
+		CRootPanel::Get()->SetFocus(CControlHandle());
 
 	if (GetParent())
 	{
-		CPanel *pPanel = dynamic_cast<CPanel*>(GetParent());
+		CPanel *pPanel = GetParent().Downcast<CPanel>();
 		if (pPanel)
 			pPanel->RemoveControl(this);
 	}
 }
 
-void CBaseControl::GetAbsPos(float &x, float &y)
+void CBaseControl::GetAbsPos(float &x, float &y) const
 {
 	float px = 0;
 	float py = 0;
 
-	CPanel *pPanel = dynamic_cast<CPanel*>(GetParent());
+	CPanel *pPanel = GetParent().Downcast<CPanel>();
 	if (pPanel)
 	{
 		pPanel->GetAbsPos(px, py);
@@ -73,14 +73,14 @@ void CBaseControl::GetAbsPos(float &x, float &y)
 	y = m_flY + py;
 }
 
-void CBaseControl::GetAbsDimensions(float &x, float &y, float &w, float &h)
+void CBaseControl::GetAbsDimensions(float &x, float &y, float &w, float &h) const
 {
 	GetAbsPos(x, y);
 	w = m_flW;
 	h = m_flH;
 }
 
-FRect CBaseControl::GetAbsDimensions()
+FRect CBaseControl::GetAbsDimensions() const
 {
 	float x, y;
 	GetAbsPos(x, y);
@@ -250,7 +250,7 @@ bool CBaseControl::IsVisible()
 
 bool CBaseControl::MousePressed(int iButton, int mx, int my)
 {
-	return CRootPanel::Get()->SetFocus(this);
+	return CRootPanel::Get()->SetFocus(m_hThis);
 }
 
 void CBaseControl::Paint()
@@ -446,10 +446,20 @@ void CBaseControl::SetTooltip(const tstring& sTip)
 		m_flMouseInTime = CRootPanel::Get()->GetTime();
 }
 
-CBaseControl* CBaseControl::GetHasCursor()
+CControlHandle CBaseControl::GetHasCursor() const
 {
 	if (m_flMouseInTime > 0)
-		return this;
+		return m_hThis;
 
-	return NULL;
+	return CControlHandle();
+}
+
+CResource<CBaseControl> CBaseControl::CreateControl(CBaseControl* pControl)
+{
+	TAssert(!pControl->GetHandle());
+
+	CResource<CBaseControl> pResource = pControl;
+	pControl->m_hThis = pResource;
+	pControl->CreateControls(pResource);	// Need the m_hThis pointer for child creation, so we can set parents and stuff.
+	return pResource;
 }

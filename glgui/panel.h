@@ -3,8 +3,12 @@
 
 #include "basecontrol.h"
 
+#include <tinker_memory.h>
+
 namespace glgui
 {
+	class CScrollBar;
+
 	// A panel is a container for other controls. It is for organization
 	// purposes only; it does not currently keep its children from drawing
 	// outside of it.
@@ -44,13 +48,14 @@ namespace glgui
 		virtual void			CursorMoved(int mx, int my);
 		virtual void			CursorOut();
 
-		virtual CBaseControl*	GetHasCursor();
+		virtual CControlHandle	GetHasCursor();
 
 		void					NextTabStop();
 
-		virtual size_t			AddControl(CBaseControl* pControl, bool bToTail = false);
+		virtual CControlHandle	AddControl(CBaseControl* pControl, bool bToTail = false);			// This function calls CreateControl for you.
+		virtual CControlHandle	AddControl(CResource<CBaseControl> pControl, bool bToTail = false); // This function requires you to call CreateControl.
 		virtual void			RemoveControl(CBaseControl* pControl);
-		virtual tvector<CBaseControl*>&	GetControls() { return m_apControls; };
+		virtual tvector<CResource<CBaseControl>>&	GetControls() { return m_apControls; };
 		virtual void			MoveToTop(CBaseControl* pControl);
 
 		virtual void			SetHighlighted(bool bHighlight) { m_bHighlight = bHighlight; };
@@ -65,26 +70,28 @@ namespace glgui
 		void					SetVerticalScrollBarEnabled(bool b);
 		void					SetHorizontalScrollBarEnabled(bool b);
 
-		bool					ShouldControlOffset(CBaseControl* pControl) const;
+		CControl<CScrollBar>	GetVerticalScrollBar() const;
+		CControl<CScrollBar>	GetHorizontalScrollBar() const;
+
+		bool					ShouldControlOffset(const CBaseControl* pControl) const;
 
 	protected:
-		tvector<CBaseControl*>	m_apControls;
+		tvector<CResource<CBaseControl>>	m_apControls;
 
 		float					m_flMargin;
 
 		// If two controls in the same panel are never layered, a single
 		// pointer should suffice. Otherwise a list must be created.
-		CBaseControl*			m_pHasCursor;
+		CControlHandle			m_hHasCursor;
 
 		bool					m_bHighlight;
 		bool					m_bScissoring;
-		bool					m_bDestructing;
 
 		FRect					m_rControlBounds;	// Bounding box for all child controls but not children of children. Only valid after Layout()
 		FRect					m_rControlOffset;	// w/h offset for children as determined by scrollbar
 
-		class CScrollBar*		m_pVerticalScrollBar;
-		class CScrollBar*		m_pHorizontalScrollBar;
+		CControl<CScrollBar>	m_hVerticalScrollBar;
+		CControl<CScrollBar>	m_hHorizontalScrollBar;
 	};
 };
 

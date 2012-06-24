@@ -62,10 +62,6 @@ void CPicker::Open()
 	Layout();
 }
 
-void CPicker::Close()
-{
-}
-
 CMeshInstancePicker::CMeshInstancePicker(IEventListener* pCallback, IEventListener::Callback pfnCallback)
 	: CPicker("Pick a mesh", pCallback, pfnCallback)
 {

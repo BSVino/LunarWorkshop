@@ -1,6 +1,7 @@
 #ifndef TINKER_ROOTPANEL_H
 #define TINKER_ROOTPANEL_H
 
+#include "glgui.h"
 #include "panel.h"
 
 class CRenderingContext;
@@ -9,11 +10,15 @@ namespace glgui
 {
 	class CRootPanel : public CPanel
 	{
+		DECLARE_CLASS(CRootPanel, CPanel);
+
 	public:
 									CRootPanel( );
 		virtual						~CRootPanel( );
 
 	public:
+		virtual void				CreateControls(CResource<CBaseControl> pThis);
+
 		virtual void				Think(double flTime);
 		virtual void				UpdateScene();
 		virtual void				Paint(float x, float y, float w, float h);
@@ -33,13 +38,13 @@ namespace glgui
 		virtual IDraggable*			GetCurrentDraggable() { return m_pDragging?m_pDragging->GetCurrentDraggable():NULL; };
 		virtual IDroppable*			GetCurrentDroppable() { return m_pDragging; };
 
-		bool						SetFocus(CBaseControl* pControl);
+		bool						SetFocus(CControlHandle hControl);
 
-		void						SetButtonDown(class CButton* pButton);
-		class CButton*				GetButtonDown();
+		void						SetButtonDown(CControl<CButton> pButton);
+		CControl<CButton>			GetButtonDown() const;
 
-		class CMenuBar*				GetMenuBar() { return m_pMenuBar; };
-		class CMenu*				AddMenu(const tstring& sText);
+		CControl<CMenuBar>			GetMenuBar() { return m_hMenuBar; };
+		CControl<CMenu>				AddMenu(const tstring& sText);
 
 		void						SetLighting(bool bLighting) { m_bUseLighting = bLighting; };
 
@@ -53,17 +58,18 @@ namespace glgui
 		static ::CRenderingContext*	GetContext() { return Get()->m_pRenderingContext; }
 
 	private:
-		static CRootPanel*			s_pRootPanel;
+		static CResource<CBaseControl>	s_pRootPanel;
+		static bool					s_bRootPanelValid;
 
 		tvector<IDroppable*>		m_apDroppables;
 		IDroppable*					m_pDragging;
 
 		// If the mouse is released over nothing, then try popping this button.
-		class CButton*				m_pButtonDown;
+		CControl<CButton>			m_hButtonDown;
 
-		class CBaseControl*			m_pFocus;
+		CControlHandle				m_hFocus;
 
-		class CMenuBar*				m_pMenuBar;
+		CControl<CMenuBar>			m_hMenuBar;
 
 		double						m_flFrameTime;
 		double						m_flTime;

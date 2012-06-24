@@ -8,47 +8,45 @@ using namespace glgui;
 
 float CSlidingPanel::SLIDER_COLLAPSED_HEIGHT = 20;
 
-CSlidingPanel::CInnerPanel::CInnerPanel(CSlidingContainer* pMaster)
+CSlidingPanel::CInnerPanel::CInnerPanel(CControl<CSlidingContainer> hMaster)
 	: CPanel(0, 0, 100, SLIDER_COLLAPSED_HEIGHT)
 {
-	m_pMaster = pMaster;
+	m_hMaster = hMaster;
 }
 
 bool CSlidingPanel::CInnerPanel::IsVisible()
 {
-	if (!m_pMaster->IsCurrent(dynamic_cast<CSlidingPanel*>(m_pParent)))
+	if (!m_hMaster->IsCurrent(m_hParent.Downcast<CSlidingPanel>()))
 		return false;
 
 	return CPanel::IsVisible();
 }
 
-CSlidingPanel::CSlidingPanel(CSlidingContainer* pParent, char* pszTitle)
+CSlidingPanel::CSlidingPanel(CControl<CSlidingContainer> hParent, char* pszTitle)
 	: CPanel(0, 0, 100, 5)
 {
 	SetBorder(BT_SOME);
 
-	TAssert(pParent);
+	TAssert(hParent);
 
 	m_bCurrent = false;
 
-	m_pTitle = new CLabel(0, 0, 100, SLIDER_COLLAPSED_HEIGHT, pszTitle);
-	AddControl(m_pTitle);
+	m_hTitle = AddControl(CreateControl(new CLabel(0, 0, 100, SLIDER_COLLAPSED_HEIGHT, pszTitle)));
 
-	m_pInnerPanel = new CInnerPanel(pParent);
-	m_pInnerPanel->SetBorder(CPanel::BT_NONE);
-	m_pInnerPanel->SetDefaultMargin(2);
-	AddControl(m_pInnerPanel);
+	m_hInnerPanel = AddControl(CreateControl(new CInnerPanel(hParent)));
+	m_hInnerPanel->SetBorder(CPanel::BT_NONE);
+	m_hInnerPanel->SetDefaultMargin(2);
 
 	// Add to tail so that panels appear in the order they are added.
-	pParent->AddControl(this, true);
+	hParent->AddControl(this, true);
 }
 
 void CSlidingPanel::Layout()
 {
-	m_pTitle->SetSize(m_pParent->GetWidth(), SLIDER_COLLAPSED_HEIGHT);
+	m_hTitle->SetSize(m_hParent->GetWidth(), SLIDER_COLLAPSED_HEIGHT);
 
-	m_pInnerPanel->SetPos(5, SLIDER_COLLAPSED_HEIGHT);
-	m_pInnerPanel->SetSize(GetWidth() - 10, GetHeight() - 5 - SLIDER_COLLAPSED_HEIGHT);
+	m_hInnerPanel->SetPos(5, SLIDER_COLLAPSED_HEIGHT);
+	m_hInnerPanel->SetSize(GetWidth() - 10, GetHeight() - 5 - SLIDER_COLLAPSED_HEIGHT);
 
 	CPanel::Layout();
 }
@@ -63,7 +61,7 @@ void CSlidingPanel::Paint(float x, float y, float w, float h)
 
 bool CSlidingPanel::MousePressed(int code, int mx, int my)
 {
-	CSlidingContainer* pParent = dynamic_cast<CSlidingContainer*>(m_pParent);
+	CSlidingContainer* pParent = m_hParent.DowncastStatic<CSlidingContainer>();
 
 	if (pParent->IsCurrent(this))
 		return CPanel::MousePressed(code, mx, my);
@@ -74,17 +72,15 @@ bool CSlidingPanel::MousePressed(int code, int mx, int my)
 	}
 }
 
-size_t CSlidingPanel::AddControl(CBaseControl* pControl, bool bToTail)
+CControlHandle CSlidingPanel::AddControl(CResource<CBaseControl> pControl, bool bToTail)
 {
 	// The title and inner panel should be added to this panel.
 	// All other controls should be added to the inner panel.
 	// This way the inner panel can be set not visible in order
 	// to set all children not visible at once.
 
-	if (pControl != m_pTitle && pControl != m_pInnerPanel)
-	{
-		return m_pInnerPanel->AddControl(pControl, bToTail);
-	}
+	if (pControl != m_hTitle && pControl != m_hInnerPanel)
+		return m_hInnerPanel->AddControl(pControl, bToTail);
 
 	return CPanel::AddControl(pControl, bToTail);
 }
@@ -93,7 +89,7 @@ void CSlidingPanel::SetCurrent(bool bCurrent)
 {
 	m_bCurrent = bCurrent;
 
-	m_pInnerPanel->SetVisible(bCurrent);
+	m_hInnerPanel->SetVisible(bCurrent);
 }
 
 CSlidingContainer::CSlidingContainer()
@@ -131,19 +127,19 @@ void CSlidingContainer::Layout()
 	CPanel::Layout();
 }
 
-size_t CSlidingContainer::AddControl(CBaseControl* pControl, bool bToTail)
+CControlHandle CSlidingContainer::AddControl(CResource<CBaseControl> pControl, bool bToTail)
 {
-	if (!pControl)
-		return ~0;
+	if (!pControl.get())
+		return CControlHandle();
 
-	TAssert(dynamic_cast<CSlidingPanel*>(pControl));
+	TAssert(dynamic_cast<CSlidingPanel*>(pControl.get()));
 
-	size_t iControl = CPanel::AddControl(pControl, bToTail);
+	CControlHandle hControl = CPanel::AddControl(pControl, bToTail);
 
 	// Re-layout now that we've added some. Maybe this one is the current one!
 	SetCurrent(m_iCurrent);
 
-	return iControl;
+	return hControl;
 }
 
 bool CSlidingContainer::IsCurrent(int iPanel)
@@ -154,14 +150,14 @@ bool CSlidingContainer::IsCurrent(int iPanel)
 void CSlidingContainer::SetCurrent(int iPanel)
 {
 	if (m_iCurrent < (int)m_apControls.size())
-		dynamic_cast<CSlidingPanel*>(m_apControls[m_iCurrent])->SetCurrent(false);
+		dynamic_cast<CSlidingPanel*>(m_apControls[m_iCurrent].get())->SetCurrent(false);
 
 	m_iCurrent = iPanel;
 
 	// iPanel may be invalid, for example if the container is empty and being initialized to 0.
 	if (m_iCurrent < (int)m_apControls.size())
 	{
-		dynamic_cast<CSlidingPanel*>(m_apControls[m_iCurrent])->SetCurrent(true);
+		dynamic_cast<CSlidingPanel*>(m_apControls[m_iCurrent].get())->SetCurrent(true);
 
 		Layout();
 	}

@@ -4,6 +4,7 @@
 #include <vector.h>
 #include <geometry.h>
 #include <tstring.h>
+#include <tinker_memory.h>
 
 // Not my favorite hack.
 #define EVENT_CALLBACK(type, pfn) \
@@ -37,6 +38,8 @@ namespace glgui
 	extern Color g_clrBoxHi;
 
 	extern float g_flLayoutDefault;
+
+	CResource<CBaseControl> CreateControl(CBaseControl* pControl);
 
 	class IDroppable;
 

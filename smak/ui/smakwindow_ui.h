@@ -20,14 +20,17 @@ namespace glgui
 	class CCheckBox;
 }
 
+class CMeshInstancePicker;
+
 class CButtonPanel : public glgui::CPanel
 {
 public:
 							CButtonPanel(buttonalignment_t eAlign);
 
+public:
 	virtual void			Layout();
 
-	virtual void			AddButton(glgui::CButton* pButton, const tstring& sHints, bool bNewSection, glgui::IEventListener* pListener = NULL, glgui::IEventListener::Callback pfnCallback = NULL);
+	virtual glgui::CControl<glgui::CButton>	AddButton(glgui::CButton* pButton, const tstring& sHints, bool bNewSection, glgui::IEventListener* pListener = NULL, glgui::IEventListener::Callback pfnCallback = NULL);
 
 	virtual void			Think();
 	virtual void			Paint(float x, float y, float w, float h);
@@ -36,16 +39,20 @@ protected:
 	buttonalignment_t		m_eAlign;
 
 	tvector<float>			m_aflSpaces;
-	tvector<glgui::CButton*>	m_apButtons;
-	tvector<glgui::CLabel*>	m_apHints;
+	tvector<glgui::CControl<glgui::CButton>>	m_ahButtons;
+	tvector<glgui::CControl<glgui::CLabel>>		m_ahHints;
 };
 
 class CProgressBar : public glgui::CPanel
 {
+	DECLARE_CLASS(CProgressBar, glgui::CPanel);
+
 public:
 							CProgressBar();
 
 public:
+	virtual void			CreateControls(CResource<CBaseControl> pThis);
+
 	void					Layout();
 	void					Paint(float x, float y, float w, float h);
 
@@ -59,10 +66,10 @@ protected:
 	size_t					m_iTotalProgress;
 	size_t					m_iCurrentProgress;
 
-	glgui::CLabel*			m_pAction;
+	glgui::CControl<glgui::CLabel>	m_hAction;
 	tstring					m_sAction;
 
-	static CProgressBar*	s_pProgressBar;
+	static glgui::CControl<CProgressBar>	s_hProgressBar;
 };
 
 class COptionsButton : public glgui::CButton, public glgui::IEventListener
@@ -73,14 +80,17 @@ public:
 		DECLARE_CLASS(COptionsPanel, glgui::CPanel);
 
 	public:
-						COptionsPanel(COptionsButton* pButton);
+							COptionsPanel(COptionsButton* pButton);
 
 	public:
-	virtual void		Layout();
-	virtual void		Paint(float x, float y, float w, float h);
+		virtual void		CreateControls(CResource<CBaseControl> pThis);
+		virtual void		Layout();
+		virtual void		Paint(float x, float y, float w, float h);
 
 	protected:
-		glgui::CButton*	m_pOkay;
+		COptionsButton*		m_pButton;
+
+		glgui::CControl<glgui::CButton>	m_hOkay;
 	};
 
 public:
@@ -90,18 +100,23 @@ public:
 	EVENT_CALLBACK(COptionsButton, Open);
 	EVENT_CALLBACK(COptionsButton, Close);
 
-	COptionsPanel*		GetOptionsPanel() { return m_pPanel; }
+	COptionsPanel*		GetOptionsPanel() { return m_hPanel; }
 
 protected:
-	COptionsPanel*		m_pPanel;
+	CResource<CBaseControl>			m_hPanelResource;
+	glgui::CControl<COptionsPanel>	m_hPanel;
 };
 
 class CComboGeneratorPanel : public glgui::CMovablePanel, public IWorkListener
 {
+	DECLARE_CLASS(CComboGeneratorPanel, glgui::CMovablePanel);
+
 public:
 								CComboGeneratorPanel(CConversionScene* pScene);
 
 public:
+	virtual void				CreateControls(CResource<CBaseControl> pThis);
+
 	virtual void				SetVisible(bool bVisible);
 
 	virtual void				Layout();
@@ -134,69 +149,74 @@ public:
 	EVENT_CALLBACK(CComboGeneratorPanel,	DroppedHiResMesh);
 
 	static void					Open(CConversionScene* pScene);
-	static CComboGeneratorPanel*	Get() { return s_pComboGeneratorPanel; }
+	static CComboGeneratorPanel*	Get() { return s_pComboGeneratorPanel.DowncastStatic<CComboGeneratorPanel>(); }
 
 protected:
 	CConversionScene*			m_pScene;
 
 	CTexelGenerator				m_oGenerator;
 
-	glgui::CLabel*				m_pSizeLabel;
-	glgui::CScrollSelector<int>*	m_pSizeSelector;
+	glgui::CControl<glgui::CLabel>				m_hSizeLabel;
+	glgui::CControl<glgui::CScrollSelector<int>>	m_hSizeSelector;
 
-	glgui::CLabel*				m_pLoResLabel;
-	glgui::CTree*				m_pLoRes;
+	glgui::CControl<glgui::CLabel>				m_hLoResLabel;
+	glgui::CControl<glgui::CTree>				m_hLoRes;
 
-	glgui::CLabel*				m_pHiResLabel;
-	glgui::CTree*				m_pHiRes;
+	glgui::CControl<glgui::CLabel>				m_hHiResLabel;
+	glgui::CControl<glgui::CTree>				m_hHiRes;
 
 	tvector<CConversionMeshInstance*>	m_apLoResMeshes;
 	tvector<CConversionMeshInstance*>	m_apHiResMeshes;
 
-	glgui::CButton*				m_pAddLoRes;
-	glgui::CButton*				m_pAddHiRes;
+	glgui::CControl<glgui::CButton>				m_hAddLoRes;
+	glgui::CControl<glgui::CButton>				m_hAddHiRes;
 
-	glgui::CButton*				m_pRemoveLoRes;
-	glgui::CButton*				m_pRemoveHiRes;
+	glgui::CControl<glgui::CButton>				m_hRemoveLoRes;
+	glgui::CControl<glgui::CButton>				m_hRemoveHiRes;
 
-	glgui::CLabel*				m_pDiffuseLabel;
-	glgui::CCheckBox*			m_pDiffuseCheckBox;
+	glgui::CControl<glgui::CLabel>				m_hDiffuseLabel;
+	glgui::CControl<glgui::CCheckBox>			m_hDiffuseCheckBox;
 
-	glgui::CLabel*				m_pAOLabel;
-	glgui::CCheckBox*			m_pAOCheckBox;
+	glgui::CControl<glgui::CLabel>				m_hAOLabel;
+	glgui::CControl<glgui::CCheckBox>			m_hAOCheckBox;
 
-	glgui::CLabel*				m_pNormalLabel;
-	glgui::CCheckBox*			m_pNormalCheckBox;
+	glgui::CControl<glgui::CLabel>				m_hNormalLabel;
+	glgui::CControl<glgui::CCheckBox>			m_hNormalCheckBox;
 
-	COptionsButton*				m_pAOOptions;
+	glgui::CControl<COptionsButton>				m_hAOOptions;
 
-	glgui::CLabel*				m_pBleedLabel;
-	glgui::CScrollSelector<int>*	m_pBleedSelector;
+	glgui::CControl<glgui::CLabel>				m_hBleedLabel;
+	glgui::CControl<glgui::CScrollSelector<int>>	m_hBleedSelector;
 
-	glgui::CLabel*				m_pSamplesLabel;
-	glgui::CScrollSelector<int>*	m_pSamplesSelector;
+	glgui::CControl<glgui::CLabel>				m_hSamplesLabel;
+	glgui::CControl<glgui::CScrollSelector<int>>	m_hSamplesSelector;
 
-	glgui::CLabel*				m_pFalloffLabel;
-	glgui::CScrollSelector<float>*	m_pFalloffSelector;
+	glgui::CControl<glgui::CLabel>				m_hFalloffLabel;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hFalloffSelector;
 
-	glgui::CLabel*				m_pRandomLabel;
-	glgui::CCheckBox*			m_pRandomCheckBox;
+	glgui::CControl<glgui::CLabel>				m_hRandomLabel;
+	glgui::CControl<glgui::CCheckBox>			m_hRandomCheckBox;
 
-	glgui::CLabel*				m_pGroundOcclusionLabel;
-	glgui::CCheckBox*			m_pGroundOcclusionCheckBox;
+	glgui::CControl<glgui::CLabel>				m_hGroundOcclusionLabel;
+	glgui::CControl<glgui::CCheckBox>			m_hGroundOcclusionCheckBox;
 
-	glgui::CButton*				m_pGenerate;
-	glgui::CButton*				m_pSave;
+	glgui::CControl<glgui::CButton>				m_hGenerate;
+	glgui::CControl<glgui::CButton>				m_hSave;
 
-	class CMeshInstancePicker*	m_pMeshInstancePicker;
+	glgui::CControl<CMeshInstancePicker>		m_hMeshInstancePicker;
 
-	static CComboGeneratorPanel*	s_pComboGeneratorPanel;
+	static CResource<CBaseControl>		s_pComboGeneratorPanel;
 };
 
 class CAOPanel : public glgui::CMovablePanel, public IWorkListener
 {
+	DECLARE_CLASS(CAOPanel, glgui::CMovablePanel);
+
 public:
 							CAOPanel(bool bColor, CConversionScene* pScene);
+
+public:
+	virtual void			CreateControls(CResource<glgui::CBaseControl> pThis);
 
 	virtual void			SetVisible(bool bVisible);
 
@@ -219,8 +239,8 @@ public:
 
 	virtual void			FindBestRayFalloff();
 
-	static void				Open(bool bColor, CConversionScene* pScene);
-	static CAOPanel*		Get(bool bColor);
+	static void				Open(CConversionScene* pScene);
+	static glgui::CControl<CAOPanel>	Get();
 
 protected:
 	bool					m_bColor;
@@ -229,46 +249,50 @@ protected:
 
 	CAOGenerator			m_oGenerator;
 
-	glgui::CLabel*			m_pSizeLabel;
-	glgui::CScrollSelector<int>*	m_pSizeSelector;
+	glgui::CControl<glgui::CLabel>			m_hSizeLabel;
+	glgui::CControl<glgui::CScrollSelector<int>>	m_hSizeSelector;
 
-	glgui::CLabel*			m_pEdgeBleedLabel;
-	glgui::CScrollSelector<int>*	m_pEdgeBleedSelector;
+	glgui::CControl<glgui::CLabel>			m_hEdgeBleedLabel;
+	glgui::CControl<glgui::CScrollSelector<int>>	m_hEdgeBleedSelector;
 
-	glgui::CLabel*			m_pAOMethodLabel;
-	glgui::CScrollSelector<int>*	m_pAOMethodSelector;
+	glgui::CControl<glgui::CLabel>			m_hAOMethodLabel;
+	glgui::CControl<glgui::CScrollSelector<int>>	m_hAOMethodSelector;
 
-	glgui::CLabel*			m_pRayDensityLabel;
-	glgui::CScrollSelector<int>*	m_pRayDensitySelector;
+	glgui::CControl<glgui::CLabel>			m_hRayDensityLabel;
+	glgui::CControl<glgui::CScrollSelector<int>>	m_hRayDensitySelector;
 
-	glgui::CLabel*			m_pLightsLabel;
-	glgui::CScrollSelector<int>*	m_pLightsSelector;
+	glgui::CControl<glgui::CLabel>			m_hLightsLabel;
+	glgui::CControl<glgui::CScrollSelector<int>>	m_hLightsSelector;
 
-	glgui::CLabel*			m_pFalloffLabel;
-	glgui::CScrollSelector<float>*	m_pFalloffSelector;
+	glgui::CControl<glgui::CLabel>			m_hFalloffLabel;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hFalloffSelector;
 
-	glgui::CLabel*			m_pRandomLabel;
-	glgui::CCheckBox*		m_pRandomCheckBox;
+	glgui::CControl<glgui::CLabel>			m_hRandomLabel;
+	glgui::CControl<glgui::CCheckBox>		m_hRandomCheckBox;
 
-	glgui::CLabel*			m_pCreaseLabel;
-	glgui::CCheckBox*		m_pCreaseCheckBox;
+	glgui::CControl<glgui::CLabel>			m_hCreaseLabel;
+	glgui::CControl<glgui::CCheckBox>		m_hCreaseCheckBox;
 
-	glgui::CLabel*			m_pGroundOcclusionLabel;
-	glgui::CCheckBox*		m_pGroundOcclusionCheckBox;
+	glgui::CControl<glgui::CLabel>			m_hGroundOcclusionLabel;
+	glgui::CControl<glgui::CCheckBox>		m_hGroundOcclusionCheckBox;
 
-	glgui::CButton*			m_pGenerate;
-	glgui::CButton*			m_pSave;
+	glgui::CControl<glgui::CButton>			m_hGenerate;
+	glgui::CControl<glgui::CButton>			m_hSave;
 
-	static CAOPanel*		s_pAOPanel;
-	static CAOPanel*		s_pColorAOPanel;
+	static CResource<CBaseControl>		s_pAOPanel;
+	static CResource<CBaseControl>		s_pColorAOPanel;
 };
 
 class CNormalPanel : public glgui::CMovablePanel
 {
+	DECLARE_CLASS(CNormalPanel, glgui::CMovablePanel);
+
 public:
 								CNormalPanel(CConversionScene* pScene);
 
 public:
+	virtual void				CreateControls(CResource<glgui::CBaseControl> pThis);
+
 	virtual void				SetVisible(bool bVisible);
 
 	virtual void				Layout();
@@ -290,35 +314,35 @@ public:
 	EVENT_CALLBACK(CNormalPanel,	UpdateNormal2);
 
 	static void					Open(CConversionScene* pScene);
-	static CNormalPanel*		Get() { return s_pNormalPanel; }
+	static glgui::CControl<CNormalPanel>		Get() { return glgui::CControl<CNormalPanel>(s_pNormalPanel->GetHandle()); }
 
 protected:
 	CConversionScene*			m_pScene;
 
 	CNormalGenerator			m_oGenerator;
 
-	glgui::CLabel*				m_pMaterialsLabel;
-	glgui::CTree*				m_pMaterials;
+	glgui::CControl<glgui::CLabel>				m_hMaterialsLabel;
+	glgui::CControl<glgui::CTree>				m_hMaterials;
 
-	glgui::CLabel*				m_pProgressLabel;
+	glgui::CControl<glgui::CLabel>				m_hProgressLabel;
 
-	glgui::CScrollSelector<float>*	m_pDepthSelector;
-	glgui::CLabel*				m_pDepthLabel;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hDepthSelector;
+	glgui::CControl<glgui::CLabel>				m_hDepthLabel;
 
-	glgui::CScrollSelector<float>*	m_pHiDepthSelector;
-	glgui::CLabel*				m_pHiDepthLabel;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hHiDepthSelector;
+	glgui::CControl<glgui::CLabel>				m_hHiDepthLabel;
 
-	glgui::CScrollSelector<float>*	m_pMidDepthSelector;
-	glgui::CLabel*				m_pMidDepthLabel;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hMidDepthSelector;
+	glgui::CControl<glgui::CLabel>				m_hMidDepthLabel;
 
-	glgui::CScrollSelector<float>*	m_pLoDepthSelector;
-	glgui::CLabel*				m_pLoDepthLabel;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hLoDepthSelector;
+	glgui::CControl<glgui::CLabel>				m_hLoDepthLabel;
 
-	glgui::CButton*				m_pSave;
+	glgui::CControl<glgui::CButton>				m_hSave;
 
-	class CMaterialPicker*		m_pMaterialPicker;
+	glgui::CControl<class CMaterialPicker>		m_hMaterialPicker;
 
-	static CNormalPanel*		s_pNormalPanel;
+	static CResource<CBaseControl>		s_pNormalPanel;
 };
 
 class CHelpPanel : public glgui::CMovablePanel
@@ -335,9 +359,9 @@ public:
 	static void				Close();
 
 protected:
-	glgui::CLabel*			m_pInfo;
+	glgui::CControl<glgui::CLabel>			m_hInfo;
 
-	static CHelpPanel*		s_pHelpPanel;
+	static glgui::CControl<CHelpPanel>		s_hHelpPanel;
 };
 
 class CAboutPanel : public glgui::CMovablePanel
@@ -354,9 +378,9 @@ public:
 	static void				Close();
 
 protected:
-	glgui::CLabel*			m_pInfo;
+	glgui::CControl<glgui::CLabel>			m_hInfo;
 
-	static CAboutPanel*		s_pAboutPanel;
+	static glgui::CControl<CAboutPanel>		s_hAboutPanel;
 };
 
 #endif

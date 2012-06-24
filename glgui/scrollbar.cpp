@@ -74,7 +74,7 @@ void CScrollBar::SetVisible(bool bVisible)
 {
 	BaseClass::SetVisible(bVisible);
 
-	CPanel* pPanel = dynamic_cast<CPanel*>(GetParent());
+	CPanel* pPanel = GetParent().Downcast<CPanel>();
 	if (pPanel && bVisible)
 	{
 		FRect rParent = pPanel->GetAbsDimensions();

@@ -72,7 +72,7 @@ namespace glgui
 		virtual bool	IsEnabled() {return m_bEnabled;};
 		virtual void	SetEnabled(bool bEnabled) {m_bEnabled = bEnabled;};
 
-		virtual TextAlign	GetAlign() { return m_eAlign; };
+		virtual TextAlign	GetAlign() const { return m_eAlign; };
 		virtual void	SetAlign(TextAlign eAlign) { m_eAlign = eAlign; };
 
 		virtual bool	GetWrap() { return m_bWrap; };
@@ -82,12 +82,12 @@ namespace glgui
 
 		virtual void	SetText(const tstring& sText);
 		virtual void	AppendText(const tstring& sText);
-		virtual tstring	GetText();
+		virtual tstring	GetText() const;
 
 		virtual void	SetFont(const tstring& sFontName, int iSize=13);
-		virtual int		GetFontFaceSize() { return m_iFontFaceSize; };
+		virtual int		GetFontFaceSize() const { return m_iFontFaceSize; };
 
-		virtual float	GetTextWidth();
+		virtual float	GetTextWidth() const;
 		virtual float	GetTextHeight();
 		virtual void	EnsureTextFits();
 
@@ -99,7 +99,7 @@ namespace glgui
 		virtual size_t				GetNumSections(size_t iLine) const { return m_aLines[iLine].m_aSections.size(); }
 		virtual const CLineSection&	GetSection(size_t iLine, size_t iSection) const { return m_aLines[iLine].m_aSections[iSection]; }
 
-		virtual Color	GetTextColor();
+		virtual Color	GetTextColor() const;
 		virtual void	SetTextColor(const Color& clrText);
 		virtual void	SetAlpha(int a);
 		virtual void	SetAlpha(float a);

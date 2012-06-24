@@ -23,6 +23,8 @@ namespace glgui
 	template <typename T>
 	class CScrollSelector : public CPanel
 	{
+		DECLARE_CLASS(CScrollSelector, CPanel);
+
 	public:
 		CScrollSelector(const tstring& sFont="sans-serif", size_t iSize=13)
 			: CPanel(0, 0, 100, 16)
@@ -36,22 +38,30 @@ namespace glgui
 			m_pfnSelectedCallback = NULL;
 			m_pSelectedListener = NULL;
 
-			m_pOption = new CLabel(0, 0, 100, 100, "");
-			m_pOption->SetWrap(false);
-			m_pOption->SetFont(sFont, iSize);
-			AddControl(m_pOption);
+			m_sFont = sFont;
+			m_iFontSize = iSize;
+		}
+
+	public:
+		virtual void CreateControls(CResource<CBaseControl> pThis)
+		{
+			m_hOption = AddControl(new CLabel(0, 0, 100, 100, ""));
+			m_hOption->SetWrap(false);
+			m_hOption->SetFont(m_sFont, m_iFontSize);
+
+			BaseClass::CreateControls(pThis);
 		}
 
 		virtual void Layout()
 		{
-			m_pOption->SetSize(1, 1);
+			m_hOption->SetSize(1, 1);
 
 			// Make sure there's some text to be fit to.
-			if (m_pOption->GetText() == "")
-				m_pOption->SetText("-");
+			if (m_hOption->GetText() == "")
+				m_hOption->SetText("-");
 
-			m_pOption->EnsureTextFits();
-			m_pOption->SetPos(GetWidth()/2 - m_pOption->GetWidth()/2, GetHeight()-15);
+			m_hOption->EnsureTextFits();
+			m_hOption->SetPos(GetWidth()/2 - m_hOption->GetWidth()/2, GetHeight()-15);
 
 			CPanel::Layout();
 		}
@@ -79,7 +89,7 @@ namespace glgui
 			m_flHandlePosition = Approach(m_flHandlePositionGoal, m_flHandlePosition, (float)CRootPanel::Get()->GetFrameTime()*10);
 
 			int iSelection = SelectionByHandle();
-			m_pOption->SetText(m_aSelections[iSelection].m_sLabel.c_str());
+			m_hOption->SetText(m_aSelections[iSelection].m_sLabel.c_str());
 
 			if (iSelection != m_iSelection)
 			{
@@ -276,9 +286,12 @@ namespace glgui
 		}
 
 	protected:
+		tstring								m_sFont;
+		size_t								m_iFontSize;
+
 		tvector<CScrollSelection<T> >		m_aSelections;
 
-		CLabel*								m_pOption;
+		CControl<CLabel>					m_hOption;
 
 		size_t								m_iSelection;
 

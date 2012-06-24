@@ -182,7 +182,7 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 			clrText.SetColor(m_clrText.r()/2, m_clrText.g()/2, m_clrText.b()/2, m_iAlpha);
 
 		FRect r(-1, -1, -1, -1);
-		CPanel* pParent = dynamic_cast<CPanel*>(GetParent());
+		CPanel* pParent = GetParent().Downcast<CPanel>();
 		while (pParent)
 		{
 			if (pParent && pParent->IsScissoring())
@@ -192,7 +192,7 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 				r.h = pParent->GetHeight();
 				break;
 			}
-			pParent = dynamic_cast<CPanel*>(pParent->GetParent());
+			pParent = pParent->GetParent().Downcast<CPanel>();
 		}
 
 		if (m_bScissor)
@@ -458,7 +458,7 @@ void CLabel::SetFont(const tstring& sFontName, int iSize)
 	m_bNeedsCompute = true;
 }
 
-float CLabel::GetTextWidth()
+float CLabel::GetTextWidth() const
 {
 	return s_apFonts[m_sFontName][m_iFontFaceSize]->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str());
 }
@@ -720,12 +720,12 @@ void CLabel::PushSection(const CLineSection& oSection, const tstring& sLine)
 	m_aLines.back().m_flLineWidth += flSectionWidth;
 }
 
-tstring CLabel::GetText()
+tstring CLabel::GetText() const
 {
 	return m_sText;
 }
 
-Color CLabel::GetTextColor()
+Color CLabel::GetTextColor() const
 {
 	return m_clrText;
 }

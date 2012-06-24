@@ -7,11 +7,15 @@
 
 class CSceneTreePanel : public glgui::CMovablePanel
 {
+	DECLARE_CLASS(CSceneTreePanel, glgui::CMovablePanel);
+
 public:
 									CSceneTreePanel(CConversionScene* pScene);
 									~CSceneTreePanel();
 
 public:
+	virtual void					CreateControls(CResource<glgui::CBaseControl> pThis);
+
 	void							Layout();
 	void							Paint(float x, float y, float w, float h);
 
@@ -31,9 +35,9 @@ public:
 public:
 	CConversionScene*				m_pScene;
 
-	glgui::CTree*					m_pTree;
+	glgui::CControl<glgui::CTree>	m_hTree;
 
-	class CMaterialEditor*			m_pMaterialEditor;
+	CResource<CBaseControl>			m_pMaterialEditor;
 
 	size_t							m_iLastSelectedMaterial;
 
@@ -44,10 +48,14 @@ void OpenMaterialEditor(CConversionMaterial* pMaterial, const tstring& sArgs);
 
 class CMaterialEditor : public glgui::CMovablePanel
 {
-public:
-									CMaterialEditor(CConversionMaterial* pMaterial, CSceneTreePanel* pSceneTree);
+	DECLARE_CLASS(CMaterialEditor, glgui::CMovablePanel);
 
 public:
+									CMaterialEditor(CConversionMaterial* pMaterial, glgui::CControl<CSceneTreePanel> hSceneTree);
+
+public:
+	virtual void					CreateControls(CResource<CBaseControl> pThis);
+
 	void							SetupSelector(glgui::CScrollSelector<float>* pSelector, float flMaxValue);
 
 	void							Layout();
@@ -74,40 +82,40 @@ public:
 
 protected:
 	CConversionMaterial*			m_pMaterial;
-	CSceneTreePanel*				m_pSceneTree;
+	glgui::CControl<CSceneTreePanel>	m_hSceneTree;
 	CConversionScene*				m_pScene;
 	size_t							m_iMaterial;
 
-	glgui::CLabel*					m_pDiffuseLabel;
-	glgui::CButton*					m_pDiffuseFile;
-	glgui::CButton*					m_pDiffuseRemove;
+	glgui::CControl<glgui::CLabel>					m_hDiffuseLabel;
+	glgui::CControl<glgui::CButton>					m_hDiffuseFile;
+	glgui::CControl<glgui::CButton>					m_hDiffuseRemove;
 
-	glgui::CLabel*					m_pNormalLabel;
-	glgui::CButton*					m_pNormalFile;
-	glgui::CButton*					m_pNormalRemove;
+	glgui::CControl<glgui::CLabel>					m_hNormalLabel;
+	glgui::CControl<glgui::CButton>					m_hNormalFile;
+	glgui::CControl<glgui::CButton>					m_hNormalRemove;
 
-	glgui::CLabel*					m_pAmbientLabel;
-	glgui::CScrollSelector<float>*	m_pAmbientRedSelector;
-	glgui::CScrollSelector<float>*	m_pAmbientGreenSelector;
-	glgui::CScrollSelector<float>*	m_pAmbientBlueSelector;
+	glgui::CControl<glgui::CLabel>					m_hAmbientLabel;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hAmbientRedSelector;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hAmbientGreenSelector;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hAmbientBlueSelector;
 
-	glgui::CLabel*					m_pDiffuseSelectorLabel;
-	glgui::CScrollSelector<float>*	m_pDiffuseRedSelector;
-	glgui::CScrollSelector<float>*	m_pDiffuseGreenSelector;
-	glgui::CScrollSelector<float>*	m_pDiffuseBlueSelector;
+	glgui::CControl<glgui::CLabel>					m_hDiffuseSelectorLabel;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hDiffuseRedSelector;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hDiffuseGreenSelector;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hDiffuseBlueSelector;
 
-	glgui::CLabel*					m_pSpecularLabel;
-	glgui::CScrollSelector<float>*	m_pSpecularRedSelector;
-	glgui::CScrollSelector<float>*	m_pSpecularGreenSelector;
-	glgui::CScrollSelector<float>*	m_pSpecularBlueSelector;
+	glgui::CControl<glgui::CLabel>					m_hSpecularLabel;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hSpecularRedSelector;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hSpecularGreenSelector;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hSpecularBlueSelector;
 
-	glgui::CLabel*					m_pEmissiveLabel;
-	glgui::CScrollSelector<float>*	m_pEmissiveRedSelector;
-	glgui::CScrollSelector<float>*	m_pEmissiveGreenSelector;
-	glgui::CScrollSelector<float>*	m_pEmissiveBlueSelector;
+	glgui::CControl<glgui::CLabel>					m_hEmissiveLabel;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hEmissiveRedSelector;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hEmissiveGreenSelector;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hEmissiveBlueSelector;
 
-	glgui::CLabel*					m_pShininessLabel;
-	glgui::CScrollSelector<float>*	m_pShininessSelector;
+	glgui::CControl<glgui::CLabel>					m_hShininessLabel;
+	glgui::CControl<glgui::CScrollSelector<float>>	m_hShininessSelector;
 };
 
 inline CSceneTreePanel* SceneTree()

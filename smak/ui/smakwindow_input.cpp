@@ -237,7 +237,7 @@ bool CSMAKWindow::DoCharPress(int c)
 {
 	if (c == 'a')
 	{
-		CAOPanel::Open(false, &m_Scene);
+		CAOPanel::Open(&m_Scene);
 		return true;
 	}
 

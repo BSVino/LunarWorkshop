@@ -151,7 +151,7 @@ void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float
 	GetAbsPos(cx, cy);
 
 	FRect r(-1, -1, -1, -1);
-	CPanel* pParent = dynamic_cast<CPanel*>(GetParent());
+	CPanel* pParent = GetParent().Downcast<CPanel>();
 	while (pParent)
 	{
 		if (pParent && pParent->IsScissoring())
@@ -161,7 +161,7 @@ void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float
 			r.h = pParent->GetHeight();
 			break;
 		}
-		pParent = dynamic_cast<CPanel*>(pParent->GetParent());
+		pParent = pParent->GetParent().Downcast<CPanel>();
 	}
 
 	FRect r2;
@@ -230,7 +230,7 @@ bool CTextField::MousePressed(int iButton, int mx, int my)
 	if (!TakesFocus())
 		return false;
 
-	CRootPanel::Get()->SetFocus(this);
+	CRootPanel::Get()->SetFocus(m_hThis);
 
 	float cx, cy;
 	GetAbsPos(cx, cy);
@@ -304,7 +304,7 @@ bool CTextField::KeyPressed(int iKey, bool bCtrlDown)
 		return true;
 	}
 	else if (iKey == TINKER_KEY_ESCAPE || iKey == TINKER_KEY_ENTER)
-		CRootPanel::Get()->SetFocus(NULL);
+		CRootPanel::Get()->SetFocus(CControlHandle());
 	else if (iKey == TINKER_KEY_LEFT)
 	{
 		if (m_iCursor > 0)

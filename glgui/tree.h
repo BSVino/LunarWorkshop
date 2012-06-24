@@ -11,11 +11,13 @@ namespace glgui
 		DECLARE_CLASS(CTreeNode, CPanel);
 
 	public:
-											CTreeNode(CTreeNode* pParent, class CTree* pTree, const tstring& sText, const tstring& sFont);
+											CTreeNode(CControl<CTreeNode> hParent, CControl<CTree> hTree, const tstring& sText, const tstring& sFont);
 											CTreeNode(const CTreeNode& c);
 		virtual								~CTreeNode();
 
 	public:
+		virtual void						CreateControls(CResource<CBaseControl> pThis);
+
 		virtual float						GetNodeHeight();
 		virtual float						GetNodeSpacing() { return 0; };
 		virtual void						LayoutNode();
@@ -27,17 +29,17 @@ namespace glgui
 		size_t								AddNode(const tstring& sName);
 		template <typename T>
 		size_t								AddNode(const tstring& sName, T* pObject);
-		size_t								AddNode(CTreeNode* pNode);
+		size_t								AddNode(CResource<CBaseControl> pNode);
 		void								RemoveNode(CTreeNode* pNode);
-		CTreeNode*							GetNode(size_t i);
-		size_t								GetNumNodes() { return m_apNodes.size(); };
+		CControl<CTreeNode>					GetNode(size_t i);
+		size_t								GetNumNodes() { return m_ahNodes.size(); };
 
 		virtual void						AddVisibilityButton() {};
 
 		virtual void						Selected();
 
-		bool								IsExpanded() { return m_pExpandButton->IsExpanded(); };
-		void								SetExpanded(bool bExpanded) { m_pExpandButton->SetExpanded(bExpanded); };
+		bool								IsExpanded() { return m_hExpandButton->IsExpanded(); };
+		void								SetExpanded(bool bExpanded) { m_hExpandButton->SetExpanded(bExpanded); };
 
 		void								SetIcon(const CMaterialHandle& hMaterial) { m_hIconMaterial = hMaterial; };
 		virtual void						SetDraggable(bool bDraggable) { m_bDraggable = true; };
@@ -61,15 +63,16 @@ namespace glgui
 		EVENT_CALLBACK(CTreeNode, Expand);
 
 	public:
-		tvector<CTreeNode*>					m_apNodes;
-		CTreeNode*							m_pParent;
-		class CTree*						m_pTree;
-		class CLabel*						m_pLabel;
+		tvector<CControl<CTreeNode>>		m_ahNodes;
+		CControl<CTreeNode>					m_hParent;
+		CControl<CTree>						m_hTree;
+		CLabel*								m_pLabel;	// A temporary holder
+		CControl<CLabel>					m_hLabel;
 
 		CMaterialHandle						m_hIconMaterial;
 
-		CPictureButton*						m_pVisibilityButton;
-		CPictureButton*						m_pEditButton;
+		CControl<CPictureButton>			m_hVisibilityButton;
+		CControl<CPictureButton>			m_hEditButton;
 
 		bool								m_bDraggable;
 
@@ -92,7 +95,7 @@ namespace glgui
 			float							m_flExpandedGoal;
 		};
 
-		CExpandButton*						m_pExpandButton;
+		CControl<CExpandButton>				m_hExpandButton;
 	};
 
 	class CTree : public CPanel, public IDroppable
@@ -106,6 +109,8 @@ namespace glgui
 		virtual								~CTree();
 
 	public:
+		virtual void						CreateControls(CResource<CBaseControl> pThis);
+
 		virtual void						Layout();
 		virtual void						Think();
 		virtual void						Paint();
@@ -116,7 +121,7 @@ namespace glgui
 		virtual bool						MouseReleased(int iButton, int mx, int my);
 		virtual bool						MouseDoubleClicked(int iButton, int mx, int my);
 
-		virtual size_t						AddControl(CBaseControl* pControl, bool bToTail = false);
+		virtual CControlHandle				AddControl(CResource<CBaseControl> pControl, bool bToTail = false);
 		virtual void						RemoveControl(CBaseControl* pControl);
 
 		void								ClearTree();
@@ -124,11 +129,11 @@ namespace glgui
 		size_t								AddNode(const tstring& sName);
 		template <typename T>
 		size_t								AddNode(const tstring& sName, T* pObject);
-		size_t								AddNode(CTreeNode* pNode, size_t iPosition = ~0);
+		size_t								AddNode(CResource<CBaseControl> pNode, size_t iPosition = ~0);
 		void								RemoveNode(CTreeNode* pNode);
-		CTreeNode*							GetNode(size_t i);
+		CControl<CTreeNode>					GetNode(size_t i);
 
-		virtual CTreeNode*					GetSelectedNode() { if (m_iSelected == ~0) return NULL; return dynamic_cast<CTreeNode*>(m_apAllNodes[m_iSelected]); };
+		virtual CControl<CTreeNode>			GetSelectedNode() { if (m_iSelected == ~0) return CControl<CTreeNode>(); return m_ahAllNodes[m_iSelected]; };
 		virtual size_t						GetSelectedNodeId() { return m_iSelected; };
 		virtual void						Unselect() { m_iSelected = ~0; }
 		virtual void						SetSelectedNode(size_t iNode);
@@ -142,8 +147,8 @@ namespace glgui
 
 		virtual void						AddDraggable(IDraggable*) {};
 		virtual void						SetDraggable(IDraggable*, bool bDelete = true);
-		virtual IDraggable*					GetDraggable(int i) { return m_pDragging; };
-		virtual IDraggable*					GetCurrentDraggable() { return m_pDragging; };
+		virtual IDraggable*					GetDraggable(int i) { return static_cast<IDraggable*>(m_hDragging.Get()); };
+		virtual IDraggable*					GetCurrentDraggable() { return static_cast<IDraggable*>(m_hDragging.Get()); };
 
 		// I already know.
 		virtual void						SetGrabbale(bool bGrabbable) {};
@@ -155,8 +160,8 @@ namespace glgui
 		virtual bool						IsVisible() { return BaseClass::IsVisible(); };
 
 	public:
-		tvector<CTreeNode*>					m_apNodes;
-		tvector<CTreeNode*>					m_apAllNodes;
+		tvector<CControl<CTreeNode>>		m_ahNodes;
+		tvector<CControl<CTreeNode>>		m_ahAllNodes;
 
 		float								m_flCurrentHeight;
 		float								m_flCurrentDepth;
@@ -181,7 +186,7 @@ namespace glgui
 		int									m_iMouseDownX;
 		int									m_iMouseDownY;
 
-		CTreeNode*							m_pDragging;
+		CControl<CTreeNode>					m_hDragging;
 		int									m_iAcceptsDragType;
 	};
 
@@ -189,8 +194,8 @@ namespace glgui
 	class CTreeNodeObject : public CTreeNode
 	{
 	public:
-		CTreeNodeObject(T* pObject, CTreeNode* pParent, class CTree* pTree, const tstring& sName)
-			: CTreeNode(pParent, pTree, sName, "sans-serif")
+		CTreeNodeObject(T* pObject, CControlHandle hParent, CControlHandle hTree, const tstring& sName)
+			: CTreeNode(hParent, hTree, sName, "sans-serif")
 		{
 			m_pObject = pObject;
 		}
@@ -202,35 +207,33 @@ namespace glgui
 		{
 			CTreeNode::LayoutNode();
 
-			float iHeight = m_pLabel->GetTextHeight();
+			float iHeight = m_hLabel->GetTextHeight();
 
-			if (m_pVisibilityButton)
+			if (m_hVisibilityButton)
 			{
-				m_pVisibilityButton->SetPos(GetWidth()-iHeight-14, 0);
-				m_pVisibilityButton->SetSize(iHeight, iHeight);
+				m_hVisibilityButton->SetPos(GetWidth()-iHeight-14, 0);
+				m_hVisibilityButton->SetSize(iHeight, iHeight);
 			}
 
-			if (m_pEditButton)
+			if (m_hEditButton)
 			{
-				m_pEditButton->SetPos(GetWidth()-iHeight*2-16, 0);
-				m_pEditButton->SetSize(iHeight, iHeight);
+				m_hEditButton->SetPos(GetWidth()-iHeight*2-16, 0);
+				m_hEditButton->SetSize(iHeight, iHeight);
 			}
 
-			m_pLabel->SetAlpha(m_pObject->IsVisible()?255:100);
+			m_hLabel->SetAlpha(m_pObject->IsVisible()?255:100);
 		}
 
 		virtual void AddVisibilityButton()
 		{
-			m_pVisibilityButton = new CPictureButton("@", m_pTree->m_hVisibilityMaterial);
-			m_pVisibilityButton->SetClickedListener(this, Visibility);
-			AddControl(m_pVisibilityButton);
+			m_hVisibilityButton = AddControl(CreateControl(new CPictureButton("@", m_hTree->m_hVisibilityMaterial)));
+			m_hVisibilityButton->SetClickedListener(this, Visibility);
 		}
 
 		virtual void AddEditButton(EditFnCallback pfnCallback)
 		{
-			m_pEditButton = new CPictureButton("*", m_pTree->m_hEditMaterial);
-			m_pEditButton->SetClickedListener(this, Edit);
-			AddControl(m_pEditButton);
+			m_hEditButton = AddControl(CreateControl(new CPictureButton("*", m_hTree->m_hEditMaterial)));
+			m_hEditButton->SetClickedListener(this, Edit);
 			m_pfnCallback = pfnCallback;
 		}
 
@@ -252,7 +255,7 @@ namespace glgui
 	{
 		m_pObject->SetVisible(!m_pObject->IsVisible());
 
-		m_pLabel->SetAlpha(m_pObject->IsVisible()?255:100);
+		m_hLabel->SetAlpha(m_pObject->IsVisible()?255:100);
 	}
 
 	template <typename T>
@@ -264,13 +267,13 @@ namespace glgui
 	template <typename T>
 	inline size_t CTreeNode::AddNode(const tstring& sName, T* pObject)
 	{
-		return AddNode(new CTreeNodeObject<T>(pObject, this, m_pTree, sName));
+		return AddNode(CreateControl(new CTreeNodeObject<T>(pObject, m_hThis, m_hTree, sName)));
 	}
 
 	template <typename T>
 	inline size_t CTree::AddNode(const tstring& sName, T* pObject)
 	{
-		return AddNode(new CTreeNodeObject<T>(pObject, NULL, this, sName));
+		return AddNode(CreateControl(new CTreeNodeObject<T>(pObject, CControlHandle(), m_hThis, sName)));
 	}
 };
 

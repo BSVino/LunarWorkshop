@@ -35,8 +35,8 @@ public:
 	float								m_bCommonProperties;
 	class CLevelEntity*					m_pEntity;
 
-	tvector<glgui::CLabel*>				m_apPropertyLabels;
-	tvector<glgui::CBaseControl*>		m_apPropertyOptions;
+	tvector<glgui::CControl<glgui::CLabel>>				m_ahPropertyLabels;
+	tvector<glgui::CControl<glgui::CBaseControl>>		m_ahPropertyOptions;
 	tvector<tstring>					m_asPropertyHandle;
 
 	glgui::IEventListener::Callback		m_pfnPropertyChangedCallback;
@@ -59,15 +59,15 @@ public:
 public:
 	bool					m_bReadyToCreate;
 
-	glgui::CMenu*			m_pClass;
+	glgui::CControl<glgui::CMenu>			m_hClass;
 
-	glgui::CLabel*			m_pNameLabel;
-	glgui::CTextField*		m_pNameText;
+	glgui::CControl<glgui::CLabel>			m_hNameLabel;
+	glgui::CControl<glgui::CTextField>		m_hNameText;
 
-	glgui::CLabel*			m_pModelLabel;
-	glgui::CTextField*		m_pModelText;
+	glgui::CControl<glgui::CLabel>			m_hModelLabel;
+	glgui::CControl<glgui::CTextField>		m_hModelText;
 
-	CEntityPropertiesPanel*	m_pPropertiesPanel;
+	glgui::CControl<CEntityPropertiesPanel>	m_hPropertiesPanel;
 };
 
 class CEditorPanel : public glgui::CPanel, public glgui::IEventListener
@@ -97,28 +97,28 @@ public:
 	EVENT_CALLBACK(CEditorPanel, ArgumentsChanged);
 
 public:
-	glgui::CTree*			m_pEntities;
-	glgui::CLabel*			m_pObjectTitle;
+	glgui::CControl<glgui::CTree>			m_hEntities;
+	glgui::CControl<glgui::CLabel>			m_hObjectTitle;
 
-	glgui::CSlidingContainer*	m_pSlider;
-	glgui::CSlidingPanel*	m_pPropertiesSlider;
-	glgui::CSlidingPanel*	m_pOutputsSlider;
+	glgui::CControl<glgui::CSlidingContainer>	m_hSlider;
+	glgui::CControl<glgui::CSlidingPanel>	m_hPropertiesSlider;
+	glgui::CControl<glgui::CSlidingPanel>	m_hOutputsSlider;
 
-	CEntityPropertiesPanel*	m_pPropertiesPanel;
+	glgui::CControl<CEntityPropertiesPanel>	m_hPropertiesPanel;
 
-	glgui::CTree*			m_pOutputs;
-	glgui::CButton*			m_pAddOutput;
-	glgui::CButton*			m_pRemoveOutput;
+	glgui::CControl<glgui::CTree>			m_hOutputs;
+	glgui::CControl<glgui::CButton>			m_hAddOutput;
+	glgui::CControl<glgui::CButton>			m_hRemoveOutput;
 
-	glgui::CMenu*			m_pOutput;
+	glgui::CControl<glgui::CMenu>			m_hOutput;
 
-	glgui::CLabel*			m_pOutputEntityNameLabel;
-	glgui::CTextField*		m_pOutputEntityNameText;
+	glgui::CControl<glgui::CLabel>			m_hOutputEntityNameLabel;
+	glgui::CControl<glgui::CTextField>		m_hOutputEntityNameText;
 
-	glgui::CMenu*			m_pInput;
+	glgui::CControl<glgui::CMenu>			m_hInput;
 
-	glgui::CLabel*			m_pOutputArgsLabel;
-	glgui::CTextField*		m_pOutputArgsText;
+	glgui::CControl<glgui::CLabel>			m_hOutputArgsLabel;
+	glgui::CControl<glgui::CTextField>		m_hOutputArgsText;
 };
 
 class CLevelEditor : public CWorkbenchTool, public glgui::IEventListener, public IManipulatorListener
@@ -165,10 +165,10 @@ public:
 protected:
 	CHandle<class CLevel>	m_pLevel;
 
-	CEditorPanel*			m_pEditorPanel;
+	glgui::CControl<CEditorPanel>			m_hEditorPanel;
 
-	glgui::CPictureButton*	m_pCreateEntityButton;
-	CCreateEntityPanel*		m_pCreateEntityPanel;
+	glgui::CControl<glgui::CPictureButton>	m_hCreateEntityButton;
+	glgui::CControl<CCreateEntityPanel>		m_hCreateEntityPanel;
 
 	float					m_flCreateObjectDistance;
 

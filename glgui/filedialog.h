@@ -9,11 +9,15 @@ namespace glgui
 	{
 		DECLARE_CLASS(CFileDialog, CMovablePanel);
 
+		using CMovablePanel::Close;
+
 	public:
 									CFileDialog(const tstring& sDirectory, const tstring& sExtension, bool bSave);
 		virtual						~CFileDialog();
 
 	public:
+		virtual void				CreateControls(CResource<CBaseControl> pThis);
+
 		virtual void				Layout();
 
 		EVENT_CALLBACK(CFileDialog, NewDirectory);
@@ -31,16 +35,16 @@ namespace glgui
 		static tstring				GetFile();
 
 	protected:
-		CLabel*						m_pDirectoryLabel;
-		CTextField*					m_pDirectory;
-		CButton*					m_pOpenInExplorer;
+		CControl<CLabel>			m_hDirectoryLabel;
+		CControl<CTextField>		m_hDirectory;
+		CControl<CButton>			m_hOpenInExplorer;
 
-		CLabel*						m_pFilesLabel;
-		CTree*						m_pFileList;
+		CControl<CLabel>			m_hFilesLabel;
+		CControl<CTree>				m_hFileList;
 
-		CTextField*					m_pNewFile;
-		CButton*					m_pSelect;
-		CButton*					m_pCancel;
+		CControl<CTextField>		m_hNewFile;
+		CControl<CButton>			m_hSelect;
+		CControl<CButton>			m_hCancel;
 
 		tstring						m_sDirectory;
 		tvector<tstring>			m_asExtensions;
@@ -49,7 +53,7 @@ namespace glgui
 		IEventListener*				m_pSelectListener;
 		IEventListener::Callback	m_pfnSelectCallback;
 
-		static CFileDialog*			s_pDialog;
+		static CResource<CBaseControl>	s_pDialog;
 	};
 };
 

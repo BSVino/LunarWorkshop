@@ -11,9 +11,6 @@ public:
 								CPicker(const tstring& sName, IEventListener* pCallback, IEventListener::Callback pfnCallback);
 
 public:
-	virtual void				Delete() { delete this; };
-
-public:
 	virtual void				Layout();
 
 	virtual void				Think();
@@ -26,7 +23,6 @@ public:
 
 protected:
 	virtual void				Open();
-	virtual void				Close();
 
 	glgui::IEventListener::Callback	m_pfnCallback;
 	glgui::IEventListener*		m_pCallback;
@@ -40,9 +36,6 @@ class CMeshInstancePicker : public CPicker
 {
 public:
 								CMeshInstancePicker(IEventListener* pCallback, IEventListener::Callback pfnCallback);
-
-public:
-	virtual void				Delete() { delete this; };
 
 public:
 	virtual void				PopulateTree();

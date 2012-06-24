@@ -14,12 +14,6 @@ CDroppablePanel::CDroppablePanel(float x, float y, float w, float h)
 
 CDroppablePanel::~CDroppablePanel()
 {
-	if (m_apDraggables.size())
-	{
-		for (size_t i = 0; i < m_apDraggables.size(); i++)
-			delete m_apDraggables[i];
-	}
-
 	if (CRootPanel::Get())
 		CRootPanel::Get()->RemoveDroppable(this);
 }
@@ -96,12 +90,6 @@ void CDroppablePanel::AddDraggable(IDraggable* pDragged)
 
 void CDroppablePanel::ClearDraggables(bool bDelete)
 {
-	if (bDelete)
-	{
-		for (size_t i = 0; i < m_apDraggables.size(); i++)
-			delete m_apDraggables[i];
-	}
-
 	m_apDraggables.clear();
 }
 

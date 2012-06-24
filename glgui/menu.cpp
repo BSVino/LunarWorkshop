@@ -4,19 +4,18 @@
 
 using namespace glgui;
 
-CMenu* CRootPanel::AddMenu(const tstring& sText)
+CControl<CMenu> CRootPanel::AddMenu(const tstring& sText)
 {
-	if (!m_pMenuBar)
-		return NULL;
+	if (!m_hMenuBar)
+		return CControl<CMenu>();
 
-	if (m_pMenuBar->GetControls().size() == 0)
-		m_pMenuBar->SetVisible(true);
+	if (m_hMenuBar->GetControls().size() == 0)
+		m_hMenuBar->SetVisible(true);
 
-	CMenu* pMenu = new CMenu(sText);
-	pMenu->SetWrap(false);
-	m_pMenuBar->AddControl(pMenu, true);
+	CControl<CMenu> hMenu(m_hMenuBar->AddControl(CreateControl(new CMenu(sText)), true));
+	hMenu->SetWrap(false);
 
-	return pMenu;
+	return hMenu;
 }
 
 CMenuBar::CMenuBar()
@@ -47,7 +46,7 @@ void CMenuBar::SetActive( CMenu* pActiveMenu )
 {
 	for (size_t i = 0; i < m_apControls.size(); i++)
 	{
-		CMenu* pCurrentMenu = dynamic_cast<CMenu*>(m_apControls[i]);
+		CMenu* pCurrentMenu = dynamic_cast<CMenu*>(m_apControls[i].get());
 
 		if (!pCurrentMenu)
 			continue;
@@ -73,17 +72,19 @@ CMenu::CMenu(const tstring& sText, bool bSubmenu)
 
 	m_pfnMenuCallback = NULL;
 	m_pMenuListener = NULL;
+}
 
-	m_pMenu = new CSubmenuPanel(this);
-	CRootPanel::Get()->AddControl(m_pMenu, true);
+void CMenu::CreateControls(CResource<CBaseControl> pThis)
+{
+	m_hMenu = RootPanel()->AddControl(CreateControl(new CSubmenuPanel(m_hThis)), true);
 
-	m_pMenu->SetVisible(false);
+	m_hMenu->SetVisible(false);
+
+	BaseClass::CreateControls(pThis);
 }
 
 CMenu::~CMenu()
 {
-	CRootPanel::Get()->RemoveControl(m_pMenu);
-	delete m_pMenu;
 }
 
 void CMenu::Think()
@@ -92,7 +93,7 @@ void CMenu::Think()
 	float flHightlightGoal = m_flHighlightGoal;
 
 	// If our menu is open always stay highlighted.
-	if (m_pMenu->IsVisible())
+	if (m_hMenu->IsVisible())
 		flHightlightGoal = 1;
 
 	if (!IsVisible())
@@ -101,17 +102,17 @@ void CMenu::Think()
 	m_flHighlight = Approach(flHightlightGoal, m_flHighlight, (float)CRootPanel::Get()->GetFrameTime()*3);
 	m_flMenuHighlight = Approach(m_flMenuHighlightGoal, m_flMenuHighlight, (float)CRootPanel::Get()->GetFrameTime()*3);
 	m_flMenuHeight = Approach(m_flMenuHeightGoal, m_flMenuHeight, (float)CRootPanel::Get()->GetFrameTime()*3);
-	m_pMenu->SetFakeHeight(m_flMenuHeight);
+	m_hMenu->SetFakeHeight(m_flMenuHeight);
 
-	m_pMenu->SetVisible(m_flMenuHighlight > 0 && m_flMenuHeight > 0);
+	m_hMenu->SetVisible(m_flMenuHighlight > 0 && m_flMenuHeight > 0);
 
 	m_flMenuSelectionHighlightGoal = 0;
 
-	for (size_t i = 0; i < m_pMenu->GetControls().size(); i++)
+	for (size_t i = 0; i < m_hMenu->GetControls().size(); i++)
 	{
 		float cx, cy, cw, ch;
 		int mx, my;
-		m_pMenu->GetControls()[i]->GetAbsDimensions(cx, cy, cw, ch);
+		m_hMenu->GetControls()[i]->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::GetFullscreenMousePos(mx, my);
 		if (mx >= cx &&
 			my >= cy &&
@@ -139,9 +140,11 @@ void CMenu::Think()
 
 void CMenu::Layout()
 {
+	m_hMenu->m_hMenu = m_hThis;
+
 	float iHeight = 0;
 	float iWidth = 0;
-	tvector<CBaseControl*> apControls = m_pMenu->GetControls();
+	tvector<CResource<CBaseControl>> apControls = m_hMenu->GetControls();
 	for (size_t i = 0; i < apControls.size(); i++)
 	{
 		apControls[i]->SetPos(5, (float)(i*MENU_HEIGHT));
@@ -153,14 +156,14 @@ void CMenu::Layout()
 	float x, y;
 	GetAbsPos(x, y);
 
-	m_pMenu->SetSize(iWidth, iHeight);
+	m_hMenu->SetSize(iWidth, iHeight);
 
 	if (y + GetHeight() + 5 + iHeight > RootPanel()->GetHeight())
-		m_pMenu->SetPos(x, y - 5 - iHeight);
+		m_hMenu->SetPos(x, y - 5 - iHeight);
 	else
-		m_pMenu->SetPos(x, y + 5 + GetHeight());
+		m_hMenu->SetPos(x, y + 5 + GetHeight());
 
-	m_pMenu->Layout();
+	m_hMenu->Layout();
 }
 
 void CMenu::Paint(float x, float y, float w, float h)
@@ -177,10 +180,10 @@ void CMenu::Paint(float x, float y, float w, float h)
 
 void CMenu::PostPaint()
 {
-	if (m_pMenu->IsVisible())
+	if (m_hMenu->IsVisible())
 	{
 		float mx, my, mw, mh;
-		m_pMenu->GetAbsDimensions(mx, my, mw, mh);
+		m_hMenu->GetAbsDimensions(mx, my, mw, mh);
 
 		float flMenuHeight = Lerp(m_flMenuHeight, 0.6f);
 		if (flMenuHeight > 0.99f)
@@ -223,7 +226,7 @@ void CMenu::OpenCallback(const tstring& sArgs)
 {
 	CRootPanel::Get()->GetMenuBar()->SetActive(this);
 
-	if (m_pMenu->GetControls().size())
+	if (m_hMenu->GetControls().size())
 	{
 		OpenMenu();
 		Layout();
@@ -232,7 +235,7 @@ void CMenu::OpenCallback(const tstring& sArgs)
 
 void CMenu::CloseCallback(const tstring& sArgs)
 {
-	if (m_pMenu->GetControls().size())
+	if (m_hMenu->GetControls().size())
 		CloseMenu();
 }
 
@@ -259,40 +262,35 @@ void CMenu::CloseMenu()
 
 void CMenu::AddSubmenu(const tstring& sTitle, IEventListener* pListener, IEventListener::Callback pfnCallback)
 {
-	CMenu* pMenu = new CMenu(sTitle, true);
-	pMenu->SetAlign(TA_LEFTCENTER);
-	pMenu->SetWrap(false);
-	pMenu->EnsureTextFits();
-	pMenu->SetToggleButton(false);
+	CControl<CMenu> hMenu = m_hMenu->AddControl(CreateControl(new CMenu(sTitle, true)), true);
+	hMenu->SetAlign(TA_LEFTCENTER);
+	hMenu->SetWrap(false);
+	hMenu->EnsureTextFits();
+	hMenu->SetToggleButton(false);
 
 	if (pListener)
-		pMenu->SetMenuListener(pListener, pfnCallback);
+		hMenu->SetMenuListener(pListener, pfnCallback);
 
-	size_t iControl = m_pMenu->AddControl(pMenu, true);
+	hMenu->SetClickedListener(hMenu, Clicked, sprintf("%d " + sTitle, m_hMenu->GetControls().size()-1));
 
-	pMenu->SetClickedListener(pMenu, Clicked, sprintf("%d " + sTitle, iControl));
-
-	m_apEntries.push_back(pMenu);
+	m_ahEntries.push_back(hMenu);
 }
 
 void CMenu::ClearSubmenus()
 {
-	for (size_t i = 0; i < m_apEntries.size(); i++)
-	{
-		m_pMenu->RemoveControl(m_apEntries[i]);
-		delete m_apEntries[i];
-	}
+	for (size_t i = 0; i < m_ahEntries.size(); i++)
+		m_hMenu->RemoveControl(m_ahEntries[i]);
 
-	m_apEntries.clear();
+	m_ahEntries.clear();
 }
 
 size_t CMenu::GetSelectedMenu()
 {
-	for (size_t i = 0; i < m_apEntries.size(); i++)
+	for (size_t i = 0; i < m_ahEntries.size(); i++)
 	{
 		float cx, cy, cw, ch;
 		int mx, my;
-		m_apEntries[i]->GetAbsDimensions(cx, cy, cw, ch);
+		m_ahEntries[i]->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::GetFullscreenMousePos(mx, my);
 		if (mx >= cx &&
 			my >= cy &&
@@ -306,10 +304,10 @@ size_t CMenu::GetSelectedMenu()
 	return ~0;
 }
 
-CMenu::CSubmenuPanel::CSubmenuPanel(CMenu* pMenu)
+CMenu::CSubmenuPanel::CSubmenuPanel(CControl<CMenu> hMenu)
 	: CPanel(0, 0, 100, 100)
 {
-	m_pMenu = pMenu;
+	m_hMenu = hMenu;
 }
 
 void CMenu::CSubmenuPanel::Think()
@@ -359,5 +357,8 @@ void CMenu::CSubmenuPanel::PostPaint()
 
 bool CMenu::CSubmenuPanel::IsVisible()
 {
-	return m_pMenu->IsVisible() && BaseClass::IsVisible();
+	if (!m_hMenu)
+		return BaseClass::IsVisible();
+
+	return m_hMenu->IsVisible() && BaseClass::IsVisible();
 }

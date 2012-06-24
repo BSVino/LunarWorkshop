@@ -41,22 +41,9 @@ void CMinimizeButton::Paint(float x, float y, float w, float h)
 CMovablePanel::CMovablePanel(const tstring& sName)
 	: CPanel(0, 0, 200, 350)
 {
+	m_sName = sName;
+
 	m_bMoving = false;
-
-	m_pName = new CLabel(0, GetHeight()-HEADER_HEIGHT, GetWidth(), HEADER_HEIGHT, sName);
-	AddControl(m_pName);
-
-	m_pCloseButton = new CCloseButton();
-	AddControl(m_pCloseButton);
-
-	m_pCloseButton->SetClickedListener(this, CloseWindow);
-
-	m_pMinimizeButton = new CMinimizeButton();
-	AddControl(m_pMinimizeButton);
-
-	m_pMinimizeButton->SetClickedListener(this, MinimizeWindow);
-
-	CRootPanel::Get()->AddControl(this, true);
 
 	m_bHasCloseButton = true;
 	m_bMinimized = false;
@@ -70,24 +57,39 @@ CMovablePanel::CMovablePanel(const tstring& sName)
 
 CMovablePanel::~CMovablePanel()
 {
-	CRootPanel::Get()->RemoveControl(this);
+}
+
+void CMovablePanel::CreateControls(CResource<CBaseControl> pThis)
+{
+	m_hName = AddControl(new CLabel(0, GetHeight()-HEADER_HEIGHT, GetWidth(), HEADER_HEIGHT, m_sName));
+	m_sName.set_capacity(0);
+
+	m_hCloseButton = AddControl(new CCloseButton());
+	m_hCloseButton->SetClickedListener(this, CloseWindow);
+
+	m_hMinimizeButton = AddControl(new CMinimizeButton());
+	m_hMinimizeButton->SetClickedListener(this, MinimizeWindow);
+
+	RootPanel()->AddControl(pThis, true);
+
+	BaseClass::CreateControls(pThis);
 }
 
 void CMovablePanel::Layout()
 {
 	float flButtonSize = HEADER_HEIGHT*2/3;
 
-	m_pName->SetDimensions(flButtonSize*4, 0, GetWidth()-flButtonSize*8, HEADER_HEIGHT);
+	m_hName->SetDimensions(flButtonSize*4, 0, GetWidth()-flButtonSize*8, HEADER_HEIGHT);
 
-	m_pCloseButton->SetVisible(m_bHasCloseButton);
+	m_hCloseButton->SetVisible(m_bHasCloseButton);
 
 	if (m_bHasCloseButton)
 	{
-		m_pCloseButton->SetDimensions(GetWidth() - HEADER_HEIGHT/2 - flButtonSize/2, HEADER_HEIGHT/2 - flButtonSize/2, flButtonSize, flButtonSize);
-		m_pMinimizeButton->SetDimensions(GetWidth() - HEADER_HEIGHT*3/2 - flButtonSize/2, HEADER_HEIGHT/2 - flButtonSize/2, flButtonSize, flButtonSize);
+		m_hCloseButton->SetDimensions(GetWidth() - HEADER_HEIGHT/2 - flButtonSize/2, HEADER_HEIGHT/2 - flButtonSize/2, flButtonSize, flButtonSize);
+		m_hMinimizeButton->SetDimensions(GetWidth() - HEADER_HEIGHT*3/2 - flButtonSize/2, HEADER_HEIGHT/2 - flButtonSize/2, flButtonSize, flButtonSize);
 	}
 	else
-		m_pMinimizeButton->SetDimensions(GetWidth() - HEADER_HEIGHT/2 - flButtonSize/2, HEADER_HEIGHT/2 - flButtonSize/2, flButtonSize, flButtonSize);
+		m_hMinimizeButton->SetDimensions(GetWidth() - HEADER_HEIGHT/2 - flButtonSize/2, HEADER_HEIGHT/2 - flButtonSize/2, flButtonSize, flButtonSize);
 
 	CPanel::Layout();
 
@@ -189,13 +191,13 @@ bool CMovablePanel::IsChildVisible(CBaseControl* pChild)
 	if (!m_bMinimized)
 		return true;
 
-	if (pChild == m_pMinimizeButton)
+	if (pChild == m_hMinimizeButton)
 		return true;
 
-	if (pChild == m_pCloseButton)
+	if (pChild == m_hCloseButton)
 		return true;
 
-	if (pChild == m_pName)
+	if (pChild == m_hName)
 		return true;
 
 	return false;
@@ -225,4 +227,10 @@ void CMovablePanel::CloseWindowCallback(const tstring& sArgs)
 void CMovablePanel::MinimizeWindowCallback(const tstring& sArgs)
 {
 	Minimize();
+}
+
+void CMovablePanel::Close()
+{
+	SetVisible(false);
+	RootPanel()->RemoveControl(this);
 }

@@ -28,6 +28,8 @@ namespace glgui
 		virtual						~CMenu();
 
 	public:
+		virtual void				CreateControls(CResource<CBaseControl> pThis);
+
 		virtual void				Think();
 		virtual void				Layout();
 		virtual void				Paint(float x, float y, float w, float h);
@@ -54,10 +56,13 @@ namespace glgui
 	protected:
 		class CSubmenuPanel : public CPanel
 		{
+			friend class CMenu;
+
 			DECLARE_CLASS(CSubmenuPanel, CPanel);
 		public:
-									CSubmenuPanel(CMenu* pMenu);
+									CSubmenuPanel(CControl<CMenu> hMenu);
 
+		public:
 			void					Think();
 
 			void					Paint(float x, float y, float w, float h);
@@ -73,7 +78,7 @@ namespace glgui
 			tvector<float>			m_aflControlHighlightGoal;
 			tvector<float>			m_aflControlHighlight;
 
-			CMenu*					m_pMenu;
+			CControl<CMenu>			m_hMenu;
 		};
 
 		bool						m_bSubmenu;
@@ -93,9 +98,9 @@ namespace glgui
 		IEventListener::Callback	m_pfnMenuCallback;
 		IEventListener*				m_pMenuListener;
 
-		CSubmenuPanel*				m_pMenu;
+		CControl<CSubmenuPanel>		m_hMenu;
 
-		tvector<CMenu*>				m_apEntries;
+		tvector<CControl<CMenu>>	m_ahEntries;
 	};
 };
 
