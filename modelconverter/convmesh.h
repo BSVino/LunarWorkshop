@@ -116,18 +116,18 @@ public:
 										float flTransparency = 1.0f,
 										float flShininess = 10.0f);
 
-	tstring					GetName() const { return m_sName; }
+	tstring							GetName() const { return m_sName; }
 
-	tstring					GetDiffuseTexture() const { return m_sDiffuseTexture; }
-	tstring					GetNormalTexture() const { return m_sNormalTexture; }
-	tstring					GetAOTexture() const { return m_sAOTexture; }
-	tstring					GetCAOTexture() const { return m_sCAOTexture; }
+	tstring							GetDiffuseTexture() const { return m_sDiffuseTexture; }
+	tstring							GetNormalTexture() const { return m_sNormalTexture; }
+	tstring							GetAOTexture() const { return m_sAOTexture; }
+	tstring							GetCAOTexture() const { return m_sCAOTexture; }
 
 	void							SetVisible(bool bVisible) { m_bVisible = bVisible; };
 	bool							IsVisible() { return m_bVisible; };
 
 public:
-	tstring					m_sName;
+	tstring							m_sName;
 
 	Vector							m_vecAmbient;
 	Vector							m_vecDiffuse;
@@ -137,10 +137,10 @@ public:
 	float							m_flShininess;
 	IllumType_t						m_eIllumType;
 
-	tstring					m_sDiffuseTexture;
-	tstring					m_sNormalTexture;
-	tstring					m_sAOTexture;
-	tstring					m_sCAOTexture;
+	tstring							m_sDiffuseTexture;
+	tstring							m_sNormalTexture;
+	tstring							m_sAOTexture;
+	tstring							m_sCAOTexture;
 
 	bool							m_bVisible;
 };
@@ -152,9 +152,9 @@ public:
 									CConversionMaterialStub(const tstring& sName);
 
 public:
-	tstring					GetName() const { return m_sName; }
+	tstring							GetName() const { return m_sName; }
 
-	tstring					m_sName;
+	tstring							m_sName;
 };
 
 class CConversionMesh
@@ -219,7 +219,7 @@ public:
 	bool							IsVisible() { return m_bVisible; };
 
 public:
-	tstring					m_sName;
+	tstring							m_sName;
 	class CConversionScene*			m_pScene;
 
 	// A vector of Vectors? Holy crap!
@@ -317,13 +317,13 @@ public:
 	size_t								FindMeshInstance(CConversionMesh* pMesh);
 	CConversionMeshInstance*			GetMeshInstance(size_t i) { return &m_aMeshInstances[i]; };
 
-	tstring						GetName() { return m_sName; }
+	tstring								GetName() { return m_sName; }
 
 	void								SetVisible(bool bVisible) { m_bVisible = bVisible; };
 	bool								IsVisible() { return m_bVisible; };
 
 public:
-	tstring						m_sName;
+	tstring								m_sName;
 	CConversionScene*					m_pScene;
 	CConversionSceneNode*				m_pParent;
 

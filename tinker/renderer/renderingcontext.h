@@ -153,7 +153,7 @@ public:
 	bool					m_bNormal;
 	bool					m_bColor;
 	tvector<Vector2D>		m_avecTexCoord;
-	tvector<tvector<Vector2D> >	m_aavecTexCoords;
+	tvector<tvector<Vector2D> >	m_aavecTexCoords;	// A vector of a vector of vectors. Inception!
 	Vector					m_vecNormal;
 	tvector<Vector>	m_avecNormals;
 	::Color					m_clrColor;
