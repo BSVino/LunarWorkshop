@@ -18,19 +18,33 @@ endif (WIN32)
 
 set (SMAK_SOURCES
 	main.cpp
+	models/loadsource.cpp
+	models/models.cpp
+)
+
+set (SMAK_SOURCES_CRUNCH
 	crunch/ao.cpp
 	crunch/ao_raytrace.cpp
 	crunch/crunch.cpp
 	crunch/normal.cpp
-	models/loadsource.cpp
-	models/models.cpp
+)
+
+set (SMAK_SOURCES_UI
 	ui/smakwindow.cpp
 	ui/smakwindow_input.cpp
 	ui/smakwindow_ui.cpp
 	ui/smak_renderer.cpp
 	ui/picker.cpp
 	ui/scenetree.cpp
+	ui/aogenerator.cpp
+	ui/buttonpanel.cpp
+	ui/combogenerator.cpp
+	ui/normalgenerator.cpp
+	ui/progressbar.cpp
 )
+
+source_group(UI FILES ${SMAK_SOURCES_UI})
+source_group(Crunch FILES ${SMAK_SOURCES_CRUNCH})
 
 if (WIN32)
 	set (SMAK_SOURCES ${SMAK_SOURCES}
@@ -38,7 +52,7 @@ if (WIN32)
 	)
 endif (WIN32)
 
-add_executable(smak WIN32 ${SMAK_SOURCES})
+add_executable(smak WIN32 ${SMAK_SOURCES} ${SMAK_SOURCES_CRUNCH} ${SMAK_SOURCES_UI})
 target_link_libraries (smak tinker modelconverter raytracer)
 
 if (WIN32)

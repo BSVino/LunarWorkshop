@@ -10,6 +10,7 @@
 #include <modelconverter/modelconverter.h>
 #include "ui/smakwindow.h"
 #include "crunch/crunch.h"
+#include "crunch/ao.h"
 
 typedef enum
 {

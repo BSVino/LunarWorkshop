@@ -8,6 +8,7 @@
 #include <textures/materiallibrary.h>
 
 #include "smak_renderer.h"
+#include "smakwindow.h"
 
 using namespace glgui;
 

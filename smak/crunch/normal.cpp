@@ -1,4 +1,4 @@
-#include "crunch.h"
+#include "normal.h"
 
 #include <maths.h>
 #include <stb_image_write.h>

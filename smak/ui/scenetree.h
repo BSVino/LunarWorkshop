@@ -10,7 +10,7 @@ class CSceneTreePanel : public glgui::CMovablePanel
 	DECLARE_CLASS(CSceneTreePanel, glgui::CMovablePanel);
 
 public:
-									CSceneTreePanel(CConversionScene* pScene);
+									CSceneTreePanel(class CConversionScene* pScene);
 									~CSceneTreePanel();
 
 public:
@@ -21,19 +21,19 @@ public:
 
 	void							UpdateTree();
 	void							AddAllToTree();
-	void							AddNodeToTree(glgui::CTreeNode* pTreeNode, CConversionSceneNode* pNode);
+	void							AddNodeToTree(glgui::CTreeNode* pTreeNode, class CConversionSceneNode* pNode);
 
-	void							OpenMaterialEditor(CConversionMaterial* pMaterial);
+	void							OpenMaterialEditor(class CConversionMaterial* pMaterial);
 
 	size_t							GetLastSelectedMaterial() { return m_iLastSelectedMaterial; }
 
 	EVENT_CALLBACK(CSceneTreePanel, Selected);
 
-	static void						Open(CConversionScene* pScene);
+	static void						Open(class CConversionScene* pScene);
 	static CSceneTreePanel*			Get();
 
 public:
-	CConversionScene*				m_pScene;
+	class CConversionScene*			m_pScene;
 
 	glgui::CControl<glgui::CTree>	m_hTree;
 
@@ -44,7 +44,7 @@ public:
 	static CSceneTreePanel*			s_pSceneTreePanel;
 };
 
-void OpenMaterialEditor(CConversionMaterial* pMaterial, const tstring& sArgs);
+void OpenMaterialEditor(class CConversionMaterial* pMaterial, const tstring& sArgs);
 
 class CMaterialEditor : public glgui::CMovablePanel
 {

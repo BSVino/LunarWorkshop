@@ -6,7 +6,7 @@
 #include <vector.h>
 #include <matrix.h>
 
-#include <renderer/shaders.h>
+#include <tinker/renderer/shaders.h>
 
 #include "materialhandle.h"
 #include "texturehandle.h"

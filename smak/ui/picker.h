@@ -39,14 +39,14 @@ public:
 
 public:
 	virtual void				PopulateTree();
-	virtual void				PopulateTreeNode(glgui::CTreeNode* pTreeNode, CConversionSceneNode* pSceneNode);
+	virtual void				PopulateTreeNode(glgui::CTreeNode* pTreeNode, class CConversionSceneNode* pSceneNode);
 
 	virtual void				NodeSelected(glgui::CTreeNode* pNode);
 
-	virtual CConversionMeshInstance*	GetPickedMeshInstance() { return m_pPickedMeshInstance; }
+	virtual class CConversionMeshInstance*	GetPickedMeshInstance() { return m_pPickedMeshInstance; }
 
 protected:
-	CConversionMeshInstance*	m_pPickedMeshInstance;
+	class CConversionMeshInstance*	m_pPickedMeshInstance;
 };
 
 #endif

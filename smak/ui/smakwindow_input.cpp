@@ -7,6 +7,8 @@
 #include "crunch/crunch.h"
 #include "smakwindow_ui.h"
 #include "smak_renderer.h"
+#include "aogenerator.h"
+#include "normalgenerator.h"
 
 using namespace glgui;
 

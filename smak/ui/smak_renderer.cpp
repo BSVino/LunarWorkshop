@@ -10,6 +10,7 @@
 #include "smakwindow.h"
 #include "models/models.h"
 #include "scenetree.h"
+#include "combogenerator.h"
 
 CSMAKRenderer::CSMAKRenderer()
 	: CRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
