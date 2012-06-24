@@ -44,7 +44,7 @@ bool CAssetHandle<C, L>::IsValid() const
 	if (!m_pAsset)
 		return false;
 
-#ifdef _DEBUG
+#ifdef DEBUG_ASSET_LOADING
 	bool bLoaded = L::IsAssetLoaded(m_sName);
 	TAssertNoMsg(bLoaded);
 	if (!bLoaded)
