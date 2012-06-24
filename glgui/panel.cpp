@@ -329,7 +329,7 @@ void CPanel::RemoveControl(CBaseControl* pControl)
 	for (size_t i = 0; i < m_apControls.size(); i++)
 	{
 		if (m_apControls[i] == pControl)
-			m_apControls.erase(remove(m_apControls.begin(), m_apControls.end(), pControl), m_apControls.end());
+			m_apControls.erase(m_apControls.begin()+i);
 	}
 
 	if (m_hHasCursor == pControl)
@@ -342,7 +342,7 @@ void CPanel::MoveToTop(CBaseControl* pControl)
 	{
 		if (m_apControls[i] == pControl)
 		{
-			m_apControls.erase(remove(m_apControls.begin(), m_apControls.end(), pControl), m_apControls.end());
+			m_apControls.erase(m_apControls.begin()+i);
 			m_apControls.push_back(pControl);
 			return;
 		}

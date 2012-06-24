@@ -65,12 +65,12 @@ add_subdirectory (lwbase)
 add_subdirectory (modelconverter)
 add_subdirectory (raytracer)
 add_subdirectory (toys)
-add_subdirectory (tools)
 
 add_subdirectory (tinker)
 
 if (BUILD_ENGINE)
 	add_subdirectory (tengine)
+	add_subdirectory (tools)
 
 	#add_subdirectory (reflection)
 	add_subdirectory (grotto)

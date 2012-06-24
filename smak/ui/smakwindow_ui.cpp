@@ -58,7 +58,7 @@ void CSMAKWindow::InitUI()
 	pHelp->AddSubmenu("About SMAK", this, About);
 
 	CResource<CBaseControl> pTopButtons = CreateControl(new CButtonPanel(BA_TOP));
-	CControl<CButtonPanel> hTopButtons = pTopButtons;
+	CControl<CButtonPanel> hTopButtons(pTopButtons);
 
 	m_hRender3D = hTopButtons->AddButton(new CPictureButton("3D", GetSMAKRenderer()->GetSmoothTexture(), true), "Render 3D View", false, this, Render3D);
 	m_hRenderUV = hTopButtons->AddButton(new CPictureButton("UV", GetSMAKRenderer()->GetUVTexture(), true), "Render UV View", false, this, RenderUV);
@@ -66,7 +66,7 @@ void CSMAKWindow::InitUI()
 	CRootPanel::Get()->AddControl(pTopButtons);
 
 	CResource<CBaseControl> pBottomButtons = CreateControl(new CButtonPanel(BA_BOTTOM));
-	CControl<CButtonPanel> hBottomButtons = pBottomButtons;
+	CControl<CButtonPanel> hBottomButtons(pBottomButtons);
 
 	m_hWireframe = hBottomButtons->AddButton(new CPictureButton("Wire", GetSMAKRenderer()->GetWireframeTexture(), true), "Toggle Wireframe", true, this, Wireframe);
 	m_hUVWireframe = hBottomButtons->AddButton(new CPictureButton("Wire", GetSMAKRenderer()->GetUVTexture(), true), "Toggle UVs", true, this, UVWireframe);

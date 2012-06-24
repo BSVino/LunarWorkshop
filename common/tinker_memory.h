@@ -6,6 +6,10 @@ template<class C>
 class CResource : public std::shared_ptr<C>
 {
 public:
+	using std::shared_ptr<C>::get;
+	using std::shared_ptr<C>::reset;
+
+public:
 	CResource()
 		: std::shared_ptr<C>()
 	{

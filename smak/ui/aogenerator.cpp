@@ -473,7 +473,7 @@ void CAOPanel::Open(CConversionScene* pScene)
 
 CControl<CAOPanel> CAOPanel::Get()
 {
-	glgui::CControl<CAOPanel> hControl = s_pAOPanel;
+	glgui::CControl<CAOPanel> hControl(s_pAOPanel);
 	if (hControl)
 		return hControl;
 
