@@ -279,6 +279,7 @@ void CMaterial::FillParameter(size_t iParameter, const tstring& sData, class CSh
 	}
 
 	CShader::CParameter* pShaderPar = &it->second;
+	oPar.m_pShaderParameter = pShaderPar;
 
 	for (size_t j = 0; j < pShaderPar->m_aActions.size(); j++)
 	{

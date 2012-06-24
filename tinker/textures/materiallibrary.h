@@ -6,6 +6,8 @@
 #include <vector.h>
 #include <matrix.h>
 
+#include <renderer/shaders.h>
+
 #include "materialhandle.h"
 #include "texturehandle.h"
 #include "texturelibrary.h"
@@ -61,6 +63,8 @@ public:
 		tstring		m_sValue;
 
 		tstring		m_sType;
+
+		CShader::CParameter*	m_pShaderParameter;
 
 	public:
 		void		SetValue(const tstring& sValue, class CShader* pShader);

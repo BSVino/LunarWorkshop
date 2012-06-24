@@ -62,8 +62,15 @@ public:
 		tstring				m_sBlend;
 	};
 
+	class CUniform
+	{
+	public:
+		tstring					m_sUniformType;
+		CParameter::CUniform*	m_pDefault;
+	};
+
 	tmap<tstring, CParameter>			m_aParameters;	// What the shader.txt has.
-	tmap<tstring, tstring>				m_asUniforms;	// What the hardware has. Values are types.
+	tmap<tstring, CUniform>				m_asUniforms;	// What the hardware has. Values are types.
 	tmap<tstring, CParameter::CUniform>	m_aDefaults;	// Defaults for each uniform as specified by shader .txt (not GLSL)
 	tvector<tstring>					m_asTextures;	// List of textures for purposes of assigning to channels and whatnot.
 };

@@ -411,50 +411,52 @@ void CRenderingContext::SetupMaterial()
 
 	for (auto it = m_pShader->m_asUniforms.begin(); it != m_pShader->m_asUniforms.end(); it++)
 	{
-		auto it2 = m_pShader->m_aDefaults.find(it->first);
-		if (it2 == m_pShader->m_aDefaults.end())
+		CShader::CUniform& pUniformName = it->second;
+		CShader::CParameter::CUniform* pUniform = it->second.m_pDefault;
+
+		if (pUniform)
 		{
-			if (it->second == "float")
-				SetUniform(it->first.c_str(), 0.0f);
-			else if (it->second == "vec2")
-				SetUniform(it->first.c_str(), Vector2D());
-			else if (it->second == "vec3")
-				SetUniform(it->first.c_str(), Vector());
-			else if (it->second == "vec4")
-				SetUniform(it->first.c_str(), Vector4D());
-			else if (it->second == "int")
-				SetUniform(it->first.c_str(), 0);
-			else if (it->second == "bool")
-				SetUniform(it->first.c_str(), false);
-			else if (it->second == "mat4")
-				SetUniform(it->first.c_str(), Matrix4x4());
-			else if (it->second == "sampler2D")
-				SetUniform(it->first.c_str(), 0);
+			if (pUniformName.m_sUniformType == "float")
+				SetUniform(it->first.c_str(), pUniform->m_flValue);
+			else if (pUniformName.m_sUniformType == "vec2")
+				SetUniform(it->first.c_str(), pUniform->m_vec2Value);
+			else if (pUniformName.m_sUniformType == "vec3")
+				SetUniform(it->first.c_str(), pUniform->m_vecValue);
+			else if (pUniformName.m_sUniformType == "vec4")
+				SetUniform(it->first.c_str(), pUniform->m_vec4Value);
+			else if (pUniformName.m_sUniformType == "int")
+				SetUniform(it->first.c_str(), pUniform->m_iValue);
+			else if (pUniformName.m_sUniformType == "bool")
+				SetUniform(it->first.c_str(), pUniform->m_bValue);
+			else if (pUniformName.m_sUniformType == "mat4")
+			{
+				TUnimplemented();
+			}
+			else if (pUniformName.m_sUniformType == "sampler2D")
+			{
+				TUnimplemented();
+			}
 			else
 				TUnimplemented();
 		}
 		else
 		{
-			if (it->second == "float")
-				SetUniform(it->first.c_str(), it2->second.m_flValue);
-			else if (it->second == "vec2")
-				SetUniform(it->first.c_str(), it2->second.m_vec2Value);
-			else if (it->second == "vec3")
-				SetUniform(it->first.c_str(), it2->second.m_vecValue);
-			else if (it->second == "vec4")
-				SetUniform(it->first.c_str(), it2->second.m_vec4Value);
-			else if (it->second == "int")
-				SetUniform(it->first.c_str(), it2->second.m_iValue);
-			else if (it->second == "bool")
-				SetUniform(it->first.c_str(), it2->second.m_bValue);
-			else if (it->second == "mat4")
-			{
-				TUnimplemented();
-			}
-			else if (it->second == "sampler2D")
-			{
-				TUnimplemented();
-			}
+			if (pUniformName.m_sUniformType == "float")
+				SetUniform(it->first.c_str(), 0.0f);
+			else if (pUniformName.m_sUniformType == "vec2")
+				SetUniform(it->first.c_str(), Vector2D());
+			else if (pUniformName.m_sUniformType == "vec3")
+				SetUniform(it->first.c_str(), Vector());
+			else if (pUniformName.m_sUniformType == "vec4")
+				SetUniform(it->first.c_str(), Vector4D());
+			else if (pUniformName.m_sUniformType == "int")
+				SetUniform(it->first.c_str(), 0);
+			else if (pUniformName.m_sUniformType == "bool")
+				SetUniform(it->first.c_str(), false);
+			else if (pUniformName.m_sUniformType == "mat4")
+				SetUniform(it->first.c_str(), Matrix4x4());
+			else if (pUniformName.m_sUniformType == "sampler2D")
+				SetUniform(it->first.c_str(), 0);
 			else
 				TUnimplemented();
 		}
@@ -463,18 +465,18 @@ void CRenderingContext::SetupMaterial()
 	for (size_t i = 0; i < GetContext().m_hMaterial->m_aParameters.size(); i++)
 	{
 		auto& oParameter = GetContext().m_hMaterial->m_aParameters[i];
-		const auto& it = m_pShader->m_aParameters.find(oParameter.m_sName);
+		CShader::CParameter* pShaderParameter = oParameter.m_pShaderParameter;
 
-		TAssert(it != m_pShader->m_aParameters.end());
-		if (it == m_pShader->m_aParameters.end())
+		TAssert(pShaderParameter);
+		if (!pShaderParameter)
 			continue;
 
-		for (size_t j = 0; j < it->second.m_aActions.size(); j++)
+		for (size_t j = 0; j < pShaderParameter->m_aActions.size(); j++)
 		{
-			auto& oAction = it->second.m_aActions[j];
+			auto& oAction = pShaderParameter->m_aActions[j];
 			tstring& sName = oAction.m_sName;
 			tstring& sValue = oAction.m_sValue;
-			tstring& sType = m_pShader->m_asUniforms[sName];
+			tstring& sType = m_pShader->m_asUniforms[sName].m_sUniformType;
 			if (sValue == "[value]")
 			{
 				if (sType == "float")

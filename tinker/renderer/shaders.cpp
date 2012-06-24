@@ -415,17 +415,18 @@ bool CShader::Compile()
 		if (sUniformName == "mGlobal")
 			continue;
 
-		tstring& sType = m_asUniforms[sUniformName];
+		CShader::CUniform& oUniform = m_asUniforms[sUniformName];
+		oUniform.m_pDefault = nullptr;
 		switch (iType)
 		{
-		case GL_FLOAT: sType = "float"; break;
-		case GL_FLOAT_VEC2: sType = "vec2"; break;
-		case GL_FLOAT_VEC3: sType = "vec3"; break;
-		case GL_FLOAT_VEC4: sType = "vec4"; break;
-		case GL_INT: sType = "int"; break;
-		case GL_BOOL: sType = "bool"; break;
-		case GL_FLOAT_MAT4: sType = "mat4"; break;
-		case GL_SAMPLER_2D: sType = "sampler2D"; break;
+		case GL_FLOAT: oUniform.m_sUniformType = "float"; break;
+		case GL_FLOAT_VEC2: oUniform.m_sUniformType = "vec2"; break;
+		case GL_FLOAT_VEC3: oUniform.m_sUniformType = "vec3"; break;
+		case GL_FLOAT_VEC4: oUniform.m_sUniformType = "vec4"; break;
+		case GL_INT: oUniform.m_sUniformType = "int"; break;
+		case GL_BOOL: oUniform.m_sUniformType = "bool"; break;
+		case GL_FLOAT_MAT4: oUniform.m_sUniformType = "mat4"; break;
+		case GL_SAMPLER_2D: oUniform.m_sUniformType = "sampler2D"; break;
 		default: TUnimplemented();
 		}
 	}
@@ -442,29 +443,29 @@ bool CShader::Compile()
 				continue;
 			}
 
-			tstring& sType = it2->second;
+			CShader::CUniform& oUniform = it2->second;
 
 			// This is almost cheating
 			CData d;
 			d.SetValue(it->second.m_aActions[j].m_sValue);
 
-			if (sType == "float")
+			if (oUniform.m_sUniformType == "float")
 				it->second.m_aActions[j].m_flValue = d.GetValueFloat();
-			else if (sType == "vec2")
+			else if (oUniform.m_sUniformType == "vec2")
 				it->second.m_aActions[j].m_vec2Value = d.GetValueVector2D();
-			else if (sType == "vec3")
+			else if (oUniform.m_sUniformType == "vec3")
 				it->second.m_aActions[j].m_vecValue = d.GetValueVector();
-			else if (sType == "vec4")
+			else if (oUniform.m_sUniformType == "vec4")
 				it->second.m_aActions[j].m_vec4Value = d.GetValueVector4D();
-			else if (sType == "int")
+			else if (oUniform.m_sUniformType == "int")
 				it->second.m_aActions[j].m_iValue = d.GetValueInt();
-			else if (sType == "bool")
+			else if (oUniform.m_sUniformType == "bool")
 				it->second.m_aActions[j].m_bValue = d.GetValueBool();
-			else if (sType == "mat4")
+			else if (oUniform.m_sUniformType == "mat4")
 			{
 				TUnimplemented();
 			}
-			else if (sType == "sampler2D")
+			else if (oUniform.m_sUniformType == "sampler2D")
 			{
 				// No op.
 			}
@@ -483,29 +484,30 @@ bool CShader::Compile()
 			continue;
 		}
 
-		tstring& sType = it2->second;
+		CShader::CUniform& oUniform = it2->second;
+		oUniform.m_pDefault = &it->second;
 
 		// Again with the cheating.
 		CData d;
 		d.SetValue(it->second.m_sValue);
 
-		if (sType == "float")
+		if (oUniform.m_sUniformType == "float")
 			it->second.m_flValue = d.GetValueFloat();
-		else if (sType == "vec2")
+		else if (oUniform.m_sUniformType == "vec2")
 			it->second.m_vec2Value = d.GetValueVector2D();
-		else if (sType == "vec3")
+		else if (oUniform.m_sUniformType == "vec3")
 			it->second.m_vecValue = d.GetValueVector();
-		else if (sType == "vec4")
+		else if (oUniform.m_sUniformType == "vec4")
 			it->second.m_vec4Value = d.GetValueVector4D();
-		else if (sType == "int")
+		else if (oUniform.m_sUniformType == "int")
 			it->second.m_iValue = d.GetValueInt();
-		else if (sType == "bool")
+		else if (oUniform.m_sUniformType == "bool")
 			it->second.m_bValue = d.GetValueBool();
-		else if (sType == "mat4")
+		else if (oUniform.m_sUniformType == "mat4")
 		{
 			TUnimplemented(); 
 		}
-		else if (sType == "sampler2D")
+		else if (oUniform.m_sUniformType == "sampler2D")
 		{
 			TUnimplemented(); // Can't set a default texture... yet.
 		}
@@ -537,7 +539,7 @@ tstring CShader::FindType(const tstring& sName) const
 	tstring sType;
 	for (size_t j = 0; j < pShaderPar->m_aActions.size(); j++)
 		if (pShaderPar->m_aActions[j].m_sValue == "[value]")
-			return m_asUniforms.find(pShaderPar->m_aActions[j].m_sName)->second;
+			return m_asUniforms.find(pShaderPar->m_aActions[j].m_sName)->second.m_sUniformType;
 
 	return "unknown";
 }
