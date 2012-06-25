@@ -12,22 +12,22 @@ include_directories (
 )
 
 set (TINKER_GLGUI_SOURCES
-	../glgui/glgui.cpp
-	../glgui/basecontrol.cpp
-	../glgui/button.cpp
-	../glgui/checkbox.cpp
-	../glgui/droppablepanel.cpp
-	../glgui/filedialog.cpp
-	../glgui/label.cpp
-	../glgui/menu.cpp
-	../glgui/movablepanel.cpp
-	../glgui/panel.cpp
-	../glgui/picturebutton.cpp
-	../glgui/rootpanel.cpp
-	../glgui/scrollbar.cpp
-	../glgui/slidingpanel.cpp
-	../glgui/tree.cpp
-	../glgui/textfield.cpp
+	glgui/glgui.cpp
+	glgui/basecontrol.cpp
+	glgui/button.cpp
+	glgui/checkbox.cpp
+	glgui/droppablepanel.cpp
+	glgui/filedialog.cpp
+	glgui/label.cpp
+	glgui/menu.cpp
+	glgui/movablepanel.cpp
+	glgui/panel.cpp
+	glgui/picturebutton.cpp
+	glgui/rootpanel.cpp
+	glgui/scrollbar.cpp
+	glgui/slidingpanel.cpp
+	glgui/tree.cpp
+	glgui/textfield.cpp
 )
 
 set (TINKER_RENDERER_SOURCES
@@ -47,7 +47,6 @@ set (TINKER_SOURCES
 	application.cpp
 	console.cpp
 	cvar.cpp
-	portals/portal_stubs.cpp
 	profiler.cpp
 
 	${CMAKE_SOURCE_DIR}/../ext-deps/gl3w/src/gl3w.c

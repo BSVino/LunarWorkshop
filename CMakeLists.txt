@@ -61,7 +61,7 @@ endif (CMAKE_BUILD_TYPE MATCHES Debug)
 add_definitions(-DTINKER_UNLOCKED)
 add_definitions(-DTINKER_NO_REGISTRATION)
 
-add_subdirectory (lwbase)
+add_subdirectory (common)
 
 add_subdirectory (modelconverter)
 add_subdirectory (raytracer)

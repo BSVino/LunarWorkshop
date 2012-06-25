@@ -18,10 +18,13 @@
 #include <renderer/particles.h>
 #include <renderer/game_renderer.h>
 #include <tinker/keys.h>
+#include <portals/portal.h>
 
 CGameWindow::CGameWindow(int argc, char** argv)
 	: CApplication(argc, argv)
 {
+	TPortal_Startup();
+
 	m_bHaveLastMouse = false;
 }
 
@@ -62,6 +65,8 @@ CGameWindow::~CGameWindow()
 
 	if (m_pGameServer)
 		delete m_pGameServer;
+
+	TPortal_Shutdown();
 }
 
 void LoadLevel(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)

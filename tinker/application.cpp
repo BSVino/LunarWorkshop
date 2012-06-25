@@ -12,7 +12,6 @@
 #include <tvector.h>
 
 #include <tinker/keys.h>
-#include <tinker/portals/portal.h>
 #include <tinker/cvar.h>
 #include <glgui/rootpanel.h>
 #include <tinker/renderer/renderer.h>
@@ -24,8 +23,6 @@ CApplication* CApplication::s_pApplication = NULL;
 CApplication::CApplication(int argc, char** argv)
 	: CShell(argc, argv)
 {
-	TPortal_Startup();
-
 	s_pApplication = this;
 
 	srand((unsigned int)time(NULL));
@@ -218,8 +215,6 @@ void CApplication::OpenWindow(size_t iWidth, size_t iHeight, bool bFullscreen, b
 CApplication::~CApplication()
 {
 	glfwTerminate();
-
-	TPortal_Shutdown();
 }
 
 #define MAKE_PARAMETER(name) \

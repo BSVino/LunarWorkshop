@@ -94,9 +94,9 @@ set (TENGINE_UI_SOURCES
 	ui/chatbox.cpp
 )
 
-set (TENGINE_TINKER_SOURCES
-	../tinker/lobby/lobby_client.cpp
-	../tinker/lobby/lobby_server.cpp
+set (TENGINE_LOBBY_SOURCES
+	lobby/lobby_client.cpp
+	lobby/lobby_server.cpp
 )
 
 set (TENGINE_TOOLS_SOURCES
@@ -109,6 +109,10 @@ set (TENGINE_TOOLS_SOURCES
 	tools/workbench.cpp
 )
 
+set (TENGINE_PORTALS_SOURCES
+	portals/portal_stubs.cpp
+)
+
 set (TENGINE_SOURCES
 	${TENGINE_GAME_SOURCES}
 	${TENGINE_GAME_ENTITY_SOURCES}
@@ -118,8 +122,9 @@ set (TENGINE_SOURCES
 	${TENGINE_RENDERER_SOURCES}
 	${TENGINE_SOUND_SOURCES}
 	${TENGINE_UI_SOURCES}
-	${TENGINE_TINKER_SOURCES}
+	${TENGINE_LOBBY_SOURCES}
 	${TENGINE_TOOLS_SOURCES}
+	${TENGINE_PORTALS_SOURCES}
 )
 
 source_group(Game FILES ${TENGINE_GAME_SOURCES})
@@ -130,8 +135,9 @@ source_group(Physics FILES ${TENGINE_PHYSICS_SOURCES})
 source_group(Renderer FILES ${TENGINE_RENDERER_SOURCES})
 source_group(Sound FILES ${TENGINE_SOUND_SOURCES})
 source_group(UI FILES ${TENGINE_UI_SOURCES})
-source_group(Tinker FILES ${TENGINE_TINKER_SOURCES})
+source_group(Lobby FILES ${TENGINE_LOBBY_SOURCES})
 source_group(Tools FILES ${TENGINE_TOOLS_SOURCES})
+source_group(Portals FILES ${TENGINE_PORTALS_SOURCES})
 
 #Breaks other stuff.
 #add_msvc_precompiled_header("game/entities/baseentity.h" "game/entities/baseentity_pch.cpp" TENGINE_SOURCES)
