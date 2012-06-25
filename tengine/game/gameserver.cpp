@@ -21,8 +21,8 @@
 #include <datamanager/dataserializer.h>
 #include <models/models.h>
 #include <textures/texturelibrary.h>
-#include <tinker/portals/portal.h>
-#include <tinker/lobby/lobby_server.h>
+#include <portals/portal.h>
+#include <lobby/lobby_server.h>
 #include <tinker/cvar.h>
 #include <ui/gamewindow.h>
 #include <physics/physics.h>

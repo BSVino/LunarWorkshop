@@ -7,7 +7,7 @@
 #include <tinker/cvar.h>
 #include <tinker/console.h>
 #include <network/commands.h>
-#include <tinker/lobby/lobby_server.h>
+#include <lobby/lobby_server.h>
 #include <game/entities/game.h>
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
