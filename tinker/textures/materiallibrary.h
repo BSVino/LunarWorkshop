@@ -23,9 +23,6 @@ public:
 public:
 	void Clear()
 	{
-		m_sFile = "";
-		m_sShader = "";
-		m_sBlend = "";
 		m_ahTextures.clear();
 		m_aParameters.clear();
 

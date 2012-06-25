@@ -37,7 +37,7 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 
 		GetContext().m_hMaterial = oLastContext.m_hMaterial;
 		GetContext().m_pFrameBuffer = oLastContext.m_pFrameBuffer;
-		GetContext().m_sProgram = oLastContext.m_sProgram;
+		tstrncpy(GetContext().m_szProgram, PROGRAM_LEN, oLastContext.m_szProgram, PROGRAM_LEN);
 		GetContext().m_pShader = oLastContext.m_pShader;
 
 		GetContext().m_rViewport = oLastContext.m_rViewport;
@@ -88,7 +88,7 @@ CRenderingContext::~CRenderingContext()
 		UseFrameBuffer(GetContext().m_pFrameBuffer);
 		UseProgram(GetContext().m_pShader);
 
-		if (GetContext().m_sProgram.length())
+		if (*GetContext().m_szProgram)
 		{
 			SetUniform("mProjection", GetContext().m_mProjection);
 			SetUniform("mView", GetContext().m_mView);
@@ -341,12 +341,13 @@ void CRenderingContext::UseFrameBuffer(const CFrameBuffer* pBuffer)
 	}
 }
 
-void CRenderingContext::UseProgram(const tstring& sProgram)
+void CRenderingContext::UseProgram(const tchar* pszProgram)
 {
-	GetContext().m_sProgram = sProgram;
-	GetContext().m_pShader = m_pShader = CShaderLibrary::GetShader(sProgram);
+	tstrncpy(GetContext().m_szProgram, PROGRAM_LEN, pszProgram, PROGRAM_LEN);
 
-	if (sProgram.length())
+	GetContext().m_pShader = m_pShader = CShaderLibrary::GetShader(pszProgram);
+
+	if (*pszProgram)
 		TAssert(m_pShader);
 
 	UseProgram(m_pShader);
@@ -358,13 +359,13 @@ void CRenderingContext::UseProgram(class CShader* pShader)
 
 	if (!m_pShader)
 	{
-		GetContext().m_sProgram = "";
+		GetContext().m_szProgram[0] = '\0';
 		m_iProgram = 0;
 		glUseProgram(0);
 		return;
 	}
 
-	GetContext().m_sProgram = pShader->m_sName;
+	tstrncpy(GetContext().m_szProgram, PROGRAM_LEN, pShader->m_sName.c_str(), PROGRAM_LEN);
 
 	m_iProgram = m_pShader->m_iProgram;
 	glUseProgram((GLuint)m_pShader->m_iProgram);

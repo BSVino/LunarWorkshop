@@ -11,6 +11,8 @@
 
 #include "render_common.h"
 
+#define PROGRAM_LEN 32
+
 class CRenderingContext
 {
 protected:
@@ -23,7 +25,7 @@ protected:
 
 		CMaterialHandle		m_hMaterial;
 		const class CFrameBuffer*	m_pFrameBuffer;
-		tstring				m_sProgram;
+		tchar				m_szProgram[PROGRAM_LEN];	// Not a tstring for perf reasons
 		class CShader*		m_pShader;
 
 		Rect				m_rViewport;
@@ -79,7 +81,7 @@ public:
 
 	void					UseFrameBuffer(const class CFrameBuffer* pBuffer);
 	const class CFrameBuffer* GetActiveFrameBuffer() { return GetContext().m_pFrameBuffer; }
-	void					UseProgram(const tstring& sProgram);
+	void					UseProgram(const tchar* pszProgram);
 	void					UseProgram(class CShader* pShader);		// Can save on the program name lookup
 	void					UseMaterial(const CMaterialHandle& hMaterial);
 	void					UseMaterial(const tstring& sName);
