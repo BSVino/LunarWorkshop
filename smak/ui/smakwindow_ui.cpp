@@ -312,12 +312,19 @@ void CSMAKWindow::EndProgress()
 	CProgressBar::Get()->SetVisible(false);
 }
 
-CControl<CHelpPanel> CHelpPanel::s_hHelpPanel;
+CResource<CBaseControl> CHelpPanel::s_pHelpPanel;
 
 CHelpPanel::CHelpPanel()
 	: CMovablePanel("Help")
 {
+}
+
+void CHelpPanel::CreateControls(CResource<glgui::CBaseControl> pThis)
+{
 	m_hInfo = AddControl(new CLabel(0, 0, 100, 100, ""));
+
+	BaseClass::CreateControls(pThis);
+
 	Layout();
 }
 
@@ -341,7 +348,7 @@ void CHelpPanel::Layout()
 	m_hInfo->AppendText("Right Mouse Button - Zoom in and out\n");
 	m_hInfo->AppendText("Ctrl-LMB - Rotate the light\n");
 	m_hInfo->AppendText(" \n");
-	m_hInfo->AppendText("For in-depth help information please visit our website, http://www.getsmak.net/\n");
+	m_hInfo->AppendText("For in-depth help information please visit the website, http://www.getsmak.net/\n");
 
 	CMovablePanel::Layout();
 }
@@ -363,27 +370,34 @@ bool CHelpPanel::MousePressed(int iButton, int mx, int my)
 
 void CHelpPanel::Open()
 {
-	if (!s_hHelpPanel)
-		s_hHelpPanel = (new CHelpPanel())->GetHandle();
+	if (!s_pHelpPanel)
+		s_pHelpPanel = CreateControl(new CHelpPanel());
 
-	s_hHelpPanel->SetVisible(true);
-	s_hHelpPanel->Layout();
+	s_pHelpPanel->SetVisible(true);
+	s_pHelpPanel->Layout();
 }
 
 void CHelpPanel::Close()
 {
-	if (!s_hHelpPanel)
+	if (!s_pHelpPanel)
 		return;
 
-	s_hHelpPanel->SetVisible(false);
+	s_pHelpPanel->SetVisible(false);
 }
 
-CControl<CAboutPanel> CAboutPanel::s_hAboutPanel;
+CResource<CBaseControl> CAboutPanel::s_pAboutPanel;
 
 CAboutPanel::CAboutPanel()
 	: CMovablePanel("About SMAK")
 {
+}
+
+void CAboutPanel::CreateControls(CResource<glgui::CBaseControl> pThis)
+{
 	m_hInfo = AddControl(new CLabel(0, 0, 100, 100, ""));
+
+	BaseClass::CreateControls(pThis);
+
 	Layout();
 }
 
@@ -404,14 +418,20 @@ void CAboutPanel::Layout()
 
 	m_hInfo->SetText("SMAK - The Super Model Army Knife\n");
 	m_hInfo->AppendText("Version " SMAK_VERSION "\n");
-	m_hInfo->AppendText("Copyright © 2010, Jorge Rodriguez <jorge@lunarworkshop.com>\n");
+	m_hInfo->AppendText("Copyright © 2012, Jorge Rodriguez <jorge@lunarworkshop.com>\n");
 	m_hInfo->AppendText(" \n");
+#ifdef WITH_ASSIMP
+	m_hInfo->AppendText("AssImp copyright © 2012, Alexander Gessler\n");
+#endif
 	m_hInfo->AppendText("FCollada copyright © 2006, Feeling Software\n");
-	m_hInfo->AppendText("DevIL copyright © 2001-2009, Denton Woods\n");
+#ifdef WITH_EASTL
+	m_hInfo->AppendText("EASTL copyright © 2009-2010, Electronic Arts\n");
+#endif
+//	m_hInfo->AppendText("DevIL copyright © 2001-2009, Denton Woods\n");	// I might go back to it in the future, I'll keep this here for now
 	m_hInfo->AppendText("FTGL copyright © 2001-2003, Henry Maddocks\n");
 	m_hInfo->AppendText("GLFW copyright © 2002-2007, Camilla Berglund\n");
 	m_hInfo->AppendText("pthreads-win32 copyright © 2001, 2006 Ross P. Johnson\n");
-	m_hInfo->AppendText("GLEW copyright © 2002-2007, Milan Ikits, Marcelo E. Magallon, Lev Povalahev\n");
+	m_hInfo->AppendText("GL3W (public domain) created by Slavomir Kaslev and others\n");
 	m_hInfo->AppendText("Freetype copyright © 1996-2002, 2006 by David Turner, Robert Wilhelm, and Werner Lemberg\n");
 
 	CMovablePanel::Layout();
@@ -434,18 +454,18 @@ bool CAboutPanel::MousePressed(int iButton, int mx, int my)
 
 void CAboutPanel::Open()
 {
-	if (!s_hAboutPanel)
-		s_hAboutPanel = (new CAboutPanel())->GetHandle();
+	if (!s_pAboutPanel)
+		s_pAboutPanel = CreateControl(new CAboutPanel());
 
-	s_hAboutPanel->SetVisible(true);
-	s_hAboutPanel->Layout();
+	s_pAboutPanel->SetVisible(true);
+	s_pAboutPanel->Layout();
 }
 
 void CAboutPanel::Close()
 {
-	if (!s_hAboutPanel)
+	if (!s_pAboutPanel)
 		return;
 
-	s_hAboutPanel->SetVisible(false);
+	s_pAboutPanel->SetVisible(false);
 }
 

@@ -32,6 +32,10 @@ if (WITH_EASTL)
 	add_definitions(-DWITH_EASTL)
 endif (WITH_EASTL)
 
+if (WITH_ASSIMP)
+	add_definitions(-DWITH_ASSIMP)
+endif ()
+
 if (NOT WITH_NETWORKING)
 	add_definitions(-DTINKER_NO_NETWORKING)
 endif (NOT WITH_NETWORKING)

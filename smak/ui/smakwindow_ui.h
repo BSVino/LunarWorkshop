@@ -4,8 +4,13 @@
 
 class CHelpPanel : public glgui::CMovablePanel
 {
+	DECLARE_CLASS(CHelpPanel, glgui::CMovablePanel);
+
 public:
 							CHelpPanel();
+
+public:
+	virtual void			CreateControls(CResource<glgui::CBaseControl> pThis);
 
 	virtual void			Layout();
 	virtual void			Paint(float x, float y, float w, float h);
@@ -18,13 +23,18 @@ public:
 protected:
 	glgui::CControl<glgui::CLabel>			m_hInfo;
 
-	static glgui::CControl<CHelpPanel>		s_hHelpPanel;
+	static CResource<CBaseControl>		s_pHelpPanel;
 };
 
 class CAboutPanel : public glgui::CMovablePanel
 {
+	DECLARE_CLASS(CAboutPanel, glgui::CMovablePanel);
+
 public:
 							CAboutPanel();
+
+public:
+	virtual void			CreateControls(CResource<glgui::CBaseControl> pThis);
 
 	virtual void			Layout();
 	virtual void			Paint(float x, float y, float w, float h);
@@ -37,5 +47,5 @@ public:
 protected:
 	glgui::CControl<glgui::CLabel>			m_hInfo;
 
-	static glgui::CControl<CAboutPanel>		s_hAboutPanel;
+	static CResource<CBaseControl>		s_pAboutPanel;
 };

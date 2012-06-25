@@ -1,6 +1,6 @@
 #include "../modelconverter.h"
 
-#ifdef NO_ASSIMP
+#ifndef WITH_ASSIMP
 
 bool CModelConverter::ReadAssImp(const tstring& sFilename)
 {

@@ -4,7 +4,7 @@
 #include "modelconverter.h"
 #include "strutils.h"
 
-#ifndef NO_ASSIMP
+#ifdef WITH_ASSIMP
 #include <assimp.h>
 #endif
 
@@ -120,7 +120,7 @@ tvector<tstring> CModelConverter::GetReadFormats()
 {
 	tvector<tstring> asFormats;
 
-#ifndef NO_ASSIMP
+#ifdef WITH_ASSIMP
 	aiString sFormats;
 	aiGetExtensionList(&sFormats);
 
