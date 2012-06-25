@@ -84,6 +84,7 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 	oMat.Clear();
 
 	oMat.m_sFile = sMaterial;
+	oMat.m_sTextureDirectory = pShaderData->FindChildValueString("_TextureDirectory");
 
 	oMat.m_sShader = pShaderData->GetValueString();
 	oMat.m_pShader = pShader;
@@ -93,6 +94,9 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 	{
 		CData* pParameter = pShaderData->GetChild(i);
 		tstring sParameter = pParameter->GetKey();
+
+		if (sParameter == "_TextureDirectory")
+			continue;
 
 		auto it = pShader->m_aParameters.find(sParameter);
 		TAssert(it != pShader->m_aParameters.end());
@@ -289,7 +293,13 @@ void CMaterial::FillParameter(size_t iParameter, const tstring& sData, class CSh
 			{
 				m_ahTextures[k] = CTextureHandle(sData);
 				if (!m_ahTextures[k].IsValid())
-					m_ahTextures[k] = CTextureHandle(GetDirectory(m_sFile) + "/" + oPar.m_sValue);
+				{
+					if (m_sTextureDirectory.length())
+						m_ahTextures[k] = CTextureHandle(m_sTextureDirectory + "/" + oPar.m_sValue);
+
+					if (!m_ahTextures[k].IsValid())
+						m_ahTextures[k] = CTextureHandle(GetDirectory(m_sFile) + "/" + oPar.m_sValue);
+				}
 			}
 		}
 	}

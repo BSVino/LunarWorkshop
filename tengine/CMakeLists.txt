@@ -150,6 +150,7 @@ if (WIN32)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/fcollada-2010.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/farchivexml-2010.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/libxml-2010.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/assimp/code/Debug/assimp.lib)
 
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/pthreads-w32-2-8-0-release/Release/pthread.lib)
 	if (WITH_NETWORKING)
@@ -161,6 +162,7 @@ if (WIN32)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/fcollada-2010.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/farchivexml-2010.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/libxml-2010.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/assimp/code/RelWithDebInfo/assimp.lib)
 
 	target_link_libraries(tengine iphlpapi ws2_32 Winmm)
 

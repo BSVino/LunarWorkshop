@@ -6,6 +6,7 @@
 #include <maths.h>
 
 #include <tinker_platform.h>
+#include <files.h>
 
 #include <modelconverter/modelconverter.h>
 #include <glgui/glgui.h>
@@ -121,7 +122,7 @@ void CSMAKWindow::DestroyAll()
 {
 	m_Scene.DestroyAll();
 
-	m_szFileLoaded[0] = '\0';
+	m_sFileLoaded.clear();
 
 	m_aiObjects.clear();
 	m_iObjectsCreated = 0;
@@ -172,7 +173,7 @@ void CSMAKWindow::ReadFileIntoScene(const tchar* pszFile)
 		return;
 	}
 
-	tstrncpy(m_szFileLoaded, 1023, pszFile, tstrlen(pszFile));
+	m_sFileLoaded = pszFile;
 
 	BeginProgress();
 	SetAction("Loading into video hardware", 0);
@@ -189,7 +190,7 @@ void CSMAKWindow::ReadFileIntoScene(const tchar* pszFile)
 
 void CSMAKWindow::ReloadFromFile()
 {
-	ReadFile(m_szFileLoaded);
+	ReadFile(m_sFileLoaded.c_str());
 }
 
 void CSMAKWindow::LoadIntoGL()
@@ -218,6 +219,7 @@ void CSMAKWindow::LoadMaterialsIntoGL()
 		if (m_Scene.GetMaterial(i))
 		{
 			CConversionMaterial* pMaterial = m_Scene.GetMaterial(i);
+			pShader->AddChild("_TextureDirectory", GetDirectory(m_sFileLoaded));
 			pShader->AddChild("DiffuseTexture", pMaterial->GetDiffuseTexture());
 			pShader->AddChild("Diffuse", sprintf("%f %f %f", pMaterial->m_vecDiffuse.x, pMaterial->m_vecDiffuse.y, pMaterial->m_vecDiffuse.z));
 			pShader->AddChild("Ambient", sprintf("%f %f %f", pMaterial->m_vecAmbient.x, pMaterial->m_vecAmbient.y, pMaterial->m_vecAmbient.z));

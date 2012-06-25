@@ -11,6 +11,7 @@
 #include "ui/smakwindow.h"
 #include "crunch/crunch.h"
 #include "crunch/ao.h"
+#include "ui/smak_renderer.h"
 
 typedef enum
 {
@@ -81,6 +82,8 @@ int CreateApplication(int argc, char** argv)
 	bool bCrease = false;
 	bool bGroundOcclusion = false;
 	tstring sOutput;
+
+	CRenderer::AllowNPO2TextureLoads();
 
 	if (argc >= 2)
 	{

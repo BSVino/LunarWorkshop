@@ -26,6 +26,7 @@ option(BUILD_SMAK "Build SMAK" OFF)
 option(BUILD_ENGINE "Build Tinker's game engine and whatever games I happen to be working on" ON)
 option(WITH_NETWORKING "Build with networking enabled." ON)
 option(WITH_EASTL "Use the super-fast (even in debug mode) EASTL STL library." ON)
+option(WITH_ASSIMP "Use the unfortunately named AssImp library to load more formats." ON)
 
 if (WITH_EASTL)
 	add_definitions(-DWITH_EASTL)

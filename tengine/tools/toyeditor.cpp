@@ -26,6 +26,7 @@
 #include <textures/texturelibrary.h>
 #include <textures/materiallibrary.h>
 #include <toys/toy.h>
+#include <modelconverter/modelconverter.h>
 
 #include "workbench.h"
 #include "manipulator.h"
@@ -371,7 +372,7 @@ void CSourcePanel::UpdateFields()
 			m_bMesh = false;
 			m_pMeshMenu->SetText("Material: ");
 		}
-		else if (sExtension == ".dae" || sExtension == ".obj" || sExtension == ".sia" || sExtension == ".png")
+		else
 		{
 			m_bMesh = true;
 			m_pMeshMenu->SetText("Mesh: ");
@@ -381,10 +382,7 @@ void CSourcePanel::UpdateFields()
 
 void CSourcePanel::SetModelSourcesAutoComplete(glgui::CTextField* pField)
 {
-	tvector<tstring> asExtensions;
-	asExtensions.push_back(".obj");
-	asExtensions.push_back(".sia");
-	asExtensions.push_back(".dae");
+	tvector<tstring> asExtensions = CModelConverter::GetReadFormats();
 	asExtensions.push_back(".png");
 
 	pField->SetAutoCompleteFiles(GetDirectory(ToyEditor()->GetToy().m_sFilename), asExtensions);

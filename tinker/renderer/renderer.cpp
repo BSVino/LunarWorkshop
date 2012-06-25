@@ -745,18 +745,21 @@ size_t CRenderer::LoadTextureIntoGL(tstring sFilename, int iClamp)
 	if (!pData)
 		return 0;
 
-	if (x & (x-1))
+	if (!s_bNPO2TextureLoads)
 	{
-		TError("Image width is not power of 2.");
-		stbi_image_free(pData);
-		return 0;
-	}
+		if (x & (x-1))
+		{
+			TError("Image width is not power of 2.");
+			stbi_image_free(pData);
+			return 0;
+		}
 
-	if (y & (y-1))
-	{
-		TError("Image height is not power of 2.");
-		stbi_image_free(pData);
-		return 0;
+		if (y & (y-1))
+		{
+			TError("Image height is not power of 2.");
+			stbi_image_free(pData);
+			return 0;
+		}
 	}
 
 	size_t iGLId = LoadTextureIntoGL((Color*)pData, x, y, iClamp);
@@ -833,6 +836,7 @@ void CRenderer::UnloadTextureFromGL(size_t iGLId)
 }
 
 size_t CRenderer::s_iTexturesLoaded = 0;
+bool CRenderer::s_bNPO2TextureLoads = false;
 
 Color* CRenderer::LoadTextureData(tstring sFilename, int& x, int& y)
 {
@@ -845,18 +849,21 @@ Color* CRenderer::LoadTextureData(tstring sFilename, int& x, int& y)
 	if (!pData)
 		return 0;
 
-	if (x & (x-1))
+	if (!s_bNPO2TextureLoads)
 	{
-		TError("Image width is not power of 2.");
-		stbi_image_free(pData);
-		return 0;
-	}
+		if (x & (x-1))
+		{
+			TError("Image width is not power of 2.");
+			stbi_image_free(pData);
+			return 0;
+		}
 
-	if (y & (y-1))
-	{
-		TError("Image height is not power of 2.");
-		stbi_image_free(pData);
-		return 0;
+		if (y & (y-1))
+		{
+			TError("Image height is not power of 2.");
+			stbi_image_free(pData);
+			return 0;
+		}
 	}
 
 	return (Color*)pData;

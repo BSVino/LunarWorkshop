@@ -145,6 +145,8 @@ public:
 	static void		WriteTextureToFile(size_t iTexture, tstring sFilename);
 	static void		WriteTextureToFile(Color* pclrData, int w, int h, tstring sFilename);
 
+	static void		AllowNPO2TextureLoads() { s_bNPO2TextureLoads = true; }
+
 protected:
 	size_t			m_iWidth;
 	size_t			m_iHeight;
@@ -185,6 +187,7 @@ protected:
 	int				m_iScreenSamples;
 
 	static size_t	s_iTexturesLoaded;
+	static bool		s_bNPO2TextureLoads;
 };
 
 #endif

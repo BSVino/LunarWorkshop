@@ -12,6 +12,7 @@
 #include <glgui/textfield.h>
 #include <glgui/filedialog.h>
 #include <textures/materiallibrary.h>
+#include <modelconverter/modelconverter.h>
 
 #include "smakwindow.h"
 #include "scenetree.h"
@@ -93,7 +94,7 @@ void CSMAKWindow::OpenDialogCallback(const tstring& sArgs)
 	if (m_bLoadingFile)
 		return;
 
-	CFileDialog::ShowOpenDialog("", ".obj;.sia;.dae", this, OpenFile);
+	CFileDialog::ShowOpenDialog("", implode(";", CModelConverter::GetReadFormats()), this, OpenFile);
 }
 
 void CSMAKWindow::OpenFileCallback(const tstring& sArgs)
@@ -106,7 +107,7 @@ void CSMAKWindow::OpenIntoDialogCallback(const tstring& sArgs)
 	if (m_bLoadingFile)
 		return;
 
-	CFileDialog::ShowOpenDialog("", ".obj;.sia;.dae", this, OpenIntoFile);
+	CFileDialog::ShowOpenDialog("", implode(";", CModelConverter::GetReadFormats()), this, OpenIntoFile);
 }
 
 void CSMAKWindow::OpenIntoFileCallback(const tstring& sArgs)

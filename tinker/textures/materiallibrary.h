@@ -41,6 +41,7 @@ public:
 
 public:
 	tstring			m_sFile;
+	tstring			m_sTextureDirectory;
 
 	size_t			m_iReferences;
 

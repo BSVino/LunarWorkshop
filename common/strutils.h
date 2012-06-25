@@ -95,6 +95,19 @@ inline void explode(const tstring& str, tvector<tstring>& tokens, const tstring&
     }
 }
 
+inline tstring implode(const tstring& sGlue, tvector<tstring>& asStrings)
+{
+	if (!asStrings.size())
+		return 0;
+
+	tstring sResult = asStrings[0];
+
+	for (size_t i = 1; i < asStrings.size(); i++)
+		sResult += sGlue + asStrings[i];
+
+	return sResult;
+}
+
 inline int isspace(int i)
 {
 	if (i == ' ')

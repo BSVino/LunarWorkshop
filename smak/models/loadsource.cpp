@@ -119,30 +119,26 @@ bool CModel::Load(class CConversionScene* pScene, size_t iMesh)
 
 	LoadMesh(pScene, iMesh);
 
-	size_t iMaterials = g_aaflData.size();
-
-	m_asMaterialStubs.resize(iMaterials);
-	m_aiVertexBuffers.resize(iMaterials);
-	m_aiVertexBufferSizes.resize(iMaterials);
-
 	m_iVertexWireframeBuffer = CRenderer::LoadVertexDataIntoGL(g_aflWireframeData.size()*4, &g_aflWireframeData[0]);
 	m_iVertexWireframeBufferSize = g_aflWireframeData.size()/FloatsPerWireframeVertex();
 
 	m_iVertexUVBuffer = CRenderer::LoadVertexDataIntoGL(g_aflUVData.size()*4, &g_aflUVData[0]);
 	m_iVertexUVBufferSize = g_aflUVData.size()/FloatsPerUVVertex();
 
+	size_t iMaterials = g_aaflData.size();
+
 	for (size_t i = 0; i < iMaterials; i++)
 	{
 		if (g_aaflData[i].size() == 0)
 			continue;
 
-		m_aiVertexBuffers[i] = CRenderer::LoadVertexDataIntoGL(g_aaflData[i].size()*4, &g_aaflData[i][0]);
-		m_aiVertexBufferSizes[i] = g_aaflData[i].size()/FloatsPerVertex();
+		m_aiVertexBuffers.push_back(CRenderer::LoadVertexDataIntoGL(g_aaflData[i].size()*4, &g_aaflData[i][0]));
+		m_aiVertexBufferSizes.push_back(g_aaflData[i].size()/FloatsPerVertex());
 
-		if (i < pScene->GetMesh(iMesh)->GetNumMaterialStubs())
-			m_asMaterialStubs[i] = pScene->GetMesh(iMesh)->GetMaterialStub(i)->GetName();
+		if (m_aiVertexBuffers.size() <= pScene->GetMesh(iMesh)->GetNumMaterialStubs())
+			m_asMaterialStubs.push_back(pScene->GetMesh(iMesh)->GetMaterialStub(m_asMaterialStubs.size())->GetName());
 		else
-			m_asMaterialStubs[i] = "";
+			m_asMaterialStubs.push_back("");
 	}
 
 	m_aabbBoundingBox = g_aabbBounds;

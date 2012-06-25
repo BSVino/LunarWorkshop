@@ -153,7 +153,7 @@ public:
 protected:
 	CConversionScene		m_Scene;
 	bool					m_bLoadingFile;
-	tchar					m_szFileLoaded[1024];
+	tstring					m_sFileLoaded;
 
 	tvector<size_t>			m_aiObjects;
 	size_t					m_iObjectsCreated;

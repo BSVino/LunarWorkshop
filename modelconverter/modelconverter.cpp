@@ -4,6 +4,10 @@
 #include "modelconverter.h"
 #include "strutils.h"
 
+#ifndef NO_ASSIMP
+#include <assimp.h>
+#endif
+
 CModelConverter::CModelConverter(CConversionScene* pScene)
 {
 	m_pScene = pScene;
@@ -27,7 +31,7 @@ bool CModelConverter::ReadModel(const tstring& sFilename)
 	else if (sExtension == ".dae")
 		return ReadDAE(sFilename);
 	else
-		return false;
+		return ReadAssImp(sFilename);
 }
 
 bool CModelConverter::SaveModel(const tstring& sFilename)
@@ -110,4 +114,26 @@ tstring CModelConverter::StripWhitespace(tstring sLine)
 		sLine[iEnd+1] = '\0';
 
 	return sLine.substr(i);
+}
+
+tvector<tstring> CModelConverter::GetReadFormats()
+{
+	tvector<tstring> asFormats;
+
+#ifndef NO_ASSIMP
+	aiString sFormats;
+	aiGetExtensionList(&sFormats);
+
+	explode(sFormats.data, asFormats, ";");
+
+	for (size_t i = 0; i < asFormats.size(); i++)	// Get rid of the * that assimp puts at the front
+		asFormats[i] = asFormats[i].substr(1);
+#else
+	asFormats.push_back(".obj");
+	asFormats.push_back(".dae");
+#endif
+
+	asFormats.push_back(".sia");
+
+	return asFormats;
 }

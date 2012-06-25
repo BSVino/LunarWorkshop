@@ -27,6 +27,9 @@ public:
 	bool				ReadDAE(const tstring& sFilename);
 	void				ReadDAESceneTree(class FCDSceneNode* pNode, CConversionSceneNode* pScene);
 
+	bool				ReadAssImp(const tstring& sFilename);
+	void				ReadAssImpSceneTree(const struct aiScene* pAIScene, struct aiNode* pNode, CConversionSceneNode* pScene);
+
 	bool				SaveModel(const tstring& sFilename);
 
 	void				SaveOBJ(const tstring& sFilename);
@@ -48,6 +51,8 @@ public:
 	void				SetWorkListener(IWorkListener* pWorkListener) { m_pWorkListener = pWorkListener; }
 
 	void				SetWantEdges(bool bWantEdges) { m_bWantEdges = bWantEdges; }
+
+	static tvector<tstring>	GetReadFormats();
 
 protected:
 	CConversionScene*	m_pScene;

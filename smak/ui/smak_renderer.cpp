@@ -544,6 +544,10 @@ void CSMAKRenderer::RenderUV()
 				continue;
 
 			CModel* pModel = CModelLibrary::GetModel(i);
+
+			if (!pModel)
+				continue;
+
 			if (!pModel->m_iVertexUVBufferSize)
 				continue;
 
