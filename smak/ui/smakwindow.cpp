@@ -145,6 +145,8 @@ void CSMAKWindow::ReadFile(const tchar* pszFile)
 	if (m_bLoadingFile)
 		return;
 
+	CSceneTreePanel::Get()->CloseMaterialEditor();
+
 	// Save it in here in case m_szFileLoaded was passed into ReadFile, in which case it would be destroyed by DestroyAll.
 	tstring sFile = pszFile;
 

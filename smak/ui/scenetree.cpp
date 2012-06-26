@@ -143,8 +143,7 @@ void OpenMaterialEditor(CConversionMaterial* pMaterial, const tstring& sArgs)
 
 void CSceneTreePanel::OpenMaterialEditor(CConversionMaterial* pMaterial)
 {
-	if (m_pMaterialEditor.get())
-		m_pMaterialEditor.DowncastStatic<CMaterialEditor>()->Close();
+	CloseMaterialEditor();
 
 	m_pMaterialEditor = CreateControl(new CMaterialEditor(pMaterial, m_hThis));
 
@@ -153,6 +152,12 @@ void CSceneTreePanel::OpenMaterialEditor(CConversionMaterial* pMaterial)
 
 	m_pMaterialEditor->SetVisible(true);
 	m_pMaterialEditor->Layout();
+}
+
+void CSceneTreePanel::CloseMaterialEditor()
+{
+	if (m_pMaterialEditor.get())
+		m_pMaterialEditor.DowncastStatic<CMaterialEditor>()->Close();
 }
 
 void CSceneTreePanel::SelectedCallback(const tstring& sArgs)

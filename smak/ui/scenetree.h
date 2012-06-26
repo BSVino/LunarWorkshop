@@ -24,6 +24,7 @@ public:
 	void							AddNodeToTree(glgui::CTreeNode* pTreeNode, class CConversionSceneNode* pNode);
 
 	void							OpenMaterialEditor(class CConversionMaterial* pMaterial);
+	void							CloseMaterialEditor();
 
 	size_t							GetLastSelectedMaterial() { return m_iLastSelectedMaterial; }
 
