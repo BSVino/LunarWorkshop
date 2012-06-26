@@ -12,6 +12,15 @@ using namespace glgui;
 
 size_t CBaseControl::s_iQuad = ~0;
 
+#ifdef _DEBUG
+//#define DEBUG_SINGLE_RESOURCE
+#endif
+
+#ifdef DEBUG_SINGLE_RESOURCE
+tvector<CBaseControl*>&	g_apControls = *(new tvector<CBaseControl*>());
+void DebugPrint(const char* pszText);
+#endif
+
 CBaseControl::CBaseControl(float x, float y, float w, float h)
 {
 	SetParent(CControlHandle());
@@ -41,6 +50,21 @@ CBaseControl::CBaseControl(const FRect& Rect)
 
 CBaseControl::~CBaseControl()
 {
+#ifdef DEBUG_SINGLE_RESOURCE
+	DebugPrint(sprintf("Deleting %x\n", this).c_str());
+	bool bFound = false;
+	for (size_t i = 0; i < g_apControls.size(); i++)
+	{
+		if (g_apControls[i] == this)
+		{
+			bFound = true;
+			g_apControls.erase(g_apControls.begin()+i);
+			break;
+		}
+	}
+	TAssert(bFound);
+#endif
+
 	if (HasFocus())
 		CRootPanel::Get()->SetFocus(CControlHandle());
 
@@ -457,6 +481,14 @@ CControlHandle CBaseControl::GetHasCursor() const
 CResource<CBaseControl> CBaseControl::CreateControl(CBaseControl* pControl)
 {
 	TAssert(!pControl->GetHandle());
+
+#ifdef DEBUG_SINGLE_RESOURCE
+	DebugPrint(sprintf("Creating %x\n", pControl).c_str());
+	for (size_t i = 0; i < g_apControls.size(); i++)
+		TAssert(g_apControls[i] != pControl);
+
+	g_apControls.push_back(pControl);
+#endif
 
 	CResource<CBaseControl> pResource = pControl;
 	pControl->m_hThis = pResource;
