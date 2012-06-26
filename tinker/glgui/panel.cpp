@@ -342,8 +342,9 @@ void CPanel::MoveToTop(CBaseControl* pControl)
 	{
 		if (m_apControls[i] == pControl)
 		{
+			CResource<CBaseControl> pControlResource = m_apControls[i];
 			m_apControls.erase(m_apControls.begin()+i);
-			m_apControls.push_back(pControl);
+			m_apControls.push_back(pControlResource);
 			return;
 		}
 	}
