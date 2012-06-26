@@ -22,7 +22,7 @@ void CreateDirectoryNonRecursive(const tstring& sPath);
 bool CopyFileTo(const tstring& sFrom, const tstring& sTo, bool bOverride = true);
 tstring FindAbsolutePath(const tstring& sPath);
 time_t GetFileModificationTime(const char* pszFile);
-void DebugPrint(const tstring& sText);
+void DebugPrint(const char* pszText);
 void Exec(const tstring& sLine);
 int TranslateKeyToQwerty(int iKey);
 int TranslateKeyFromQwerty(int iKey);

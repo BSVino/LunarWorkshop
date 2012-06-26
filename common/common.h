@@ -19,6 +19,9 @@
 
 #endif
 
+// tinker_platform.h
+extern void DebugPrint(const char* pszText);
+
 #ifdef _DEBUG
 
 #define TAssert(x) \
@@ -34,6 +37,7 @@
 { \
 	if (!(x)) \
 	{ \
+		DebugPrint("Assert failed: " #x "\n"); \
 		TDebugBreak(); \
 	} \
 } \
@@ -48,6 +52,8 @@
 
 #define TAssertNoMsg(x) \
 { \
+	if (!(x)) \
+		DebugPrint("Assert failed: " #x "\n"); \
 } \
 
 #endif

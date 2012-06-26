@@ -120,7 +120,7 @@ void CConsole::Paint(float x, float y, float w, float h)
 
 void CConsole::PrintConsole(const tstring& sText)
 {
-	DebugPrint(sText);
+	DebugPrint(sText.c_str());
 	m_hOutput->AppendText(sText);
 
 	if (m_hOutput->GetText().length() > 2500)

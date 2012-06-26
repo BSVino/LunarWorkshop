@@ -308,9 +308,9 @@ time_t GetFileModificationTime(const char* pszFile)
 	return s.st_mtime;
 }
 
-void DebugPrint(const tstring& sText)
+void DebugPrint(const char* pszText)
 {
-	OutputDebugString(convert_to_wstring(sText).c_str());
+	OutputDebugString(convert_to_wstring(pszText).c_str());
 }
 
 void Exec(const tstring& sLine)
