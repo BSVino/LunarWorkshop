@@ -17,7 +17,6 @@ public:
 							COptionsPanel(COptionsButton* pButton);
 
 	public:
-		virtual void		CreateControls(CResource<CBaseControl> pThis);
 		virtual void		Layout();
 		virtual void		Paint(float x, float y, float w, float h);
 
@@ -37,7 +36,6 @@ public:
 	COptionsPanel*		GetOptionsPanel() { return m_hPanel; }
 
 protected:
-	CResource<CBaseControl>			m_hPanelResource;
 	glgui::CControl<COptionsPanel>	m_hPanel;
 };
 
@@ -49,8 +47,6 @@ public:
 								CComboGeneratorPanel(CConversionScene* pScene);
 
 public:
-	virtual void				CreateControls(CResource<CBaseControl> pThis);
-
 	virtual void				SetVisible(bool bVisible);
 
 	virtual void				Layout();
@@ -83,7 +79,7 @@ public:
 	EVENT_CALLBACK(CComboGeneratorPanel,	DroppedHiResMesh);
 
 	static void					Open(CConversionScene* pScene);
-	static CComboGeneratorPanel*	Get() { return s_pComboGeneratorPanel.DowncastStatic<CComboGeneratorPanel>(); }
+	static glgui::CControl<CComboGeneratorPanel> Get() { return s_hComboGeneratorPanel; }
 
 protected:
 	CConversionScene*			m_pScene;
@@ -139,5 +135,5 @@ protected:
 
 	glgui::CControl<CMeshInstancePicker>		m_hMeshInstancePicker;
 
-	static CResource<CBaseControl>		s_pComboGeneratorPanel;
+	static glgui::CControl<CComboGeneratorPanel>		s_hComboGeneratorPanel;
 };

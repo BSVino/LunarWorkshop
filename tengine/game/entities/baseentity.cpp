@@ -156,6 +156,7 @@ CBaseEntity::CBaseEntity()
 	while (s_apEntityList[s_iNextEntityListIndex] != NULL)
 	{
 		s_iNextEntityListIndex = (s_iNextEntityListIndex+1)%s_apEntityList.size();
+		TAssert(s_iNextEntityListIndex != m_iHandle);
 	}
 
 	s_apEntityList[m_iHandle] = this;

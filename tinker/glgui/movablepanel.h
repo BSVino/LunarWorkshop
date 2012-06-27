@@ -37,8 +37,6 @@ namespace glgui
 								~CMovablePanel();
 
 	public:
-		virtual void			CreateControls(CResource<CBaseControl> pThis);
-
 		virtual void			Layout();
 
 		virtual void			Think();
@@ -76,7 +74,6 @@ namespace glgui
 
 		bool					m_bClearBackground;
 
-		tstring					m_sName;
 		CControl<CLabel>		m_hName;
 
 		CControl<CCloseButton>	m_hCloseButton;

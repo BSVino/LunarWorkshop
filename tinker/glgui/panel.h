@@ -52,10 +52,10 @@ namespace glgui
 
 		void					NextTabStop();
 
-		virtual CControlHandle	AddControl(CBaseControl* pControl, bool bToTail = false);			// This function calls CreateControl for you.
-		virtual CControlHandle	AddControl(CResource<CBaseControl> pControl, bool bToTail = false); // This function requires you to call CreateControl.
+		virtual CControlHandle	AddControl(CBaseControl* pControl, bool bToTail = false);
+		virtual CControlHandle	AddControl(CControlResource pControl, bool bToTail = false);
 		virtual void			RemoveControl(CBaseControl* pControl);
-		virtual tvector<CResource<CBaseControl>>&	GetControls() { return m_apControls; };
+		virtual tvector<CControlResource>&	GetControls() { return m_apControls; };
 		virtual void			MoveToTop(CBaseControl* pControl);
 
 		virtual void			SetHighlighted(bool bHighlight) { m_bHighlight = bHighlight; };
@@ -76,7 +76,7 @@ namespace glgui
 		bool					ShouldControlOffset(const CBaseControl* pControl) const;
 
 	protected:
-		tvector<CResource<CBaseControl>>	m_apControls;
+		tvector<CControlResource>	m_apControls;
 
 		float					m_flMargin;
 

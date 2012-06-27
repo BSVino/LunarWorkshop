@@ -3,17 +3,20 @@
 
 #include "glgui.h"
 
-#include <textures/materialhandle.h>
 #include <tinker_memory.h>
+#include <tmap.h>
+
+#include <textures/materialhandle.h>
 
 namespace glgui
 {
 	class CBaseControl;
 	typedef CHandle<CBaseControl> CControlHandle;
+	class CControlResource;
 
-	class CBaseControl
+	class CBaseControl : public std::enable_shared_from_this<CBaseControl>
 	{
-		friend CResource<CBaseControl> CreateControl(CBaseControl* pControl);
+		template <class> friend class CControl;
 
 	public:
 						CBaseControl(float x, float y, float w, float h);
@@ -112,9 +115,7 @@ namespace glgui
 		CControlHandle	GetHandle() const { return m_hThis; }
 		virtual void	OnSetHandle() {}
 
-		virtual void	CreateControls(CResource<CBaseControl> pThis) {}
-
-		static CResource<CBaseControl> CreateControl(CBaseControl* pControl);
+		static tmap<CBaseControl*, CControlResource>& GetControls();
 
 		static void		PaintRect(float x, float y, float w, float h, const Color& c = g_clrBox, int iBorder = 0, bool bHighlight = false);
 		static void		PaintTexture(const CMaterialHandle& hTexture, float x, float y, float w, float h, const Color& c = Color(255, 255, 255, 255));
@@ -151,6 +152,45 @@ namespace glgui
 		CControlHandle	m_hThis;
 
 		static size_t	s_iQuad;
+		static tmap<CBaseControl*, CControlResource>*	s_papControls;
+	};
+
+	class CControlResource : public CResource<CBaseControl>
+	{
+		friend class CBaseControl;
+
+	public:
+		CControlResource()
+		{
+		}
+
+		CControlResource(std::shared_ptr<CBaseControl> c)
+			: CResource(c)
+		{
+		}
+
+	private:
+		// If you get an error saying you're trying to access this private member it means that you're doing something like this:
+		// void Function(CControlResource p)
+		// { ... }
+		// CBaseControl* p = new CWhatever();
+		// Function(p); // Right here there's an implicit conversion to CControlResource which allocates another shared pointer for the same object.
+		// Since CBaseControl already allocates its own shared pointer that would make two different shared pointer instances to the same object.
+		// That's very bad.
+		// What you need to do instead is p->shared_from_this() or CBaseControls::GetControls()[p] or better yet use a different function signature:
+		// void Function(CBaseControl* p)
+		// to avoid the conversion.
+		CControlResource(CBaseControl* p)
+		{
+		}
+
+	private:
+		CControlHandle Set(CBaseControl* p)
+		{
+			reset(p);
+
+			return CControlHandle(*this);
+		}
 	};
 
 	template <class C>
@@ -168,6 +208,19 @@ namespace glgui
 
 			if (dynamic_cast<C*>(hControl.lock().get()))
 				m_hControl = hControl;
+		}
+
+		CControl(C* pControl)
+		{
+			if (!pControl)
+				return;
+
+			CControlResource pResource = pControl->shared_from_this();
+			if (!pResource.get())
+				return;
+
+			if (dynamic_cast<C*>(pResource.get()))
+				m_hControl = pResource;
 		}
 
 	public:

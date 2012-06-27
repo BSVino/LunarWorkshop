@@ -22,7 +22,7 @@ CGame* CreateGame()
 
 CResource<CLevel> CreateLevel()
 {
-	return new CLevel();
+	return CResource<CLevel>(new CLevel());
 }
 
 CHUDViewport* CreateHUD()

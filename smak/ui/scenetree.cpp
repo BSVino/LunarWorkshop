@@ -12,7 +12,7 @@
 
 using namespace glgui;
 
-CSceneTreePanel* CSceneTreePanel::s_pSceneTreePanel = NULL;
+CControl<CSceneTreePanel> CSceneTreePanel::s_hSceneTreePanel;
 
 CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
 	: CMovablePanel("Scene Tree")
@@ -24,21 +24,16 @@ CSceneTreePanel::CSceneTreePanel(CConversionScene* pScene)
 
 	SetPos(50, 150);
 
-	m_pMaterialEditor = NULL;
+	m_hMaterialEditor = NULL;
 
 	m_iLastSelectedMaterial = ~0;
+
+	m_hTree = AddControl(new CTree(SMAKWindow()->GetSMAKRenderer()->GetArrowTexture(), SMAKWindow()->GetSMAKRenderer()->GetEditTexture(), SMAKWindow()->GetSMAKRenderer()->GetVisibilityTexture()));
+	m_hTree->SetSelectedListener(this, Selected);
 }
 
 CSceneTreePanel::~CSceneTreePanel()
 {
-}
-
-void CSceneTreePanel::CreateControls(CResource<glgui::CBaseControl> pThis)
-{
-	m_hTree = AddControl(new CTree(SMAKWindow()->GetSMAKRenderer()->GetArrowTexture(), SMAKWindow()->GetSMAKRenderer()->GetEditTexture(), SMAKWindow()->GetSMAKRenderer()->GetVisibilityTexture()));
-	m_hTree->SetSelectedListener(this, Selected);
-
-	BaseClass::CreateControls(pThis);
 }
 
 void CSceneTreePanel::Layout()
@@ -145,19 +140,19 @@ void CSceneTreePanel::OpenMaterialEditor(CConversionMaterial* pMaterial)
 {
 	CloseMaterialEditor();
 
-	m_pMaterialEditor = CreateControl(new CMaterialEditor(pMaterial, m_hThis));
+	m_hMaterialEditor = new CMaterialEditor(pMaterial, m_hThis);
 
-	if (!m_pMaterialEditor)
+	if (!m_hMaterialEditor)
 		return;
 
-	m_pMaterialEditor->SetVisible(true);
-	m_pMaterialEditor->Layout();
+	m_hMaterialEditor->SetVisible(true);
+	m_hMaterialEditor->Layout();
 }
 
 void CSceneTreePanel::CloseMaterialEditor()
 {
-	if (m_pMaterialEditor.get())
-		m_pMaterialEditor.DowncastStatic<CMaterialEditor>()->Close();
+	if (m_hMaterialEditor.Get())
+		m_hMaterialEditor.DowncastStatic<CMaterialEditor>()->Close();
 }
 
 void CSceneTreePanel::SelectedCallback(const tstring& sArgs)
@@ -187,7 +182,7 @@ void CSceneTreePanel::Open(CConversionScene* pScene)
 	CSceneTreePanel* pPanel = Get();
 
 	if (!pPanel)
-		pPanel = s_pSceneTreePanel = CreateControl(new CSceneTreePanel(pScene)).DowncastStatic<CSceneTreePanel>();
+		pPanel = s_hSceneTreePanel = new CSceneTreePanel(pScene);
 
 	if (!pPanel)
 		return;
@@ -198,7 +193,7 @@ void CSceneTreePanel::Open(CConversionScene* pScene)
 
 CSceneTreePanel* CSceneTreePanel::Get()
 {
-	return s_pSceneTreePanel;
+	return s_hSceneTreePanel;
 }
 
 CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CControl<CSceneTreePanel> hSceneTree)
@@ -223,10 +218,7 @@ CMaterialEditor::CMaterialEditor(CConversionMaterial* pMaterial, CControl<CScene
 
 	SetPos(x + m_hSceneTree->GetWidth(), y);
 	SetSize(500, 300);
-}
 
-void CMaterialEditor::CreateControls(CResource<CBaseControl> pThis)
-{
 	m_hDiffuseLabel = AddControl(new CLabel(0, 0, 1, 1, "Diffuse map: "));
 	m_hDiffuseFile = AddControl(new CButton(0, 0, 1, 1, ""));
 	m_hDiffuseFile->SetAlign(CLabel::TA_LEFTCENTER);
@@ -292,7 +284,6 @@ void CMaterialEditor::CreateControls(CResource<CBaseControl> pThis)
 	SetupSelector(m_hShininessSelector, 128);
 	m_hShininessSelector->SetSelectedListener(this, SetShininess);
 
-	BaseClass::CreateControls(pThis);
 
 	m_hName->AppendText(" - ");
 	m_hName->AppendText(m_pMaterial->GetName().c_str());

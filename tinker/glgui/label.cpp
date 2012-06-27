@@ -82,6 +82,10 @@ CLabel::CLabel(float x, float y, float w, float h, const tstring& sText, const t
 	m_iPrintChars = -1;
 }
 
+CLabel::~CLabel()
+{
+}
+
 CVar glgui_showsections("glgui_showsections", "off");
 
 void CLabel::Paint(float x, float y, float w, float h)

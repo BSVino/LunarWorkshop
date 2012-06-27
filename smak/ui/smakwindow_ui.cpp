@@ -58,7 +58,7 @@ void CSMAKWindow::InitUI()
 	pHelp->AddSubmenu("Help", this, Help);
 	pHelp->AddSubmenu("About SMAK", this, About);
 
-	CResource<CBaseControl> pTopButtons = CreateControl(new CButtonPanel(BA_TOP));
+	glgui::CControl<CBaseControl> pTopButtons = new CButtonPanel(BA_TOP);
 	CControl<CButtonPanel> hTopButtons(pTopButtons);
 
 	m_hRender3D = hTopButtons->AddButton(new CPictureButton("3D", GetSMAKRenderer()->GetSmoothTexture(), true), "Render 3D View", false, this, Render3D);
@@ -66,7 +66,7 @@ void CSMAKWindow::InitUI()
 
 	CRootPanel::Get()->AddControl(pTopButtons);
 
-	CResource<CBaseControl> pBottomButtons = CreateControl(new CButtonPanel(BA_BOTTOM));
+	glgui::CControl<CBaseControl> pBottomButtons = new CButtonPanel(BA_BOTTOM);
 	CControl<CButtonPanel> hBottomButtons(pBottomButtons);
 
 	m_hWireframe = hBottomButtons->AddButton(new CPictureButton("Wire", GetSMAKRenderer()->GetWireframeTexture(), true), "Toggle Wireframe", true, this, Wireframe);
@@ -312,18 +312,12 @@ void CSMAKWindow::EndProgress()
 	CProgressBar::Get()->SetVisible(false);
 }
 
-CResource<CBaseControl> CHelpPanel::s_pHelpPanel;
+glgui::CControl<CHelpPanel> CHelpPanel::s_hHelpPanel;
 
 CHelpPanel::CHelpPanel()
 	: CMovablePanel("Help")
 {
-}
-
-void CHelpPanel::CreateControls(CResource<glgui::CBaseControl> pThis)
-{
 	m_hInfo = AddControl(new CLabel(0, 0, 100, 100, ""));
-
-	BaseClass::CreateControls(pThis);
 
 	Layout();
 }
@@ -370,33 +364,20 @@ bool CHelpPanel::MousePressed(int iButton, int mx, int my)
 
 void CHelpPanel::Open()
 {
-	if (!s_pHelpPanel)
-		s_pHelpPanel = CreateControl(new CHelpPanel());
+	if (!s_hHelpPanel)
+		s_hHelpPanel = new CHelpPanel();
 
-	s_pHelpPanel->SetVisible(true);
-	s_pHelpPanel->Layout();
+	s_hHelpPanel->SetVisible(true);
+	s_hHelpPanel->Layout();
 }
 
-void CHelpPanel::Close()
-{
-	if (!s_pHelpPanel)
-		return;
 
-	s_pHelpPanel->SetVisible(false);
-}
-
-CResource<CBaseControl> CAboutPanel::s_pAboutPanel;
+glgui::CControl<CAboutPanel> CAboutPanel::s_hAboutPanel;
 
 CAboutPanel::CAboutPanel()
 	: CMovablePanel("About SMAK")
 {
-}
-
-void CAboutPanel::CreateControls(CResource<glgui::CBaseControl> pThis)
-{
 	m_hInfo = AddControl(new CLabel(0, 0, 100, 100, ""));
-
-	BaseClass::CreateControls(pThis);
 
 	Layout();
 }
@@ -454,18 +435,9 @@ bool CAboutPanel::MousePressed(int iButton, int mx, int my)
 
 void CAboutPanel::Open()
 {
-	if (!s_pAboutPanel)
-		s_pAboutPanel = CreateControl(new CAboutPanel());
+	if (!s_hAboutPanel)
+		s_hAboutPanel = new CAboutPanel();
 
-	s_pAboutPanel->SetVisible(true);
-	s_pAboutPanel->Layout();
+	s_hAboutPanel->SetVisible(true);
+	s_hAboutPanel->Layout();
 }
-
-void CAboutPanel::Close()
-{
-	if (!s_pAboutPanel)
-		return;
-
-	s_pAboutPanel->SetVisible(false);
-}
-

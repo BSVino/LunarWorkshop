@@ -9,16 +9,13 @@
 
 using namespace glgui;
 
-CResource<CBaseControl> CNormalPanel::s_pNormalPanel;
+CControl<CNormalPanel> CNormalPanel::s_hNormalPanel;
 
 CNormalPanel::CNormalPanel(CConversionScene* pScene)
 	: CMovablePanel("Normal map generator"), m_oGenerator(pScene)
 {
 	m_pScene = pScene;
-}
 
-void CNormalPanel::CreateControls(CResource<glgui::CBaseControl> pThis)
-{
 	m_hMaterialsLabel = AddControl(new CLabel(0, 0, 32, 32, "Choose A Material To Generate From:"));
 
 	m_hMaterials = AddControl(new CTree(SMAKWindow()->GetSMAKRenderer()->GetArrowTexture(), SMAKWindow()->GetSMAKRenderer()->GetEditTexture(), SMAKWindow()->GetSMAKRenderer()->GetVisibilityTexture()));
@@ -150,8 +147,6 @@ void CNormalPanel::CreateControls(CResource<glgui::CBaseControl> pThis)
 
 	m_hSave->SetClickedListener(this, SaveMapDialog);
 	m_hSave->SetVisible(false);
-
-	BaseClass::CreateControls(pThis);
 
 	Layout();
 }
@@ -341,13 +336,12 @@ void CNormalPanel::UpdateNormal2Callback(const tstring& sArgs)
 
 void CNormalPanel::Open(CConversionScene* pScene)
 {
-	CNormalPanel* pPanel = s_pNormalPanel.DowncastStatic<CNormalPanel>();
+	CNormalPanel* pPanel = s_hNormalPanel;
 
 	if (pPanel)
 		pPanel->Close();
 
-	s_pNormalPanel = CreateControl(new CNormalPanel(pScene));
-	pPanel = s_pNormalPanel.DowncastStatic<CNormalPanel>();
+	pPanel = s_hNormalPanel = new CNormalPanel(pScene);
 
 	if (!pPanel)
 		return;

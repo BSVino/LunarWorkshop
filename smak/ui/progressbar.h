@@ -10,8 +10,6 @@ public:
 							CProgressBar();
 
 public:
-	virtual void			CreateControls(CResource<CBaseControl> pThis);
-
 	void					Layout();
 	void					Paint(float x, float y, float w, float h);
 

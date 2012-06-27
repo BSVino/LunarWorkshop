@@ -31,6 +31,8 @@ CPanel::CPanel(float x, float y, float w, float h)
 
 CPanel::~CPanel()
 {
+	while (m_apControls.size())
+		RemoveControl(m_apControls[0]);
 }
 
 bool CPanel::KeyPressed(int code, bool bCtrlDown)
@@ -286,19 +288,28 @@ void CPanel::NextTabStop()
 
 CControlHandle CPanel::AddControl(CBaseControl* pControl, bool bToTail)
 {
-	if (pControl)
-		TAssertNoMsg(pControl->GetHandle() == nullptr)	// If you hit this assert, don't create the control with CreateControl() this function does that.
-	else
+	TAssertNoMsg(pControl);
+	if (!pControl)
 		return CControlHandle();
 
-	return AddControl(CreateControl(pControl), bToTail);
+	return AddControl(pControl->shared_from_this(), bToTail);
 }
 
-CControlHandle CPanel::AddControl(CResource<CBaseControl> pControl, bool bToTail)
+CControlHandle CPanel::AddControl(CControlResource pControl, bool bToTail)
 {
-	if (pControl.get())
-		TAssertNoMsg(pControl->GetHandle() != nullptr)	// If you hit this assert, you didn't create the control with CreateControl(new CYadeya)
-	else
+	TAssertNoMsg(pControl.get());
+#ifdef _DEBUG
+	auto it = CBaseControl::GetControls().find(pControl);
+	TAssertNoMsg(it != CBaseControl::GetControls().end());
+	if (it != CBaseControl::GetControls().end())
+		// Make sure no errant accidental implicit conversions to a CResource are accidentally added here.
+		// If that happens then there would be two CResource (shared_ptr) objects pointing two the same
+		// memory, which would cause tons of bad stuff to happen. CControlResource is supposed to prevent
+		// this from happening, so if you get this assert then there's big trouble in Little China.
+		TAssertNoMsg(it->second.use_count() == pControl.use_count());
+#endif
+
+	if (!pControl.get())
 		return CControlHandle();
 
 	TAssertNoMsg(pControl != this);
@@ -308,8 +319,6 @@ CControlHandle CPanel::AddControl(CResource<CBaseControl> pControl, bool bToTail
 		TAssertNoMsg(m_apControls[i] != pControl);	// You're adding a control to the panel twice! Quit it!
 #endif
 
-	// If you hit this assert then you're adding a control to a panel that hasn't had CreateControl called on it yet.
-	// Don't create child controls for a panel in its constructor, do it in CreateControls()
 	TAssertNoMsg(m_hThis);
 
 	pControl->SetParent(m_hThis);
@@ -329,7 +338,10 @@ void CPanel::RemoveControl(CBaseControl* pControl)
 	for (size_t i = 0; i < m_apControls.size(); i++)
 	{
 		if (m_apControls[i] == pControl)
+		{
 			m_apControls.erase(m_apControls.begin()+i);
+			break;
+		}
 	}
 
 	if (m_hHasCursor == pControl)
@@ -342,7 +354,7 @@ void CPanel::MoveToTop(CBaseControl* pControl)
 	{
 		if (m_apControls[i] == pControl)
 		{
-			CResource<CBaseControl> pControlResource = m_apControls[i];
+			CControlResource pControlResource = m_apControls[i];
 			m_apControls.erase(m_apControls.begin()+i);
 			m_apControls.push_back(pControlResource);
 			return;
@@ -531,9 +543,7 @@ void CPanel::SetVerticalScrollBarEnabled(bool b)
 
 	if (b)
 	{
-		CResource<CBaseControl> pScrollbar = CreateControl(new CScrollBar(false));
-		m_hVerticalScrollBar = pScrollbar;
-		AddControl(pScrollbar);
+		m_hVerticalScrollBar = AddControl(new CScrollBar(false));
 		Layout();
 	}
 	else
@@ -552,9 +562,7 @@ void CPanel::SetHorizontalScrollBarEnabled(bool b)
 
 	if (b)
 	{
-		CResource<CBaseControl> pScrollBar = CreateControl(new CScrollBar(true));
-		m_hHorizontalScrollBar = pScrollBar;
-		AddControl(pScrollBar);
+		m_hHorizontalScrollBar = AddControl(new CScrollBar(false));
 		Layout();
 	}
 	else

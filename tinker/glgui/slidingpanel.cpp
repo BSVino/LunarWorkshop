@@ -31,9 +31,9 @@ CSlidingPanel::CSlidingPanel(CControl<CSlidingContainer> hParent, char* pszTitle
 
 	m_bCurrent = false;
 
-	m_hTitle = AddControl(CreateControl(new CLabel(0, 0, 100, SLIDER_COLLAPSED_HEIGHT, pszTitle)));
+	m_hTitle = AddControl(new CLabel(0, 0, 100, SLIDER_COLLAPSED_HEIGHT, pszTitle));
 
-	m_hInnerPanel = AddControl(CreateControl(new CInnerPanel(hParent)));
+	m_hInnerPanel = AddControl(new CInnerPanel(hParent));
 	m_hInnerPanel->SetBorder(CPanel::BT_NONE);
 	m_hInnerPanel->SetDefaultMargin(2);
 
@@ -72,7 +72,7 @@ bool CSlidingPanel::MousePressed(int code, int mx, int my)
 	}
 }
 
-CControlHandle CSlidingPanel::AddControl(CResource<CBaseControl> pControl, bool bToTail)
+CControlHandle CSlidingPanel::AddControl(CBaseControl* pControl, bool bToTail)
 {
 	// The title and inner panel should be added to this panel.
 	// All other controls should be added to the inner panel.
@@ -127,12 +127,12 @@ void CSlidingContainer::Layout()
 	CPanel::Layout();
 }
 
-CControlHandle CSlidingContainer::AddControl(CResource<CBaseControl> pControl, bool bToTail)
+CControlHandle CSlidingContainer::AddControl(CBaseControl* pControl, bool bToTail)
 {
-	if (!pControl.get())
+	if (!pControl)
 		return CControlHandle();
 
-	TAssert(dynamic_cast<CSlidingPanel*>(pControl.get()));
+	TAssert(dynamic_cast<CSlidingPanel*>(pControl));
 
 	CControlHandle hControl = CPanel::AddControl(pControl, bToTail);
 

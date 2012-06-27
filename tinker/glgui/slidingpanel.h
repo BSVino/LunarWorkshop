@@ -29,7 +29,7 @@ namespace glgui
 		virtual void				Layout();
 		virtual void				Paint(float x, float y, float w, float h);
 
-		virtual CControlHandle		AddControl(CResource<CBaseControl> pControl, bool bToTail = false);
+		virtual CControlHandle		AddControl(CBaseControl* pControl, bool bToTail = false);
 
 		virtual bool				MousePressed(int iButton, int mx, int my);
 
@@ -54,7 +54,7 @@ namespace glgui
 	public:
 		virtual void				Layout();
 
-		virtual CControlHandle		AddControl(CResource<CBaseControl> pControl, bool bToTail = false);
+		virtual CControlHandle		AddControl(CBaseControl* pControl, bool bToTail = false);
 
 		virtual bool				IsCurrent(int iPanel);
 		virtual void				SetCurrent(int iPanel);

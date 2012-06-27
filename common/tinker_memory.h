@@ -2,6 +2,8 @@
 
 #include <memory>
 
+template <class C> class CHandle;
+
 template<class C>
 class CResource : public std::shared_ptr<C>
 {
@@ -15,7 +17,7 @@ public:
 	{
 	}
 
-	CResource(C* c)
+	explicit CResource(C* c)
 		: std::shared_ptr<C>(c)
 	{
 	}
@@ -24,6 +26,8 @@ public:
 		: std::shared_ptr<C>(c)
 	{
 	}
+
+	CResource(CHandle<C>& c);
 
 public:
 	// No run-time checking. Use only if you're sure about the type.
@@ -132,3 +136,9 @@ public:
 		return expired();
 	}
 };
+
+template <class C>
+CResource<C>::CResource(CHandle<C>& c)
+	: std::shared_ptr<C>(c)
+{
+}

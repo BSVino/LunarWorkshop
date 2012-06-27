@@ -7,7 +7,7 @@
 
 using namespace glgui;
 
-CResource<CBaseControl> CRootPanel::s_pRootPanel;
+CControlResource CRootPanel::s_pRootPanel;
 bool CRootPanel::s_bRootPanelValid;
 
 CRootPanel::CRootPanel() :
@@ -22,9 +22,14 @@ CRootPanel::CRootPanel() :
 	m_flFrameTime = 0;
 	m_flTime = 0;
 
+	m_flNextGCSweep = 5;
+
 	m_bUseLighting = true;
+	m_bGarbageCollecting = false;
 
 	s_bRootPanelValid = true;
+
+	m_hMenuBar = AddControl(new CMenuBar(), true);
 }
 
 CRootPanel::~CRootPanel( )
@@ -34,17 +39,10 @@ CRootPanel::~CRootPanel( )
 	TAssert(s_pRootPanel == this);
 }
 
-void CRootPanel::CreateControls(CResource<CBaseControl> pThis)
-{
-	m_hMenuBar = AddControl(CreateControl(new CMenuBar()), true);
-
-	BaseClass::CreateControls(pThis);
-}
-
 CRootPanel*	CRootPanel::Get()
 {
 	if (!s_pRootPanel)
-		s_pRootPanel = CreateControl(new CRootPanel());
+		s_pRootPanel = (new CRootPanel())->shared_from_this();
 
 	if (!s_bRootPanelValid)
 		return nullptr;
@@ -66,6 +64,26 @@ void CRootPanel::Think(double flNewTime)
 	CPanel::Think();
 
 	m_flTime = flNewTime;
+
+	if (m_flTime > m_flNextGCSweep)
+	{
+		m_bGarbageCollecting = true;
+
+		auto it = CBaseControl::GetControls().begin();
+		while (it != CBaseControl::GetControls().end())
+		{
+			if (it->second.use_count() == 1)
+				it->second.reset();
+
+			if (!it->second.get())
+				CBaseControl::GetControls().erase(it++);
+			else
+				it++;
+		}
+
+		m_bGarbageCollecting = false;
+		m_flNextGCSweep = m_flTime + 5;
+	}
 }
 
 void CRootPanel::UpdateScene()

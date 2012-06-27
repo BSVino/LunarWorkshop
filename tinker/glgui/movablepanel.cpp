@@ -41,8 +41,6 @@ void CMinimizeButton::Paint(float x, float y, float w, float h)
 CMovablePanel::CMovablePanel(const tstring& sName)
 	: CPanel(0, 0, 200, 350)
 {
-	m_sName = sName;
-
 	m_bMoving = false;
 
 	m_bHasCloseButton = true;
@@ -53,16 +51,8 @@ CMovablePanel::CMovablePanel(const tstring& sName)
 	SetBackgroundColor(g_clrPanel);
 	SetBorder(glgui::CPanel::BT_SOME);
 	SetClearBackground(false);
-}
 
-CMovablePanel::~CMovablePanel()
-{
-}
-
-void CMovablePanel::CreateControls(CResource<CBaseControl> pThis)
-{
-	m_hName = AddControl(new CLabel(0, GetHeight()-HEADER_HEIGHT, GetWidth(), HEADER_HEIGHT, m_sName));
-	m_sName.set_capacity(0);
+	m_hName = AddControl(new CLabel(0, GetHeight()-HEADER_HEIGHT, GetWidth(), HEADER_HEIGHT, sName));
 
 	m_hCloseButton = AddControl(new CCloseButton());
 	m_hCloseButton->SetClickedListener(this, CloseWindow);
@@ -70,9 +60,11 @@ void CMovablePanel::CreateControls(CResource<CBaseControl> pThis)
 	m_hMinimizeButton = AddControl(new CMinimizeButton());
 	m_hMinimizeButton->SetClickedListener(this, MinimizeWindow);
 
-	RootPanel()->AddControl(pThis, true);
+	RootPanel()->AddControl(this, true);
+}
 
-	BaseClass::CreateControls(pThis);
+CMovablePanel::~CMovablePanel()
+{
 }
 
 void CMovablePanel::Layout()

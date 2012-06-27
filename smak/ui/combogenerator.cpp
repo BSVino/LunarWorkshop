@@ -15,7 +15,7 @@ using namespace glgui;
 COptionsButton::COptionsButton()
 	: CButton(0, 0, 100, 100, "", true)
 {
-	m_hPanel = m_hPanelResource = CreateControl(new COptionsPanel(this));
+	m_hPanel = new COptionsPanel(this);
 	m_hPanel->SetVisible(false);
 
 	SetClickedListener(this, Open);
@@ -24,7 +24,7 @@ COptionsButton::COptionsButton()
 
 void COptionsButton::OpenCallback(const tstring& sArgs)
 {
-	RootPanel()->AddControl(m_hPanelResource, true);
+	RootPanel()->AddControl(m_hPanel, true);
 
 	float flPanelWidth = m_hPanel->GetWidth();
 	float flButtonWidth = GetWidth();
@@ -48,14 +48,9 @@ COptionsButton::COptionsPanel::COptionsPanel(COptionsButton* pButton)
 	: CPanel(0, 0, 200, 350)
 {
 	m_pButton = pButton;
-}
 
-void COptionsButton::COptionsPanel::CreateControls(CResource<CBaseControl> pThis)
-{
 	m_hOkay = AddControl(new CButton(0, 0, 100, 100, "Okay"));
 	m_hOkay->SetClickedListener(m_pButton, Close);
-
-	BaseClass::CreateControls(pThis);
 }
 
 void COptionsButton::COptionsPanel::Layout()
@@ -73,16 +68,13 @@ void COptionsButton::COptionsPanel::Paint(float x, float y, float w, float h)
 	BaseClass::Paint(x, y, w, h);
 }
 
-CResource<CBaseControl> CComboGeneratorPanel::s_pComboGeneratorPanel;
+CControl<CComboGeneratorPanel> CComboGeneratorPanel::s_hComboGeneratorPanel;
 
 CComboGeneratorPanel::CComboGeneratorPanel(CConversionScene* pScene)
 	: CMovablePanel("Combo map generator"), m_oGenerator(pScene)
 {
 	m_pScene = pScene;
-}
 
-void CComboGeneratorPanel::CreateControls(CResource<CBaseControl> pThis)
-{
 	m_hSizeLabel = AddControl(new CLabel(0, 0, 32, 32, "Size"));
 
 	m_hSizeSelector = AddControl(new CScrollSelector<int>());
@@ -229,8 +221,6 @@ void CComboGeneratorPanel::CreateControls(CResource<CBaseControl> pThis)
 
 	m_hSave->SetClickedListener(this, SaveMapDialog);
 	m_hSave->SetVisible(false);
-
-	BaseClass::CreateControls(pThis);
 
 	Layout();
 }
@@ -754,13 +744,12 @@ void CComboGeneratorPanel::DroppedHiResMeshCallback(const tstring& sArgs)
 
 void CComboGeneratorPanel::Open(CConversionScene* pScene)
 {
-	CComboGeneratorPanel* pPanel = s_pComboGeneratorPanel.DowncastStatic<CComboGeneratorPanel>();
+	CComboGeneratorPanel* pPanel = s_hComboGeneratorPanel;
 
 	if (pPanel)
 		pPanel->Close();
 
-	s_pComboGeneratorPanel = CreateControl(new CComboGeneratorPanel(pScene));
-	pPanel = s_pComboGeneratorPanel.DowncastStatic<CComboGeneratorPanel>();
+	pPanel = s_hComboGeneratorPanel = new CComboGeneratorPanel(pScene);
 
 	if (!pPanel)
 		return;

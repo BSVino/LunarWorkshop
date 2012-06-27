@@ -12,7 +12,7 @@
 
 using namespace glgui;
 
-CResource<CBaseControl> CFileDialog::s_pDialog;
+CControl<CFileDialog> CFileDialog::s_hDialog;
 
 CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, bool bSave)
 	: CMovablePanel(bSave?"Save File...":"Open File...")
@@ -24,33 +24,28 @@ CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, b
 	SetBorder(BT_SOME);
 
 	strtok(sExtension, m_asExtensions, ";");
-}
 
-void CFileDialog::CreateControls(CResource<CBaseControl> pThis)
-{
-	m_hDirectoryLabel = AddControl(CreateControl(new CLabel(5, 5, 1, 1, "Folder:")));
-	m_hDirectory = AddControl(CreateControl(new CTextField()));
+	m_hDirectoryLabel = AddControl(new CLabel(5, 5, 1, 1, "Folder:"));
+	m_hDirectory = AddControl(new CTextField());
 	m_hDirectory->SetContentsChangedListener(this, NewDirectory);
 	m_hDirectory->SetText(m_sDirectory);
-	m_hOpenInExplorer = AddControl(CreateControl(new CButton(0, 0, 20, 20, "Open in explorer", false, "sans-serif", 8)));
+	m_hOpenInExplorer = AddControl(new CButton(0, 0, 20, 20, "Open in explorer", false, "sans-serif", 8));
 	m_hOpenInExplorer->SetClickedListener(this, Explore);
 
-	m_hFilesLabel = AddControl(CreateControl(new CLabel(5, 5, 1, 1, "Files:")));
-	m_hFileList = AddControl(CreateControl(new CTree()));
+	m_hFilesLabel = AddControl(new CLabel(5, 5, 1, 1, "Files:"));
+	m_hFileList = AddControl(new CTree());
 	m_hFileList->SetSelectedListener(this, FileSelected);
 	m_hFileList->SetConfirmedListener(this, FileConfirmed);
 	m_hFileList->SetBackgroundColor(g_clrBox);
 
-	m_hNewFile = AddControl(CreateControl(new CTextField()));
+	m_hNewFile = AddControl(new CTextField());
 	m_hNewFile->SetContentsChangedListener(this, NewFileChanged);
 	m_hNewFile->SetVisible(m_bSave);
-	m_hSelect = AddControl(CreateControl(new CButton(0, 0, 20, 20, m_bSave?"Save":"Open")));
+	m_hSelect = AddControl(new CButton(0, 0, 20, 20, m_bSave?"Save":"Open"));
 	m_hSelect->SetClickedListener(this, Select);
 	m_hSelect->SetEnabled(false);
-	m_hCancel = AddControl(CreateControl(new CButton(0, 0, 20, 20, "Cancel")));
+	m_hCancel = AddControl(new CButton(0, 0, 20, 20, "Cancel"));
 	m_hCancel->SetClickedListener(this, Close);
-
-	BaseClass::CreateControls(pThis);
 }
 
 CFileDialog::~CFileDialog()
@@ -196,33 +191,33 @@ void CFileDialog::FileConfirmed(const tstring& sFile)
 
 void CFileDialog::ShowOpenDialog(const tstring& sDirectory, const tstring& sExtension, IEventListener* pListener, IEventListener::Callback pfnCallback)
 {
-	if (s_pDialog.get())
-		s_pDialog.DowncastStatic<CFileDialog>()->Close();
+	if (s_hDialog.Get())
+		s_hDialog->Close();
 
-	s_pDialog = CreateControl(new CFileDialog(sDirectory, sExtension, false));
-	s_pDialog->Layout();
+	s_hDialog = new CFileDialog(sDirectory, sExtension, false);
+	s_hDialog->Layout();
 
-	CFileDialog* pDialog = s_pDialog.DowncastStatic<CFileDialog>();
+	CFileDialog* pDialog = s_hDialog.DowncastStatic<CFileDialog>();
 	pDialog->m_pSelectListener = pListener;
 	pDialog->m_pfnSelectCallback = pfnCallback;
 }
 
 void CFileDialog::ShowSaveDialog(const tstring& sDirectory, const tstring& sExtension, IEventListener* pListener, IEventListener::Callback pfnCallback)
 {
-	if (s_pDialog.get())
-		s_pDialog.DowncastStatic<CFileDialog>()->Close();
+	if (s_hDialog.Get())
+		s_hDialog->Close();
 
-	s_pDialog = CreateControl(new CFileDialog(sDirectory, sExtension, true));
-	s_pDialog->Layout();
+	s_hDialog = new CFileDialog(sDirectory, sExtension, true);
+	s_hDialog->Layout();
 
-	CFileDialog* pDialog = s_pDialog.DowncastStatic<CFileDialog>();
+	CFileDialog* pDialog = s_hDialog.DowncastStatic<CFileDialog>();
 	pDialog->m_pSelectListener = pListener;
 	pDialog->m_pfnSelectCallback = pfnCallback;
 }
 
 tstring CFileDialog::GetFile()
 {
-	CFileDialog* pDialog = s_pDialog.DowncastStatic<CFileDialog>();
+	CFileDialog* pDialog = s_hDialog.DowncastStatic<CFileDialog>();
 
 	if (!pDialog)
 		return "";

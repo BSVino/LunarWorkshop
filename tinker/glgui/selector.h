@@ -40,16 +40,10 @@ namespace glgui
 
 			m_sFont = sFont;
 			m_iFontSize = iSize;
-		}
 
-	public:
-		virtual void CreateControls(CResource<CBaseControl> pThis)
-		{
 			m_hOption = AddControl(new CLabel(0, 0, 100, 100, ""));
 			m_hOption->SetWrap(false);
 			m_hOption->SetFont(m_sFont, m_iFontSize);
-
-			BaseClass::CreateControls(pThis);
 		}
 
 		virtual void Layout()

@@ -7,10 +7,13 @@
 
 #include "rootpanel.h"
 #include "label.h"
+#include "panel.h"
 
 using namespace glgui;
 
 size_t CBaseControl::s_iQuad = ~0;
+
+tmap<CBaseControl*, CControlResource>* CBaseControl::s_papControls = nullptr;
 
 #ifdef _DEBUG
 //#define DEBUG_SINGLE_RESOURCE
@@ -23,6 +26,18 @@ void DebugPrint(const char* pszText);
 
 CBaseControl::CBaseControl(float x, float y, float w, float h)
 {
+#ifdef DEBUG_SINGLE_RESOURCE
+	DebugPrint(sprintf("Creating %x\n", this).c_str());
+	for (size_t i = 0; i < g_apControls.size(); i++)
+		TAssert(g_apControls[i] != this);
+
+	g_apControls.push_back(this);
+#endif
+
+	TAssert(GetControls().find(this) == GetControls().end());
+
+	m_hThis = GetControls()[this].Set(this);
+
 	SetParent(CControlHandle());
 	SetBorder(BT_NONE);
 	SetBackgroundColor(Color(0, 0, 0, 0));
@@ -50,6 +65,12 @@ CBaseControl::CBaseControl(const FRect& Rect)
 
 CBaseControl::~CBaseControl()
 {
+	TAssert(RootPanel()->IsGarbageCollecting());
+
+	TAssert(!GetParent());
+	if (GetParent())
+		GetParent().DowncastStatic<CPanel>()->RemoveControl(this);
+
 #ifdef DEBUG_SINGLE_RESOURCE
 	DebugPrint(sprintf("Deleting %x\n", this).c_str());
 	bool bFound = false;
@@ -67,13 +88,6 @@ CBaseControl::~CBaseControl()
 
 	if (HasFocus())
 		CRootPanel::Get()->SetFocus(CControlHandle());
-
-	if (GetParent())
-	{
-		CPanel *pPanel = GetParent().Downcast<CPanel>();
-		if (pPanel)
-			pPanel->RemoveControl(this);
-	}
 }
 
 void CBaseControl::GetAbsPos(float &x, float &y) const
@@ -478,20 +492,11 @@ CControlHandle CBaseControl::GetHasCursor() const
 	return CControlHandle();
 }
 
-CResource<CBaseControl> CBaseControl::CreateControl(CBaseControl* pControl)
+tmap<CBaseControl*, CControlResource>& CBaseControl::GetControls()
 {
-	TAssert(!pControl->GetHandle());
+	if (!s_papControls)
+		// There's no delete for this, but that's okay. It'll last the life of the application.
+		s_papControls = new tmap<CBaseControl*, CControlResource>();
 
-#ifdef DEBUG_SINGLE_RESOURCE
-	DebugPrint(sprintf("Creating %x\n", pControl).c_str());
-	for (size_t i = 0; i < g_apControls.size(); i++)
-		TAssert(g_apControls[i] != pControl);
-
-	g_apControls.push_back(pControl);
-#endif
-
-	CResource<CBaseControl> pResource = pControl;
-	pControl->m_hThis = pResource;
-	pControl->CreateControls(pResource);	// Need the m_hThis pointer for child creation, so we can set parents and stuff.
-	return pResource;
+	return *s_papControls;
 }

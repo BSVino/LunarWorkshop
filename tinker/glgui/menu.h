@@ -28,8 +28,6 @@ namespace glgui
 		virtual						~CMenu();
 
 	public:
-		virtual void				CreateControls(CResource<CBaseControl> pThis);
-
 		virtual void				Think();
 		virtual void				Layout();
 		virtual void				Paint(float x, float y, float w, float h);

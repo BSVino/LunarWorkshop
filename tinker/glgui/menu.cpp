@@ -12,7 +12,7 @@ CControl<CMenu> CRootPanel::AddMenu(const tstring& sText)
 	if (m_hMenuBar->GetControls().size() == 0)
 		m_hMenuBar->SetVisible(true);
 
-	CControl<CMenu> hMenu(m_hMenuBar->AddControl(CreateControl(new CMenu(sText)), true));
+	CControl<CMenu> hMenu(m_hMenuBar->AddControl(new CMenu(sText), true));
 	hMenu->SetWrap(false);
 
 	return hMenu;
@@ -72,15 +72,10 @@ CMenu::CMenu(const tstring& sText, bool bSubmenu)
 
 	m_pfnMenuCallback = NULL;
 	m_pMenuListener = NULL;
-}
 
-void CMenu::CreateControls(CResource<CBaseControl> pThis)
-{
-	m_hMenu = RootPanel()->AddControl(CreateControl(new CSubmenuPanel(m_hThis)), true);
+	m_hMenu = RootPanel()->AddControl(new CSubmenuPanel(m_hThis), true);
 
 	m_hMenu->SetVisible(false);
-
-	BaseClass::CreateControls(pThis);
 }
 
 CMenu::~CMenu()
@@ -144,7 +139,7 @@ void CMenu::Layout()
 
 	float iHeight = 0;
 	float iWidth = 0;
-	tvector<CResource<CBaseControl>> apControls = m_hMenu->GetControls();
+	tvector<CControlResource> apControls = m_hMenu->GetControls();
 	for (size_t i = 0; i < apControls.size(); i++)
 	{
 		apControls[i]->SetPos(5, (float)(i*MENU_HEIGHT));
@@ -262,7 +257,7 @@ void CMenu::CloseMenu()
 
 void CMenu::AddSubmenu(const tstring& sTitle, IEventListener* pListener, IEventListener::Callback pfnCallback)
 {
-	CControl<CMenu> hMenu = m_hMenu->AddControl(CreateControl(new CMenu(sTitle, true)), true);
+	CControl<CMenu> hMenu = m_hMenu->AddControl(new CMenu(sTitle, true), true);
 	hMenu->SetAlign(TA_LEFTCENTER);
 	hMenu->SetWrap(false);
 	hMenu->EnsureTextFits();

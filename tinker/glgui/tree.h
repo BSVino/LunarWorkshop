@@ -16,8 +16,6 @@ namespace glgui
 		virtual								~CTreeNode();
 
 	public:
-		virtual void						CreateControls(CResource<CBaseControl> pThis);
-
 		virtual float						GetNodeHeight();
 		virtual float						GetNodeSpacing() { return 0; };
 		virtual void						LayoutNode();
@@ -29,7 +27,7 @@ namespace glgui
 		size_t								AddNode(const tstring& sName);
 		template <typename T>
 		size_t								AddNode(const tstring& sName, T* pObject);
-		size_t								AddNode(CResource<CBaseControl> pNode);
+		size_t								AddNode(CBaseControl* pNode);
 		void								RemoveNode(CTreeNode* pNode);
 		CControl<CTreeNode>					GetNode(size_t i);
 		size_t								GetNumNodes() { return m_ahNodes.size(); };
@@ -66,7 +64,6 @@ namespace glgui
 		tvector<CControl<CTreeNode>>		m_ahNodes;
 		CControl<CTreeNode>					m_hParent;
 		CControl<CTree>						m_hTree;
-		CLabel*								m_pLabel;	// A temporary holder
 		CControl<CLabel>					m_hLabel;
 
 		CMaterialHandle						m_hIconMaterial;
@@ -109,8 +106,6 @@ namespace glgui
 		virtual								~CTree();
 
 	public:
-		virtual void						CreateControls(CResource<CBaseControl> pThis);
-
 		virtual void						Layout();
 		virtual void						Think();
 		virtual void						Paint();
@@ -121,7 +116,7 @@ namespace glgui
 		virtual bool						MouseReleased(int iButton, int mx, int my);
 		virtual bool						MouseDoubleClicked(int iButton, int mx, int my);
 
-		virtual CControlHandle				AddControl(CResource<CBaseControl> pControl, bool bToTail = false);
+		virtual CControlHandle				AddControl(CBaseControl* pControl, bool bToTail = false);
 		virtual void						RemoveControl(CBaseControl* pControl);
 
 		void								ClearTree();
@@ -129,7 +124,7 @@ namespace glgui
 		size_t								AddNode(const tstring& sName);
 		template <typename T>
 		size_t								AddNode(const tstring& sName, T* pObject);
-		size_t								AddNode(CResource<CBaseControl> pNode, size_t iPosition = ~0);
+		size_t								AddNode(CBaseControl* pNode, size_t iPosition = ~0);
 		void								RemoveNode(CTreeNode* pNode);
 		CControl<CTreeNode>					GetNode(size_t i);
 
@@ -200,6 +195,11 @@ namespace glgui
 			m_pObject = pObject;
 		}
 
+		~CTreeNodeObject()
+		{
+			TAssertNoMsg(!GetParent());
+		}
+
 	public:
 		typedef void (*EditFnCallback)(T*, const tstring& sArgs);
 
@@ -226,13 +226,13 @@ namespace glgui
 
 		virtual void AddVisibilityButton()
 		{
-			m_hVisibilityButton = AddControl(CreateControl(new CPictureButton("@", m_hTree->m_hVisibilityMaterial)));
+			m_hVisibilityButton = AddControl(new CPictureButton("@", m_hTree->m_hVisibilityMaterial));
 			m_hVisibilityButton->SetClickedListener(this, Visibility);
 		}
 
 		virtual void AddEditButton(EditFnCallback pfnCallback)
 		{
-			m_hEditButton = AddControl(CreateControl(new CPictureButton("*", m_hTree->m_hEditMaterial)));
+			m_hEditButton = AddControl(new CPictureButton("*", m_hTree->m_hEditMaterial));
 			m_hEditButton->SetClickedListener(this, Edit);
 			m_pfnCallback = pfnCallback;
 		}
@@ -267,13 +267,13 @@ namespace glgui
 	template <typename T>
 	inline size_t CTreeNode::AddNode(const tstring& sName, T* pObject)
 	{
-		return AddNode(CreateControl(new CTreeNodeObject<T>(pObject, m_hThis, m_hTree, sName)));
+		return AddNode(new CTreeNodeObject<T>(pObject, m_hThis, m_hTree, sName));
 	}
 
 	template <typename T>
 	inline size_t CTree::AddNode(const tstring& sName, T* pObject)
 	{
-		return AddNode(CreateControl(new CTreeNodeObject<T>(pObject, CControlHandle(), m_hThis, sName)));
+		return AddNode(new CTreeNodeObject<T>(pObject, CControlHandle(), m_hThis, sName));
 	}
 };
 

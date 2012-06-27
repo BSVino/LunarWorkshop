@@ -13,14 +13,9 @@ CProgressBar::CProgressBar()
 	: CPanel(0, 0, 100, 100)
 {
 	SetVisible(false);
-}
 
-void CProgressBar::CreateControls(CResource<CBaseControl> pThis)
-{
 	m_hAction = AddControl(new CLabel(0, 0, 200, BTN_HEIGHT, ""));
 	m_hAction->SetWrap(false);
-
-	BaseClass::CreateControls(pThis);
 
 	Layout();
 }

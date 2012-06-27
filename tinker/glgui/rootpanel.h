@@ -17,8 +17,6 @@ namespace glgui
 		virtual						~CRootPanel( );
 
 	public:
-		virtual void				CreateControls(CResource<CBaseControl> pThis);
-
 		virtual void				Think(double flTime);
 		virtual void				UpdateScene();
 		virtual void				Paint(float x, float y, float w, float h);
@@ -51,6 +49,8 @@ namespace glgui
 		double						GetFrameTime() { return m_flFrameTime; };
 		double						GetTime() { return m_flTime; };
 
+		bool						IsGarbageCollecting() const { return m_bGarbageCollecting; }
+
 		static CRootPanel*			Get();
 
 		static void					GetFullscreenMousePos(int& mx, int& my);
@@ -58,7 +58,7 @@ namespace glgui
 		static ::CRenderingContext*	GetContext() { return Get()->m_pRenderingContext; }
 
 	private:
-		static CResource<CBaseControl>	s_pRootPanel;
+		static CControlResource	s_pRootPanel;
 		static bool					s_bRootPanelValid;
 
 		tvector<IDroppable*>		m_apDroppables;
@@ -74,10 +74,13 @@ namespace glgui
 		double						m_flFrameTime;
 		double						m_flTime;
 
+		double						m_flNextGCSweep;
+
 		int							m_iMX;
 		int							m_iMY;
 
 		bool						m_bUseLighting;
+		bool						m_bGarbageCollecting;
 
 		::CRenderingContext*		m_pRenderingContext;
 	};

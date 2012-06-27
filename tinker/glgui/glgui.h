@@ -39,8 +39,6 @@ namespace glgui
 
 	extern float g_flLayoutDefault;
 
-	CResource<CBaseControl> CreateControl(CBaseControl* pControl);
-
 	class IDroppable;
 
 	// An object that can be grabbed and dragged around the screen.

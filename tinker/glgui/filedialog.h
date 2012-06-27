@@ -16,8 +16,6 @@ namespace glgui
 		virtual						~CFileDialog();
 
 	public:
-		virtual void				CreateControls(CResource<CBaseControl> pThis);
-
 		virtual void				Layout();
 
 		EVENT_CALLBACK(CFileDialog, NewDirectory);
@@ -53,7 +51,7 @@ namespace glgui
 		IEventListener*				m_pSelectListener;
 		IEventListener::Callback	m_pfnSelectCallback;
 
-		static CResource<CBaseControl>	s_pDialog;
+		static CControl<CFileDialog>	s_hDialog;
 	};
 };
 

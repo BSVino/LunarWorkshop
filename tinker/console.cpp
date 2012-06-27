@@ -26,23 +26,18 @@ CConsole::CConsole()
 	m_bBackground = true;
 
 	m_iHistory = -1;
+
+	glgui::RootPanel()->AddControl(this, true);
+
+	m_hOutput = AddControl(new glgui::CLabel(0, 0, 100, 100, ""));
+	m_hOutput->SetAlign(glgui::CLabel::TA_BOTTOMLEFT);
+
+	m_hInput = AddControl(new glgui::CTextField());
+	m_hInput->SetContentsChangedListener(this, CommandChanged);
 }
 
 CConsole::~CConsole()
 {
-}
-
-void CConsole::CreateControls(CResource<CBaseControl> pThis)
-{
-	glgui::RootPanel()->AddControl(pThis, true);
-
-	m_hOutput = AddControl(CreateControl(new glgui::CLabel(0, 0, 100, 100, "")));
-	m_hOutput->SetAlign(glgui::CLabel::TA_BOTTOMLEFT);
-
-	m_hInput = AddControl(CreateControl(new glgui::CTextField()));
-	m_hInput->SetContentsChangedListener(this, CommandChanged);
-
-	BaseClass::CreateControls(pThis);
 }
 
 bool CConsole::IsVisible()
@@ -226,13 +221,6 @@ void CConsole::CommandChangedCallback(const tstring& sArgs)
 	m_hInput->SetAutoCompleteCommands(CCommand::GetCommandsBeginningWith(sInput));
 }
 
-CConsole* CConsole::CreateConsole()
-{
-	CConsole* pConsole = new CConsole();
-	CreateControl(pConsole);
-	return pConsole;
-}
-
 void CApplication::OpenConsole()
 {
 	if (!Get())
@@ -279,7 +267,7 @@ CConsole* CApplication::GetConsole()
 {
 	if (m_pConsole == NULL)
 	{
-		m_pConsole = CConsole::CreateConsole();
+		m_pConsole = new CConsole();
 		m_pConsole->SetVisible(false);
 
 		if (developer.GetBool())

@@ -12,8 +12,6 @@ public:
 								CNormalPanel(CConversionScene* pScene);
 
 public:
-	virtual void				CreateControls(CResource<glgui::CBaseControl> pThis);
-
 	virtual void				SetVisible(bool bVisible);
 
 	virtual void				Layout();
@@ -35,7 +33,7 @@ public:
 	EVENT_CALLBACK(CNormalPanel,	UpdateNormal2);
 
 	static void					Open(CConversionScene* pScene);
-	static glgui::CControl<CNormalPanel>		Get() { return glgui::CControl<CNormalPanel>(s_pNormalPanel->GetHandle()); }
+	static glgui::CControl<CNormalPanel>		Get() { return s_hNormalPanel; }
 
 protected:
 	CConversionScene*			m_pScene;
@@ -63,5 +61,5 @@ protected:
 
 	glgui::CControl<class CMaterialPicker>		m_hMaterialPicker;
 
-	static CResource<CBaseControl>		s_pNormalPanel;
+	static glgui::CControl<CNormalPanel>		s_hNormalPanel;
 };

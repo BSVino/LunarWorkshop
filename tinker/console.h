@@ -12,8 +12,6 @@ public:
 	virtual					~CConsole();
 
 public:
-	virtual void			CreateControls(CResource<glgui::CBaseControl> pThis);
-
 	virtual bool			IsVisible();
 	virtual bool			IsChildVisible(CBaseControl* pChild);
 	virtual void			SetVisible(bool bVisible);
@@ -33,8 +31,6 @@ public:
 	EVENT_CALLBACK(CConsole, CommandChanged);
 
 	virtual void			SetRenderBackground(bool bBackground) { m_bBackground = bBackground; }
-
-	static CConsole*		CreateConsole();
 
 protected:
 	glgui::CControl<glgui::CLabel>	m_hOutput;

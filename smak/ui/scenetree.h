@@ -14,8 +14,6 @@ public:
 									~CSceneTreePanel();
 
 public:
-	virtual void					CreateControls(CResource<glgui::CBaseControl> pThis);
-
 	void							Layout();
 	void							Paint(float x, float y, float w, float h);
 
@@ -38,11 +36,11 @@ public:
 
 	glgui::CControl<glgui::CTree>	m_hTree;
 
-	CResource<CBaseControl>			m_pMaterialEditor;
+	glgui::CControl<CBaseControl>	m_hMaterialEditor;
 
 	size_t							m_iLastSelectedMaterial;
 
-	static CSceneTreePanel*			s_pSceneTreePanel;
+	static glgui::CControl<CSceneTreePanel>		s_hSceneTreePanel;
 };
 
 void OpenMaterialEditor(class CConversionMaterial* pMaterial, const tstring& sArgs);
@@ -55,8 +53,6 @@ public:
 									CMaterialEditor(CConversionMaterial* pMaterial, glgui::CControl<CSceneTreePanel> hSceneTree);
 
 public:
-	virtual void					CreateControls(CResource<CBaseControl> pThis);
-
 	void							SetupSelector(glgui::CScrollSelector<float>* pSelector, float flMaxValue);
 
 	void							Layout();

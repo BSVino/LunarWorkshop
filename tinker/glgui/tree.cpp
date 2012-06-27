@@ -28,20 +28,15 @@ CTree::CTree(const CMaterialHandle& hArrowMaterial, const CMaterialHandle& hEdit
 	m_bMouseDown = false;
 
 	CRootPanel::Get()->AddDroppable(this);
+
+	SetVerticalScrollBarEnabled(true);
+	SetScissoring(true);
 }
 
 CTree::~CTree()
 {
 	if (RootPanel())
 		RootPanel()->RemoveDroppable(this);
-}
-
-void CTree::CreateControls(CResource<CBaseControl> pThis)
-{
-	SetVerticalScrollBarEnabled(true);
-	SetScissoring(true);
-
-	BaseClass::CreateControls(pThis);
 }
 
 void CTree::Layout()
@@ -212,13 +207,13 @@ bool CTree::MouseDoubleClicked(int code, int mx, int my)
 	return false;
 }
 
-CControlHandle CTree::AddControl(CResource<CBaseControl> pControl, bool bToTail)
+CControlHandle CTree::AddControl(CBaseControl* pControl, bool bToTail)
 {
 	CControlHandle hControl = BaseClass::AddControl(pControl, bToTail);
 
 	if (pControl != m_hVerticalScrollBar && pControl != m_hHorizontalScrollBar)
 	{
-		CTreeNode* pTreeNode = dynamic_cast<CTreeNode*>(pControl.get());
+		CTreeNode* pTreeNode = dynamic_cast<CTreeNode*>(pControl);
 		if (pTreeNode)
 			m_ahAllNodes.push_back(CControl<CTreeNode>(pTreeNode->GetHandle()));
 	}
@@ -266,15 +261,15 @@ void CTree::ClearTree()
 
 size_t CTree::AddNode(const tstring& sName)
 {
-	return AddNode(CreateControl(new CTreeNode(CControl<CTreeNode>(), CControl<CTree>(m_hThis), sName, "sans-serif")));
+	return AddNode(new CTreeNode(CControl<CTreeNode>(), CControl<CTree>(m_hThis), sName, "sans-serif"));
 }
 
-size_t CTree::AddNode(CResource<CBaseControl> pNode, size_t iPosition)
+size_t CTree::AddNode(CBaseControl* pNode, size_t iPosition)
 {
 	if (iPosition == ~0)
-		m_ahNodes.push_back(CControl<CTreeNode>(pNode));
+		m_ahNodes.push_back(pNode->GetHandle());
 	else
-		m_ahNodes.insert(m_ahNodes.begin()+iPosition, CControl<CTreeNode>(pNode));
+		m_ahNodes.insert(m_ahNodes.begin()+iPosition, pNode->GetHandle());
 
 	AddControl(pNode, true);
 	return m_ahNodes.size()-1;
@@ -370,13 +365,17 @@ CTreeNode::CTreeNode(CControl<CTreeNode> hParent, CControl<CTree> hTree, const t
 	m_hParent = hParent;
 	m_hTree = hTree;
 
-	m_pLabel = new CLabel(0, 0, GetWidth(), GetHeight(), "");
-	m_pLabel->SetAlign(CLabel::TA_LEFTCENTER);
-	m_pLabel->SetText(sText.c_str());
-	m_pLabel->SetFont(sFont, 11);
-	m_pLabel->SetWrap(false);
-
 	m_bDraggable = false;
+
+	m_hLabel = AddControl(new CLabel(0, 0, GetWidth(), GetHeight(), ""));
+	m_hLabel->SetAlign(CLabel::TA_LEFTCENTER);
+	m_hLabel->SetText(sText.c_str());
+	m_hLabel->SetFont(sFont, 11);
+	m_hLabel->SetWrap(false);
+
+	m_hExpandButton = AddControl(new CExpandButton(m_hTree->m_hArrowMaterial));
+	m_hExpandButton->SetExpanded(false);
+	m_hExpandButton->SetClickedListener(this, Expand);
 }
 
 CTreeNode::CTreeNode(const CTreeNode& c)
@@ -385,27 +384,20 @@ CTreeNode::CTreeNode(const CTreeNode& c)
 	m_hParent = c.m_hParent;
 	m_hTree = c.m_hTree;
 
-	m_pLabel = new CLabel(c.m_hLabel->GetLeft(), c.m_hLabel->GetTop(), c.m_hLabel->GetWidth(), c.m_hLabel->GetHeight(), c.m_hLabel->GetText());
-	m_pLabel->SetAlign(c.m_hLabel->GetAlign());
-	m_pLabel->SetFont("sans-serif", c.m_hLabel->GetFontFaceSize());
-
 	m_hIconMaterial = c.m_hIconMaterial;
 	m_bDraggable = false;
+
+	m_hLabel = AddControl(new CLabel(c.m_hLabel->GetLeft(), c.m_hLabel->GetTop(), c.m_hLabel->GetWidth(), c.m_hLabel->GetHeight(), c.m_hLabel->GetText()));
+	m_hLabel->SetAlign(c.m_hLabel->GetAlign());
+	m_hLabel->SetFont("sans-serif", c.m_hLabel->GetFontFaceSize());
+
+	m_hExpandButton = AddControl(new CExpandButton(m_hTree->m_hArrowMaterial));
+	m_hExpandButton->SetExpanded(false);
+	m_hExpandButton->SetClickedListener(this, Expand);
 }
 
 CTreeNode::~CTreeNode()
 {
-}
-
-void CTreeNode::CreateControls(CResource<CBaseControl> pThis)
-{
-	m_hLabel = AddControl(CreateControl(m_pLabel));
-
-	m_hExpandButton = AddControl(CreateControl(new CExpandButton(m_hTree->m_hArrowMaterial)));
-	m_hExpandButton->SetExpanded(false);
-	m_hExpandButton->SetClickedListener(this, Expand);
-
-	BaseClass::CreateControls(pThis);
 }
 
 float CTreeNode::GetNodeHeight()
@@ -487,14 +479,14 @@ void CTreeNode::Paint(float x, float y, float w, float h, bool bFloating)
 
 size_t CTreeNode::AddNode(const tstring& sName)
 {
-	return AddNode(CreateControl(new CTreeNode(CControl<CTreeNode>(m_hThis), CControl<CTree>(m_hTree), sName, "sans-serif")));
+	return AddNode(new CTreeNode(CControl<CTreeNode>(m_hThis), CControl<CTree>(m_hTree), sName, "sans-serif"));
 }
 
-size_t CTreeNode::AddNode(CResource<CBaseControl> pNode)
+size_t CTreeNode::AddNode(CBaseControl* pNode)
 {
 	if (!m_ahNodes.size())
 		SetExpanded(true);
-	m_ahNodes.push_back(CControl<CTreeNode>(pNode));
+	m_ahNodes.push_back(pNode->GetHandle());
 	m_hTree->AddControl(pNode);
 	return m_ahNodes.size()-1;
 }

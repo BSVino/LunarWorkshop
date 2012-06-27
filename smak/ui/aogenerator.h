@@ -11,8 +11,6 @@ public:
 							CAOPanel(bool bColor, CConversionScene* pScene);
 
 public:
-	virtual void			CreateControls(CResource<glgui::CBaseControl> pThis);
-
 	virtual void			SetVisible(bool bVisible);
 
 	virtual void			Layout();
@@ -74,6 +72,6 @@ protected:
 	glgui::CControl<glgui::CButton>			m_hGenerate;
 	glgui::CControl<glgui::CButton>			m_hSave;
 
-	static CResource<CBaseControl>		s_pAOPanel;
-	static CResource<CBaseControl>		s_pColorAOPanel;
+	static glgui::CControl<CAOPanel>		s_hAOPanel;
+	static glgui::CControl<CAOPanel>		s_hColorAOPanel;
 };

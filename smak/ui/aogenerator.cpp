@@ -10,8 +10,8 @@
 
 using namespace glgui;
 
-CResource<CBaseControl> CAOPanel::s_pAOPanel;
-CResource<CBaseControl> CAOPanel::s_pColorAOPanel;
+CControl<CAOPanel> CAOPanel::s_hAOPanel;
+CControl<CAOPanel> CAOPanel::s_hColorAOPanel;
 
 CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene)
 	: CMovablePanel(bColor?"Color AO generator":"AO generator"), m_oGenerator(pScene)
@@ -19,10 +19,7 @@ CAOPanel::CAOPanel(bool bColor, CConversionScene* pScene)
 	m_bColor = bColor;
 
 	m_pScene = pScene;
-}
 
-void CAOPanel::CreateControls(CResource<CBaseControl> pThis)
-{
 	m_hSizeLabel = AddControl(new CLabel(0, 0, 32, 32, "Size"));
 
 	m_hSizeSelector = AddControl(new CScrollSelector<int>());
@@ -155,8 +152,6 @@ void CAOPanel::CreateControls(CResource<CBaseControl> pThis)
 
 	m_hSave->SetClickedListener(this, SaveMapDialog);
 	m_hSave->SetVisible(false);
-
-	BaseClass::CreateControls(pThis);
 
 	Layout();
 }
@@ -447,18 +442,17 @@ void CAOPanel::FindBestRayFalloff()
 void CAOPanel::Open(CConversionScene* pScene)
 {
 	CControl<CAOPanel> hPanel = Get();
-	CResource<CBaseControl> pPanel = hPanel.GetHandle().lock();
 
 	// Get rid of the last one, in case we've changed the scene.
-	if (pPanel.get())
+	if (hPanel.Get())
 		hPanel->Close();
 
 #if 0
 	if (bColor)
-		s_pColorAOPanel = CControl<CAOPanel>(CreateControl(new CAOPanel(true, pScene))->GetHandle());
+		s_pColorAOPanel = new CAOPanel(true, pScene);
 	else
 #endif
-		s_pAOPanel = CreateControl(new CAOPanel(false, pScene));
+		s_hAOPanel = new CAOPanel(false, pScene);
 
 	hPanel = Get();
 
@@ -473,7 +467,7 @@ void CAOPanel::Open(CConversionScene* pScene)
 
 CControl<CAOPanel> CAOPanel::Get()
 {
-	glgui::CControl<CAOPanel> hControl(s_pAOPanel);
+	CControl<CAOPanel> hControl(s_hAOPanel);
 	if (hControl)
 		return hControl;
 
