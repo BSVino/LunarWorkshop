@@ -33,10 +33,10 @@ public:
 	EVENT_CALLBACK(COptionsButton, Open);
 	EVENT_CALLBACK(COptionsButton, Close);
 
-	COptionsPanel*		GetOptionsPanel() { return m_hPanel; }
+	COptionsPanel*		GetOptionsPanel() { return m_pPanel.DowncastStatic<COptionsPanel>(); }
 
 protected:
-	glgui::CControl<COptionsPanel>	m_hPanel;
+	glgui::CControlResource	m_pPanel;
 };
 
 class CComboGeneratorPanel : public glgui::CMovablePanel, public IWorkListener

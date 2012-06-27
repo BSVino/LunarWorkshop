@@ -15,8 +15,8 @@ using namespace glgui;
 COptionsButton::COptionsButton()
 	: CButton(0, 0, 100, 100, "", true)
 {
-	m_hPanel = new COptionsPanel(this);
-	m_hPanel->SetVisible(false);
+	m_pPanel = (new COptionsPanel(this))->shared_from_this();
+	m_pPanel->SetVisible(false);
 
 	SetClickedListener(this, Open);
 	SetUnclickedListener(this, Close);
@@ -24,22 +24,22 @@ COptionsButton::COptionsButton()
 
 void COptionsButton::OpenCallback(const tstring& sArgs)
 {
-	RootPanel()->AddControl(m_hPanel, true);
+	RootPanel()->AddControl(m_pPanel, true);
 
-	float flPanelWidth = m_hPanel->GetWidth();
+	float flPanelWidth = m_pPanel->GetWidth();
 	float flButtonWidth = GetWidth();
 	float x, y, w, h;
 	GetAbsDimensions(x, y, w, h);
-	m_hPanel->SetPos(x + flButtonWidth/2 - flPanelWidth/2, y+h+3);
+	m_pPanel->SetPos(x + flButtonWidth/2 - flPanelWidth/2, y+h+3);
 
-	m_hPanel->Layout();
-	m_hPanel->SetVisible(true);
+	m_pPanel->Layout();
+	m_pPanel->SetVisible(true);
 }
 
 void COptionsButton::CloseCallback(const tstring& sArgs)
 {
-	RootPanel()->RemoveControl(m_hPanel);
-	m_hPanel->SetVisible(false);
+	RootPanel()->RemoveControl(m_pPanel);
+	m_pPanel->SetVisible(false);
 
 	SetState(false, false);
 }

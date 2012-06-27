@@ -48,6 +48,13 @@ public:
 	class CParameter
 	{
 	public:
+		CParameter()
+		{
+			m_iValue = 0;
+			m_pShaderParameter = nullptr;
+		}
+
+	public:
 		tstring		m_sName;
 		union
 		{

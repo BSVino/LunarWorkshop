@@ -250,6 +250,7 @@ void CMaterial::SetParameter(const tstring& sParameterName, const CTextureHandle
 	}
 
 	CShader::CParameter* pShaderPar = &it->second;
+	oPar.m_pShaderParameter = pShaderPar;
 
 	for (size_t j = 0; j < pShaderPar->m_aActions.size(); j++)
 	{
