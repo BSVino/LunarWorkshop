@@ -12,6 +12,7 @@
 #include <glgui/glgui.h>
 #include <glgui/rootpanel.h>
 #include <glgui/label.h>
+#include <glgui/filedialog.h>
 #include <tinker/renderer/renderer.h>
 #include <datamanager/data.h>
 #include <textures/materiallibrary.h>
@@ -176,6 +177,8 @@ void CSMAKWindow::ReadFileIntoScene(const tchar* pszFile)
 	}
 
 	m_sFileLoaded = pszFile;
+
+	glgui::CFileDialog::SetDefaultDirectory(GetDirectory(m_sFileLoaded));
 
 	BeginProgress();
 	SetAction("Loading into video hardware", 0);

@@ -31,6 +31,7 @@ namespace glgui
 		static void					ShowOpenDialog(const tstring& sDirectory, const tstring& sExtension, IEventListener* pListener, IEventListener::Callback pfnCallback);
 		static void					ShowSaveDialog(const tstring& sDirectory, const tstring& sExtension, IEventListener* pListener, IEventListener::Callback pfnCallback);
 		static tstring				GetFile();
+		static void					SetDefaultDirectory(const tstring sDirectory) { s_sDirectory = sDirectory; }
 
 	protected:
 		CControl<CLabel>			m_hDirectoryLabel;
@@ -52,6 +53,7 @@ namespace glgui
 		IEventListener::Callback	m_pfnSelectCallback;
 
 		static CControl<CFileDialog>	s_hDialog;
+		static tstring				s_sDirectory;
 	};
 };
 

@@ -13,6 +13,7 @@
 using namespace glgui;
 
 CControl<CFileDialog> CFileDialog::s_hDialog;
+tstring CFileDialog::s_sDirectory;
 
 CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, bool bSave)
 	: CMovablePanel(bSave?"Save File...":"Open File...")
@@ -194,7 +195,7 @@ void CFileDialog::ShowOpenDialog(const tstring& sDirectory, const tstring& sExte
 	if (s_hDialog.Get())
 		s_hDialog->Close();
 
-	s_hDialog = new CFileDialog(sDirectory, sExtension, false);
+	s_hDialog = new CFileDialog(sDirectory.length()?sDirectory:s_sDirectory, sExtension, false);
 	s_hDialog->Layout();
 
 	CFileDialog* pDialog = s_hDialog.DowncastStatic<CFileDialog>();
@@ -207,7 +208,7 @@ void CFileDialog::ShowSaveDialog(const tstring& sDirectory, const tstring& sExte
 	if (s_hDialog.Get())
 		s_hDialog->Close();
 
-	s_hDialog = new CFileDialog(sDirectory, sExtension, true);
+	s_hDialog = new CFileDialog(sDirectory.length()?sDirectory:s_sDirectory, sExtension, true);
 	s_hDialog->Layout();
 
 	CFileDialog* pDialog = s_hDialog.DowncastStatic<CFileDialog>();
