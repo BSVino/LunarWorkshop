@@ -25,6 +25,7 @@ namespace glgui
 		EVENT_CALLBACK(CFileDialog, Select);
 		EVENT_CALLBACK(CFileDialog, Close);
 		EVENT_CALLBACK(CFileDialog, FileConfirmed);
+		EVENT_CALLBACK(CFileDialog, FileType);
 
 		void						FileConfirmed(const tstring& sFile);
 
@@ -45,8 +46,11 @@ namespace glgui
 		CControl<CButton>			m_hSelect;
 		CControl<CButton>			m_hCancel;
 
+		CControl<CMenu>				m_hFileTypes;
+
 		tstring						m_sDirectory;
 		tvector<tstring>			m_asExtensions;
+		size_t						m_iCurrentExtension;	// (m_iCurrentExtension - 1) is an index into m_asExtensions. 0 means all.
 		bool						m_bSave;
 
 		IEventListener*				m_pSelectListener;

@@ -1,6 +1,7 @@
 #include "menu.h"
 
 #include "rootpanel.h"
+#include "scrollbar.h"
 
 using namespace glgui;
 
@@ -105,9 +106,18 @@ void CMenu::Think()
 
 	for (size_t i = 0; i < m_hMenu->GetControls().size(); i++)
 	{
+		CBaseControl* pControl = m_hMenu->GetControls()[i];
+
+		if (pControl == m_hMenu->m_hVerticalScrollBar.Get())
+			continue;
+
+		if (pControl == m_hMenu->m_hHorizontalScrollBar.Get())
+			continue;
+
 		float cx, cy, cw, ch;
 		int mx, my;
-		m_hMenu->GetControls()[i]->GetAbsDimensions(cx, cy, cw, ch);
+
+		pControl->GetAbsDimensions(cx, cy, cw, ch);
 		CRootPanel::GetFullscreenMousePos(mx, my);
 		if (mx >= cx &&
 			my >= cy &&
@@ -124,10 +134,10 @@ void CMenu::Think()
 		m_MenuSelection = m_MenuSelectionGoal;
 	else
 	{
-		m_MenuSelection.x = Approach(m_MenuSelectionGoal.x, m_MenuSelection.x, (float)CRootPanel::Get()->GetFrameTime()*800);
-		m_MenuSelection.y = Approach(m_MenuSelectionGoal.y, m_MenuSelection.y, (float)CRootPanel::Get()->GetFrameTime()*800);
-		m_MenuSelection.w = Approach(m_MenuSelectionGoal.w, m_MenuSelection.w, (float)CRootPanel::Get()->GetFrameTime()*800);
-		m_MenuSelection.h = Approach(m_MenuSelectionGoal.h, m_MenuSelection.h, (float)CRootPanel::Get()->GetFrameTime()*800);
+		m_MenuSelection.x = Approach(m_MenuSelectionGoal.x, m_MenuSelection.x, (float)CRootPanel::Get()->GetFrameTime()*1800);
+		m_MenuSelection.y = Approach(m_MenuSelectionGoal.y, m_MenuSelection.y, (float)CRootPanel::Get()->GetFrameTime()*1800);
+		m_MenuSelection.w = Approach(m_MenuSelectionGoal.w, m_MenuSelection.w, (float)CRootPanel::Get()->GetFrameTime()*1800);
+		m_MenuSelection.h = Approach(m_MenuSelectionGoal.h, m_MenuSelection.h, (float)CRootPanel::Get()->GetFrameTime()*1800);
 	}
 
 	m_flMenuSelectionHighlight = Approach(m_flMenuSelectionHighlightGoal, m_flMenuSelectionHighlight, (float)CRootPanel::Get()->GetFrameTime()*3);
@@ -140,12 +150,23 @@ void CMenu::Layout()
 	float iHeight = 0;
 	float iWidth = 0;
 	tvector<CControlResource> apControls = m_hMenu->GetControls();
+	size_t iControls = 0;
 	for (size_t i = 0; i < apControls.size(); i++)
 	{
-		apControls[i]->SetPos(5, (float)(i*MENU_HEIGHT));
-		iHeight += MENU_HEIGHT;
-		if (apControls[i]->GetWidth()+10 > iWidth)
-			iWidth = apControls[i]->GetWidth()+10;
+		CBaseControl* pControl = apControls[i];
+
+		if (pControl == m_hMenu->m_hVerticalScrollBar.Get())
+			continue;
+
+		if (pControl == m_hMenu->m_hHorizontalScrollBar.Get())
+			continue;
+
+		pControl->SetPos(5, (float)(iControls*MENU_HEIGHT));
+		iHeight = pControl->GetBottom() + 5;
+		if (pControl->GetWidth()+10 > iWidth)
+			iWidth = pControl->GetWidth()+10;
+
+		iControls++;
 	}
 
 	float x, y;
@@ -153,10 +174,19 @@ void CMenu::Layout()
 
 	m_hMenu->SetSize(iWidth, iHeight);
 
-	if (y + GetHeight() + 5 + iHeight > RootPanel()->GetHeight())
+	if (y + GetHeight() + 5 + iHeight < RootPanel()->GetHeight())
+		m_hMenu->SetPos(x, y + 5 + GetHeight());
+	else if (y - 5 - iHeight > 0)
 		m_hMenu->SetPos(x, y - 5 - iHeight);
 	else
-		m_hMenu->SetPos(x, y + 5 + GetHeight());
+	{
+		m_hMenu->SetPos(x, 0);
+		if (iHeight > RootPanel()->GetHeight())
+		{
+			m_hMenu->SetVerticalScrollBarEnabled(true);
+			m_hMenu->SetHeight(RootPanel()->GetHeight());
+		}
+	}
 
 	m_hMenu->Layout();
 }
@@ -266,7 +296,21 @@ void CMenu::AddSubmenu(const tstring& sTitle, IEventListener* pListener, IEventL
 	if (pListener)
 		hMenu->SetMenuListener(pListener, pfnCallback);
 
-	hMenu->SetClickedListener(hMenu, Clicked, sprintf("%d " + sTitle, m_hMenu->GetControls().size()-1));
+	size_t iTotalControls = 0;
+	for (size_t i = 0; i < m_hMenu->GetControls().size(); i++)
+	{
+		CBaseControl* pControl = m_hMenu->GetControls()[i];
+
+		if (pControl == m_hMenu->m_hVerticalScrollBar.Get())
+			continue;
+
+		if (pControl == m_hMenu->m_hHorizontalScrollBar.Get())
+			continue;
+
+		iTotalControls++;
+	}
+
+	hMenu->SetClickedListener(hMenu, Clicked, sprintf("%d " + sTitle, iTotalControls-1));
 
 	m_ahEntries.push_back(hMenu);
 }
@@ -323,8 +367,16 @@ void CMenu::CSubmenuPanel::Think()
 	{
 		CBaseControl* pControl = m_apControls[i];
 
+		if (pControl == m_hVerticalScrollBar)
+			continue;
+
+		if (pControl == m_hHorizontalScrollBar)
+			continue;
+
 		float x, y;
 		pControl->GetPos(x, y);
+
+		y += m_rControlOffset.y;
 
 		if (y < m_flFakeHeight*GetHeight())
 			m_aflControlHighlightGoal[i] = 1.0f;

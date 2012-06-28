@@ -9,6 +9,7 @@
 #include "button.h"
 #include "tree.h"
 #include "rootpanel.h"
+#include "menu.h"
 
 using namespace glgui;
 
@@ -25,6 +26,7 @@ CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, b
 	SetBorder(BT_SOME);
 
 	strtok(sExtension, m_asExtensions, ";");
+	m_iCurrentExtension = 0;
 
 	m_hDirectoryLabel = AddControl(new CLabel(5, 5, 1, 1, "Folder:"));
 	m_hDirectory = AddControl(new CTextField());
@@ -47,6 +49,8 @@ CFileDialog::CFileDialog(const tstring& sDirectory, const tstring& sExtension, b
 	m_hSelect->SetEnabled(false);
 	m_hCancel = AddControl(new CButton(0, 0, 20, 20, "Cancel"));
 	m_hCancel->SetClickedListener(this, Close);
+
+	m_hFileTypes = AddControl(new CMenu("File type"));
 }
 
 CFileDialog::~CFileDialog()
@@ -89,13 +93,23 @@ void CFileDialog::Layout()
 			continue;
 		}
 
-		for (size_t j = 0; j < m_asExtensions.size(); j++)
+		if (m_iCurrentExtension)
 		{
-			if (!sFile.endswith(m_asExtensions[j]))
+			if (!sFile.endswith(m_asExtensions[m_iCurrentExtension-1]))
 				continue;
 
 			m_hFileList->AddNode(sFile);
-			break;
+		}
+		else
+		{
+			for (size_t j = 0; j < m_asExtensions.size(); j++)
+			{
+				if (!sFile.endswith(m_asExtensions[j]))
+					continue;
+
+				m_hFileList->AddNode(sFile);
+				break;
+			}
 		}
 	}
 
@@ -106,8 +120,21 @@ void CFileDialog::Layout()
 	m_hCancel->SetSize(60, m_hNewFile->GetHeight());
 	m_hCancel->SetPos(GetWidth() - 65, GetHeight() - m_hNewFile->GetHeight() - 5);
 
+	m_hFileTypes->ClearSubmenus();
+	m_hFileTypes->AddSubmenu("All files", this, FileType);
+	for (size_t i = 0; i < m_asExtensions.size(); i++)
+		m_hFileTypes->AddSubmenu("*" + m_asExtensions[i], this, FileType);
+
+	if (m_iCurrentExtension == 0)
+		m_hFileTypes->SetText("File type");
+	else
+		m_hFileTypes->SetText("*" + m_asExtensions[m_iCurrentExtension-1]);
+
+	m_hFileTypes->SetSize(60, m_hNewFile->GetHeight());
+	m_hFileTypes->SetPos(m_hSelect->GetLeft() - 5 - m_hFileTypes->GetWidth(), GetHeight() - m_hNewFile->GetHeight() - 5);
+
 	m_hNewFile->SetPos(5, GetHeight() - m_hNewFile->GetHeight() - 5);
-	m_hNewFile->SetSize(GetWidth() - 140, m_hNewFile->GetHeight());
+	m_hNewFile->SetRight(m_hFileTypes->GetLeft() - 5);
 
 	BaseClass::Layout();
 }
@@ -182,6 +209,17 @@ void CFileDialog::FileConfirmedCallback(const tstring& sArgs)
 	SelectCallback(sArgs);
 }
 
+void CFileDialog::FileTypeCallback(const tstring& sArgs)
+{
+	tvector<tstring> asTokens;
+	strtok(sArgs, asTokens);
+
+	m_iCurrentExtension = stoi(asTokens[0]);
+	m_hFileTypes->Pop(true, true);
+
+	Layout();
+}
+
 void CFileDialog::FileConfirmed(const tstring& sFile)
 {
 	SetVisible(false);
@@ -227,17 +265,23 @@ tstring CFileDialog::GetFile()
 	{
 		tstring sName = pDialog->m_hNewFile->GetText();
 
-		for (size_t j = 0; j < pDialog->m_asExtensions.size(); j++)
+		if (pDialog->m_iCurrentExtension)
 		{
-			if (sName.length() <= pDialog->m_asExtensions[j].length())
-				return FindAbsolutePath(pDialog->m_sDirectory + DIR_SEP + pDialog->m_hNewFile->GetText() + pDialog->m_asExtensions[j]);
-
-			tstring sNameExtension = sName.substr(sName.length() - pDialog->m_asExtensions[j].length());
-			if (sNameExtension == pDialog->m_asExtensions[j])
+			if (sName.endswith(pDialog->m_asExtensions[pDialog->m_iCurrentExtension-1]))
 				return FindAbsolutePath(pDialog->m_sDirectory + DIR_SEP + pDialog->m_hNewFile->GetText());
+			else
+				return FindAbsolutePath(pDialog->m_sDirectory + DIR_SEP + pDialog->m_hNewFile->GetText() + pDialog->m_asExtensions[pDialog->m_iCurrentExtension-1]);
 		}
+		else
+		{
+			for (size_t j = 0; j < pDialog->m_asExtensions.size(); j++)
+			{
+				if (sName.endswith(pDialog->m_asExtensions[j]))
+					return FindAbsolutePath(pDialog->m_sDirectory + DIR_SEP + pDialog->m_hNewFile->GetText());
+			}
 
-		return FindAbsolutePath(pDialog->m_sDirectory + DIR_SEP + pDialog->m_hNewFile->GetText() + pDialog->m_asExtensions[0]);
+			return FindAbsolutePath(pDialog->m_sDirectory + DIR_SEP + pDialog->m_hNewFile->GetText() + pDialog->m_asExtensions[0]);
+		}
 	}
 
 	if (!pDialog->m_hFileList->GetSelectedNode())
