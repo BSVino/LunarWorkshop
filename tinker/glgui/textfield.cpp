@@ -6,6 +6,7 @@
 #include <files.h>
 
 #include <tinker/keys.h>
+#include <tinker/application.h>
 #include <renderer/shaders.h>
 #include <renderer/renderingcontext.h>
 
@@ -27,6 +28,7 @@ CTextField::CTextField()
 	SetSize(GetWidth(), GetTextHeight() + 8.0f);
 
 	m_iCursor = 0;
+	m_iSelection = m_iCursor;
 
 	m_flBlinkTime = 0;
 
@@ -48,9 +50,21 @@ void CTextField::Paint(float x, float y, float w, float h)
 
 	glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 50), 3);
 
-	float flCursor = CLabel::GetFont("sans-serif", m_iFontFaceSize)->Advance(m_sText.c_str(), m_iCursor);
-	if (HasFocus() && (fmod(CRootPanel::Get()->GetTime() - m_flBlinkTime, 1) < 0.5f))
-		glgui::CRootPanel::PaintRect(x + 4 + flCursor + m_flRenderOffset, y+3, 1, h-6, Color(200, 200, 200, 255), 1);
+	if (HasFocus())
+	{
+		float flCursor = CLabel::GetFont("sans-serif", m_iFontFaceSize)->Advance(m_sText.c_str(), m_iCursor);
+
+		if (m_iCursor != m_iSelection)
+		{
+			float flSelection = CLabel::GetFont("sans-serif", m_iFontFaceSize)->Advance(m_sText.c_str(), m_iSelection);
+			float flStart = std::min(flCursor, flSelection);
+			float flEnd = std::max(flCursor, flSelection);
+			glgui::CRootPanel::PaintRect(x + 4 + flStart + m_flRenderOffset, y+3, flEnd-flStart, h-6, Color(50, 50, 200, 155), 1);
+		}
+
+		if (fmod(CRootPanel::Get()->GetTime() - m_flBlinkTime, 1) < 0.5f)
+			glgui::CRootPanel::PaintRect(x + 4 + flCursor + m_flRenderOffset, y+3, 1, h-6, Color(200, 200, 200, 255), 1);
+	}
 
 	Color FGColor = m_FGColor;
 	if (!m_bEnabled)
@@ -172,7 +186,7 @@ void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float
 	r2.x += 4;
 	r2.y += 4;
 	r2.w -= 8;
-	r2.h -= 8;
+	r2.h -= 4;
 
 	if (r.x < 0)
 	{
@@ -211,13 +225,16 @@ bool CTextField::SetFocus(bool bFocus)
 	if (!TakesFocus())
 		return false;
 
+	if (HasFocus())
+		return true;
+
 	m_iAutoComplete = -1;
 
 	if (bFocus)
 	{
 		m_flBlinkTime = CRootPanel::Get()->GetTime();
 
-		m_iCursor = m_sText.length();
+		m_iSelection = m_iCursor = m_sText.length();
 
 		return true;
 	}
@@ -242,19 +259,63 @@ bool CTextField::MousePressed(int iButton, int mx, int my)
 		if (flCursor < flText)
 		{
 			m_iCursor = i-1;
+
+			if (!Application()->IsShiftDown())
+				m_iSelection = m_iCursor;
+
 			return true;
 		}
 	}
 
 	m_iCursor = m_sText.length();
 
+	if (!Application()->IsShiftDown())
+		m_iSelection = m_iCursor;
+
 	return true;
+}
+
+void CTextField::CursorMoved(int x, int y)
+{
+	if (!Application()->IsMouseLeftDown())
+		return;
+
+	if (!TakesFocus())
+		return;
+
+	if (!HasFocus())
+		return;
+
+	float cx, cy;
+	GetAbsPos(cx, cy);
+
+	float flCursor = (float)(x-cx);
+	for (size_t i = 1; i < m_sText.length(); i++)
+	{
+		float flText = CLabel::GetFont("sans-serif", m_iFontFaceSize)->Advance(convertstring<tchar, FTGLchar>(m_sText).c_str(), i);
+		if (flCursor < flText)
+		{
+			m_iCursor = i-1;
+
+			return;
+		}
+	}
+
+	m_iCursor = m_sText.length();
 }
 
 bool CTextField::CharPressed(int iKey)
 {
 	if (HasFocus())
 	{
+		if (m_iCursor != m_iSelection)
+		{
+			size_t iStart = std::min(m_iCursor, m_iSelection);
+			size_t iEnd = std::max(m_iCursor, m_iSelection);
+			m_sText.erase(iStart, iEnd-iStart);
+			m_iCursor = m_iSelection = iStart;
+		}
+
 		if (iKey <= TINKER_KEY_FIRST)
 		{
 			m_sText.insert(m_iCursor++, 1, iKey);
@@ -264,6 +325,8 @@ bool CTextField::CharPressed(int iKey)
 		m_flBlinkTime = CRootPanel::Get()->GetTime();
 
 		FindRenderOffset();
+
+		m_iSelection = m_iCursor;
 
 		return true;
 	}
@@ -307,26 +370,64 @@ bool CTextField::KeyPressed(int iKey, bool bCtrlDown)
 		CRootPanel::Get()->SetFocus(CControlHandle());
 	else if (iKey == TINKER_KEY_LEFT)
 	{
-		if (m_iCursor > 0)
+		if (bCtrlDown)
+		{
+			if (m_iCursor)
+			{
+				m_iCursor -= 2;
+				while (m_iCursor > 0 && m_sText[m_iCursor] != ' ')
+					m_iCursor--;
+				if (m_sText[m_iCursor] == ' ')
+					m_iCursor++;
+			}
+		}
+		else if (m_iCursor > 0)
 			m_iCursor--;
+
+		if (!Application()->IsShiftDown())
+			m_iSelection = m_iCursor;
 	}
 	else if (iKey == TINKER_KEY_RIGHT)
 	{
-		if (m_iCursor < m_sText.length())
+		if (bCtrlDown)
+		{
 			m_iCursor++;
+			while (m_iCursor < m_sText.length() && m_sText[m_iCursor] != ' ')
+				m_iCursor++;
+		}
+		else if (m_iCursor < m_sText.length())
+			m_iCursor++;
+
+		if (!Application()->IsShiftDown())
+			m_iSelection = m_iCursor;
 	}
 	else if (iKey == TINKER_KEY_BACKSPACE)
 	{
-		if (m_iCursor > 0)
+		if (m_iCursor != m_iSelection)
+		{
+			size_t iStart = std::min(m_iCursor, m_iSelection);
+			size_t iEnd = std::max(m_iCursor, m_iSelection);
+			m_sText.erase(iStart, iEnd-iStart);
+			m_iCursor = m_iSelection = iStart;
+		}
+		else if (m_iCursor > 0)
 		{
 			m_sText.erase(m_iCursor-1, 1);
 			m_iCursor--;
+			m_iSelection = m_iCursor;
 			UpdateContentsChangedListener();
 		}
 	}
 	else if (iKey == TINKER_KEY_DEL)
 	{
-		if (m_iCursor < m_sText.length())
+		if (m_iCursor != m_iSelection)
+		{
+			size_t iStart = std::min(m_iCursor, m_iSelection);
+			size_t iEnd = std::max(m_iCursor, m_iSelection);
+			m_sText.erase(iStart, iEnd-iStart);
+			m_iCursor = m_iSelection = iStart;
+		}
+		else if (m_iCursor < m_sText.length())
 		{
 			m_sText.erase(m_iCursor, 1);
 			UpdateContentsChangedListener();
@@ -335,16 +436,37 @@ bool CTextField::KeyPressed(int iKey, bool bCtrlDown)
 	else if (iKey == TINKER_KEY_HOME)
 	{
 		m_iCursor = 0;
+
+		if (!Application()->IsShiftDown())
+			m_iSelection = m_iCursor;
 	}
 	else if (iKey == TINKER_KEY_END)
 	{
 		m_iCursor = m_sText.length();
+
+		if (!Application()->IsShiftDown())
+			m_iSelection = m_iCursor;
 	}
-	else if ((iKey == 'v' || iKey == 'V') && bCtrlDown)
+	else if ((iKey == 'v' || iKey == 'V' || iKey == '.') && bCtrlDown)	// '.' because dvorak screws with my hotkeys
 	{
+		if (m_iCursor != m_iSelection)
+		{
+			size_t iStart = std::min(m_iCursor, m_iSelection);
+			size_t iEnd = std::max(m_iCursor, m_iSelection);
+			m_sText.erase(iStart, iEnd-iStart);
+			m_iCursor = m_iSelection = iStart;
+		}
+
 		tstring sClipboard = GetClipboard();
 		m_sText.insert(m_sText.begin()+m_iCursor, sClipboard.begin(), sClipboard.end());
-		m_iCursor += sClipboard.length();
+		m_iSelection = m_iCursor = m_iCursor + sClipboard.length();
+		UpdateContentsChangedListener();
+	}
+	else if ((iKey == 'a' || iKey == 'A') && bCtrlDown)
+	{
+		m_iSelection = 0;
+		m_iCursor = m_sText.length();
+
 		UpdateContentsChangedListener();
 	}
 	else if (m_sText.length() && m_asAutoCompleteCommands.size() && (iKey == TINKER_KEY_TAB || iKey == TINKER_KEY_DOWN))
@@ -409,6 +531,9 @@ void CTextField::SetText(const tstring& sText)
 
 	if (m_iCursor > m_sText.length())
 		m_iCursor = m_sText.length();
+
+	if (m_iSelection > m_sText.length())
+		m_iSelection = m_sText.length();
 }
 
 void CTextField::AppendText(const tchar* pszText)

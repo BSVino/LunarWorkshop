@@ -27,6 +27,7 @@ namespace glgui
 		virtual bool	SetFocus(bool bFocus);
 
 		virtual bool	MousePressed(int iButton, int mx, int my);
+		virtual void	CursorMoved(int x, int y);
 		virtual bool	CharPressed(int iKey);
 		virtual bool	KeyPressed(int iKey, bool bCtrlDown = false);
 
@@ -69,6 +70,7 @@ namespace glgui
 		int				m_iFontFaceSize;
 
 		size_t			m_iCursor;
+		size_t			m_iSelection;
 
 		float			m_flRenderOffset;
 
