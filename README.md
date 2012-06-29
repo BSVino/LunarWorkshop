@@ -8,36 +8,36 @@ Overview
 
 You'll find these directories:
 
-```*common*``` - These files are general utility files. tstring.h is important - it defines a tstring which is the string format you should use for applications based on Tinker. Avoid using windows.h or other platform-specific libraries, use tinker_platform.h from this directory instead.
+*common* - These files are general utility files. tstring.h is important - it defines a tstring which is the string format you should use for applications based on Tinker. Avoid using windows.h or other platform-specific libraries, use tinker_platform.h from this directory instead.
 
-```*datamanager*``` - Sometimes data needs to be serialized to and from the hard drive. data.h contains a CData class that is a generic data container, and dataserializer.h can serialize any CData to and from a stream. Data is stored in a simple format that looks like this:
+*datamanager* - Sometimes data needs to be serialized to and from the hard drive. data.h contains a CData class that is a generic data container, and dataserializer.h can serialize any CData to and from a stream. Data is stored in a simple format that looks like this:
 
-```key: value
-{
-	// Sub-datas
 	key: value
-	key2: value
-
-	// Values are optional
-	key3
 	{
-		subdata
+		// Sub-datas
+		key: value
+		key2: value
+
+		// Values are optional
+		key3
+		{
+			subdata
+		}
 	}
-}```
 
-```*tinker*``` - Application classes. The creator of a game project is responsible for the main() function of his application. Subclass the CApplication class (or CGameWindow if creating a game) and call OpenWindow() and then Run() to start your application.
+*tinker* - Application classes. The creator of a game project is responsible for the main() function of his application. Subclass the CApplication class (or CGameWindow if creating a game) and call OpenWindow() and then Run() to start your application.
 
-```*tinker/glgui*``` - This contains files for a GUI that renders directly to OpenGL. Tinker will automatically create the root panel for this GUI. To create a control use this syntax:
+*tinker/glgui* - This contains files for a GUI that renders directly to OpenGL. Tinker will automatically create the root panel for this GUI. To create a control use this syntax:
 
-```glgui::CControl<CButton> hButton = AddControl(new CButton());```
+	glgui::CControl<CButton> hButton = AddControl(new CButton());
 
 Controls are handled by smart pointers and will de-allocate themselves once they're removed from their parent panel, or the parent panel is destroyed. Don't free a control's memory after it's passed into AddControl.
 
 The Layout() function is responsible for laying out items on a screen. Mostly it should be used to set positions and sizes for child controls or itself. Layout is usually called when a panel is created, resized or changed somehow.
 
-```*modelconverter*``` - Can save and load different model formats
+*modelconverter* - Can save and load different model formats
 
-```*raytracer*``` - A raytracer
+*raytracer* - A raytracer
 
 Compiling
 ---------
@@ -57,12 +57,12 @@ Many of these packages require special versions with modifications so that they 
 
 *Compiling on Linux* - See the file compiling.linux for a shell script that can be run to install the dependencies you'll need to build SMAK. Go to your source directory and type this:
 
-```./compiling.linux```
+	./compiling.linux
 
 and then wait a while. Then type
 
-```cmake .
-make```
+	cmake .
+	make
 
 SMAK will be built and set up.
 
