@@ -1,3 +1,18 @@
+/*
+SMAK - The Super Model Army Knife
+Copyright (C) 2012, Lunar Workshop, Inc
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+*/
+
 #include "smakwindow_ui.h"
 
 #include <maths.h>
@@ -390,14 +405,62 @@ void CAboutPanel::Layout()
 		SetPos(pw/2 - GetWidth()/2, ph/2 - GetHeight()/2);
 	}
 
+	SetVerticalScrollBarEnabled(true);
+
 	m_hInfo->SetAlign(CLabel::TA_TOPCENTER);
-	m_hInfo->SetSize(GetWidth(), GetHeight());
-	m_hInfo->SetPos(0, 30);
+	m_hInfo->SetSize(GetWidth(), GetHeight()-10);
+	m_hInfo->SetPos(5, 30);
 
 	m_hInfo->SetText("SMAK - The Super Model Army Knife\n");
 	m_hInfo->AppendText("Version " SMAK_VERSION "\n");
-	m_hInfo->AppendText("Copyright © 2012, Jorge Rodriguez <jorge@lunarworkshop.com>\n");
-	m_hInfo->AppendText(" \n");
+	m_hInfo->AppendText("Written by Jorge Rodriguez <jorge@lunarworkshop.com>\n");
+	m_hInfo->AppendText("\n");
+	m_hInfo->AppendText("Copyright © 2012, Lunar Workshop, Inc\n");
+	m_hInfo->AppendText("\n");
+	m_hInfo->AppendText("This program is free software: you can redistribute it and/or modify\n");
+	m_hInfo->AppendText("it under the terms of the GNU General Public License as published by\n");
+	m_hInfo->AppendText("the Free Software Foundation, either version 3 of the License, or\n");
+	m_hInfo->AppendText("(at your option) any later version.\n");
+	m_hInfo->AppendText("\n");
+	m_hInfo->AppendText("This program is distributed in the hope that it will be useful,\n");
+	m_hInfo->AppendText("but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
+	m_hInfo->AppendText("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
+	m_hInfo->AppendText("GNU General Public License for more details.\n");
+	m_hInfo->AppendText("\n");
+	m_hInfo->AppendText("\n");
+	m_hInfo->AppendText("\n");
+	m_hInfo->AppendText("Lunar Workshop's Tinker Application Engine\n");
+	m_hInfo->AppendText("\n");
+	m_hInfo->AppendText("Copyright © 2012, Lunar Workshop, Inc\n");
+	m_hInfo->AppendText("\n");
+	m_hInfo->AppendText("Redistribution and use in source and binary forms, with or without\n");
+	m_hInfo->AppendText("modification, are permitted provided that the following conditions are met:\n");
+	m_hInfo->AppendText("1. Redistributions of source code must retain the above copyright\n");
+	m_hInfo->AppendText("   notice, this list of conditions and the following disclaimer.\n");
+	m_hInfo->AppendText("2. Redistributions in binary form must reproduce the above copyright\n");
+	m_hInfo->AppendText("   notice, this list of conditions and the following disclaimer in the\n");
+	m_hInfo->AppendText("   documentation and/or other materials provided with the distribution.\n");
+	m_hInfo->AppendText("3. All advertising materials mentioning features or use of this software\n");
+	m_hInfo->AppendText("   must display the following acknowledgement:\n");
+	m_hInfo->AppendText("   This product includes software developed by Lunar Workshop, Inc.\n");
+	m_hInfo->AppendText("4. Neither the name of the Lunar Workshop nor the\n");
+	m_hInfo->AppendText("   names of its contributors may be used to endorse or promote products\n");
+	m_hInfo->AppendText("   derived from this software without specific prior written permission.\n");
+	m_hInfo->AppendText("\n");
+	m_hInfo->AppendText("THIS SOFTWARE IS PROVIDED BY LUNAR WORKSHOP INC ''AS IS'' AND ANY\n");
+	m_hInfo->AppendText("EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\n");
+	m_hInfo->AppendText("WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\n");
+	m_hInfo->AppendText("DISCLAIMED. IN NO EVENT SHALL LUNAR WORKSHOP BE LIABLE FOR ANY\n");
+	m_hInfo->AppendText("DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\n");
+	m_hInfo->AppendText("(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\n");
+	m_hInfo->AppendText("LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND\n");
+	m_hInfo->AppendText("ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n");
+	m_hInfo->AppendText("(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\n");
+	m_hInfo->AppendText("SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n");
+	m_hInfo->AppendText("\n");
+	m_hInfo->AppendText("\n");
+	m_hInfo->AppendText("\n");
+	m_hInfo->AppendText("Third Party Libraries:\n");
 #ifdef WITH_ASSIMP
 	m_hInfo->AppendText("AssImp copyright © 2012, Alexander Gessler\n");
 #endif
@@ -408,11 +471,18 @@ void CAboutPanel::Layout()
 //	m_hInfo->AppendText("DevIL copyright © 2001-2009, Denton Woods\n");	// I might go back to it in the future, I'll keep this here for now
 	m_hInfo->AppendText("FTGL copyright © 2001-2003, Henry Maddocks\n");
 	m_hInfo->AppendText("GLFW copyright © 2002-2007, Camilla Berglund\n");
+#ifdef _WIN32
 	m_hInfo->AppendText("pthreads-win32 copyright © 2001, 2006 Ross P. Johnson\n");
+#endif
 	m_hInfo->AppendText("GL3W (public domain) created by Slavomir Kaslev and others\n");
 	m_hInfo->AppendText("Freetype copyright © 1996-2002, 2006 by David Turner, Robert Wilhelm, and Werner Lemberg\n");
 
+	m_hInfo->SetSize(GetWidth()-10, 0);
+	m_hInfo->SetHeight(m_hInfo->GetTextHeight()+4);
+
 	CMovablePanel::Layout();
+
+	SetScissoring(true);
 }
 
 void CAboutPanel::Paint(float x, float y, float w, float h)

@@ -1,16 +1,35 @@
+/*
+Copyright (c) 2012, Lunar Workshop, Inc.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+3. All advertising materials mentioning features or use of this software must display the following acknowledgement:
+   This product includes software developed by Lunar Workshop, Inc.
+4. Neither the name of the Lunar Workshop nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY LUNAR WORKSHOP INC ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL LUNAR WORKSHOP BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #include "movablepanel.h"
 
 #include <maths.h>
 #include <strutils.h>
 #include <tinker_platform.h>
 #include <tinker/keys.h>
-#include <glgui/menu.h>
-#include <glgui/rootpanel.h>
-#include <glgui/picturebutton.h>
-#include <glgui/checkbox.h>
-#include <glgui/tree.h>
-#include <glgui/textfield.h>
-#include <glgui/filedialog.h>
+
+#include "menu.h"
+#include "rootpanel.h"
+#include "picturebutton.h"
+#include "checkbox.h"
+#include "tree.h"
+#include "textfield.h"
+#include "filedialog.h"
+#include "scrollbar.h"
 
 using namespace glgui;
 
@@ -84,6 +103,12 @@ void CMovablePanel::Layout()
 		m_hMinimizeButton->SetDimensions(GetWidth() - HEADER_HEIGHT/2 - flButtonSize/2, HEADER_HEIGHT/2 - flButtonSize/2, flButtonSize, flButtonSize);
 
 	CPanel::Layout();
+
+	if (m_hVerticalScrollBar.Get())
+	{
+		m_hVerticalScrollBar->SetSize(HANDLE_SIZE, GetHeight() - HEADER_HEIGHT);
+		m_hVerticalScrollBar->SetPos(GetWidth()-HANDLE_SIZE, HEADER_HEIGHT);
+	}
 
 	m_flNonMinimizedHeight = GetHeight();
 }
@@ -225,4 +250,12 @@ void CMovablePanel::Close()
 {
 	SetVisible(false);
 	RootPanel()->RemoveControl(this);
+}
+
+bool CMovablePanel::ShouldControlOffset(const CBaseControl* pControl) const
+{
+	if (pControl == m_hName || pControl == m_hCloseButton || pControl == m_hMinimizeButton)
+		return false;
+
+	return BaseClass::ShouldControlOffset(pControl);
 }
