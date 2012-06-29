@@ -48,11 +48,9 @@ void CSMAKWindow::InitUI()
 	pView->AddSubmenu("Toggle texture", this, TextureToggle);
 	pView->AddSubmenu("Toggle normal map", this, NormalToggle);
 	pView->AddSubmenu("Toggle AO map", this, AOToggle);
-	pView->AddSubmenu("Toggle color AO map", this, ColorAOToggle);
 
 	pTools->AddSubmenu("Generate all maps", this, GenerateCombo);
-	pTools->AddSubmenu("Generate AO map", this, GenerateAO);
-	pTools->AddSubmenu("Generate color AO map", this, GenerateColorAO);
+	pTools->AddSubmenu("Generate ambient occlusion map", this, GenerateAO);
 	pTools->AddSubmenu("Generate normal from texture", this, GenerateNormal);
 
 	pHelp->AddSubmenu("Help", this, Help);
@@ -75,7 +73,6 @@ void CSMAKWindow::InitUI()
 	m_hTexture = hBottomButtons->AddButton(new CPictureButton("Tex", GetSMAKRenderer()->GetTextureTexture(), true), "Toggle Texture", false, this, Texture);
 	m_hNormal = hBottomButtons->AddButton(new CPictureButton("Nrml", GetSMAKRenderer()->GetNormalTexture(), true), "Toggle Normal Map", false, this, Normal);
 	m_hAO = hBottomButtons->AddButton(new CPictureButton("AO", GetSMAKRenderer()->GetAOTexture(), true), "Toggle AO Map", false, this, AO);
-	m_hColorAO = hBottomButtons->AddButton(new CPictureButton("C AO", GetSMAKRenderer()->GetColorAOTexture(), true), "Toggle Color AO", false, this, ColorAO);
 
 	CRootPanel::Get()->AddControl(pBottomButtons);
 

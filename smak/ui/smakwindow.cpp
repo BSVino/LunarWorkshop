@@ -94,7 +94,6 @@ void CSMAKWindow::OpenWindow()
 	SetDisplayLight(true);
 	SetDisplayTexture(true);
 	SetDisplayAO(false);
-	SetDisplayColorAO(false);
 
 	CSceneTreePanel::Get()->UpdateTree();
 
