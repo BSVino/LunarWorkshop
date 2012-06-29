@@ -3,6 +3,23 @@ SMAK - The Super Model Army Knife
 
 This is the source code for [SMAK](http://getsmak.net), a tool that generates maps for 3D artists.
 
+Goal
+----
+
+I started writing SMAK because I couldn't find any other ambient occlusion generator with a reasonable combination of these characteristics:
+
+* Price
+* Speed of generation
+* Ease of use
+
+So I wrote SMAK. For a while I sold it for what I thought was reasonable, but now I would rather let everyone use it and contribute to it, and so I'm releasing it under an open source license. I hope that in the future the project will continue to:
+
+* Be incredibly easy to use
+* Be pretty, let the user preview while they generate
+* Gain more features and types of maps it can generate
+
+If you want to contribute in any way, I would love that! Fork the project and send me pull requests, I'd be happy to include them.
+
 Overview
 --------
 
@@ -108,9 +125,9 @@ Tinker uses CMake to generate its project files. Download and install the latest
 Tinker
 ------
 
-Tinker is Lunar Workshop's internal game engine. Only the application engine part is available in this release of SMAK.
+SMAK is built on top of Tinker, Lunar Workshop's internal game engine. Only the application engine part is available in this release of SMAK.
 
-The source code is fully featured with a shader and material system, and other quirks like a console and user interface. It's well profiled and runs on OpenGL 3.0.
+The source code is fully featured with a shader and material system, and other cool stuff like a console and GUI. It's well profiled and runs on OpenGL 3.0.
 
 Licenses
 --------
