@@ -86,17 +86,7 @@ void CRenderer::Initialize()
 	LoadShaders();
 	CShaderLibrary::CompileShaders(m_iScreenSamples);
 
-	m_oSceneBuffer = CreateFrameBuffer(m_iWidth, m_iHeight, (fb_options_e)(FB_TEXTURE|FB_DEPTH|FB_MULTISAMPLE));
-
-	size_t iWidth = m_oSceneBuffer.m_iWidth;
-	size_t iHeight = m_oSceneBuffer.m_iHeight;
-	for (size_t i = 0; i < BLOOM_FILTERS; i++)
-	{
-		m_oBloom1Buffers[i] = CreateFrameBuffer(iWidth, iHeight, (fb_options_e)(FB_TEXTURE|FB_LINEAR));
-		m_oBloom2Buffers[i] = CreateFrameBuffer(iWidth, iHeight, (fb_options_e)(FB_TEXTURE));
-		iWidth /= 2;
-		iHeight /= 2;
-	}
+	WindowResize(m_iWidth, m_iHeight);
 
 	if (!CShaderLibrary::IsCompiled())
 	{
@@ -118,6 +108,24 @@ void CRenderer::LoadShaders()
 			continue;
 
 		CShaderLibrary::AddShader("shaders/" + sShader);
+	}
+}
+
+void CRenderer::WindowResize(int w, int h)
+{
+	m_oSceneBuffer.Destroy();
+	m_oSceneBuffer = CreateFrameBuffer(w, h, (fb_options_e)(FB_TEXTURE|FB_DEPTH|FB_MULTISAMPLE));
+
+	size_t iWidth = m_oSceneBuffer.m_iWidth;
+	size_t iHeight = m_oSceneBuffer.m_iHeight;
+	for (size_t i = 0; i < BLOOM_FILTERS; i++)
+	{
+		m_oBloom1Buffers[i].Destroy();
+		m_oBloom2Buffers[i].Destroy();
+		m_oBloom1Buffers[i] = CreateFrameBuffer(iWidth, iHeight, (fb_options_e)(FB_TEXTURE|FB_LINEAR));
+		m_oBloom2Buffers[i] = CreateFrameBuffer(iWidth, iHeight, (fb_options_e)(FB_TEXTURE));
+		iWidth /= 2;
+		iHeight /= 2;
 	}
 }
 

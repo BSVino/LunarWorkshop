@@ -78,6 +78,8 @@ public:
 	virtual void	Initialize();
 	void			LoadShaders();
 
+	virtual void	WindowResize(int w, int h);
+
 	CFrameBuffer	CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_options_e eOptions);
 	void			DestroyFrameBuffer(CFrameBuffer* pBuffer);
 
