@@ -609,14 +609,17 @@ void CRenderingContext::SetUniform(const char* pszName, size_t iSize, const floa
 	glUniform1fv(iUniform, iSize, aflValues);
 }
 
-void CRenderingContext::BindTexture(size_t iTexture, int iChannel)
+void CRenderingContext::BindTexture(size_t iTexture, int iChannel, bool bMultisample)
 {
 	// Not tested since the move to a stack
 	TAssert(iChannel == 0);
 
 	glActiveTexture(GL_TEXTURE0+iChannel);
 
-	glBindTexture(GL_TEXTURE_2D, (GLuint)iTexture);
+	if (bMultisample)
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, (GLuint)iTexture);
+	else
+		glBindTexture(GL_TEXTURE_2D, (GLuint)iTexture);
 }
 
 void CRenderingContext::BindBufferTexture(const CFrameBuffer& oBuffer, int iChannel)

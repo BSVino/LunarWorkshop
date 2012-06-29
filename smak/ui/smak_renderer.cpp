@@ -600,7 +600,7 @@ void CSMAKRenderer::RenderLightSource()
 
 		if (flDot > 0.2)
 		{
-			float flScale = RemapVal(flDot, 0.2f, 1.0f, 0.0f, 1.0f);
+			float flScale = RemapVal(flDot, 0.2f, 1.0f, 0.0f, 0.5f);
 			c.SetUniform("flAlpha", flScale);
 
 			flScale *= 10;
@@ -625,7 +625,7 @@ void CSMAKRenderer::RenderLightSource()
 		vecLightRight = mLight.GetRightVector();
 		vecLightUp = mLight.GetUpVector();
 
-		flDot = vecCameraDirection.Dot(vecLightRight);
+		flDot = vecCameraDirection.Dot(vecLightRight) * 0.5f;
 		c.SetUniform("flAlpha", (float)fabs(flDot));
 
 		c.BeginRenderTriFan();
@@ -639,7 +639,7 @@ void CSMAKRenderer::RenderLightSource()
 			c.Vertex(Vector(0, -5, 0));
 		c.EndRender();
 
-		flDot = vecCameraDirection.Dot(vecLightUp);
+		flDot = vecCameraDirection.Dot(vecLightUp) * 0.5f;
 		c.SetUniform("flAlpha", (float)fabs(flDot));
 
 		c.BeginRenderTriFan();

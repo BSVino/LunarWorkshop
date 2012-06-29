@@ -104,9 +104,8 @@ public:
 	void			RenderBloomPass(CFrameBuffer* apSources, CFrameBuffer* apTargets, bool bHorizontal);
 
 	void			RenderFrameBufferFullscreen(CFrameBuffer* pBuffer);
-	void			RenderFrameBufferToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestination);
 	void			RenderRBFullscreen(CFrameBuffer* pSource);
-	void			RenderRBToBuffer(CFrameBuffer* pSource, CFrameBuffer* pBuffer);
+	void			RenderBufferToBuffer(CFrameBuffer* pSource, CFrameBuffer* pBuffer);
 	void			RenderMapFullscreen(size_t iMap, bool bMapIsMultisample = false);
 	void			RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer, bool bMapIsMultisample = false);
 
@@ -198,6 +197,7 @@ protected:
 	bool			m_bDrawBackground;
 
 	CFrameBuffer	m_oSceneBuffer;
+	CFrameBuffer	m_oResolvedSceneBuffer;
 
 	CFrameBuffer	m_oBloom1Buffers[BLOOM_FILTERS];
 	CFrameBuffer	m_oBloom2Buffers[BLOOM_FILTERS];

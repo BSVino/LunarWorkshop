@@ -112,7 +112,7 @@ public:
 	void					SetUniform(const char* pszName, const ::Color& vecValue);
 	void					SetUniform(const char* pszName, const Matrix4x4& mValue);
 	void					SetUniform(const char* pszName, size_t iSize, const float* aflValues);
-	void					BindTexture(size_t iTexture, int iChannel = 0);
+	void					BindTexture(size_t iTexture, int iChannel = 0, bool bMultisample = false);
 	void					BindBufferTexture(const CFrameBuffer& oBuffer, int iChannel = 0);
 	void					SetColor(const ::Color& c);	// Set the mesh's uniform color. Do this before BeginRender*
 

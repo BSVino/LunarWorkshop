@@ -116,6 +116,12 @@ void CRenderer::WindowResize(int w, int h)
 	m_oSceneBuffer.Destroy();
 	m_oSceneBuffer = CreateFrameBuffer(w, h, (fb_options_e)(FB_TEXTURE|FB_DEPTH|FB_MULTISAMPLE));
 
+	if (m_iScreenSamples)
+	{
+		m_oResolvedSceneBuffer.Destroy();
+		m_oResolvedSceneBuffer = CreateFrameBuffer(w, h, (fb_options_e)(FB_TEXTURE|FB_DEPTH));
+	}
+
 	size_t iWidth = m_oSceneBuffer.m_iWidth;
 	size_t iHeight = m_oSceneBuffer.m_iHeight;
 	for (size_t i = 0; i < BLOOM_FILTERS; i++)
@@ -140,7 +146,7 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 	glGetIntegerv(GL_SAMPLES, &m_iScreenSamples);
 	GLsizei iSamples = m_iScreenSamples;
 
-	bool bUseMultisample = false;// !!GLEW_EXT_framebuffer_multisample;
+	bool bUseMultisample = true;
 	if (iSamples == 0)
 		bUseMultisample = false;
 	if (!(eOptions&FB_MULTISAMPLE))
@@ -343,12 +349,18 @@ void CRenderer::StartRendering(class CRenderingContext* pContext)
 	glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 	glGetIntegerv( GL_VIEWPORT, m_aiViewport );
 	glViewport(0, 0, (GLsizei)m_oSceneBuffer.m_iWidth, (GLsizei)m_oSceneBuffer.m_iHeight);
+
+	if (m_iScreenSamples)
+		glEnable(GL_MULTISAMPLE);
 }
 
 CVar show_frustum("debug_show_frustum", "no");
 
 void CRenderer::FinishRendering(class CRenderingContext* pContext)
 {
+	if (m_iScreenSamples)
+		glDisable(GL_MULTISAMPLE);
+
 	TPROF("CRenderer::FinishRendering");
 
 	if (show_frustum.GetBool())
@@ -394,6 +406,9 @@ void CRenderer::RenderOffscreenBuffers(class CRenderingContext* pContext)
 	{
 		TPROF("Bloom");
 
+		if (m_iScreenSamples)
+			RenderBufferToBuffer(&m_oSceneBuffer, &m_oResolvedSceneBuffer);
+
 		CRenderingContext c(this);
 
 		// Use a bright-pass filter to catch only the bright areas of the image
@@ -405,7 +420,10 @@ void CRenderer::RenderOffscreenBuffers(class CRenderingContext* pContext)
 		for (size_t i = 0; i < BLOOM_FILTERS; i++)
 		{
 			c.SetUniform("flBrightness", BloomBrightnessCutoff() - 0.1f*i);
-			RenderFrameBufferToBuffer(&m_oSceneBuffer, &m_oBloom1Buffers[i]);
+			if (m_iScreenSamples)
+				RenderMapToBuffer(m_oResolvedSceneBuffer.m_iMap, &m_oBloom1Buffers[i]);
+			else
+				RenderMapToBuffer(m_oSceneBuffer.m_iMap, &m_oBloom1Buffers[i]);
 		}
 
 		RenderBloomPass(m_oBloom1Buffers, m_oBloom2Buffers, true);
@@ -422,7 +440,13 @@ void CRenderer::RenderFullscreenBuffers(class CRenderingContext* pContext)
 {
 	TPROF("CRenderer::RenderFullscreenBuffers");
 
-	RenderFrameBufferFullscreen(&m_oSceneBuffer);
+	if (m_iScreenSamples)
+	{
+		RenderBufferToBuffer(&m_oSceneBuffer, &m_oResolvedSceneBuffer);
+		RenderFrameBufferFullscreen(&m_oResolvedSceneBuffer);
+	}
+	else
+		RenderFrameBufferFullscreen(&m_oSceneBuffer);
 
 	if (r_bloom.GetBool())
 	{
@@ -464,7 +488,7 @@ void CRenderer::RenderBloomPass(CFrameBuffer* apSources, CFrameBuffer* apTargets
 		else
 			c.SetUniform("flOffsetY", 1.2f / apSources[i].m_iWidth);
 
-		RenderFrameBufferToBuffer(&apSources[i], &apTargets[i]);
+		RenderMapToBuffer(apSources[i].m_iMap, &apTargets[i]);
     }
 }
 
@@ -474,14 +498,6 @@ void CRenderer::RenderFrameBufferFullscreen(CFrameBuffer* pBuffer)
 		RenderMapFullscreen(pBuffer->m_iMap, pBuffer->m_bMultiSample);
 	else if (pBuffer->m_iRB)
 		RenderRBFullscreen(pBuffer);
-}
-
-void CRenderer::RenderFrameBufferToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestination)
-{
-	if (pSource->m_iMap)
-		RenderMapToBuffer(pSource->m_iMap, pDestination, pSource->m_bMultiSample);
-	else if (pSource->m_iRB)
-		RenderRBToBuffer(pSource, pDestination);
 }
 
 void CRenderer::RenderRBFullscreen(CFrameBuffer* pSource)
@@ -494,7 +510,7 @@ void CRenderer::RenderRBFullscreen(CFrameBuffer* pSource)
 	glBlitFramebuffer(0, 0, pSource->m_iWidth, pSource->m_iHeight, 0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
-void CRenderer::RenderRBToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestination)
+void CRenderer::RenderBufferToBuffer(CFrameBuffer* pSource, CFrameBuffer* pDestination)
 {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, (GLuint)pSource->m_iFB);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, (GLuint)pDestination->m_iFB);
@@ -524,8 +540,7 @@ void CRenderer::RenderMapFullscreen(size_t iMap, bool bMapIsMultisample)
 	c.SetTexCoordBuffer(&m_vecFullscreenTexCoords[0][0]);
 	c.SetPositionBuffer(&m_vecFullscreenVertices[0][0]);
 
-	TAssert(!bMapIsMultisample);	// Must implement
-	c.BindTexture(iMap);
+	c.BindTexture(iMap, 0, bMapIsMultisample);
 
 	c.EndRenderVertexArray(6);
 }
@@ -552,8 +567,7 @@ void CRenderer::RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer, bool bMapI
 	c.SetTexCoordBuffer(&m_vecFullscreenTexCoords[0][0]);
 	c.SetPositionBuffer(&m_vecFullscreenVertices[0][0]);
 
-	TAssert(!bMapIsMultisample);	// Must implement
-	c.BindTexture(iMap);
+	c.BindTexture(iMap, 0, bMapIsMultisample);
 
 	c.EndRenderVertexArray(6);
 }
@@ -943,7 +957,7 @@ void CRenderer::WriteTextureToFile(Color* pclrData, int w, int h, tstring sFilen
 		stbi_write_bmp(sFilename.c_str(), w, h, 4, pclrData);
 }
 
-void R_ReadPixels(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
+void R_DumpFBO(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
 	size_t iFBO = 0;
 	if (asTokens.size() > 1)
@@ -955,17 +969,34 @@ void R_ReadPixels(class CCommand* pCommand, tvector<tstring>& asTokens, const ts
 	int iWidth = aiViewport[2];
 	int iHeight = aiViewport[3];
 
-	unsigned char* pixels = new unsigned char[iWidth*iHeight*4];
+	tvector<Color> aclrPixels;
+	aclrPixels.resize(iWidth*iHeight);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)iFBO);
 	glViewport(0, 0, (GLsizei)iWidth, (GLsizei)iHeight);
-	glReadPixels(0, 0, iWidth, iHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	TAssert(!"Unsupported.");
-	// I removed DevIL and the replacement doesn't save, but I'm okay with that for the time being.
-	// This feature can be implemented with something similar to CRenderer::WriteTextureToFile
+	// In case it's multisampled, blit it over to a normal one first.
+	CFrameBuffer oResolvedBuffer = Application()->GetRenderer()->CreateFrameBuffer(iWidth, iHeight, (fb_options_e)(FB_RENDERBUFFER|FB_DEPTH));
 
-	delete pixels;
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, iFBO);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, oResolvedBuffer.m_iFB);
+	glBlitFramebuffer(
+		0, 0, iWidth, iHeight, 
+		0, 0, oResolvedBuffer.m_iWidth, oResolvedBuffer.m_iHeight, 
+		GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)oResolvedBuffer.m_iFB);
+	glReadPixels(0, 0, iWidth, iHeight, GL_RGBA, GL_UNSIGNED_BYTE, aclrPixels.data());
+
+	oResolvedBuffer.Destroy();
+
+	for (int i = 0; i < iWidth; i++)
+	{
+		for (int j = 0; j < iHeight/2; j++)
+			std::swap(aclrPixels[j*iWidth + i], aclrPixels[iWidth*(iHeight-j-1) + i]);
+	}
+
+	CRenderer::WriteTextureToFile(aclrPixels.data(), iWidth, iHeight, sprintf("fbo-%d.png", iFBO));
 }
 
-CCommand r_readpixels(tstring("r_readpixels"), ::R_ReadPixels);
+CCommand r_dumpfbo(tstring("r_dumpfbo"), ::R_DumpFBO);

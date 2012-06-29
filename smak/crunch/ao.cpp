@@ -1156,6 +1156,7 @@ bool CAOGenerator::Texel(size_t w, size_t h, size_t& iTexel, bool bUseMask)
 	if (w < 0 || h < 0 || w >= m_iWidth || h >= m_iHeight)
 		return false;
 
+	TAssert(m_iHeight == m_iWidth); // This formula is actually wrong unless the thing is a perfect square
 	iTexel = m_iHeight*(m_iHeight-h-1) + w;
 
 	TAssert(iTexel >= 0 && iTexel < m_iWidth * m_iHeight);

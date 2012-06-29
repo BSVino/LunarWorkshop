@@ -387,16 +387,10 @@ bool CShader::Compile()
 	{
 		TError("Shader compilation failed for shader " + m_sName + ". Check shaders.txt\n");
 
-		glDetachShader((GLuint)iProgram, (GLuint)iVShader);
-		glDetachShader((GLuint)iProgram, (GLuint)iFShader);
-		glDeleteShader((GLuint)iVShader);
-		glDeleteShader((GLuint)iFShader);
-		glDeleteProgram((GLuint)iProgram);
+		Destroy();
 
 		return false;
 	}
-
-	Destroy();
 
 	m_iProgram = iProgram;
 	m_iVShader = iVShader;

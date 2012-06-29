@@ -47,14 +47,14 @@ void CChainRenderer::RenderFullscreenBuffers(class CRenderingContext* pContext)
 	{
 		c.SetUniform("flOffsetY", 0.0f);
 		c.SetUniform("flOffsetX", 1.2f / m_oMouseoverBuffer1.m_iWidth);
-		RenderFrameBufferToBuffer(&m_oMouseoverBuffer1, &m_oMouseoverBuffer2);
+		RenderBufferToBuffer(&m_oMouseoverBuffer1, &m_oMouseoverBuffer2);
 
 		c.UseFrameBuffer(&m_oMouseoverBuffer1);
 		c.ClearColor();
 
 		c.SetUniform("flOffsetX", 0.0f);
 		c.SetUniform("flOffsetY", 1.2f / m_oMouseoverBuffer1.m_iWidth);
-		RenderFrameBufferToBuffer(&m_oMouseoverBuffer2, &m_oMouseoverBuffer1);
+		RenderBufferToBuffer(&m_oMouseoverBuffer2, &m_oMouseoverBuffer1);
 
 		c.UseFrameBuffer(&m_oMouseoverBuffer2);
 		c.ClearColor();

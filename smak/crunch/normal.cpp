@@ -103,6 +103,7 @@ bool CNormalGenerator::Texel(size_t w, size_t h, size_t& iTexel, size_t tw, size
 	if (w < 0 || h < 0 || w >= tw || h >= th)
 		return false;
 
+	TAssert(tw == th); // This formula is actually wrong unless the thing is a perfect square
 	iTexel = th*(th-h-1) + w;
 
 	TAssert(iTexel >= 0 && iTexel < tw * th);
