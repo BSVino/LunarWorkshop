@@ -673,10 +673,13 @@ void CTextField::SetAutoCompleteFiles(const tstring& sBaseDirectory, const tvect
 
 void CTextField::SetCursorPosition(size_t iPosition)
 {
-	m_iCursor = iPosition;
+	m_iSelection = m_iCursor = iPosition;
 
 	if (m_iCursor > m_sText.length())
 		m_iCursor = m_sText.length();
+
+	if (m_iSelection > m_sText.length())
+		m_iSelection = m_sText.length();
 }
 
 void CTextField::SetFontFaceSize(int iSize)
