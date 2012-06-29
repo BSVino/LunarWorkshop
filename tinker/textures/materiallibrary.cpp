@@ -120,12 +120,6 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 		oMat.FillParameter(oMat.m_aParameters.size()-1, pParameter->GetValueString(), pShader);
 	}
 
-	for (size_t i = 0; i < oMat.m_ahTextures.size(); i++)
-	{
-		if (!oMat.m_ahTextures[i].IsValid())
-			TError("Material file '" + oMat.m_sFile + "' has a texture that couldn't be found: " + pShader->m_asTextures[i] + "\n");
-	}
-
 	return &oMat;
 }
 
@@ -292,15 +286,23 @@ void CMaterial::FillParameter(size_t iParameter, const tstring& sData, class CSh
 		{
 			if (pShader->m_asTextures[k] == pShaderPar->m_aActions[j].m_sName)
 			{
-				m_ahTextures[k] = CTextureHandle(sData);
-				if (!m_ahTextures[k].IsValid())
+				if (sData.length())
 				{
-					if (m_sTextureDirectory.length())
-						m_ahTextures[k] = CTextureHandle(m_sTextureDirectory + "/" + oPar.m_sValue);
-
+					m_ahTextures[k] = CTextureHandle(sData);
 					if (!m_ahTextures[k].IsValid())
-						m_ahTextures[k] = CTextureHandle(GetDirectory(m_sFile) + "/" + oPar.m_sValue);
+					{
+						if (m_sTextureDirectory.length())
+							m_ahTextures[k] = CTextureHandle(m_sTextureDirectory + "/" + oPar.m_sValue);
+
+						if (!m_ahTextures[k].IsValid())
+							m_ahTextures[k] = CTextureHandle(GetDirectory(m_sFile) + "/" + oPar.m_sValue);
+
+						if (!m_ahTextures[k].IsValid())
+							TError("Couldn't load texture '" + sData + "' in material " + m_sFile + "\n");
+					}
 				}
+				else
+					m_ahTextures[k] = CTextureHandle();
 			}
 		}
 	}
