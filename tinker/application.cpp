@@ -837,5 +837,5 @@ void CApplication::PrintConsole(const tstring& sText)
 
 void CApplication::PrintError(const tstring& sText)
 {
-	GetConsole()->PrintConsole(tstring("ERROR: ") + sText);
+	GetConsole()->PrintConsole(tstring("[color=FF0000]ERROR: ") + sText + "[/color]");
 }

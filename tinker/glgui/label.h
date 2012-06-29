@@ -17,12 +17,20 @@ namespace glgui
 		class CLineSection
 		{
 		public:
+			CLineSection()
+				: m_bColor(false)
+			{
+			}
+
+		public:
 			tstring		m_sText;
 			tstring		m_sLink;
 			FRect		m_rArea;
 			tstring		m_sFont;
 			size_t		m_iFontSize;
 			class ::FTFont* m_pFont;
+			bool		m_bColor;
+			Color		m_clrText;
 		};
 
 		class CLine

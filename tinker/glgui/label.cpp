@@ -182,6 +182,13 @@ void CLabel::DrawSection(const CLine& l, const CLineSection& s, float x, float y
 	else
 	{
 		Color clrText = m_clrText;
+
+		if (s.m_bColor)
+		{
+			clrText = s.m_clrText;
+			clrText.SetAlpha(m_clrText.a());
+		}
+
 		if (!m_bEnabled)
 			clrText.SetColor(m_clrText.r()/2, m_clrText.g()/2, m_clrText.b()/2, m_iAlpha);
 
@@ -590,6 +597,54 @@ void CLabel::ComputeLines(float w, float h)
 				lw = 0;
 
 				iChar += 7;
+
+				aSectionStack.pop_back();
+				oSection = aSectionStack.back();
+
+				iLastBreak = iChar;
+			}
+			else if (tstrncmp(&sLine[iChar], "[color=", 7) == 0)
+			{
+				// We're ending a section, push our line.
+				PushSection(aSectionStack.back(), tstring(&sLine[iLastBreak], &sLine[iChar]));
+				iLength = 0;
+				lw = 0;
+
+				iChar += 7;
+
+				tstring sRed(&sLine[iChar], &sLine[iChar+2]);
+				tstring sGreen(&sLine[iChar+2], &sLine[iChar+4]);
+				tstring sBlue(&sLine[iChar+4], &sLine[iChar+6]);
+
+				char* pszNext;
+				int iRed = std::strtol(sRed.c_str(), &pszNext, 16);
+				int iGreen = std::strtol(sGreen.c_str(), &pszNext, 16);
+				int iBlue = std::strtol(sBlue.c_str(), &pszNext, 16);
+
+				// Fast forward past the number
+				while (sLine[iChar] >= '0' && sLine[iChar] <= '9' || std::toupper(sLine[iChar]) >= 'A' && std::toupper(sLine[iChar]) <= 'F')
+					iChar++;
+
+				while (sLine[iChar] != ']')
+					iChar++;
+
+				iChar++;
+
+				oSection.m_bColor = true;
+				oSection.m_clrText = Color(iRed, iGreen, iBlue);
+				oSection.m_sText.clear();
+				aSectionStack.push_back(oSection);
+
+				iLastBreak = iChar;
+			}
+			else if (tstrncmp(&sLine[iChar], "[/color]", 8) == 0)
+			{
+				// We're ending a section, push our line.
+				PushSection(aSectionStack.back(), tstring(&sLine[iLastBreak], &sLine[iChar]));
+				iLength = 0;
+				lw = 0;
+
+				iChar += 8;
 
 				aSectionStack.pop_back();
 				oSection = aSectionStack.back();
