@@ -32,6 +32,7 @@ GNU General Public License for more details.
 #include <datamanager/data.h>
 #include <textures/materiallibrary.h>
 #include <renderer/shaders.h>
+#include <tinker/profiler.h>
 
 #include "smak_renderer.h"
 #include "scenetree.h"
@@ -42,15 +43,6 @@ using namespace glgui;
 //#define RAYTRACE_DEBUG
 #ifdef RAYTRACE_DEBUG
 #include <raytracer/raytracer.h>
-#endif
-
-// Some compilers don't need it, make sure it still exists though.
-#ifndef CALLBACK
-#ifdef _WIN32
-#define CALLBACK __stdcall
-#else
-#define CALLBACK
-#endif
 #endif
 
 CSMAKWindow* CSMAKWindow::s_pSMAKWindow = NULL;
@@ -128,7 +120,9 @@ void CSMAKWindow::Run()
 {
 	while (IsOpen())
 	{
+		CProfiler::BeginFrame();
 		Render();
+		CProfiler::Render();
 		SwapBuffers();
 	}
 }
@@ -268,6 +262,8 @@ void CSMAKWindow::SaveFile(const tchar* pszFile)
 
 void CSMAKWindow::Render()
 {
+	TPROF("CSMAKWindow::Render");
+
 	GetSMAKRenderer()->Render();
 
 	CRootPanel::Get()->Think(GetTime());
