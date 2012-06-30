@@ -22,7 +22,6 @@ if (WIN32)
 	set (CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO	"/ENTRY:mainCRTStartup /DEBUG /INCREMENTAL:NO" CACHE STRING "" FORCE)
 endif (WIN32)
 
-option(BUILD_SMAK "Build SMAK" OFF)
 option(BUILD_ENGINE "Build Tinker's game engine and whatever games I happen to be working on" ON)
 option(WITH_NETWORKING "Build with networking enabled." ON)
 option(WITH_EASTL "Use the super-fast (even in debug mode) EASTL STL library." ON)
@@ -83,10 +82,6 @@ endif (BUILD_ENGINE)
 
 if (BUILD_CHAIN AND BUILD_ENGINE)
 	add_subdirectory (chain)
-endif ()
-
-if (BUILD_SMAK)
-	add_subdirectory (smak)
 endif ()
 
 add_subdirectory (tests)
