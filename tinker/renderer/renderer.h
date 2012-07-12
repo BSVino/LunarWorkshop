@@ -151,7 +151,7 @@ public:
 	static void		UnloadVertexDataFromGL(size_t iBuffer);
 	static size_t	LoadTextureIntoGL(tstring sFilename, int iClamp = 0);
 	static size_t	LoadTextureIntoGL(Color* pclrData, int w, int h, int iClamp = 0);
-	static size_t	LoadTextureIntoGL(Vector* pvecData, int w, int h, int iClamp = 0);
+	static size_t	LoadTextureIntoGL(Vector* pvecData, int w, int h, int iClamp = 0, bool bMipMaps = true);
 	static void		UnloadTextureFromGL(size_t iGLID);
 	static size_t	GetNumTexturesLoaded() { return s_iTexturesLoaded; }
 
@@ -159,6 +159,7 @@ public:
 	static void		UnloadTextureData(Color* pData);
 
 	static void		ReadTextureFromGL(CTextureHandle hTexture, Vector* pvecData);
+	static void		ReadTextureFromGL(CTextureHandle hTexture, Color* pclrData);
 
 	static void		WriteTextureToFile(size_t iTexture, tstring sFilename);
 	static void		WriteTextureToFile(Color* pclrData, int w, int h, tstring sFilename);

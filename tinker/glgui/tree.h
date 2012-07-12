@@ -145,7 +145,7 @@ namespace glgui
 		void								RemoveNode(CTreeNode* pNode);
 		CControl<CTreeNode>					GetNode(size_t i);
 
-		virtual CControl<CTreeNode>			GetSelectedNode() { if (m_iSelected == ~0) return CControl<CTreeNode>(); return m_ahAllNodes[m_iSelected]; };
+		virtual CControl<CTreeNode>			GetSelectedNode() const { if (m_iSelected == ~0) return CControl<CTreeNode>(); return m_ahAllNodes[m_iSelected]; };
 		virtual size_t						GetSelectedNodeId() { return m_iSelected; };
 		virtual void						Unselect() { m_iSelected = ~0; }
 		virtual void						SetSelectedNode(size_t iNode);
@@ -166,7 +166,8 @@ namespace glgui
 		virtual void						SetGrabbale(bool bGrabbable) {};
 		virtual bool						IsGrabbale() { return true; };
 
-		virtual bool						CanDropHere(IDraggable*) { return true; };
+		virtual bool						CanDropHere(IDraggable*) { return m_bDroppable; };
+		virtual void						SetDroppable(bool bDrop) { m_bDroppable = bDrop; };
 
 		virtual bool						IsInfinite() { return true; };
 		virtual bool						IsVisible() { return BaseClass::IsVisible(); };
@@ -197,6 +198,8 @@ namespace glgui
 		bool								m_bMouseDown;
 		int									m_iMouseDownX;
 		int									m_iMouseDownY;
+
+		bool								m_bDroppable;
 
 		CControl<CTreeNode>					m_hDragging;
 		int									m_iAcceptsDragType;
