@@ -180,6 +180,7 @@ CBaseEntity::CBaseEntity()
 	m_bClientSpawn = false;
 
 	m_bGlobalTransformsDirty = true;
+	m_hMoveParent = nullptr;
 }
 
 CBaseEntity::~CBaseEntity()
