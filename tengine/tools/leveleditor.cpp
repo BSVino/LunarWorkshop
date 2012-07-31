@@ -420,8 +420,8 @@ CEditorPanel::CEditorPanel()
 
 	m_hSlider = AddControl(new glgui::CSlidingContainer());
 
-	m_hPropertiesSlider = AddControl(new glgui::CSlidingPanel(m_hSlider, "Properties"));
-	m_hOutputsSlider = AddControl(new glgui::CSlidingPanel(m_hSlider, "Outputs"));
+	m_hPropertiesSlider = new glgui::CSlidingPanel(m_hSlider, "Properties");
+	m_hOutputsSlider = new glgui::CSlidingPanel(m_hSlider, "Outputs");
 
 	m_hPropertiesPanel = m_hPropertiesSlider->AddControl(new CEntityPropertiesPanel(true));
 	m_hPropertiesPanel->SetBackgroundColor(Color(10, 10, 10, 50));

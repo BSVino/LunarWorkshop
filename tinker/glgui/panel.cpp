@@ -309,6 +309,8 @@ CControlHandle CPanel::AddControl(CBaseControl* pControl, bool bToTail)
 	if (!pControl)
 		return CControlHandle();
 
+	TAssertNoMsg(!pControl->GetParent()); // Don't add to a panel twice
+
 	return AddControl(pControl->shared_from_this(), bToTail);
 }
 

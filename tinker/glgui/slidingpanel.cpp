@@ -96,7 +96,7 @@ CControlHandle CSlidingPanel::AddControl(CBaseControl* pControl, bool bToTail)
 	// This way the inner panel can be set not visible in order
 	// to set all children not visible at once.
 
-	if (pControl != m_hTitle && pControl != m_hInnerPanel)
+	if (m_hInnerPanel.Get() && pControl != m_hTitle && pControl != m_hInnerPanel)
 		return m_hInnerPanel->AddControl(pControl, bToTail);
 
 	return CPanel::AddControl(pControl, bToTail);
