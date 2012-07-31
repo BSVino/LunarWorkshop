@@ -209,6 +209,9 @@ void CGrottoRenderer::StartRendering(class CRenderingContext* pContext)
 	// the viewport here will be the scene buffer size, but we need it to be the window size so we can do world/screen transformations.
 	glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 	glGetIntegerv( GL_VIEWPORT, m_aiViewport );
+
+	if (m_iScreenSamples)
+		glEnable(GL_MULTISAMPLE);
 }
 
 void CGrottoRenderer::FinishRendering(class CRenderingContext* pContext)
@@ -277,6 +280,9 @@ void CGrottoRenderer::StartRenderingReflection(class CRenderingContext* pContext
 	glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
 	glGetIntegerv( GL_VIEWPORT, m_aiViewport );
 	glViewport(0, 0, (GLsizei)m_oSceneBuffer.m_iWidth, (GLsizei)m_oSceneBuffer.m_iHeight);
+
+	if (m_iScreenSamples)
+		glEnable(GL_MULTISAMPLE);
 }
 
 CFrameBuffer& CGrottoRenderer::GetReflectionBuffer(size_t i)

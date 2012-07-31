@@ -30,6 +30,8 @@ CGameWindow::CGameWindow(int argc, char** argv)
 
 void CGameWindow::OpenWindow()
 {
+	SetMultisampling(true);
+
 	int iScreenWidth, iScreenHeight;
 	GetScreenSize(iScreenWidth, iScreenHeight);
 
