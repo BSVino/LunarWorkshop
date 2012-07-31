@@ -112,6 +112,7 @@ public:
 	int*		GetPhysicsTri(size_t iTri);
 	TRS*		GetPhysicsBoxes();
 	TRS&		GetPhysicsBox(size_t iBox);
+	Vector		GetPhysicsBoxHalfSize(size_t iBox);
 
 	const AABB&	GetSceneAreaAABB(size_t iSceneArea);
 	size_t		GetSceneAreaNumVisible(size_t iSceneArea);

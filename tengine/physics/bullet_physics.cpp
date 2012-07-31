@@ -216,20 +216,12 @@ void CBulletPhysics::AddModel(class CBaseEntity* pEntity, collision_type_t eColl
 
 		pPhysicsEntity->m_bCenterMassOffset = true;
 
-		TRS trs = pModel->m_pToy->GetPhysicsBox(i);
-		TAssert(trs.m_angRotation.p == 0);
-		TAssert(trs.m_angRotation.y == 0);
-		TAssert(trs.m_angRotation.r == 0);
-		Matrix4x4 mTRS = trs.GetMatrix4x4();
-		AABB aabbBox = CToy::s_aabbBoxDimensions;
-		aabbBox.m_vecMins = mTRS*aabbBox.m_vecMins;
-		aabbBox.m_vecMaxs = mTRS*aabbBox.m_vecMaxs;
-		Vector vecHalf = aabbBox.m_vecMaxs - aabbBox.Center();
+		Vector vecHalf = pModel->m_pToy->GetPhysicsBoxHalfSize(i);
 		pCollisionShape = new btBoxShape(btVector3(vecHalf.x, vecHalf.y, vecHalf.z));
 
 		btTransform mTransform;
 		mTransform.setIdentity();
-		mTransform.setFromOpenGLMatrix(pEntity->GetGlobalTransform()*trs.GetMatrix4x4(false, false));
+		mTransform.setFromOpenGLMatrix(pEntity->GetGlobalTransform()*pModel->m_pToy->GetPhysicsBox(i).GetMatrix4x4(false, false));
 
 		btVector3 vecLocalInertia(0, 0, 0);
 
@@ -500,8 +492,19 @@ void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4
 		else if (pPhysicsEntity->m_pGhostObject)
 			pPhysicsEntity->m_pGhostObject->setWorldTransform(m);
 
-		for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
-			pPhysicsEntity->m_apPhysicsShapes[i]->setCenterOfMassTransform(m);
+		CModel* pModel = pEnt->GetModel();
+		CToy* pToy = pModel?pModel->m_pToy:nullptr;
+		if (pToy)
+		{
+			for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+			{
+				mCenter = pModel->m_pToy->GetPhysicsBox(i).GetMatrix4x4(false, false);
+
+				m.setFromOpenGLMatrix(mCenter * mTransform);
+
+				pPhysicsEntity->m_apPhysicsShapes[i]->setCenterOfMassTransform(m);
+			}
+		}
 	}
 	else
 	{
@@ -514,7 +517,10 @@ void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4
 			pPhysicsEntity->m_pGhostObject->setWorldTransform(m);
 
 		for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+		{
+			TUnimplemented(); // This may work but it also may cause boxes to be misaligned.
 			pPhysicsEntity->m_apPhysicsShapes[i]->setCenterOfMassTransform(m);
+		}
 	}
 }
 

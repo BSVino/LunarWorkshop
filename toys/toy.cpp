@@ -185,6 +185,23 @@ TRS& CToy::GetPhysicsBox(size_t iBox)
 	return *(GetPhysicsBoxes() + iBox);
 }
 
+Vector CToy::GetPhysicsBoxHalfSize(size_t iBox)
+{
+	TRS& trs = GetPhysicsBox(iBox);
+
+	TAssert(trs.m_angRotation.p == 0);
+	TAssert(trs.m_angRotation.y == 0);
+	TAssert(trs.m_angRotation.r == 0);
+
+	Matrix4x4 mTRS = trs.GetMatrix4x4();
+
+	AABB aabbBox = s_aabbBoxDimensions;
+	aabbBox.m_vecMins = mTRS*aabbBox.m_vecMins;
+	aabbBox.m_vecMaxs = mTRS*aabbBox.m_vecMaxs;
+
+	return aabbBox.m_vecMaxs - aabbBox.Center();
+}
+
 const AABB& CToy::GetSceneAreaAABB(size_t iSceneArea)
 {
 	if (!m_pArea)
