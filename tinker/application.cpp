@@ -51,6 +51,7 @@ CApplication::CApplication(int argc, char** argv)
 	m_bIsOpen = false;
 	m_bMultisampling = false;
 
+	m_pRenderer = NULL;
 	m_pConsole = NULL;
 
 	SetMouseCursorEnabled(true);
@@ -385,7 +386,8 @@ void CApplication::WindowResize(int w, int h)
 	m_iWindowWidth = w;
 	m_iWindowHeight = h;
 
-	m_pRenderer->WindowResize(w, h);
+	if (m_pRenderer)
+		m_pRenderer->WindowResize(w, h);
 
 	glgui::RootPanel()->SetSize((float)w, (float)h);
 	glgui::RootPanel()->Layout();
