@@ -177,10 +177,7 @@ void CGameWindow::DestroyGame()
 		delete m_pGameServer;
 
 	if (m_pHUD)
-	{
 		glgui::CRootPanel::Get()->RemoveControl(m_pHUD);
-		delete m_pHUD;
-	}
 
 	m_pGameServer = NULL;
 	m_pHUD = NULL;
