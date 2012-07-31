@@ -69,8 +69,10 @@ public:
 	tvector<tstring>			m_asParameterNames;
 };
 
-class CMaterialEditor : public CWorkbenchTool, public glgui::IEventListener
+class CMaterialEditor : public CWorkbenchTool
 {
+	DECLARE_CLASS(CMaterialEditor, CWorkbenchTool);
+
 public:
 							CMaterialEditor();
 	virtual					~CMaterialEditor();

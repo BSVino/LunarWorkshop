@@ -21,8 +21,10 @@ public:
 	glgui::CCheckBox*		m_pShowPhysics;
 };
 
-class CToyViewer : public CWorkbenchTool, public glgui::IEventListener
+class CToyViewer : public CWorkbenchTool
 {
+	DECLARE_CLASS(CToyViewer, CWorkbenchTool);
+
 public:
 							CToyViewer();
 	virtual					~CToyViewer();

@@ -522,10 +522,14 @@ CToyEditor::~CToyEditor()
 void CToyEditor::Activate()
 {
 	Layout();
+
+	BaseClass::Activate();
 }
 
 void CToyEditor::Deactivate()
 {
+	BaseClass::Deactivate();
+
 	m_pCreateToySourcePanel->SetVisible(false);
 	m_pSourcePanel->SetVisible(false);
 }

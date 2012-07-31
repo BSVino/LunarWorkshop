@@ -10,6 +10,7 @@
 #include <glgui/menu.h>
 #include <glgui/textfield.h>
 #include <glgui/checkbox.h>
+#include <glgui/menu.h>
 #include <tinker/application.h>
 #include <renderer/game_renderingcontext.h>
 #include <renderer/game_renderer.h>
@@ -53,6 +54,16 @@ TVector CWorkbenchCamera::GetCameraPosition()
 TVector CWorkbenchCamera::GetCameraDirection()
 {
 	return Workbench()->GetActiveTool()->GetCameraDirection();
+}
+
+float CWorkbenchCamera::GetCameraOrthoHeight()
+{
+	return Workbench()->GetActiveTool()->GetCameraOrthoHeight();
+}
+
+bool CWorkbenchCamera::ShouldRenderOrthographic()
+{
+	return Workbench()->GetActiveTool()->ShouldRenderOrthographic();
 }
 
 CWorkbench::CWorkbench()
@@ -108,6 +119,22 @@ void CWorkbench::SetActiveTool(int iTool)
 {
 	m_pFileMenu->ClearSubmenus();
 
+	// Clear out extra menus
+	for (size_t i = 0; i < glgui::RootPanel()->GetMenuBar()->GetControls().size(); i++)
+	{
+		glgui::CMenu* pMenu = glgui::RootPanel()->GetMenuBar()->GetControls()[i].DowncastStatic<glgui::CMenu>();
+		if (!pMenu)
+			continue;
+
+		if (pMenu->GetText() == "File")
+			continue;
+
+		if (pMenu->GetText() == "Tools")
+			continue;
+
+		glgui::RootPanel()->GetMenuBar()->RemoveControl(pMenu);
+	}
+
 	if (GetActiveTool())
 		GetActiveTool()->Deactivate();
 
@@ -161,6 +188,22 @@ void CWorkbench::Activate()
 	Application()->SetMouseCursorEnabled(true);
 
 	Workbench()->m_pFileMenu->ClearSubmenus();
+
+	// Clear out extra menus
+	for (size_t i = 0; i < glgui::RootPanel()->GetMenuBar()->GetControls().size(); i++)
+	{
+		glgui::CMenu* pMenu = glgui::RootPanel()->GetMenuBar()->GetControls()[i].DowncastStatic<glgui::CMenu>();
+		if (!pMenu)
+			continue;
+
+		if (pMenu->GetText() == "File")
+			continue;
+
+		if (pMenu->GetText() == "Tools")
+			continue;
+
+		glgui::RootPanel()->GetMenuBar()->RemoveControl(pMenu);
+	}
 
 	if (Workbench()->GetActiveTool())
 		Workbench()->GetActiveTool()->Activate();

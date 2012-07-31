@@ -110,8 +110,10 @@ public:
 	glgui::CButton*			m_pBuild;
 };
 
-class CToyEditor : public CWorkbenchTool, public glgui::IEventListener, public IManipulatorListener
+class CToyEditor : public CWorkbenchTool, public IManipulatorListener
 {
+	DECLARE_CLASS(CToyEditor, CWorkbenchTool);
+
 public:
 							CToyEditor();
 	virtual					~CToyEditor();

@@ -1119,7 +1119,7 @@ bool CLevelEditor::KeyPress(int c)
 		return true;
 	}
 
-	return false;
+	return BaseClass::KeyPress(c);
 }
 
 bool CLevelEditor::MouseInput(int iButton, tinker_mouse_state_t iState)
@@ -1143,10 +1143,14 @@ void CLevelEditor::Activate()
 	m_hCreateEntityButton->SetVisible(true);
 
 	GetFileMenu()->AddSubmenu("Save", this, SaveLevel);
+
+	BaseClass::Activate();
 }
 
 void CLevelEditor::Deactivate()
 {
+	BaseClass::Deactivate();
+
 	m_hEditorPanel->SetVisible(false);
 	m_hCreateEntityButton->SetVisible(false);
 	m_hCreateEntityPanel->SetVisible(false);
@@ -1175,31 +1179,6 @@ void CLevelEditor::RenderScene()
 
 	if (m_hCreateEntityPanel->IsVisible() && m_hCreateEntityPanel->m_bReadyToCreate)
 		RenderCreateEntityPreview();
-}
-
-void CLevelEditor::CameraThink()
-{
-	if (Workbench()->GetCameraManager()->GetFreeMode())
-	{
-		m_vecEditCamera = Workbench()->GetCameraManager()->GetFreeCameraPosition();
-		m_angEditCamera = Workbench()->GetCameraManager()->GetFreeCameraAngles();
-	}
-}
-
-TVector CLevelEditor::GetCameraPosition()
-{
-	return m_vecEditCamera;
-}
-
-TVector CLevelEditor::GetCameraDirection()
-{
-	return AngleVector(m_angEditCamera);
-}
-
-void CLevelEditor::SetCameraOrientation(TVector vecPosition, Vector vecDirection)
-{
-	m_vecEditCamera = vecPosition;
-	m_angEditCamera = VectorAngles(vecDirection);
 }
 
 void CLevelEditor::ManipulatorUpdated(const tstring& sArguments)

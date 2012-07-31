@@ -96,10 +96,14 @@ void CToyViewer::Activate()
 
 	if (!m_sToyPreview.length() || m_iToyPreview == ~0)
 		ChooseToyCallback("");
+
+	BaseClass::Activate();
 }
 
 void CToyViewer::Deactivate()
 {
+	BaseClass::Deactivate();
+
 	m_pToyPreviewPanel->SetVisible(false);
 }
 

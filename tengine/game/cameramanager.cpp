@@ -12,6 +12,7 @@
 CCameraManager::CCameraManager()
 {
 	m_bFreeMode = false;
+	m_bPermaFreeMode = false;
 
 	m_iMouseLastX = 0;
 	m_iMouseLastY = 0;
@@ -30,12 +31,12 @@ void CCameraManager::Think()
 	{
 		m_vecFreeCamera = GetCameraPosition();
 		m_angFreeCamera = VectorAngles((GetCameraDirection()).Normalized());
-		m_flFreeOrthoHeight = 10;
+		m_flFreeOrthoHeight = GetCameraOrthoHeight();
 		m_bFreeMode = bFreeMode;
 		CApplication::Get()->SetMouseCursorEnabled(!m_bFreeMode);
 	}
 
-	if (m_bFreeMode)
+	if (GetFreeMode())
 	{
 		Vector vecForward, vecRight, vecUp;
 		AngleVectors(m_angFreeCamera, &vecForward, &vecUp, &vecRight);
@@ -47,7 +48,10 @@ void CCameraManager::Think()
 		m_vecFreeCamera += vecForward * m_vecFreeVelocity.x * (float)GameServer()->GetFrameTime() * flScaleSpeed;
 		m_vecFreeCamera += vecRight * m_vecFreeVelocity.z * (float)GameServer()->GetFrameTime() * flScaleSpeed;
 		m_vecFreeCamera += vecUp * m_vecFreeVelocity.y * (float)GameServer()->GetFrameTime() * flScaleSpeed;
+
 		m_flFreeOrthoHeight -= ((float)GameServer()->GetFrameTime() * m_vecFreeVelocity.x * 5);
+		if (m_flFreeOrthoHeight < 1)
+			m_flFreeOrthoHeight = 0.1f;
 	}
 	else
 	{
@@ -67,7 +71,7 @@ void CCameraManager::Think()
 
 TVector CCameraManager::GetCameraPosition()
 {
-	if (m_bFreeMode)
+	if (GetFreeMode())
 		return m_vecFreeCamera;
 
 	CCamera* pCamera = GetActiveCamera();
@@ -88,7 +92,7 @@ TVector CCameraManager::GetCameraPosition()
 
 TVector CCameraManager::GetCameraDirection()
 {
-	if (m_bFreeMode)
+	if (GetFreeMode())
 		return AngleVector(m_angFreeCamera);
 
 	CCamera* pCamera = GetActiveCamera();
@@ -144,7 +148,7 @@ float CCameraManager::GetCameraFOV()
 
 float CCameraManager::GetCameraOrthoHeight()
 {
-	if (m_bFreeMode)
+	if (GetFreeMode())
 		return m_flFreeOrthoHeight;
 
 	CCamera* pCamera = GetActiveCamera();
@@ -199,6 +203,18 @@ float CCameraManager::GetTransitionLerp()
 	return Lerp(RemapVal((float)GameServer()->GetGameTime(), (float)m_flTransitionBegin, (float)m_flTransitionBegin+m_flTransitionTime, 0, 1), 0.8f);
 }
 
+void CCameraManager::SetPermaFreeMode(bool bPerma)
+{
+	m_bPermaFreeMode = bPerma;
+
+	if (bPerma)
+	{
+		m_vecFreeCamera = GetCameraPosition();
+		m_angFreeCamera = VectorAngles((GetCameraDirection()).Normalized());
+		m_flFreeOrthoHeight = GetCameraOrthoHeight();
+	}
+}
+
 void CCameraManager::MouseInput(int x, int y)
 {
 	int dx, dy;
@@ -238,7 +254,7 @@ bool CCameraManager::KeyDown(int c)
 
 		if (lock_freemode_frustum.GetBool())
 		{
-			if (m_bFreeMode)
+			if (GetFreeMode())
 				GameServer()->GetRenderer()->FrustumOverride(GetCameraPosition(), GetCameraDirection(), GetCameraFOV(), GetCameraNear(), GetCameraFar());
 			else
 				GameServer()->GetRenderer()->CancelFrustumOverride();
@@ -247,7 +263,7 @@ bool CCameraManager::KeyDown(int c)
 		return true;
 	}
 
-	if (m_bFreeMode)
+	if (GetFreeMode())
 	{
 		if (c == 'W')
 		{
@@ -279,7 +295,7 @@ bool CCameraManager::KeyDown(int c)
 			return true;
 		}
 
-		if (c == 'V')
+		if (c == 'V' || c == TINKER_KEY_LCTRL)
 		{
 			m_vecFreeVelocity.y = -1.0f;
 			return true;
@@ -291,7 +307,7 @@ bool CCameraManager::KeyDown(int c)
 
 bool CCameraManager::KeyUp(int c)
 {
-	if (m_bFreeMode)
+	if (GetFreeMode())
 	{
 		if (c == 'W')
 		{
@@ -323,7 +339,7 @@ bool CCameraManager::KeyUp(int c)
 			return true;
 		}
 
-		if (c == 'V')
+		if (c == 'V' || c == TINKER_KEY_LCTRL)
 		{
 			m_vecFreeVelocity.y = 0.0f;
 			return true;

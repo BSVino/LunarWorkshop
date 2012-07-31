@@ -28,9 +28,11 @@ public:
 	virtual bool	ShouldTransition();
 	virtual float	GetTransitionLerp();
 
-	bool			GetFreeMode() { return m_bFreeMode; };
+	void            SetPermaFreeMode(bool bPermaFreeMode);
+	bool			GetFreeMode() { return m_bFreeMode || m_bPermaFreeMode; };
 	TVector			GetFreeCameraPosition() const { return m_vecFreeCamera; };
 	EAngle			GetFreeCameraAngles() const { return m_angFreeCamera; };
+	float			GetFreeCameraOrthoHeight() const { return m_flFreeOrthoHeight; };
 
 	virtual void	MouseInput(int x, int y);
 	virtual bool	MouseButton(int iButton, int iState) { return false; };
@@ -47,6 +49,7 @@ public:
 	class CCamera*	GetCamera(size_t iCamera);
 
 public:
+	bool			m_bPermaFreeMode;
 	bool			m_bFreeMode;
 	TVector			m_vecFreeCamera;
 	EAngle			m_angFreeCamera;

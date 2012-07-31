@@ -399,10 +399,14 @@ void CMaterialEditor::Activate()
 	GetFileMenu()->AddSubmenu("New", this, NewMaterial);
 	GetFileMenu()->AddSubmenu("Open", this, ChooseMaterial);
 	GetFileMenu()->AddSubmenu("Save", this, SaveMaterial);
+
+	BaseClass::Activate();
 }
 
 void CMaterialEditor::Deactivate()
 {
+	BaseClass::Deactivate();
+
 	m_pCreateMaterialPanel->SetVisible(false);
 	m_pMaterialPanel->SetVisible(false);
 }

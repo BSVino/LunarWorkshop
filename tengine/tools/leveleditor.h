@@ -121,8 +121,10 @@ public:
 	glgui::CControl<glgui::CTextField>		m_hOutputArgsText;
 };
 
-class CLevelEditor : public CWorkbenchTool, public glgui::IEventListener, public IManipulatorListener
+class CLevelEditor : public CWorkbenchTool, public IManipulatorListener
 {
+	DECLARE_CLASS(CLevelEditor, CWorkbenchTool);
+
 public:
 							CLevelEditor();
 	virtual					~CLevelEditor();
@@ -146,17 +148,14 @@ public:
 	bool					KeyPress(int c);
 	bool					MouseInput(int iButton, tinker_mouse_state_t iState);
 
-	virtual void			CameraThink();
-	virtual TVector			GetCameraPosition();
-	virtual TVector			GetCameraDirection();
-	virtual void			SetCameraOrientation(TVector vecPosition, Vector vecDirection);
-
 	virtual void			Activate();
 	virtual void			Deactivate();
 
 	virtual void			RenderScene();
 
 	virtual void			ManipulatorUpdated(const tstring& sArguments);
+
+	virtual bool			ShowCameraControls() { return true; }
 
 	virtual tstring			GetToolName() { return "Level Editor"; }
 
@@ -171,9 +170,6 @@ protected:
 	glgui::CControl<CCreateEntityPanel>		m_hCreateEntityPanel;
 
 	float					m_flCreateObjectDistance;
-
-	TVector					m_vecEditCamera;
-	EAngle					m_angEditCamera;
 
 private:
 	static CLevelEditor*	s_pLevelEditor;
