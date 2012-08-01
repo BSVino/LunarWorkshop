@@ -151,6 +151,7 @@ namespace glgui
 
 		static float	GetTextWidth(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize);
 		static float	GetFontHeight(const tstring& sFontName, int iFontFaceSize);
+		static float	GetFontAscender(const tstring& sFontName, int iFontFaceSize);
 		static void		PaintText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, float x, float y, const Color& clrText = Color(255, 255, 255), const FRect& rStencil = FRect(-1, -1, -1, -1));
 		static void		PaintText(const tstring& sText, unsigned iLength, class ::FTFont* pFont, float x, float y, const Color& clrText = Color(255, 255, 255), const FRect& rStencil = FRect(-1, -1, -1, -1));
 		static void		PaintText3D(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, Vector vecPosition, const Color& clrText = Color(255, 255, 255));

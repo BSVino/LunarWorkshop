@@ -83,6 +83,8 @@ public:
 	void					LayoutOutput();
 	void					LayoutInput();
 
+	void                    Paint(float x, float y, float w, float h);
+
 	CLevelEntity*			GetCurrentEntity();
 	CLevelEntity::CLevelEntityOutput* GetCurrentOutput();
 

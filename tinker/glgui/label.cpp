@@ -316,6 +316,14 @@ float CLabel::GetFontHeight(const tstring& sFontName, int iFontFaceSize)
 	return s_apFonts[sFontName][iFontFaceSize]->LineHeight();
 }
 
+float CLabel::GetFontAscender(const tstring& sFontName, int iFontFaceSize)
+{
+	if (!GetFont(sFontName, iFontFaceSize))
+		AddFontSize(sFontName, iFontFaceSize);
+
+	return s_apFonts[sFontName][iFontFaceSize]->Ascender();
+}
+
 void CLabel::PaintText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize, float x, float y, const Color& clrText, const FRect& rStencil)
 {
 	FTFont* pFont = glgui::CLabel::GetFont(sFontName, iFontFaceSize);

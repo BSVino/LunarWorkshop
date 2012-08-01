@@ -688,6 +688,73 @@ void CEditorPanel::LayoutInput()
 	}
 }
 
+void CEditorPanel::Paint(float x, float y, float w, float h)
+{
+	Matrix4x4 mFontProjection = Matrix4x4::ProjectOrthographic(0, glgui::RootPanel()->GetWidth(), 0, glgui::RootPanel()->GetHeight(), -1, 1);
+
+	CLevel* pLevel = LevelEditor()->GetLevel();
+	if (pLevel)
+	{
+		for (size_t i = 0; i < pLevel->GetEntityData().size(); i++)
+		{
+			CLevelEntity* pEnt = &pLevel->GetEntityData()[i];
+
+			Vector vecCenter = pEnt->GetGlobalTransform().GetTranslation();
+			if (!GameServer()->GetRenderer()->IsSphereInFrustum(vecCenter, pEnt->GetBoundingBox().Size().Length()/2))
+				continue;
+
+			if (pEnt->GetMaterialModel().IsValid() && !pEnt->ShouldDisableBackCulling())
+			{
+				Vector vecToCenter = vecCenter - GameServer()->GetRenderer()->GetCameraPosition();
+
+				if (pEnt->ShouldRenderInverted())
+				{
+					if (vecToCenter.Dot(pEnt->GetGlobalTransform().GetForwardVector()) > 0)
+						continue;
+				}
+				else
+				{
+					if (vecToCenter.Dot(pEnt->GetGlobalTransform().GetForwardVector()) < 0)
+						continue;
+				}
+			}
+
+			Vector vecScreen = GameServer()->GetRenderer()->ScreenPosition(vecCenter);
+
+			tstring sText;
+			if (pEnt->GetName().length())
+				sText = pEnt->GetClass() + ": " + pEnt->GetName();
+			else
+				sText = pEnt->GetClass();
+
+			float flWidth = glgui::CLabel::GetTextWidth(sText, sText.length(), "sans-serif", 10);
+			float flHeight = glgui::CLabel::GetFontHeight("sans-serif", 10);
+			float flAscender = glgui::CLabel::GetFontAscender("sans-serif", 10);
+
+			if (m_hEntities->GetSelectedNodeId() == i)
+				PaintRect(vecScreen.x - flWidth/2 - 3, vecScreen.y+20-flAscender - 3, flWidth + 6, flHeight + 6, Color(0, 0, 0, 150));
+
+			CRenderingContext c(nullptr, true);
+
+			c.SetBlend(BLEND_ALPHA);
+			c.UseProgram("text");
+			c.SetProjection(mFontProjection);
+
+			if (m_hEntities->GetSelectedNodeId() == i)
+				c.SetUniform("vecColor", Color(255, 255, 255, 255));
+			else
+				c.SetUniform("vecColor", Color(255, 255, 255, 200));
+
+			c.Translate(Vector(vecScreen.x - flWidth/2, glgui::RootPanel()->GetBottom()-vecScreen.y-20, 0));
+			c.SetUniform("bScissor", false);
+
+			c.RenderText(sText, sText.length(), "sans-serif", 10);
+		}
+	}
+
+	BaseClass::Paint(x, y, w, h);
+}
+
 CLevelEntity* CEditorPanel::GetCurrentEntity()
 {
 	CLevel* pLevel = LevelEditor()->GetLevel();
