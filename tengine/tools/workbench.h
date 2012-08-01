@@ -34,6 +34,8 @@ public:
 	virtual					~CWorkbench();
 
 public:
+	void                    Think();
+
 	bool					KeyPress(int c);
 	bool					MouseInput(int iButton, tinker_mouse_state_t iState);
 	void					MouseMotion(int x, int y);

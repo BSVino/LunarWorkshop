@@ -10,6 +10,10 @@ CWorkbenchTool::CWorkbenchTool()
 	m_flEditOrthoHeight = 10;
 }
 
+void CWorkbenchTool::Think()
+{
+}
+
 void CWorkbenchTool::Activate()
 {
 	Workbench()->GetCameraManager()->SetPermaFreeMode(true);

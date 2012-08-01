@@ -645,6 +645,9 @@ void CGameServer::Think(double flHostTime)
 
 	m_ahDeletedEntities.clear();
 
+	if (CWorkbench::IsActive())
+		Workbench()->Think();
+
 	CNetwork::Think();
 
 	size_t iMaxEntities = GameServer()->GetMaxEntities();

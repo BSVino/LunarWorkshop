@@ -19,6 +19,8 @@ public:
 	virtual					~CWorkbenchTool() {};
 
 public:
+	virtual void            Think();
+
 	virtual bool			KeyPress(int c) { return false; }
 	virtual bool			MouseInput(int iButton, tinker_mouse_state_t iState) { return false; }
 	virtual void			MouseMotion(int x, int y) {};

@@ -132,8 +132,10 @@ public:
 	virtual					~CLevelEditor();
 
 public:
+	virtual void            Think();
+
 	void					RenderEntity(size_t i);
-	void					RenderEntity(class CLevelEntity* pEntity, bool bSelected=false);
+	void					RenderEntity(class CLevelEntity* pEntity, bool bSelected=false, bool bHover=false);
 	void					RenderCreateEntityPreview();
 
 	Vector					PositionFromMouse();
@@ -173,6 +175,8 @@ protected:
 	glgui::CControl<CCreateEntityPanel>		m_hCreateEntityPanel;
 
 	float					m_flCreateObjectDistance;
+
+	size_t					m_iHoverEntity;
 
 private:
 	static CLevelEditor*	s_pLevelEditor;

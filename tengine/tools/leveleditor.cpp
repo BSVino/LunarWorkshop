@@ -958,6 +958,18 @@ CLevelEditor::~CLevelEditor()
 	glgui::CRootPanel::Get()->RemoveControl(m_hCreateEntityButton);
 }
 
+void CLevelEditor::Think()
+{
+	BaseClass::Think();
+
+	int x, y;
+	Application()->GetMousePosition(x, y);
+	Vector vecCamera = GameServer()->GetRenderer()->GetCameraPosition();
+	Vector vecPosition = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 1));
+
+	m_iHoverEntity = TraceLine(Ray(vecCamera, (vecPosition-vecCamera).Normalized()));
+}
+
 void CLevelEditor::RenderEntity(size_t i)
 {
 	CLevelEntity* pEntity = &m_pLevel->GetEntityData()[i];
@@ -969,10 +981,10 @@ void CLevelEditor::RenderEntity(size_t i)
 		RenderEntity(&oCopy, true);
 	}
 	else
-		RenderEntity(pEntity, m_hEditorPanel->m_hEntities->GetSelectedNodeId() == i);
+		RenderEntity(pEntity, m_hEditorPanel->m_hEntities->GetSelectedNodeId() == i, i == m_iHoverEntity);
 }
 
-void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected)
+void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHover)
 {
 	CGameRenderingContext r(GameServer()->GetRenderer(), true);
 
@@ -1044,7 +1056,9 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected)
 
 			r.SetUniform("bDiffuse", false);
 
-			clrEnt.SetAlpha(clrEnt.a()/3);
+			if (!bHover)
+				clrEnt.SetAlpha(clrEnt.a()/3);
+
 			r.SetBlend(BLEND_ALPHA);
 			r.SetUniform("vecColor", clrEnt);
 
@@ -1056,8 +1070,14 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected)
 		r.UseProgram("model");
 		if (bSelected)
 			r.SetUniform("vecColor", Color(255, 0, 0, (char)(255*flAlpha)));
-		else
+		else if (bHover)
 			r.SetUniform("vecColor", Color(255, 255, 255, (char)(255*flAlpha)));
+		else
+		{
+			r.SetBlend(BLEND_ALPHA);
+			r.SetUniform("vecColor", Color(255, 255, 255, (char)(150*flAlpha)));
+		}
+
 		r.SetUniform("bDiffuse", false);
 
 		r.Scale(vecScale.x, vecScale.y, vecScale.z);

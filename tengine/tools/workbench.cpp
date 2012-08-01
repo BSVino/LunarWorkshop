@@ -92,6 +92,11 @@ CWorkbench::~CWorkbench()
 	delete m_pCamera;
 }
 
+void CWorkbench::Think()
+{
+	GetActiveTool()->Think();
+}
+
 bool CWorkbench::KeyPress(int c)
 {
 	return GetActiveTool()->KeyPress(c);
