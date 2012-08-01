@@ -93,8 +93,8 @@ void test_toy()
 	TAssert(pToy->GetMaterialNumVerts(0) == 6);
 	TAssert(pToy->GetMaterialNumVerts(1) == 9);
 	TAssert(pToy->GetMaterialNumVerts(2) == 3);
-	TAssert(pToy->GetAABB().m_vecMins == Vector(1, 2, 3));
-	TAssert(pToy->GetAABB().m_vecMaxs == Vector(20, 30, 40));
+	TAssert(pToy->GetVisBounds().m_vecMins == Vector(1, 2, 3));
+	TAssert(pToy->GetVisBounds().m_vecMaxs == Vector(20, 30, 40));
 	TAssert(pToy->GetNumMaterials() == 3);
 
 	TAssert(pToy->GetPhysicsNumTris() == 2);
@@ -177,9 +177,9 @@ void test_scene()
 	TAssert(tstring(pToy->GetSceneAreaFileName(0)) == tstring("testscene1.toy"));
 	TAssert(tstring(pToy->GetSceneAreaFileName(1)) == tstring("testscene2.toy"));
 	TAssert(tstring(pToy->GetSceneAreaFileName(2)) == tstring("testscene3.toy"));
-	TAssert(pToy->GetSceneAreaAABB(0) == t1.GetBounds());
-	TAssert(pToy->GetSceneAreaAABB(1) == t2.GetBounds());
-	TAssert(pToy->GetSceneAreaAABB(2) == t3.GetBounds());
+	TAssert(pToy->GetSceneAreaAABB(0) == t1.GetVisBounds());
+	TAssert(pToy->GetSceneAreaAABB(1) == t2.GetVisBounds());
+	TAssert(pToy->GetSceneAreaAABB(2) == t3.GetVisBounds());
 	TAssert(pToy->GetSceneAreaNumVisible(0) == 2);
 	TAssert(pToy->GetSceneAreaNumVisible(1) == 3);
 	TAssert(pToy->GetSceneAreaNumVisible(2) == 2);

@@ -135,6 +135,7 @@ public:
 	void					RenderCreateEntityPreview();
 
 	Vector					PositionFromMouse();
+	size_t                  TraceLine(const Ray& vecTrace);
 	void					EntitySelected();
 	void					CreateEntityFromPanel(const Vector& vecPosition);
 	static void				PopulateLevelEntityFromPanel(class CLevelEntity* pEntity, CEntityPropertiesPanel* pPanel);

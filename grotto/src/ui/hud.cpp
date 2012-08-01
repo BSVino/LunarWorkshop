@@ -68,7 +68,7 @@ void CGrottoHUD::Paint(float x, float y, float w, float h)
 
 		c.Translate(Vector(flRatio*0.7f, -0.7f, 0));
 
-		float flScale = (1/pPlayerCharacter->GetToken()->GetBoundingBox().Size().Length())/2;
+		float flScale = (1/pPlayerCharacter->GetToken()->GetVisBoundingBox().Size().Length())/2;
 		c.Scale(flScale, flScale, flScale);
 
 		c.Rotate(90.0f, Vector(0, 0, 1));

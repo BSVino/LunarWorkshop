@@ -96,7 +96,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hMoveParent, "MoveParent", UnserializeString_MoveParent);
 	SAVEDATA_EDITOR_VARIABLE("MoveParent");
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_ahMoveChildren);
-	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, AABB, m_aabbBoundingBox, "BoundingBox", AABB(Vector(-0.5f, -0.5f, -0.5f), Vector(0.5f, 0.5f, 0.5f)));
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, AABB, m_aabbVisBoundingBox, "BoundingBox", AABB(Vector(-0.5f, -0.5f, -0.5f), Vector(0.5f, 0.5f, 0.5f)));
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bGlobalTransformsDirty);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TMatrix, m_mGlobalTransform);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, TVector, m_vecGlobalGravity, "GlobalGravity", Vector(0, -9.8f, 0));
@@ -259,12 +259,12 @@ void CBaseEntity::Spawn()
 
 const TVector CBaseEntity::GetLocalCenter() const
 {
-	return GetLocalTransform() * m_aabbBoundingBox.Center();
+	return GetLocalTransform() * m_aabbVisBoundingBox.Center();
 }
 
 const TVector CBaseEntity::GetGlobalCenter() const
 {
-	return GetGlobalTransform() * m_aabbBoundingBox.Center();
+	return GetGlobalTransform() * m_aabbVisBoundingBox.Center();
 }
 
 const TFloat CBaseEntity::GetBoundingRadius() const
@@ -283,7 +283,7 @@ const TFloat CBaseEntity::GetBoundingRadius() const
 		return (GetGlobalTransform() * (Vector(0, (float)iWidth, (float)iHeight)/2 * m_vecScale.Get())).Length()/2;
 	}
 
-	return (m_aabbBoundingBox.Size()*m_vecScale.Get()).Length()/2;
+	return (m_aabbVisBoundingBox.Size()*m_vecScale.Get()).Length()/2;
 }
 
 void CBaseEntity::SetModel(const tstring& sModel)
@@ -308,7 +308,10 @@ void CBaseEntity::SetModel(size_t iModel)
 
 	CModel* pModel = CModelLibrary::GetModel(iModel);
 	if (pModel)
-		m_aabbBoundingBox = pModel->m_aabbBoundingBox;
+	{
+		m_aabbVisBoundingBox = pModel->m_aabbVisBoundingBox;
+		m_aabbPhysBoundingBox = pModel->m_aabbPhysBoundingBox;
+	}
 
 	OnSetModel();
 }

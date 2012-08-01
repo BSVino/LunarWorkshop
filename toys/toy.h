@@ -14,12 +14,18 @@
 
 	Base data format - Information about the model
 
-	4 bytes, float, AABB min x	(of the model in its default pose)
-	4 bytes, float, AABB min y
-	4 bytes, float, AABB min z
-	4 bytes, float, AABB max x
-	4 bytes, float, AABB max y
-	4 bytes, float, AABB max z
+	4 bytes, float, Visual Bounds min x (of the model in its default pose)
+	4 bytes, float, Visual Bounds min y
+	4 bytes, float, Visual Bounds min z
+	4 bytes, float, Visual Bounds max x
+	4 bytes, float, Visual Bounds max y
+	4 bytes, float, Visual Bounds max z
+	4 bytes, float, Physics Bounds min x (of the model in its default pose)
+	4 bytes, float, Physics Bounds min y
+	4 bytes, float, Physics Bounds min z
+	4 bytes, float, Physics Bounds max x
+	4 bytes, float, Physics Bounds max y
+	4 bytes, float, Physics Bounds max z
 	1 byte, unsigned, number of materials
 	∀ material:
 		4 bytes, unsigned, MESH file offset of material
@@ -90,7 +96,8 @@ public:
 				~CToy();
 
 public:
-	const AABB&	GetAABB();
+	const AABB&	GetVisBounds();
+	const AABB&	GetPhysBounds();
 	size_t		GetNumMaterials();
 	size_t		GetMaterialNameLength(size_t iMaterial);
 	char*		GetMaterialName(size_t iMaterial);

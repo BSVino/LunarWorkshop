@@ -252,7 +252,8 @@ bool CModel::Load()
 
 	m_pToy->DeallocateMesh();
 
-	m_aabbBoundingBox = m_pToy->GetAABB();
+	m_aabbVisBoundingBox = m_pToy->GetVisBounds();
+	m_aabbPhysBoundingBox = m_pToy->GetPhysBounds();
 
 	return true;
 }

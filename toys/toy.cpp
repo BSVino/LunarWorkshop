@@ -35,7 +35,7 @@ CToy::~CToy()
 		free(m_pArea);
 }
 
-const AABB& CToy::GetAABB()
+const AABB& CToy::GetVisBounds()
 {
 	if (!m_pBase)
 	{
@@ -46,12 +46,23 @@ const AABB& CToy::GetAABB()
 	return *((AABB*)(m_pBase+TOY_HEADER_SIZE));
 }
 
+const AABB& CToy::GetPhysBounds()
+{
+	if (!m_pBase)
+	{
+		static AABB aabb;
+		return aabb;
+	}
+
+	return *((AABB*)(m_pBase+TOY_HEADER_SIZE+BASE_AABB_SIZE));
+}
+
 size_t CToy::GetNumMaterials()
 {
 	if (!m_pBase)
 		return 0;
 
-	return (int)*((uint8_t*)(m_pBase+TOY_HEADER_SIZE+BASE_AABB_SIZE));
+	return (int)*((uint8_t*)(m_pBase+TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_AABB_SIZE));
 }
 
 size_t CToy::GetMaterialNameLength(size_t i)
@@ -66,7 +77,7 @@ char* CToy::GetMaterialName(size_t i)
 
 size_t CToy::GetMaterialNumVerts(size_t i)
 {
-	size_t iMaterialTableEntry = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+i*BASE_MATERIAL_TABLE_STRIDE;
+	size_t iMaterialTableEntry = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+i*BASE_MATERIAL_TABLE_STRIDE;
 	size_t iMaterialVertCount = (size_t)*((size_t*)(m_pBase+iMaterialTableEntry+BASE_MATERIAL_TABLE_OFFSET_SIZE));
 	return iMaterialVertCount;
 }
@@ -88,7 +99,7 @@ size_t CToy::GetNumSceneAreas()
 	if (!m_pBase)
 		return 0;
 
-	size_t iSceneTable = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+GetNumMaterials()*BASE_MATERIAL_TABLE_STRIDE;
+	size_t iSceneTable = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+GetNumMaterials()*BASE_MATERIAL_TABLE_STRIDE;
 	return (int)*((uint32_t*)(m_pBase+iSceneTable));
 }
 
@@ -244,7 +255,7 @@ char* CToy::GetMaterial(size_t i)
 	if (!m_pMesh)
 		return nullptr;
 
-	size_t iMaterialTableEntry = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+i*BASE_MATERIAL_TABLE_STRIDE;
+	size_t iMaterialTableEntry = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+i*BASE_MATERIAL_TABLE_STRIDE;
 	size_t iMaterialOffset = (size_t)*((uint32_t*)(m_pBase+iMaterialTableEntry));
 	return m_pMesh+iMaterialOffset;
 }
@@ -255,7 +266,7 @@ char* CToy::GetSceneArea(size_t i)
 	if (!m_pArea)
 		return nullptr;
 
-	size_t iSceneTable = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+GetNumMaterials()*BASE_MATERIAL_TABLE_STRIDE+BASE_SCENE_TABLE_SIZE;
+	size_t iSceneTable = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+GetNumMaterials()*BASE_MATERIAL_TABLE_STRIDE+BASE_SCENE_TABLE_SIZE;
 	size_t iSceneTableEntry = iSceneTable+i*AREA_VISIBLE_AREAS_STRIDE;
 	size_t iSceneOffset = (size_t)*((uint32_t*)(m_pBase+iSceneTableEntry));
 	return m_pArea+iSceneOffset;

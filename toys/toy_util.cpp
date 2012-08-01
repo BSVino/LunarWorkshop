@@ -14,8 +14,10 @@
 
 CToyUtil::CToyUtil()
 {
-	m_aabbBounds.m_vecMins = Vector(999999, 999999, 999999);
-	m_aabbBounds.m_vecMaxs = Vector(-999999, -999999, -999999);
+	m_aabbVisBounds.m_vecMins = Vector(999999, 999999, 999999);
+	m_aabbVisBounds.m_vecMaxs = Vector(-999999, -999999, -999999);
+	m_aabbPhysBounds.m_vecMins = Vector(999999, 999999, 999999);
+	m_aabbPhysBounds.m_vecMaxs = Vector(-999999, -999999, -999999);
 
 	m_flNeighborDistance = 1;
 	m_bUseLocalTransforms = true;	// Use local by default
@@ -90,10 +92,10 @@ void CToyUtil::AddVertex(size_t iMaterial, Vector vecPosition, Vector2D vecUV)
 
 	for (int i = 0; i < 3; i++)
 	{
-		if (vecPosition[i] < m_aabbBounds.m_vecMins[i])
-			m_aabbBounds.m_vecMins[i] = vecPosition[i];
-		if (vecPosition[i] > m_aabbBounds.m_vecMaxs[i])
-			m_aabbBounds.m_vecMaxs[i] = vecPosition[i];
+		if (vecPosition[i] < m_aabbVisBounds.m_vecMins[i])
+			m_aabbVisBounds.m_vecMins[i] = vecPosition[i];
+		if (vecPosition[i] > m_aabbVisBounds.m_vecMaxs[i])
+			m_aabbVisBounds.m_vecMaxs[i] = vecPosition[i];
 	}
 }
 
@@ -133,10 +135,10 @@ void CToyUtil::AddPhysBox(const TRS& trsBox)
 
 	for (int i = 0; i < 3; i++)
 	{
-		if (aabbBox.m_vecMins[i] < m_aabbBounds.m_vecMins[i])
-			m_aabbBounds.m_vecMins[i] = aabbBox.m_vecMins[i];
-		if (aabbBox.m_vecMaxs[i] > m_aabbBounds.m_vecMaxs[i])
-			m_aabbBounds.m_vecMaxs[i] = aabbBox.m_vecMaxs[i];
+		if (aabbBox.m_vecMins[i] < m_aabbPhysBounds.m_vecMins[i])
+			m_aabbPhysBounds.m_vecMins[i] = aabbBox.m_vecMins[i];
+		if (aabbBox.m_vecMaxs[i] > m_aabbPhysBounds.m_vecMaxs[i])
+			m_aabbPhysBounds.m_vecMaxs[i] = aabbBox.m_vecMaxs[i];
 	}
 }
 
@@ -158,7 +160,7 @@ size_t CToyUtil::AddSceneArea(const tstring& sFileName)
 	CSceneArea& oSceneArea = m_asSceneAreas.push_back();
 
 	oSceneArea.m_sFileName = sFileName;
-	oSceneArea.m_aabbArea = pArea->GetAABB();
+	oSceneArea.m_aabbArea = pArea->GetVisBounds();
 
 	// I'm visible to myself.
 	oSceneArea.m_aiNeighboringAreas.push_back(m_asSceneAreas.size()-1);
@@ -418,8 +420,11 @@ bool CToyUtil::Write(const tstring& sFilename)
 
 	fwrite(g_szBaseHeader, sizeof(g_szBaseHeader), 1, fp);
 
-	TAssert(sizeof(m_aabbBounds) == 4*6);
-	fwrite(&m_aabbBounds, sizeof(m_aabbBounds), 1, fp);
+	TAssert(sizeof(m_aabbVisBounds) == 4*6);
+	fwrite(&m_aabbVisBounds, sizeof(m_aabbVisBounds), 1, fp);
+
+	TAssert(sizeof(m_aabbPhysBounds) == 4*6);
+	fwrite(&m_aabbPhysBounds, sizeof(m_aabbPhysBounds), 1, fp);
 
 	uint8_t iMaterials = m_asMaterials.size();
 	fwrite(&iMaterials, sizeof(iMaterials), 1, fp);

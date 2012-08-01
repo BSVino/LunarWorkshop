@@ -38,7 +38,7 @@ void CPlayerCharacter::Spawn()
 	SetMaterialModel(CMaterialLibrary::FindAsset("models/otto/otto.mat"));
 
 	SetMass(60);
-	m_aabbBoundingBox = AABB(Vector(-0.35f, 0, -0.35f), Vector(0.35f, 2, 0.35f));
+	m_aabbPhysBoundingBox = AABB(Vector(-0.35f, 0, -0.35f), Vector(0.35f, 2, 0.35f));
 
 	SetGlobalGravity(Vector(0, -9.8f, 0)*2);
 
@@ -49,7 +49,7 @@ const Matrix4x4 CPlayerCharacter::GetRenderTransform() const
 {
 	Matrix4x4 mRender = BaseClass::GetRenderTransform();
 
-	mRender.AddTranslation(Vector(0, (m_aabbBoundingBox.m_vecMaxs.y - m_aabbBoundingBox.m_vecMins.y)/2, 0));
+	mRender.AddTranslation(Vector(0, (m_aabbPhysBoundingBox.m_vecMaxs.y - m_aabbPhysBoundingBox.m_vecMins.y)/2, 0));
 
 	return mRender;
 }
@@ -281,7 +281,7 @@ void CPlayerCharacter::GoIntoMirror()
 		if (fabs(vecMirror.z - vecPlayer.z) > 0.5f)
 			continue;
 
-		if (fabs(vecMirror.y - (vecPlayer.y + GetBoundingBox().Size().y/2)) > 1)
+		if (fabs(vecMirror.y - (vecPlayer.y + GetPhysBoundingBox().Size().y/2)) > 1)
 			continue;
 
 		Matrix4x4 mNew = GetLocalTransform();

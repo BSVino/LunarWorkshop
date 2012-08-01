@@ -154,6 +154,7 @@ public:
 	AABB		operator+(const AABB& oBox) const;
 	AABB		operator*(float s) const;
 	bool		operator==(const AABB& o) const;
+	AABB&       operator+=(const Vector& v);
 
 public:
 	Vector		m_vecMins;
@@ -273,6 +274,14 @@ inline AABB AABB::operator*(float s) const
 inline bool AABB::operator==(const AABB& o) const
 {
 	return (m_vecMins == o.m_vecMins) && (m_vecMaxs == o.m_vecMaxs);
+}
+
+inline AABB& AABB::operator+=(const Vector& v)
+{
+	m_vecMaxs += v;
+	m_vecMins += v;
+
+	return *this;
 }
 
 // Geometry-related functions
@@ -538,7 +547,7 @@ inline bool ClipRay(float flMin, float flMax, float a, float d, float& tmin, flo
 	return (tmax>tmin);
 }
 
-inline bool RayIntersectsAABB(const Ray& r, const AABB& b)
+inline bool RayIntersectsAABB(const Ray& r, const AABB& b, Vector& vecIntersection = Vector())
 {
 	float tmin = 0;
 	float tmax = b.Size().LengthSqr();	// It's a ray so make tmax effectively infinite.
@@ -557,6 +566,8 @@ inline bool RayIntersectsAABB(const Ray& r, const AABB& b)
 
 	if (!ClipRay(b.m_vecMins.z, b.m_vecMaxs.z, r.m_vecPos.z, r.m_vecDir.z, tmin, tmax))
 		return false;
+
+	vecIntersection = r.m_vecPos + r.m_vecDir * tmin;
 
 	return true;
 }

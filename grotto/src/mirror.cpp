@@ -59,7 +59,7 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 			if (vecPoint.y < GetGlobalOrigin().y + 0.05f)
 				return false;
 
-			if (vecPoint.y > GetGlobalOrigin().y + GetBoundingBox().Size().y)
+			if (vecPoint.y > GetGlobalOrigin().y + GetPhysBoundingBox().Size().y)
 				return false;
 		}
 		else
@@ -67,11 +67,11 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 			if (vecPoint.y > GetGlobalOrigin().y - 0.05f)
 				return false;
 
-			if (vecPoint.y < GetGlobalOrigin().y - GetBoundingBox().Size().y)
+			if (vecPoint.y < GetGlobalOrigin().y - GetPhysBoundingBox().Size().y)
 				return false;
 		}
 
-		return (vecPoint - GetGlobalOrigin()).Length2D() < GetBoundingBox().Size().Length2D()/2;
+		return (vecPoint - GetGlobalOrigin()).Length2D() < GetPhysBoundingBox().Size().Length2D()/2;
 
 	case MIRROR_HORIZONTAL:
 		if (bPhysics)
@@ -97,9 +97,9 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 		}
 
 		CGrottoCharacter* pPlayerCharacter = GrottoGame()->GetLocalPlayerCharacter();
-		AABB aabb = GetBoundingBox();
-		aabb.m_vecMins += pPlayerCharacter->GetBoundingBox().m_vecMins;
-		aabb.m_vecMaxs += pPlayerCharacter->GetBoundingBox().m_vecMaxs;
+		AABB aabb = GetPhysBoundingBox();
+		aabb.m_vecMins += pPlayerCharacter->GetPhysBoundingBox().m_vecMins;
+		aabb.m_vecMaxs += pPlayerCharacter->GetPhysBoundingBox().m_vecMaxs;
 
 		// Use a tighter area for physics to make sure we never fall outside the level
 		if (bPhysics)

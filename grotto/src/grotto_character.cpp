@@ -68,7 +68,7 @@ void CGrottoCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 		if (!pMirror)
 			continue;
 
-		if ((pMirror->GetGlobalOrigin() - vecGlobal).LengthSqr() > m_aabbBoundingBox.Size().LengthSqr()*2)
+		if ((pMirror->GetGlobalOrigin() - vecGlobal).LengthSqr() > m_aabbPhysBoundingBox.Size().LengthSqr()*2)
 			continue;
 
 		TestMirror(pMirror, mNew);
@@ -154,8 +154,8 @@ void CGrottoCharacter::Reflect(const Matrix4x4& mMirror, const Matrix4x4& mRefle
 	SetGlobalGravity(vecReflectedGravity);
 
 	// Reflect the bounding box
-	Vector vecMaxs = GetBoundingBox().m_vecMaxs;
-	Vector vecMins = GetBoundingBox().m_vecMins;
+	Vector vecMaxs = GetPhysBoundingBox().m_vecMaxs;
+	Vector vecMins = GetPhysBoundingBox().m_vecMins;
 	Vector vecReflectedMaxs = mReflection.TransformVector(vecMaxs);
 	Vector vecReflectedMins = mReflection.TransformVector(vecMins);
 
@@ -171,7 +171,18 @@ if ((x) > (y)) \
 	swap_if_greater(vecReflectedMins.y, vecReflectedMaxs.y);
 	swap_if_greater(vecReflectedMins.z, vecReflectedMaxs.z);
 
-	m_aabbBoundingBox = AABB(vecReflectedMins, vecReflectedMaxs);
+	m_aabbPhysBoundingBox = AABB(vecReflectedMins, vecReflectedMaxs);
+
+	vecMaxs = GetVisBoundingBox().m_vecMaxs;
+	vecMins = GetVisBoundingBox().m_vecMins;
+	vecReflectedMaxs = mReflection.TransformVector(vecMaxs);
+	vecReflectedMins = mReflection.TransformVector(vecMins);
+
+	swap_if_greater(vecReflectedMins.x, vecReflectedMaxs.x);
+	swap_if_greater(vecReflectedMins.y, vecReflectedMaxs.y);
+	swap_if_greater(vecReflectedMins.z, vecReflectedMaxs.z);
+
+	m_aabbVisBoundingBox = AABB(vecReflectedMins, vecReflectedMaxs);
 
 	if (eReflectionType == REFLECTION_LATERAL)
 		m_vecMoveVelocity.z = -m_vecMoveVelocity.z;

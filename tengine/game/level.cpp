@@ -385,22 +385,37 @@ AABB CLevelEntity::CalculateBoundingBox(CLevelEntity* pThis)
 	CModel* pModel = CModelLibrary::GetModel(iModel);
 
 	if (pModel)
-		return pModel->m_aabbBoundingBox;
+		return pModel->m_aabbVisBoundingBox;
 
 	tstring sAABB = pThis->GetParameterValue("BoundingBox");
 
 	if (CanUnserializeString_AABB(sAABB))
 		return UnserializeString_AABB(sAABB, pThis->GetName(), pThis->m_sClass, "BoundingBox");
 
+	AABB aabbBounds = AABB(Vector(-0.5f, -0.5f, -0.5f), Vector(0.5f, 0.5f, 0.5f));
+
 	CSaveData* pSaveData = CBaseEntity::FindSaveDataByHandle(tstring("C"+pThis->m_sClass).c_str(), "BoundingBox");
-	if (pSaveData)
-	{
-		AABB aabbBounds;
+	if (pSaveData && pSaveData->m_bDefault)
 		memcpy(&aabbBounds, &pSaveData->m_oDefault, sizeof(aabbBounds));
-		return aabbBounds;
+
+	if (pThis->m_hMaterialModel.IsValid() && pThis->m_hMaterialModel->m_ahTextures.size())
+	{
+		CTextureHandle hBaseTexture = pThis->m_hMaterialModel->m_ahTextures[0];
+
+		if (hBaseTexture.IsValid())
+		{
+			aabbBounds.m_vecMins.x = -0.01f;
+			aabbBounds.m_vecMaxs.x = 0.01f;
+
+			aabbBounds.m_vecMaxs.y *= (float)hBaseTexture->m_iHeight/100;
+			aabbBounds.m_vecMins.y *= (float)hBaseTexture->m_iHeight/100;
+
+			aabbBounds.m_vecMaxs.z *= (float)hBaseTexture->m_iWidth/100;
+			aabbBounds.m_vecMins.z *= (float)hBaseTexture->m_iWidth/100;
+		}
 	}
 
-	return AABB(Vector(-0.5f, -0.5f, -0.5f), Vector(0.5f, 0.5f, 0.5f));
+	return aabbBounds;
 }
 
 tstring CLevelEntity::CalculateName(CLevelEntity* pThis)

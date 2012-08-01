@@ -944,18 +944,44 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected)
 	}
 	else if (pEntity->GetMaterialModel().IsValid())
 	{
+		if (!pEntity->ShouldDisableBackCulling())
+		{
+			if (pEntity->ShouldRenderInverted())
+			{
+				if ((pEntity->GetGlobalTransform().GetTranslation() - GetCameraPosition()).Dot(pEntity->GetGlobalTransform().GetForwardVector()) > 0)
+					return;
+			}
+			else
+			{
+				if ((pEntity->GetGlobalTransform().GetTranslation() - GetCameraPosition()).Dot(pEntity->GetGlobalTransform().GetForwardVector()) < 0)
+					return;
+			}
+		}
+
 		if (GameServer()->GetRenderer()->IsRenderingTransparent())
 		{
 			TPROF("CLevelEditor::RenderModel(Material)");
 			r.UseProgram("model");
 			r.SetUniform("bDiffuse", true);
+
+			Color clrEnt;
 			if (bSelected)
-				r.SetColor(Color(255, 0, 0, (char)(255*flAlpha)));
+				clrEnt = Color(255, 0, 0, (char)(255*flAlpha));
 			else
-				r.SetColor(Color(255, 255, 255, (char)(255*flAlpha)));
+				clrEnt = Color(255, 255, 255, (char)(255*flAlpha));
+
+			r.SetColor(clrEnt);
 
 			r.Scale(0, vecScale.y, vecScale.x);
 			r.RenderMaterialModel(pEntity->GetMaterialModel());
+
+			r.SetUniform("bDiffuse", false);
+
+			clrEnt.SetAlpha(clrEnt.a()/3);
+			r.SetBlend(BLEND_ALPHA);
+			r.SetUniform("vecColor", clrEnt);
+
+			r.RenderWireBox(pEntity->GetBoundingBox());
 		}
 	}
 	else
@@ -999,6 +1025,67 @@ Vector CLevelEditor::PositionFromMouse()
 		vecPosition = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, -1));
 
 	return vecCamera + (vecPosition - vecCamera).Normalized() * m_flCreateObjectDistance;
+}
+
+size_t CLevelEditor::TraceLine(const Ray& vecTrace)
+{
+	CLevel* pLevel = GetLevel();
+	if (!pLevel)
+		return ~0;
+
+	size_t iNearest = ~0;
+	float flNearest;
+
+	for (size_t i = 0; i < pLevel->GetEntityData().size(); i++)
+	{
+		CLevelEntity* pEnt = &pLevel->GetEntityData()[i];
+
+		Vector vecCenter = pEnt->GetGlobalTransform().GetTranslation();
+
+		AABB aabbLocalBounds = pEnt->GetBoundingBox();
+		aabbLocalBounds.m_vecMaxs += Vector(0.01f, 0.01f, 0.01f);	// Make sure it's not zero size.
+
+		AABB aabbGlobalBounds = aabbLocalBounds;
+		aabbGlobalBounds += vecCenter;
+
+		if (!GameServer()->GetRenderer()->IsSphereInFrustum(vecCenter, aabbGlobalBounds.Size().Length()/2))
+			continue;
+
+		if (pEnt->GetMaterialModel().IsValid() && !pEnt->ShouldDisableBackCulling())
+		{
+			if (pEnt->ShouldRenderInverted())
+			{
+				if (vecTrace.m_vecDir.Dot(pEnt->GetGlobalTransform().GetForwardVector()) > 0)
+					continue;
+			}
+			else
+			{
+				if (vecTrace.m_vecDir.Dot(pEnt->GetGlobalTransform().GetForwardVector()) < 0)
+					continue;
+			}
+		}
+
+		Vector vecIntersection;
+		if (!RayIntersectsAABB(vecTrace, aabbGlobalBounds, vecIntersection))
+			continue;
+
+		float flDistanceSqr = (vecTrace.m_vecPos-vecIntersection).LengthSqr();
+
+		if (iNearest == ~0)
+		{
+			iNearest = i;
+			flNearest = flDistanceSqr;
+			continue;
+		}
+
+		if (flDistanceSqr >= flNearest)
+			continue;
+
+		iNearest = i;
+		flNearest = flDistanceSqr;
+	}
+
+	return iNearest;
 }
 
 void CLevelEditor::EntitySelected()
@@ -1127,6 +1214,18 @@ bool CLevelEditor::MouseInput(int iButton, tinker_mouse_state_t iState)
 	if (iState == TINKER_MOUSE_PRESSED && m_hCreateEntityPanel->IsVisible() && m_hCreateEntityPanel->m_bReadyToCreate)
 	{
 		CreateEntityFromPanel(PositionFromMouse());
+		return true;
+	}
+
+	if (iState == TINKER_MOUSE_PRESSED && iButton == TINKER_KEY_MOUSE_LEFT)
+	{
+		Vector vecPosition = PositionFromMouse();
+		Vector vecCamera = GameServer()->GetRenderer()->GetCameraPosition();
+
+		size_t iSelected = TraceLine(Ray(vecCamera, (vecPosition-vecCamera).Normalized()));
+
+		m_hEditorPanel->m_hEntities->SetSelectedNode(iSelected);
+
 		return true;
 	}
 

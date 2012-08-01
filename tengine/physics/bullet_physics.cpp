@@ -67,7 +67,7 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 	{
 		pPhysicsEntity->m_bCenterMassOffset = true;
 
-		AABB r = pEntity->GetBoundingBox();
+		AABB r = pEntity->GetPhysBoundingBox();
 		float flRadiusX = r.m_vecMaxs.x - r.Center().x;
 		float flRadiusZ = r.m_vecMaxs.z - r.Center().z;
 		float flRadius = flRadiusX;
@@ -90,7 +90,7 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 			{
 				TAssert(pEntity->GetModelID() != ~0);
 
-				Vector vecHalf = pEntity->GetModel()->m_aabbBoundingBox.m_vecMaxs - pEntity->GetModel()->m_aabbBoundingBox.Center();
+				Vector vecHalf = pEntity->GetModel()->m_aabbPhysBoundingBox.m_vecMaxs - pEntity->GetModel()->m_aabbPhysBoundingBox.Center();
 				m_apCharacterShapes[sIdentifier] = new btBoxShape(btVector3(vecHalf.x, vecHalf.y, vecHalf.z));
 			}
 			else
@@ -141,9 +141,9 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 		AABB aabbBoundingBox;
 
 		if (pEntity->GetModelID() != ~0)
-			aabbBoundingBox = pEntity->GetModel()->m_aabbBoundingBox;
+			aabbBoundingBox = pEntity->GetModel()->m_aabbPhysBoundingBox;
 		else
-			aabbBoundingBox = pEntity->GetBoundingBox();
+			aabbBoundingBox = pEntity->GetPhysBoundingBox();
 
 		aabbBoundingBox.m_vecMins += pEntity->GetGlobalOrigin();
 		aabbBoundingBox.m_vecMaxs += pEntity->GetGlobalOrigin();
@@ -482,7 +482,7 @@ void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4
 	if (pPhysicsEntity->m_bCenterMassOffset)
 	{
 		Matrix4x4 mCenter;
-		mCenter.SetTranslation(pEnt->GetBoundingBox().Center());
+		mCenter.SetTranslation(pEnt->GetPhysBoundingBox().Center());
 
 		btTransform m;
 		m.setFromOpenGLMatrix(mCenter * mTransform);
@@ -680,7 +680,7 @@ void CMotionState::getWorldTransform(btTransform& mCenterOfMass) const
 	if (m_pPhysics->GetPhysicsEntity(m_hEntity)->m_bCenterMassOffset)
 	{
 		Matrix4x4 mCenter;
-		mCenter.SetTranslation(m_hEntity->GetBoundingBox().Center());
+		mCenter.SetTranslation(m_hEntity->GetPhysBoundingBox().Center());
 
 		mCenterOfMass.setFromOpenGLMatrix(mCenter * m_hEntity->GetGlobalTransform());
 	}
@@ -698,7 +698,7 @@ void CMotionState::setWorldTransform(const btTransform& mCenterOfMass)
 	if (m_pPhysics->GetPhysicsEntity(m_hEntity)->m_bCenterMassOffset)
 	{
 		Matrix4x4 mCenter;
-		mCenter.SetTranslation(m_hEntity->GetBoundingBox().Center());
+		mCenter.SetTranslation(m_hEntity->GetPhysBoundingBox().Center());
 
 		m_hEntity->SetGlobalTransform(mCenter.InvertedRT() * mGlobal);
 	}

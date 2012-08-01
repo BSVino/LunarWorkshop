@@ -13,7 +13,8 @@
 
 tvector<tstring>			g_asTextures;
 tvector<tvector<float> >	g_aaflData;
-AABB						g_aabbBounds;
+AABB						g_aabbVisBounds;
+AABB						g_aabbPhysBounds;
 
 void AddVertex(size_t iMaterial, const Vector& v, const Vector2D& vt)
 {
@@ -25,10 +26,10 @@ void AddVertex(size_t iMaterial, const Vector& v, const Vector2D& vt)
 
 	for (int i = 0; i < 3; i++)
 	{
-		if (v[i] < g_aabbBounds.m_vecMins[i])
-			g_aabbBounds.m_vecMins[i] = v[i];
-		if (v[i] > g_aabbBounds.m_vecMaxs[i])
-			g_aabbBounds.m_vecMaxs[i] = v[i];
+		if (v[i] < g_aabbVisBounds.m_vecMins[i])
+			g_aabbVisBounds.m_vecMins[i] = v[i];
+		if (v[i] > g_aabbVisBounds.m_vecMaxs[i])
+			g_aabbVisBounds.m_vecMaxs[i] = v[i];
 	}
 }
 
@@ -120,7 +121,8 @@ bool CModel::LoadSourceFile()
 
 	g_asTextures.clear();
 	g_aaflData.clear();
-	g_aabbBounds = AABB(Vector(999, 999, 999), Vector(-999, -999, -999));
+	g_aabbVisBounds = AABB(Vector(999, 999, 999), Vector(-999, -999, -999));
+	g_aabbPhysBounds = AABB(Vector(999, 999, 999), Vector(-999, -999, -999));
 
 	LoadSceneIntoToy(pScene);
 
@@ -148,7 +150,8 @@ bool CModel::LoadSourceFile()
 			TError(tstring("Couldn't create fake material for texture \"") + g_asTextures[i] + "\"\n");
 	}
 
-	m_aabbBoundingBox = g_aabbBounds;
+	m_aabbVisBoundingBox = g_aabbVisBounds;
+	m_aabbPhysBoundingBox = g_aabbPhysBounds;
 
 	delete pScene;
 

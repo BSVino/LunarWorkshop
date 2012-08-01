@@ -36,7 +36,8 @@ public:
 	tvector<size_t>			m_aiVertexBuffers;
 	tvector<size_t>			m_aiVertexBufferSizes;	// How many vertices in this vertex buffer?
 
-	AABB					m_aabbBoundingBox;
+	AABB					m_aabbVisBoundingBox;
+	AABB					m_aabbPhysBoundingBox;
 };
 
 class CModelLibrary

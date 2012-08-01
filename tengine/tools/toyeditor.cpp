@@ -582,7 +582,7 @@ void CToyEditor::Layout()
 	}
 
 	if (m_iMeshPreview != ~0 && bGenPreviewDistance)
-		m_flPreviewDistance = CModelLibrary::GetModel(m_iMeshPreview)->m_aabbBoundingBox.Size().Length()*2;
+		m_flPreviewDistance = CModelLibrary::GetModel(m_iMeshPreview)->m_aabbVisBoundingBox.Size().Length()*2;
 
 	m_hMaterialPreview.Reset();
 	tstring sMaterial = GetToy().m_sMesh;
@@ -857,10 +857,10 @@ TVector CToyEditor::GetCameraPosition()
 		if (!pPhys)
 			return TVector(0, 0, 0) - vecPreviewAngle;
 
-		return pPhys->m_aabbBoundingBox.Center() - vecPreviewAngle;
+		return pPhys->m_aabbVisBoundingBox.Center() - vecPreviewAngle;
 	}
 
-	return pMesh->m_aabbBoundingBox.Center() - vecPreviewAngle;
+	return pMesh->m_aabbVisBoundingBox.Center() - vecPreviewAngle;
 }
 
 TVector CToyEditor::GetCameraDirection()

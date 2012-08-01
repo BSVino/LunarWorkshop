@@ -199,7 +199,7 @@ void CToyViewer::OpenToyCallback(const tstring& sArgs)
 	if (m_iToyPreview != ~0)
 	{
 		m_sToyPreview = sGamePath;
-		m_flPreviewDistance = CModelLibrary::GetModel(m_iToyPreview)->m_aabbBoundingBox.Size().Length()*2;
+		m_flPreviewDistance = CModelLibrary::GetModel(m_iToyPreview)->m_aabbVisBoundingBox.Size().Length()*2;
 	}
 
 	Layout();
@@ -253,7 +253,7 @@ TVector CToyViewer::GetCameraPosition()
 	if (!pMesh)
 		return TVector(0, 0, 0);
 
-	return pMesh->m_aabbBoundingBox.Center() - AngleVector(m_angPreview)*m_flPreviewDistance;
+	return pMesh->m_aabbVisBoundingBox.Center() - AngleVector(m_angPreview)*m_flPreviewDistance;
 }
 
 TVector CToyViewer::GetCameraDirection()

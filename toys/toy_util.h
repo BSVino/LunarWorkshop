@@ -58,7 +58,8 @@ public:
 	bool			IsVisibleFrom(size_t iSceneArea, size_t iVisible);
 	size_t			GetNumSceneAreas() { return m_asSceneAreas.size(); }
 
-	AABB			GetBounds() { return m_aabbBounds; };
+	AABB			GetVisBounds() { return m_aabbVisBounds; };
+	AABB			GetPhysBounds() { return m_aabbPhysBounds; };
 
 	void			SetNeighborDistance(float flDistance) { m_flNeighborDistance = flDistance; };
 	void			UseGlobalTransformations(bool bGlobal = true) { m_bUseLocalTransforms = !bGlobal; };
@@ -80,7 +81,8 @@ protected:
 	tvector<tstring>			m_asMaterials;
 	//tvector<tstring>			m_asCopyTextures;
 	tvector<tvector<float> >	m_aaflData;
-	AABB						m_aabbBounds;
+	AABB						m_aabbVisBounds;
+	AABB						m_aabbPhysBounds;
 	tvector<uint32_t>			m_aiPhysIndices;
 	tvector<Vector>				m_avecPhysVerts;
 	tvector<TRS>				m_atrsPhysBoxes;

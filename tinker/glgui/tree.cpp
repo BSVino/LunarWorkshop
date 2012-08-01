@@ -342,7 +342,7 @@ void CTree::SetSelectedNode(size_t iNode)
 {
 	TAssert(iNode < m_apControls.size() || iNode == ~0);
 
-	if (iNode >= m_apControls.size())
+	if (iNode >= m_apControls.size() && iNode != ~0)
 		return;
 
 	m_iSelected = iNode;

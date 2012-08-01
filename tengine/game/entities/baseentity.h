@@ -485,7 +485,8 @@ public:
 	void									SetMass(float flMass) { m_flMass = flMass; };
 	float									GetMass() const { return m_flMass; };
 
-	virtual const AABB&						GetBoundingBox() const { return m_aabbBoundingBox; }
+	virtual const AABB&						GetVisBoundingBox() const { return m_aabbVisBoundingBox; }
+	virtual const AABB&						GetPhysBoundingBox() const { return m_aabbPhysBoundingBox; }
 	virtual const TVector					GetLocalCenter() const;
 	virtual const TVector					GetGlobalCenter() const;
 	virtual const TFloat					GetBoundingRadius() const;
@@ -726,7 +727,8 @@ protected:
 	CNetworkedHandle<CBaseEntity>			m_hMoveParent;
 	CNetworkedSTLVector<CEntityHandle<CBaseEntity>>	m_ahMoveChildren;
 
-	AABB									m_aabbBoundingBox;
+	AABB									m_aabbVisBoundingBox;
+	AABB									m_aabbPhysBoundingBox;
 
 	mutable bool							m_bGlobalTransformsDirty;
 	mutable TMatrix							m_mGlobalTransform;
