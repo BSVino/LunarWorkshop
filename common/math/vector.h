@@ -408,7 +408,7 @@ inline const EAngle EAngle::operator+(const EAngle& v) const
 
 inline const EAngle EAngle::operator-(const EAngle& v) const
 {
-	return EAngle(p-v.p, y-v.y, r-v.r);
+	return EAngle(AngleDifference(p, v.p), AngleDifference(y, v.y), AngleDifference(r, v.r));
 }
 
 inline const EAngle EAngle::operator*(float f) const
