@@ -80,6 +80,18 @@ inline float RemapValClamped(float flInput, float flInLo, float flInHi, float fl
 	return RemapVal(flInput, flInLo, flInHi, flOutLo, flOutHi);
 }
 
+template <class T>
+inline T RemapValClamped(float flInput, float flInLo, float flInHi, T flOutLo, T flOutHi)
+{
+	if (flInput < flInLo)
+		return flOutLo;
+
+	if (flInput > flInHi)
+		return flOutHi;
+
+	return (((flInput-flInLo) / (flInHi-flInLo)) * (flOutHi-flOutLo)) + flOutLo;
+}
+
 template<typename T>
 T Clamp(T flInput, T flMin, T flMax)
 {

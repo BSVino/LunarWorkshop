@@ -7,6 +7,7 @@
 #include <tinker/cvar.h>
 
 #include "grotto_character.h"
+#include "grotto_playercharacter.h"
 #include "grotto_game.h"
 #include "grotto_renderer.h"
 #include "mirror.h"
@@ -52,16 +53,40 @@ void CGrottoCamera::CameraThink()
 
 	if (IsAutoTracking())
 	{
+		bool bTurnedAround = false;
+		if (fabs(m_hCameraTarget->GetLocalAngles().y) > 100)
+			bTurnedAround = true;
+
 		Vector vecTargetPosition = m_hCameraTarget->GetGlobalOrigin();
 
 		Vector vecTargetStart = m_hTargetStart->GetGlobalOrigin();
 		Vector vecTargetEnd = m_hTargetEnd->GetGlobalOrigin();
+
+		EAngle angTargetStart;
+		EAngle angTargetEnd;
+
+		if (bTurnedAround)
+		{
+			angTargetStart = VectorAngles(Matrix4x4().AddReflection(Vector(1, 0, 0)) * AngleVector(m_hTargetStart->GetGlobalAngles()));
+			angTargetEnd = VectorAngles(Matrix4x4().AddReflection(Vector(1, 0, 0)) * AngleVector(m_hTargetEnd->GetGlobalAngles()));
+
+			angTargetEnd.y = angTargetStart.y + AngleDifference(angTargetEnd.y, angTargetStart.y);
+		}
+		else
+		{
+			angTargetStart = m_hTargetStart->GetGlobalAngles();
+			angTargetEnd = m_hTargetEnd->GetGlobalAngles();
+		}
 
 		Vector vecClosestPoint;
 		DistanceToLineSegment(vecTargetPosition, vecTargetStart, vecTargetEnd, &vecClosestPoint);
 
 		float flTargetLength = (vecTargetEnd-vecTargetStart).Length();
 		TAssert(flTargetLength > 0);
+
+		float flFraction = (vecClosestPoint - vecTargetStart).Length()/flTargetLength;
+
+		EAngle angCamera = RemapValClamped<EAngle>(flFraction, 0, 1, angTargetStart, angTargetEnd);
 
 		float flDistance = 20;
 
@@ -74,18 +99,35 @@ void CGrottoCamera::CameraThink()
 
 		if (GameServer()->GetGameTime() < m_flLastTargetChange+cam_fliptime.GetFloat())
 		{
-			float flLerp = Lerp(RemapValClamped((float)GameServer()->GetGameTime(), (float)m_flLastTargetChange, (float)m_flLastTargetChange+cam_fliptime.GetFloat(), 0, 1), 0.8f);
-			EAngle angCamera;
-			angCamera.y = m_angTarget.y + AngleDifference(m_angTargetGoal.y, m_angTarget.y)*flLerp;
+			float flGameTime = (float)GameServer()->GetGameTime();
+			float flChangeStart = (float)m_flLastTargetChange;
+			float flChangeEnd = (float)(m_flLastTargetChange+cam_fliptime.GetFloat());
 
-			SetGlobalAngles(angCamera);
+			float flLerp = Lerp(RemapValClamped(flGameTime, flChangeStart, flChangeEnd, 0.0f, 1.0f), 0.8f);
+
+			if (bTurnedAround)
+			{
+				angTargetStart = m_hTargetStart->GetGlobalAngles();
+				angTargetEnd = m_hTargetEnd->GetGlobalAngles();
+			}
+			else
+			{
+				angTargetStart = VectorAngles(Matrix4x4().AddReflection(Vector(1, 0, 0)) * AngleVector(m_hTargetStart->GetGlobalAngles()));
+				angTargetEnd = VectorAngles(Matrix4x4().AddReflection(Vector(1, 0, 0)) * AngleVector(m_hTargetEnd->GetGlobalAngles()));
+
+				angTargetEnd.y = angTargetStart.y + AngleDifference(angTargetEnd.y, angTargetStart.y);
+			}
+
+			EAngle angCameraFrom = RemapValClamped<EAngle>(flGameTime, flChangeStart, flChangeEnd, angTargetStart, angTargetEnd);
+
+			SetGlobalAngles(RemapValClamped<EAngle>(flLerp, 0, 1, angCameraFrom, angCamera));
 		}
 		else
 		{
 			m_flLastTargetChange = 0;
 			m_angTarget = m_hCameraTarget->GetGlobalAngles();
 			m_angTargetGoal = m_hCameraTarget->GetGlobalAngles();
-			SetGlobalAngles(m_angTarget);
+			SetGlobalAngles(angCamera);
 		}
 
 		Vector vecCamera = vecClosestPoint - AngleVector(GetGlobalAngles())*flDistance;

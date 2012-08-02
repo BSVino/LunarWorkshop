@@ -295,7 +295,7 @@ bool CCameraManager::KeyDown(int c)
 			return true;
 		}
 
-		if (c == 'V' || c == TINKER_KEY_LCTRL)
+		if (c == 'V')
 		{
 			m_vecFreeVelocity.y = -1.0f;
 			return true;

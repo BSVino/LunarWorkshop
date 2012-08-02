@@ -378,9 +378,9 @@ public:
 	// Can find equivalence even in dangerous situations such as Gimbal lock.
 	bool	EqualsExhaustive(const EAngle& v, float flEp = 0.000001f) const;
 
-	operator float*()
+	friend const EAngle operator*( float f, const EAngle& a )
 	{
-		return(&p);
+		return EAngle( a.p*f, a.y*f, a.r*f );
 	}
 
 	float	p, y, r;
