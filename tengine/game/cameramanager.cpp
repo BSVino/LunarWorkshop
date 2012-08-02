@@ -11,6 +11,9 @@
 
 CCameraManager::CCameraManager()
 {
+	m_iCurrentCamera = 0;
+	m_iLastCamera = 0;
+
 	m_bFreeMode = false;
 	m_bPermaFreeMode = false;
 

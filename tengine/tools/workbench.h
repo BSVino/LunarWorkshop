@@ -19,6 +19,7 @@ public:
 	virtual float   GetCameraOrthoHeight();
 
 	virtual bool	ShouldRenderOrthographic();
+	virtual bool    UseCustomProjection() { return false; }
 };
 
 class CWorkbench : public glgui::IEventListener
