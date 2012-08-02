@@ -15,8 +15,6 @@ public:
 
 	void						Reflect(class CMirror* pMirror);
 
-	bool						ShouldRenderOrthographic() { return true; }
-
 protected:
 	EAngle						m_angTarget;
 	EAngle						m_angTargetGoal;

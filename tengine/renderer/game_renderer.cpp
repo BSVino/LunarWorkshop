@@ -53,6 +53,8 @@ void CGameRenderer::Render()
 	SetCameraNear(pCamera->GetCameraNear());
 	SetCameraFar(pCamera->GetCameraFar());
 	SetRenderOrthographic(pCamera->ShouldRenderOrthographic());
+	SetCustomProjection(pCamera->UseCustomProjection());
+	SetCustomProjection(pCamera->GetCustomProjection());
 
 	PreRender();
 

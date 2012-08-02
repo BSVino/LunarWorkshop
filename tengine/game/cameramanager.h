@@ -3,6 +3,7 @@
 #include <tengine_config.h>
 #include <vector.h>
 #include <tvector.h>
+#include <matrix.h>
 
 #include <game/entityhandle.h>
 
@@ -24,6 +25,9 @@ public:
 	virtual float	GetCameraNear() { return 1.0f; };
 	virtual float	GetCameraFar() { return 10000.0f; };
 	virtual bool	ShouldRenderOrthographic();
+
+	virtual bool      UseCustomProjection() { return true; }
+	virtual Matrix4x4 GetCustomProjection();
 
 	virtual bool	ShouldTransition();
 	virtual float	GetTransitionLerp();

@@ -117,6 +117,8 @@ public:
 	void			SetCameraNear(float flNear) { m_flCameraNear = flNear; };
 	void			SetCameraFar(float flFar) { m_flCameraFar = flFar; };
 	void			SetRenderOrthographic(bool bRenderOrtho) { m_bRenderOrthographic = bRenderOrtho; }
+	void			SetCustomProjection(bool bCustomProjection) { m_bCustomProjection = bCustomProjection; }
+	void			SetCustomProjection(const Matrix4x4& mCustomProjection) { m_mCustomProjection = mCustomProjection; }
 
 	Vector			GetCameraPosition() { return m_vecCameraPosition; };
 	Vector			GetCameraDirection() { return m_vecCameraDirection; };
@@ -125,6 +127,8 @@ public:
 	float			GetCameraNear() { return m_flCameraNear; };
 	float			GetCameraFar() { return m_flCameraFar; };
 	bool			ShouldRenderOrthographic() { return m_bRenderOrthographic; }
+	bool			UseCustomProjection() { return m_bCustomProjection; }
+	Matrix4x4&		GetCustomProjection() { return m_mCustomProjection; }
 
 	void			FrustumOverride(Vector vecPosition, Vector vecDirection, float flFOV, float flNear, float flFar);
 	void			CancelFrustumOverride();
@@ -178,6 +182,8 @@ protected:
 	float			m_flCameraNear;
 	float			m_flCameraFar;
 	bool			m_bRenderOrthographic;
+	Matrix4x4		m_mCustomProjection;
+	bool			m_bCustomProjection;
 
 	bool			m_bFrustumOverride;
 	Vector			m_vecFrustumPosition;

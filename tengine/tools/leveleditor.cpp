@@ -103,10 +103,10 @@ void CEntityPropertiesPanel::Layout()
 			if (strcmp(pSaveData->m_pszType, "bool") == 0)
 			{
 				glgui::CControl<glgui::CCheckBox> hCheckBox(AddControl(new glgui::CCheckBox(), true));
-				m_ahPropertyOptions.push_back(AddControl(new glgui::CCheckBox(), true));
-				m_ahPropertyOptions.back()->SetLeft(m_ahPropertyLabels.back()->GetRight() + 10);
-				m_ahPropertyOptions.back()->SetTop(flTop);
-				m_ahPropertyOptions.back()->SetSize(12, 12);
+				m_ahPropertyOptions.push_back(hCheckBox.GetHandle());
+				hCheckBox->SetLeft(m_ahPropertyLabels.back()->GetRight() + 10);
+				hCheckBox->SetTop(flTop);
+				hCheckBox->SetSize(12, 12);
 
 				if (m_pEntity && m_pEntity->HasParameterValue(pSaveData->m_pszHandle))
 					hCheckBox->SetState(UnserializeString_bool(m_pEntity->GetParameterValue(pSaveData->m_pszHandle)));

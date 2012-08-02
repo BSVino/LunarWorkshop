@@ -17,9 +17,9 @@ public:
 
 	virtual void	OnActivated();
 
-	virtual float	GetFOV() { return m_flFOV; }
-	virtual float	GetOrthoHeight() { return m_flOrthoHeight; }
-	virtual bool	ShouldRenderOrthographic() { return false; }
+	virtual float	GetFOV() const { return m_flFOV; }
+	virtual float	GetOrthoHeight() const { return m_flOrthoHeight; }
+	virtual bool	ShouldRenderOrthographic() const { return m_bOrtho; }
 
 protected:
 	CEntityHandle<CBaseEntity>	m_hCameraTarget;
@@ -32,4 +32,6 @@ protected:
 
 	float			m_flFOV;
 	float			m_flOrthoHeight;
+
+	bool			m_bOrtho;
 };

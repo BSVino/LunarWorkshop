@@ -46,13 +46,13 @@ class Quaternion;
 class Matrix4x4
 {
 public:
-				Matrix4x4() { Identity(); }
-				Matrix4x4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33);
-				Matrix4x4(const Matrix4x4& m);
-				Matrix4x4(float* aflValues);
-				Matrix4x4(const Vector& vecForward, const Vector& vecUp, const Vector& vecRight, const Vector& vecPosition = Vector(0,0,0));
-				Matrix4x4(const Quaternion& q);
-				Matrix4x4(const EAngle& angDirection, const Vector& vecPosition=Vector(0,0,0));
+	            Matrix4x4() { Identity(); }
+	explicit    Matrix4x4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33);
+	            Matrix4x4(const Matrix4x4& m);
+	explicit    Matrix4x4(float* aflValues);
+	explicit    Matrix4x4(const Vector& vecForward, const Vector& vecUp, const Vector& vecRight, const Vector& vecPosition = Vector(0,0,0));
+	explicit    Matrix4x4(const Quaternion& q);
+	explicit    Matrix4x4(const EAngle& angDirection, const Vector& vecPosition=Vector(0,0,0));
 
 public:
 	void		Identity();
@@ -66,6 +66,7 @@ public:
 	// Simple matrix operations
 	Matrix4x4	operator*(float f) const;
 	Matrix4x4	operator+(const Matrix4x4& m) const;
+	Matrix4x4	operator-(const Matrix4x4& m) const;
 
 	// Set a transformation
 	void		SetTranslation(const Vector& vecPos);

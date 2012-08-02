@@ -175,6 +175,68 @@ bool CCameraManager::ShouldRenderOrthographic()
 	return pCamera->ShouldRenderOrthographic();
 }
 
+Matrix4x4 CCameraManager::GetCustomProjection()
+{
+	CCamera* pCamera = GetActiveCamera();
+	if (!pCamera)
+		return Matrix4x4();
+
+	float flAspectRatio = (float)Application()->GetWindowWidth()/(float)Application()->GetWindowHeight();
+
+	if (ShouldTransition())
+	{
+		CCamera* pFrom = m_ahCameras[m_iLastCamera];
+		CCamera* pTo = m_ahCameras[m_iCurrentCamera];
+		float flLerp = GetTransitionLerp();
+
+		Matrix4x4 mFromProjection, mToProjection;
+
+		if (pFrom->ShouldRenderOrthographic())
+			mFromProjection = Matrix4x4::ProjectOrthographic(
+					-flAspectRatio*pFrom->GetOrthoHeight(), flAspectRatio*pFrom->GetOrthoHeight(),
+					-pFrom->GetOrthoHeight(), pFrom->GetOrthoHeight(),
+					-100, 100
+				);
+		else
+			mFromProjection = Matrix4x4::ProjectPerspective(
+					pFrom->GetFOV(),
+					flAspectRatio,
+					GetCameraNear(),
+					GetCameraFar()
+				);
+
+		if (pTo->ShouldRenderOrthographic())
+			mToProjection = Matrix4x4::ProjectOrthographic(
+					-flAspectRatio*pTo->GetOrthoHeight(), flAspectRatio*pTo->GetOrthoHeight(),
+					-pTo->GetOrthoHeight(), pTo->GetOrthoHeight(),
+					-100, 100
+				);
+		else
+			mToProjection = Matrix4x4::ProjectPerspective(
+					pTo->GetFOV(),
+					flAspectRatio,
+					GetCameraNear(),
+					GetCameraFar()
+				);
+
+		return RemapValClamped<Matrix4x4>(flLerp, 0, 1, mFromProjection, mToProjection);
+	}
+
+	if (pCamera->ShouldRenderOrthographic())
+		return Matrix4x4::ProjectOrthographic(
+				-flAspectRatio*pCamera->GetOrthoHeight(), flAspectRatio*pCamera->GetOrthoHeight(),
+				-pCamera->GetOrthoHeight(), pCamera->GetOrthoHeight(),
+				-100, 100
+			);
+	else
+		return Matrix4x4::ProjectPerspective(
+				pCamera->GetFOV(),
+				flAspectRatio,
+				GetCameraNear(),
+				GetCameraFar()
+			);
+}
+
 bool CCameraManager::ShouldTransition()
 {
 	if (m_flTransitionBegin == 0)
@@ -198,9 +260,11 @@ bool CCameraManager::ShouldTransition()
 	return true;
 }
 
+CVar cam_transitionlerp("cam_transitionlerp", "0.8");
+
 float CCameraManager::GetTransitionLerp()
 {
-	return Lerp(RemapVal((float)GameServer()->GetGameTime(), (float)m_flTransitionBegin, (float)m_flTransitionBegin+m_flTransitionTime, 0, 1), 0.8f);
+	return Lerp(RemapVal((float)GameServer()->GetGameTime(), (float)m_flTransitionBegin, (float)m_flTransitionBegin+m_flTransitionTime, 0, 1), cam_transitionlerp.GetFloat());
 }
 
 void CCameraManager::SetPermaFreeMode(bool bPerma)
@@ -408,6 +472,8 @@ CCamera* CCameraManager::GetActiveCamera()
 	return m_ahCameras[m_iCurrentCamera];
 }
 
+CVar cam_transitiontime("cam_transitiontime", "0.5");
+
 void CCameraManager::SetActiveCamera(CCamera* pCamera)
 {
 	if (!pCamera)
@@ -425,7 +491,7 @@ void CCameraManager::SetActiveCamera(CCamera* pCamera)
 				GetActiveCamera()->SetActive(false);
 
 				m_flTransitionBegin = GameServer()->GetGameTime();
-				m_flTransitionTime = 0.5f;
+				m_flTransitionTime = cam_transitiontime.GetFloat();
 				m_iLastCamera = m_iCurrentCamera;
 			}
 

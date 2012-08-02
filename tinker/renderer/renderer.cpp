@@ -306,7 +306,9 @@ void CRenderer::StartRendering(class CRenderingContext* pContext)
 
 	float flAspectRatio = (float)m_iWidth/(float)m_iHeight;
 
-	if (ShouldRenderOrthographic())
+	if (UseCustomProjection())
+		pContext->SetProjection(m_mCustomProjection);
+	else if (ShouldRenderOrthographic())
 		pContext->SetProjection(Matrix4x4::ProjectOrthographic(
 				-flAspectRatio*m_flCameraOrthoHeight, flAspectRatio*m_flCameraOrthoHeight,
 				-m_flCameraOrthoHeight, m_flCameraOrthoHeight,
