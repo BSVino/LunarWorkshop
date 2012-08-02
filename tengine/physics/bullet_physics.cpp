@@ -143,7 +143,7 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 		if (pEntity->GetModelID() != ~0)
 			aabbBoundingBox = pEntity->GetModel()->m_aabbPhysBoundingBox;
 		else
-			aabbBoundingBox = pEntity->GetPhysBoundingBox();
+			aabbBoundingBox = pEntity->GetVisBoundingBox();
 
 		aabbBoundingBox.m_vecMins += pEntity->GetGlobalOrigin();
 		aabbBoundingBox.m_vecMaxs += pEntity->GetGlobalOrigin();
