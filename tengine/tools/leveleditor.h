@@ -159,6 +159,7 @@ public:
 	virtual void			RenderScene();
 
 	virtual void			ManipulatorUpdated(const tstring& sArguments);
+	virtual void            DuplicateMove(const tstring& sArguments);
 
 	virtual bool			ShowCameraControls() { return true; }
 

@@ -141,6 +141,10 @@ bool CManipulatorTool::MouseInput(int iButton, tinker_mouse_state_t iState)
 		m_flStartX = (float)x;
 		m_flStartY = (float)y;
 		m_bTransforming = true;
+
+		if (m_pListener && Application()->IsShiftDown())
+			m_pListener->DuplicateMove("");
+
 		return true;
 	}
 

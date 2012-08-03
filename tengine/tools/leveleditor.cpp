@@ -1393,3 +1393,19 @@ void CLevelEditor::ManipulatorUpdated(const tstring& sArguments)
 
 	m_hEditorPanel->LayoutEntity();
 }
+
+void CLevelEditor::DuplicateMove(const tstring& sArguments)
+{
+	auto& aEntityData = m_pLevel->GetEntityData();
+
+	size_t iSelected = m_hEditorPanel->m_hEntities->GetSelectedNodeId();
+
+	if (iSelected >= aEntityData.size())
+		return;
+
+	aEntityData.push_back(aEntityData[iSelected]);
+	auto& oNewEntity = aEntityData.back();
+
+	m_hEditorPanel->Layout();
+	m_hEditorPanel->m_hEntities->SetSelectedNode(aEntityData.size()-1);
+}

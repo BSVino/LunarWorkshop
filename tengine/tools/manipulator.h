@@ -10,6 +10,7 @@ class IManipulatorListener
 {
 public:
 	virtual void		ManipulatorUpdated(const tstring& sArguments)=0;
+	virtual void		DuplicateMove(const tstring& sArguments)=0;
 };
 
 class CManipulatorTool : public glgui::IEventListener

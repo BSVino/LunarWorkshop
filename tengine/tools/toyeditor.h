@@ -149,6 +149,7 @@ public:
 	virtual TVector			GetCameraDirection();
 
 	virtual void			ManipulatorUpdated(const tstring& sArguments);
+	virtual void            DuplicateMove(const tstring& sArguments);
 
 	virtual tstring			GetToolName() { return "Toy Editor"; }
 

@@ -885,6 +885,20 @@ void CToyEditor::ManipulatorUpdated(const tstring& sArguments)
 	ToyEditor()->GetToyToModify().m_aShapes[iSelected].m_trsTransform = Manipulator()->GetTRS();
 }
 
+void CToyEditor::DuplicateMove(const tstring& sArguments)
+{
+	size_t iSelected = m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId();
+
+	if (iSelected <= ToyEditor()->GetToy().m_aShapes.size())
+		return;
+
+	ToyEditor()->GetToyToModify().m_aShapes.push_back(ToyEditor()->GetToy().m_aShapes[iSelected]);
+
+	Layout();
+
+	m_pSourcePanel->m_pPhysicsShapes->SetSelectedNode(ToyEditor()->GetToy().m_aShapes.size()-1);
+}
+
 void CToySource::Save() const
 {
 	if (!m_sFilename.length())
