@@ -1033,7 +1033,7 @@ void CEntityOutput::Call()
 	if (m_aTargets.size() == 0)
 	{
 		if (debug_entity_outputs.GetBool())
-			TMsg(tstring(m_pEnt->GetClassName()) + "(" + m_pEnt->GetName() + "):" + m_sOutputName + "\n");
+			TMsg(tstring(m_pEnt->GetClassName()) + "(\"" + m_pEnt->GetName() + "\")." + m_sOutputName + "() -> none\n");
 
 		return;
 	}
@@ -1057,7 +1057,7 @@ void CEntityOutput::Call()
 			CBaseEntity* pTargetEntity = apEntities[i];
 
 			if (debug_entity_outputs.GetBool())
-				TMsg(tstring(m_pEnt->GetClassName()) + "(" + m_pEnt->GetName() + "):" + m_sOutputName + " -> " + pTargetEntity->GetClassName() + "(" + pTargetEntity->GetName() + "):" + pTarget->m_sInput + " (" + sFormattedArgs + ")\n");
+				TMsg(tstring(m_pEnt->GetClassName()) + "(\"" + m_pEnt->GetName() + "\")." + m_sOutputName + "() -> " + pTargetEntity->GetClassName() + "(\"" + pTargetEntity->GetName() + "\")." + pTarget->m_sInput + "(\"" + sFormattedArgs + "\")\n");
 
 			pTargetEntity->CallInput(pTarget->m_sInput, sFormattedArgs);
 		}

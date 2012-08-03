@@ -1066,3 +1066,44 @@ void KickPlayer(class CCommand* pCommand, tvector<tstring>& asTokens, const tstr
 }
 
 CCommand kick("kick", ::KickPlayer);
+
+void FireInput(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
+{
+	if (!CVar::GetCVarBool("cheats"))
+		return;
+
+	if (asTokens.size() < 3)
+	{
+		TMsg("Format: ent_input entityname input [optional args]\n");
+		return;
+	}
+
+	tvector<CBaseEntity*> apEntities;
+	CBaseEntity::FindEntitiesByName(asTokens[1], apEntities);
+
+	if (!apEntities.size())
+	{
+		if (CVar::GetCVarBool("debug_entity_outputs"))
+			TMsg("Console -> none\n");
+		else
+			TError("No entities found that match name \"" + asTokens[1] + "\".\n");
+
+		return;
+	}
+
+	tstring sArgs;
+	for (size_t i = 3; i < asTokens.size(); i++)
+		sArgs += asTokens[i] + " ";
+
+	for (size_t i = 0; i < apEntities.size(); i++)
+	{
+		CBaseEntity* pTargetEntity = apEntities[i];
+
+		if (CVar::GetCVarBool("debug_entity_outputs"))
+			TMsg("Console -> " + tstring(pTargetEntity->GetClassName()) + "(\"" + pTargetEntity->GetName() + "\")." + asTokens[2] + "(\"" + sArgs + "\")\n");
+
+		pTargetEntity->CallInput(asTokens[2], sArgs);
+	}
+}
+
+CCommand ent_input("ent_input", ::FireInput);
