@@ -19,4 +19,5 @@ protected:
 	EAngle						m_angTarget;
 	EAngle						m_angTargetGoal;
 	double						m_flLastTargetChange;
+	float						m_flDistance;
 };

@@ -21,6 +21,7 @@ SAVEDATA_TABLE_BEGIN_EDITOR(CGrottoCamera);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, EAngle, m_angTarget);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, EAngle, m_angTargetGoal);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, double, m_flLastTargetChange);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flDistance);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CGrottoCamera);
@@ -31,6 +32,8 @@ void CGrottoCamera::Spawn()
 	BaseClass::Spawn();
 
 	m_flLastTargetChange = 0;
+
+	m_flDistance = 0;
 }
 
 void CGrottoCamera::Think()
@@ -40,6 +43,13 @@ void CGrottoCamera::Think()
 		m_hCameraTarget = GrottoGame()->GetLocalPlayerCharacter();
 		m_angTarget = m_hCameraTarget->GetGlobalAngles();
 		m_angTargetGoal = m_hCameraTarget->GetGlobalAngles();
+	}
+
+	if (m_flDistance == 0)
+	{
+		Vector vecCameraClosestPoint;
+		DistanceToLineSegment(GetGlobalOrigin(), m_hTargetStart->GetGlobalOrigin(), m_hTargetEnd->GetGlobalOrigin(), &vecCameraClosestPoint);
+		m_flDistance = (GetGlobalOrigin() - vecCameraClosestPoint).Length();
 	}
 
 	BaseClass::Think();
@@ -88,8 +98,6 @@ void CGrottoCamera::CameraThink()
 
 		EAngle angCamera = RemapValClamped<EAngle>(flFraction, 0, 1, angTargetStart, angTargetEnd);
 
-		float flDistance = 20;
-
 		if (!m_hCameraTarget->GetGlobalAngles().Equals(m_angTargetGoal, 0.1f))
 		{
 			m_flLastTargetChange = GameServer()->GetGameTime();
@@ -130,7 +138,7 @@ void CGrottoCamera::CameraThink()
 			SetGlobalAngles(angCamera);
 		}
 
-		Vector vecCamera = vecClosestPoint - AngleVector(GetGlobalAngles())*flDistance;
+		Vector vecCamera = vecClosestPoint - AngleVector(GetGlobalAngles())*m_flDistance;
 		SetGlobalOrigin(vecCamera);
 	}
 }
