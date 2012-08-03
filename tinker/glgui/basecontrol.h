@@ -258,6 +258,7 @@ namespace glgui
 				return nullptr;
 
 			C* p = static_cast<C*>(m_hControl.lock().get());
+			TAssertNoMsg(dynamic_cast<T*>(p));
 			return static_cast<T*>(p);
 		}
 

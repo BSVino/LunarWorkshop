@@ -137,9 +137,9 @@ void CEntityPropertiesPanel::Layout()
 				hTextField->SetTop(flTop+12);
 
 				if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
-					hTextField->SetContentsChangedListener(this, ModelChanged, sprintf("%d", m_ahPropertyOptions.size()));
+					hTextField->SetContentsChangedListener(this, ModelChanged, sprintf("%d", m_ahPropertyOptions.size()-1));
 				else if (tstring(pSaveData->m_pszType).startswith("CEntityHandle"))
-					hTextField->SetContentsChangedListener(this, TargetChanged, sprintf("%d ", m_ahPropertyOptions.size()) + pSaveData->m_pszType);
+					hTextField->SetContentsChangedListener(this, TargetChanged, sprintf("%d ", m_ahPropertyOptions.size()-1) + pSaveData->m_pszType);
 				else
 					hTextField->SetContentsChangedListener(this, PropertyChanged);
 
