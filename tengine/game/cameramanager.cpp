@@ -263,7 +263,7 @@ bool CCameraManager::ShouldTransition()
 	return true;
 }
 
-CVar cam_transitionlerp("cam_transitionlerp", "0.8");
+CVar cam_transitionlerp("cam_transitionlerp", "0.7");
 
 float CCameraManager::GetTransitionLerp()
 {
@@ -475,7 +475,7 @@ CCamera* CCameraManager::GetActiveCamera()
 	return m_ahCameras[m_iCurrentCamera];
 }
 
-CVar cam_transitiontime("cam_transitiontime", "0.5");
+CVar cam_transitiontime("cam_transitiontime", "0.8");
 
 void CCameraManager::SetActiveCamera(CCamera* pCamera)
 {
