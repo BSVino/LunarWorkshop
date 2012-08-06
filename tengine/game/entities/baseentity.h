@@ -774,6 +774,9 @@ private:
 	static size_t							s_iEntities;
 	static size_t							s_iOverrideEntityListIndex;
 	static size_t							s_iNextEntityListIndex;
+
+protected:
+	static tstring							s_sCurrentInput;
 };
 
 #define REGISTER_ENTITY(entity) \

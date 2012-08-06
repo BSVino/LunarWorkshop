@@ -46,7 +46,7 @@ public:
 	void			AddCamera(CCamera* pCamera);
 	void			RemoveCamera(CCamera* pCamera);
 
-	void			SetActiveCamera(CCamera* pCamera);
+	void			SetActiveCamera(CCamera* pCamera, bool bSnap = false);
 	CCamera*		GetActiveCamera();
 
 	size_t			GetNumCameras() { return m_ahCameras.size(); }

@@ -58,6 +58,7 @@ tvector<CBaseEntity*> CBaseEntity::s_apEntityList;
 size_t CBaseEntity::s_iEntities = 0;
 size_t CBaseEntity::s_iOverrideEntityListIndex = ~0;
 size_t CBaseEntity::s_iNextEntityListIndex = 0;
+tstring CBaseEntity::s_sCurrentInput;
 
 REGISTER_ENTITY(CBaseEntity);
 
@@ -965,7 +966,10 @@ void CBaseEntity::CallInput(const tstring& sName, const tstring& sArgs)
 
 	tvector<tstring> asArgs;
 	tstrtok(sArgs, asArgs);
+
+	s_sCurrentInput = sName + " " + sArgs;
 	pInput->m_pfnCallback(this, asArgs);
+	s_sCurrentInput.clear();
 }
 
 void CBaseEntity::CallOutput(const tstring& sName)

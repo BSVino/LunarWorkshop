@@ -477,7 +477,7 @@ CCamera* CCameraManager::GetActiveCamera()
 
 CVar cam_transitiontime("cam_transitiontime", "0.8");
 
-void CCameraManager::SetActiveCamera(CCamera* pCamera)
+void CCameraManager::SetActiveCamera(CCamera* pCamera, bool bSnap)
 {
 	if (!pCamera)
 		return;
@@ -493,9 +493,12 @@ void CCameraManager::SetActiveCamera(CCamera* pCamera)
 			{
 				GetActiveCamera()->SetActive(false);
 
-				m_flTransitionBegin = GameServer()->GetGameTime();
-				m_flTransitionTime = cam_transitiontime.GetFloat();
-				m_iLastCamera = m_iCurrentCamera;
+				if (!bSnap)
+				{
+					m_flTransitionBegin = GameServer()->GetGameTime();
+					m_flTransitionTime = cam_transitiontime.GetFloat();
+					m_iLastCamera = m_iCurrentCamera;
+				}
 			}
 
 			m_iCurrentCamera = i;

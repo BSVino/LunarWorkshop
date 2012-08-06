@@ -84,5 +84,21 @@ bool CCamera::IsTracking()
 
 void CCamera::OnActivated()
 {
-	CameraManager()->SetActiveCamera(this);
+	bool bSnap = false;
+	if (s_sCurrentInput.length())
+	{
+		tvector<tstring> asArgs;
+		tstrtok(s_sCurrentInput, asArgs);
+
+		for (size_t i = 1; i < asArgs.size(); i++)
+		{
+			if (asArgs[i].comparei("snap") == 0)
+			{
+				bSnap = true;
+				break;
+			}
+		}
+	}
+
+	CameraManager()->SetActiveCamera(this, bSnap);
 }
