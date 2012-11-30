@@ -90,6 +90,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_OUTPUT(OnKilled);
 	SAVEDATA_DEFINE_OUTPUT(OnActivated);
 	SAVEDATA_DEFINE_OUTPUT(OnDeactivated);
+	SAVEDATA_DEFINE_OUTPUT(OnUsed);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sName, "Name");
 	SAVEDATA_EDITOR_VARIABLE("Name");
 	SAVEDATA_DEFINE(CSaveData::DATA_STRING, tstring, m_sClassName);
@@ -100,7 +101,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, AABB, m_aabbVisBoundingBox, "BoundingBox", AABB(Vector(-0.5f, -0.5f, -0.5f), Vector(0.5f, 0.5f, 0.5f)));
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bGlobalTransformsDirty);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TMatrix, m_mGlobalTransform);
-	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, TVector, m_vecGlobalGravity, "GlobalGravity", Vector(0, -9.8f, 0));
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, TVector, m_vecGlobalGravity, "GlobalGravity", TVector(0, -9.8f, 0));
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TMatrix, m_mLocalTransform);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Quaternion, m_qLocalRotation);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_NETVAR, TVector, m_vecLocalOrigin, "Origin", UnserializeString_LocalOrigin);
@@ -110,6 +111,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_EDITOR_VARIABLE("Angles");
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, TVector, m_vecLocalVelocity);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, Vector, m_vecScale, "Scale", Vector(1, 1, 1));
+	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, EAngle, m_angView, "ViewAngles");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iHandle);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_NETVAR, bool, m_bTakeDamage, "TakeDamage", false);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_NETVAR, float, m_flTotalHealth, "TotalHealth");
@@ -134,11 +136,13 @@ SAVEDATA_TABLE_END();
 INPUTS_TABLE_BEGIN(CBaseEntity);
 	INPUT_DEFINE(SetLocalOrigin);
 	INPUT_DEFINE(SetLocalAngles);
+	INPUT_DEFINE(SetViewAngles);
 	INPUT_DEFINE(SetVisible);
 	INPUT_DEFINE(Activate);
 	INPUT_DEFINE(Deactivate);
 	INPUT_DEFINE(ToggleActive);
 	INPUT_DEFINE(SetActive);
+	INPUT_DEFINE(Use);
 	INPUT_DEFINE(RemoveOutput);
 	INPUT_DEFINE(Delete);
 INPUTS_TABLE_END();
@@ -147,6 +151,8 @@ CBaseEntity::CBaseEntity()
 {
 	if (g_bAutoImporting)
 		return;
+
+	m_oGameData.SetEntity(this);
 
 	if (s_iOverrideEntityListIndex == ~0)
 		m_iHandle = s_iNextEntityListIndex;
@@ -281,7 +287,7 @@ const TFloat CBaseEntity::GetBoundingRadius() const
 		size_t iWidth = m_hMaterialModel->m_ahTextures[0]->m_iWidth;
 		size_t iHeight = m_hMaterialModel->m_ahTextures[0]->m_iHeight;
 
-		return (GetGlobalTransform() * (Vector(0, (float)iWidth, (float)iHeight)/2 * m_vecScale.Get())).Length()/2;
+		return (GetGlobalTransform() * ((TVector(0, (float)iWidth, (float)iHeight)/2.0f) * m_vecScale.Get())).Length()/2.0f;
 	}
 
 	return (m_aabbVisBoundingBox.Size()*m_vecScale.Get()).Length()/2;
@@ -333,11 +339,16 @@ void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 	if (m_hMoveParent.GetPointer() == pParent)
 		return;
 
+#ifdef _DEBUG
+	TMatrix mDebugPreviousGlobal = GetGlobalTransform();
+#endif
+
 	if (m_hMoveParent != NULL)
 	{
 		TMatrix mPreviousGlobal = GetGlobalTransform();
 		TVector vecPreviousVelocity = GetGlobalVelocity();
 		TVector vecPreviousLastOrigin = mPreviousGlobal * GetLastLocalOrigin();
+		EAngle angPreviousGlobalView = (Matrix4x4(m_hMoveParent->GetGlobalTransform()) * Matrix4x4(m_angView)).GetAngles();
 
 		for (size_t i = 0; i < m_hMoveParent->m_ahMoveChildren.size(); i++)
 		{
@@ -355,6 +366,7 @@ void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 		m_vecLocalOrigin = mPreviousGlobal.GetTranslation();
 		m_qLocalRotation = Quaternion(mPreviousGlobal);
 		m_angLocalAngles = mPreviousGlobal.GetAngles();
+		m_angView = angPreviousGlobalView;
 
 		InvalidateGlobalTransforms();
 	}
@@ -366,7 +378,13 @@ void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 	m_hMoveParent = pParent;
 
 	if (!pParent)
+	{
+#ifdef _DEBUG
+//		TAssert(m_mLocalTransform == mDebugPreviousGlobal);
+#endif
+
 		return;
+	}
 
 	pParent->m_ahMoveChildren.push_back(this);
 
@@ -377,6 +395,7 @@ void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 	m_vecLocalOrigin = m_mLocalTransform.GetTranslation();
 	m_qLocalRotation = Quaternion(m_mLocalTransform);
 	m_angLocalAngles = m_mLocalTransform.GetAngles();
+	m_angView = (Matrix4x4(mGlobalToLocal) * Matrix4x4(m_angView)).GetAngles();
 
 	TFloat flVelocityLength = vecPreviousVelocity.Length();
 	if (flVelocityLength > TFloat(0))
@@ -385,6 +404,11 @@ void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 		m_vecLocalVelocity = TVector(0, 0, 0);
 
 	InvalidateGlobalTransforms();
+
+#ifdef _DEBUG
+//	TAssert(GetGlobalTransform().GetAngles() == mDebugPreviousGlobal.GetAngles());
+//	TAssert((GetGlobalTransform().GetTranslation()-mDebugPreviousGlobal.GetTranslation()).LengthSqr() < 0.05f);
+#endif
 }
 
 void CBaseEntity::InvalidateGlobalTransforms()
@@ -459,12 +483,14 @@ void CBaseEntity::SetGlobalTransform(const TMatrix& m)
 
 	if (IsInPhysics())
 		GamePhysics()->SetEntityTransform(this, GetGlobalTransform());
+
+	PostSetLocalTransform(mNew);
 }
 
 const TMatrix CBaseEntity::GetGlobalToLocalTransform()
 {
 	if (HasMoveParent())
-		return GetMoveParent()->GetGlobalTransform().InvertedRT();
+		return (GetMoveParent()->GetGlobalTransform() * GetLocalTransform()).InvertedRT();
 	else
 		return GetGlobalTransform().InvertedRT();
 }
@@ -472,7 +498,7 @@ const TMatrix CBaseEntity::GetGlobalToLocalTransform()
 const TMatrix CBaseEntity::GetGlobalToLocalTransform() const
 {
 	if (HasMoveParent())
-		return GetMoveParent()->GetGlobalTransform().InvertedRT();
+		return (GetMoveParent()->GetGlobalTransform() * GetLocalTransform()).InvertedRT();
 	else
 		return GetGlobalTransform().InvertedRT();
 }
@@ -564,13 +590,10 @@ void CBaseEntity::SetLocalTransform(const TMatrix& m)
 	if (!m_angLocalAngles.IsInitialized())
 		m_angLocalAngles = angNew;
 
-	if (IsInPhysics())
-	{
-		TAssert(!GetMoveParent());
-		GamePhysics()->SetEntityTransform(this, mNew);
-	}
-
 	m_mLocalTransform = mNew;
+
+	if (IsInPhysics())
+		GamePhysics()->SetEntityTransform(this, GetPhysicsTransform());
 
 	if ((mNew.GetTranslation() - m_vecLocalOrigin).LengthSqr() > TFloat(0))
 		m_vecLocalOrigin = mNew.GetTranslation();
@@ -581,6 +604,8 @@ void CBaseEntity::SetLocalTransform(const TMatrix& m)
 		m_angLocalAngles = mNew.GetAngles();
 		m_qLocalRotation = Quaternion(mNew);
 	}
+
+	PostSetLocalTransform(mNew);
 
 	InvalidateGlobalTransforms();
 }
@@ -611,10 +636,10 @@ void CBaseEntity::SetLocalOrigin(const TVector& vecOrigin)
 			TAssert(eCollisionType == CT_KINEMATIC || eCollisionType == CT_CHARACTER);
 		}
 
-		Matrix4x4 mLocal = m_mLocalTransform;
+		TMatrix mLocal = m_mLocalTransform;
 		mLocal.SetTranslation(vecOrigin);
 
-		Matrix4x4 mGlobal = GetParentGlobalTransform() * mLocal;
+		TMatrix mGlobal = GetParentGlobalTransform() * mLocal;
 
 		GamePhysics()->SetEntityTransform(this, mGlobal);
 	}
@@ -630,6 +655,8 @@ void CBaseEntity::SetLocalOrigin(const TVector& vecOrigin)
 	m_mLocalTransform = mNew;
 
 	InvalidateGlobalTransforms();
+
+	PostSetLocalTransform(mNew);
 };
 
 const TVector CBaseEntity::GetLastGlobalOrigin() const
@@ -664,10 +691,10 @@ void CBaseEntity::SetLocalAngles(const EAngle& angAngles)
 			TAssert(eCollisionType == CT_KINEMATIC || eCollisionType == CT_CHARACTER);
 		}
 
-		Matrix4x4 mLocal = m_mLocalTransform;
+		TMatrix mLocal = m_mLocalTransform;
 		mLocal.SetAngles(angAngles);
 
-		Matrix4x4 mGlobal = GetParentGlobalTransform() * mLocal;
+		TMatrix mGlobal = GetParentGlobalTransform() * mLocal;
 
 		GamePhysics()->SetEntityTransform(this, mGlobal);
 	}
@@ -684,6 +711,8 @@ void CBaseEntity::SetLocalAngles(const EAngle& angAngles)
 
 	m_mLocalTransform = mNew;
 	m_qLocalRotation = Quaternion(mNew);
+
+	PostSetLocalTransform(mNew);
 
 	InvalidateGlobalTransforms();
 }
@@ -708,6 +737,17 @@ void CBaseEntity::SetLocalAngles(const tvector<tstring>& asArgs)
 	}
 
 	SetLocalAngles(EAngle((float)stof(asArgs[0]), (float)stof(asArgs[1]), (float)stof(asArgs[2])));
+}
+
+void CBaseEntity::SetViewAngles(const tvector<tstring>& asArgs)
+{
+	if (asArgs.size() != 3)
+	{
+		TError("CCharacter::SetViewAngles with != 3 arguments. Was expecting \"p y r\"\n");
+		return;
+	}
+
+	SetViewAngles(EAngle((float)stof(asArgs[0]), (float)stof(asArgs[1]), (float)stof(asArgs[2])));
 }
 
 CBaseEntity* CBaseEntity::GetEntity(size_t iHandle)
@@ -777,6 +817,9 @@ void CBaseEntity::TakeDamage(CBaseEntity* pAttacker, CBaseEntity* pInflictor, da
 	if (!m_bTakeDamage)
 		return;
 
+	if (!Game()->TakesDamageFrom(this, pAttacker))
+		return;
+
 	bool bWasAlive = IsAlive();
 
 	m_flLastTakeDamage = GameServer()->GetGameTime();
@@ -809,9 +852,14 @@ void CBaseEntity::Killed(CBaseEntity* pKilledBy)
 	m_flTimeKilled = GameServer()->GetGameTime();
 
 	OnKilled(pKilledBy);
-	Game()->OnKilled(this);
+	Game()->OnEntityKilled(this);
 
 	CallOutput("OnKilled");
+}
+
+void CBaseEntity::OnKilled(CBaseEntity* pKilledBy)
+{
+	Delete();
 }
 
 void CBaseEntity::SetActive(bool bActive)
@@ -860,6 +908,44 @@ void CBaseEntity::SetActive(const tvector<tstring>& sArgs)
 	SetActive(bValue);
 }
 
+void CBaseEntity::Use(CBaseEntity* pUser)
+{
+	if (!IsActive())
+		return;
+
+	OnUse(pUser);
+
+	CallOutput("OnUsed");
+}
+
+void CBaseEntity::OnUse(CBaseEntity* pUser)
+{
+}
+
+void CBaseEntity::Use(const tvector<tstring>& sArgs)
+{
+	Use(nullptr);
+}
+
+bool CBaseEntity::ShouldRender() const
+{
+	if ((size_t)m_iModel != ~0)
+		return true;
+	
+	if (m_hMaterialModel.IsValid())
+		return m_hMaterialModel->m_sBlend == "none";
+
+	return false;
+}
+
+bool CBaseEntity::ShouldRenderTransparent() const
+{
+	if (m_hMaterialModel.IsValid())
+		return m_hMaterialModel->m_sBlend != "none";
+
+	return false;
+}
+
 CVar show_centers("debug_show_centers", "off");
 
 void CBaseEntity::PreRender() const
@@ -894,31 +980,19 @@ void CBaseEntity::Render() const
 
 		ModifyContext(&r);
 
-		if (r.GetAlpha() > 0)
+		if (r.GetAlpha() == 0)
+			continue;
+
+		if (ShouldRenderModel())
 		{
-			if (ShouldRenderModel())
+			if (m_iModel != (size_t)~0)
 			{
-				if (m_iModel != (size_t)~0)
-				{
-					TPROF("CRenderingContext::RenderModel()");
-					r.RenderModel(GetModelID(), this);
-				}
-
-				if (m_hMaterialModel.IsValid())
-				{
-					if (GameServer()->GetRenderer()->IsRenderingTransparent())
-					{
-						TPROF("CRenderingContext::RenderModel(Material)");
-						r.SetBlend(BLEND_ALPHA);
-						r.Scale(0, m_vecScale.Get().y, m_vecScale.Get().x);
-						r.RenderMaterialModel(m_hMaterialModel, this);
-					}
-				}
+				TPROF("CRenderingContext::RenderModel()");
+				r.RenderModel(GetModelID(), this);
 			}
-
-			TPROF("CBaseEntity::OnRender");
-			OnRender(&r);
 		}
+
+		OnRender(&r);
 	} while (false);
 
 	PostRender();
@@ -943,6 +1017,58 @@ void CBaseEntity::Render() const
 	}
 }
 
+void CBaseEntity::RenderTransparent() const
+{
+	TPROF("CBaseEntity::RenderTransparent");
+
+	if (!IsVisible())
+		return;
+
+	PreRender();
+
+	do {
+		CGameRenderingContext r(GameServer()->GetRenderer(), true);
+
+		// If another context already set this, don't clobber it.
+		if (!r.GetActiveFrameBuffer())
+			r.UseFrameBuffer(GameServer()->GetRenderer()->GetSceneBuffer());
+
+		r.Transform(GetRenderTransform());
+
+		if (m_bRenderInverted)
+			r.SetWinding(!r.GetWinding());
+
+		if (m_bDisableBackCulling)
+			r.SetBackCulling(false);
+
+		ModifyContext(&r);
+
+		if (r.GetAlpha() == 0)
+			continue;
+
+		if (ShouldRenderModel())
+		{
+			if (m_iModel != (size_t)~0)
+			{
+				TPROF("CRenderingContext::RenderModel()");
+				r.RenderModel(GetModelID(), this);
+			}
+
+			if (m_hMaterialModel.IsValid())
+			{
+				TPROF("CRenderingContext::RenderModel(Material)");
+				r.SetBlend(BLEND_ALPHA);
+				r.Scale(0, (float)m_vecScale.Get().y, (float)m_vecScale.Get().x);
+				r.RenderMaterialModel(m_hMaterialModel, this);
+			}
+		}
+
+		OnRender(&r);
+	} while (false);
+
+	PostRender();
+}
+
 void CBaseEntity::Delete()
 {
 	GameServer()->Delete(this);
@@ -951,6 +1077,18 @@ void CBaseEntity::Delete()
 void CBaseEntity::Delete(const tvector<tstring>& sArgs)
 {
 	Delete();
+}
+
+void CBaseEntity::OnDeleted(const CBaseEntity* pEntity)
+{
+	for (size_t i = 0; i < m_ahMoveChildren.size(); i++)
+	{
+		if (pEntity == m_ahMoveChildren[i])
+		{
+			m_ahMoveChildren.erase(i);
+			break;
+		}
+	}
 }
 
 void CBaseEntity::CallInput(const tstring& sName, const tstring& sArgs)
@@ -1181,7 +1319,7 @@ SERVER_GAME_COMMAND(ClientSpawn)
 
 	CEntityHandle<CBaseEntity> hEntity(pCmd->ArgAsUInt(0));
 
-	if (hEntity == NULL)
+	if (!hEntity)
 	{
 		TMsg("ClientSpawn with invalid entity.\n");
 		return;
@@ -1590,7 +1728,14 @@ void CBaseEntity::PrecacheMaterial(const tstring& sMaterial)
 			return;
 	}
 
-	pReg->m_ahMaterialPrecaches.push_back(CMaterialLibrary::AddMaterial(sMaterial));
+	CMaterialHandle hMaterial = CMaterialLibrary::AddMaterial(sMaterial);
+	if (!hMaterial.IsValid())
+	{
+		TError("PrecacheMaterial(): Couldn't load material " + sMaterial + "\n");
+		return;
+	}
+
+	pReg->m_ahMaterialPrecaches.push_back(hMaterial);
 	pReg->m_asPrecaches.push_back(sMaterial);
 }
 
@@ -1878,7 +2023,7 @@ bool CanUnserializeString_Vector2D(const tstring& sData)
 	return asTokens.size() == 2;
 }
 
-const TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
+const Vector2D UnserializeString_Vector2D(const tstring& sData, const tstring& sName, const tstring& sClass, const tstring& sHandle)
 {
 	tvector<tstring> asTokens;
 	tstrtok(sData, asTokens);
@@ -1887,7 +2032,7 @@ const TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sN
 	if (asTokens.size() != 2)
 	{
 		TError("Entity '" + sName + "' (" + sClass + ":" + sHandle + ") wrong number of arguments for a 2D vector (Format: \"x y\")\n");
-		return TVector();
+		return Vector2D();
 	}
 
 	return Vector2D((float)stof(asTokens[0]), (float)stof(asTokens[1]));

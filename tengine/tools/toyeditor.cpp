@@ -855,7 +855,7 @@ TVector CToyEditor::GetCameraPosition()
 	{
 		CModel* pPhys = CModelLibrary::GetModel(m_iPhysPreview);
 		if (!pPhys)
-			return TVector(0, 0, 0) - vecPreviewAngle;
+			return Vector(0, 0, 0) - vecPreviewAngle;
 
 		return pPhys->m_aabbVisBoundingBox.Center() - vecPreviewAngle;
 	}
@@ -863,7 +863,7 @@ TVector CToyEditor::GetCameraPosition()
 	return pMesh->m_aabbVisBoundingBox.Center() - vecPreviewAngle;
 }
 
-TVector CToyEditor::GetCameraDirection()
+Vector CToyEditor::GetCameraDirection()
 {
 	return AngleVector(m_angPreview);
 }

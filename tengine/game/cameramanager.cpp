@@ -52,7 +52,7 @@ void CCameraManager::Think()
 		m_vecFreeCamera += vecRight * m_vecFreeVelocity.z * (float)GameServer()->GetFrameTime() * flScaleSpeed;
 		m_vecFreeCamera += vecUp * m_vecFreeVelocity.y * (float)GameServer()->GetFrameTime() * flScaleSpeed;
 
-		m_flFreeOrthoHeight -= ((float)GameServer()->GetFrameTime() * m_vecFreeVelocity.x * 5);
+		m_flFreeOrthoHeight -= ((float)GameServer()->GetFrameTime() * (float)m_vecFreeVelocity.x * 5);
 		if (m_flFreeOrthoHeight < 1)
 			m_flFreeOrthoHeight = 0.1f;
 	}
@@ -93,7 +93,7 @@ TVector CCameraManager::GetCameraPosition()
 	return pCamera->GetGlobalOrigin();
 }
 
-TVector CCameraManager::GetCameraDirection()
+Vector CCameraManager::GetCameraDirection()
 {
 	if (GetFreeMode())
 		return AngleVector(m_angFreeCamera);
@@ -111,14 +111,14 @@ TVector CCameraManager::GetCameraDirection()
 		return AngleVector(pFrom->GetGlobalAngles() + angDifference*flLerp);
 	}
 
-	return AngleVector(pCamera->GetGlobalAngles());
+	return pCamera->GetGlobalTransform().GetForwardVector();
 }
 
-TVector CCameraManager::GetCameraUp()
+Vector CCameraManager::GetCameraUp()
 {
 	CCamera* pCamera = GetActiveCamera();
 	if (!pCamera)
-		return TVector(0, 1, 0);
+		return Vector(0, 1, 0);
 
 	if (ShouldTransition())
 	{
@@ -167,6 +167,40 @@ float CCameraManager::GetCameraOrthoHeight()
 	}
 
 	return pCamera->GetOrthoHeight();
+}
+
+float CCameraManager::GetCameraNear()
+{
+	CCamera* pCamera = GetActiveCamera();
+	if (!pCamera)
+		return 1;
+
+	if (ShouldTransition())
+	{
+		CCamera* pFrom = m_ahCameras[m_iLastCamera];
+		CCamera* pTo = m_ahCameras[m_iCurrentCamera];
+		float flLerp = GetTransitionLerp();
+		return RemapVal(flLerp, 0, 1, pFrom->GetCameraNear(), pTo->GetCameraNear());
+	}
+
+	return pCamera->GetCameraNear();
+}
+
+float CCameraManager::GetCameraFar()
+{
+	CCamera* pCamera = GetActiveCamera();
+	if (!pCamera)
+		return 10000;
+
+	if (ShouldTransition())
+	{
+		CCamera* pFrom = m_ahCameras[m_iLastCamera];
+		CCamera* pTo = m_ahCameras[m_iCurrentCamera];
+		float flLerp = GetTransitionLerp();
+		return RemapVal(flLerp, 0, 1, pFrom->GetCameraFar(), pTo->GetCameraFar());
+	}
+
+	return pCamera->GetCameraFar();
 }
 
 bool CCameraManager::ShouldRenderOrthographic()

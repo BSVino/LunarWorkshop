@@ -62,6 +62,7 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 	m_flHostTime = 0;
 	m_flGameTime = 0;
 	m_flFrameTime = 0;
+	m_flTimeScale = 1;
 	m_flNextClientInfoUpdate = 0;
 	m_iFrame = 0;
 
@@ -165,6 +166,12 @@ void CGameServer::AddToPrecacheList(const tstring& sClass)
 
 	if (it2->second.m_pszParentClass)
 		AddToPrecacheList(it2->second.m_pszParentClass);
+}
+
+void CGameServer::AddAllToPrecacheList()
+{
+	for (auto it = CBaseEntity::GetEntityRegistration().begin(); it != CBaseEntity::GetEntityRegistration().end(); it++)
+		AddToPrecacheList(it->first);
 }
 
 void CGameServer::PrecacheList()
@@ -607,6 +614,8 @@ void CGameServer::Think(double flHostTime)
 	m_iFrame++;
 	m_flFrameTime = flHostTime - m_flHostTime;
 
+	m_flFrameTime *= m_flTimeScale;
+
 	// If the framerate drops, don't let too much happen without the player seeing
 	if (GameNetwork()->IsConnected())
 	{
@@ -828,7 +837,8 @@ CEntityHandle<CBaseEntity> CGameServer::Create(const char* pszEntityName)
 	// client portion and a server portion to help minimize bugs like this.
 	//::CreateEntity.RunCommand(sprintf(tstring("%s %d %d"), pszEntityName, hEntity->GetHandle(), hEntity->GetSpawnSeed()));
 
-	AddToPrecacheList(pszEntityName);
+	if (IsLoading())
+		AddToPrecacheList(pszEntityName);
 
 	return hEntity;
 }

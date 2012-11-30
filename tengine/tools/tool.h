@@ -33,7 +33,7 @@ public:
 
 	virtual void			CameraThink();
 	virtual TVector			GetCameraPosition();
-	virtual TVector			GetCameraDirection();
+	virtual Vector          GetCameraDirection();
 	virtual void			SetCameraOrientation(TVector vecPosition, Vector vecDirection);
 	virtual float			GetCameraOrthoHeight();
 	virtual bool            ShouldRenderOrthographic();

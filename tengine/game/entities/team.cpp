@@ -81,8 +81,10 @@ void CTeam::RemoveEntity(CBaseEntity* pEntity)
 	}
 }
 
-void CTeam::OnDeleted(CBaseEntity* pEntity)
+void CTeam::OnDeleted(const CBaseEntity* pEntity)
 {
+	BaseClass::OnDeleted(pEntity);
+
 	for (size_t i = 0; i < m_ahMembers.size(); i++)
 	{
 		if (pEntity == m_ahMembers[i])

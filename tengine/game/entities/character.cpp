@@ -8,6 +8,7 @@
 #include <renderer/renderingcontext.h>
 #include <physics/physics.h>
 #include <renderer/game_renderer.h>
+#include <game/entities/weapon.h>
 
 #include "player.h"
 
@@ -20,24 +21,29 @@ NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN(CCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_hControllingPlayer);
-	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, EAngle, m_angView, "ViewAngles");
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hGround);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bNoClip);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bTransformMoveByView);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecGoalVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecMoveVelocity);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, double, m_flMoveSimulationTime);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, double, m_flLastAttack);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, TFloat, m_flMaxStepSize);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iEquippedWeapon);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYVECTOR, CBaseWeapon, m_ahWeapons);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CCharacter);
-	INPUT_DEFINE(SetViewAngles);
 INPUTS_TABLE_END();
 
 CCharacter::CCharacter()
 {
 	m_bTransformMoveByView = true;
 	m_bNoClip = false;
+
+	m_flLastSpawn = -1;
+
+	m_iEquippedWeapon = ~0;
 
 	SetMass(60);
 }
@@ -51,13 +57,19 @@ void CCharacter::Spawn()
 	m_vecMoveVelocity = Vector(0,0,0);
 	m_vecGoalVelocity = Vector(0,0,0);
 
+	m_flMoveSimulationTime = 0;
+
 	m_flLastAttack = -1;
+	m_flLastSpawn = GameServer()->GetGameTime();
 
 	m_bTakeDamage = true;
 
 	m_flMaxStepSize = 0.2f;
 
 	AddToPhysics(CT_CHARACTER);
+
+	if (GetControllingPlayer())
+		GetControllingPlayer()->Instructor_Respawn();
 }
 
 void CCharacter::Think()
@@ -68,6 +80,38 @@ void CCharacter::Think()
 		MoveThink_NoClip();
 	else
 		MoveThink();
+
+	if (IsInPhysics() && GamePhysics()->IsEntityAdded(this))
+		return;
+
+	Simulate();
+}
+
+void CCharacter::Simulate()
+{
+	float flSimulationFrameTime = 0.01f;
+
+	// Break simulations up into consistent small steps to preserve accuracy.
+	for (; m_flMoveSimulationTime < GameServer()->GetGameTime(); m_flMoveSimulationTime += flSimulationFrameTime)
+	{
+		TVector vecVelocity = GetLocalVelocity();
+
+		TVector vecLocalOrigin = GetLocalOrigin();
+		TVector vecGlobalOrigin = GetGlobalOrigin();
+
+		vecVelocity = vecVelocity * flSimulationFrameTime;
+
+		TVector vecLocalDestination = vecLocalOrigin + vecVelocity;
+		TVector vecGlobalDestination = vecLocalDestination;
+		if (GetMoveParent())
+			vecGlobalDestination = GetMoveParent()->GetGlobalTransform() * vecLocalDestination;
+
+		TVector vecNewLocalOrigin = vecLocalDestination;
+
+		SetLocalOrigin(vecNewLocalOrigin);
+
+		m_flMoveSimulationTime += flSimulationFrameTime;
+	}
 }
 
 void CCharacter::Move(movetype_t eMoveType)
@@ -84,13 +128,13 @@ void CCharacter::Move(movetype_t eMoveType)
 
 void CCharacter::StopMove(movetype_t eMoveType)
 {
-	if (eMoveType == MOVE_FORWARD && m_vecGoalVelocity.x > 0)
+	if (eMoveType == MOVE_FORWARD && m_vecGoalVelocity.x > 0.0f)
 		m_vecGoalVelocity.x = 0;
-	else if (eMoveType == MOVE_BACKWARD && m_vecGoalVelocity.x < 0)
+	else if (eMoveType == MOVE_BACKWARD && m_vecGoalVelocity.x < 0.0f)
 		m_vecGoalVelocity.x = 0;
-	else if (eMoveType == MOVE_LEFT && m_vecGoalVelocity.z < 0)
+	else if (eMoveType == MOVE_LEFT && m_vecGoalVelocity.z < 0.0f)
 		m_vecGoalVelocity.z = 0;
-	else if (eMoveType == MOVE_RIGHT && m_vecGoalVelocity.z > 0)
+	else if (eMoveType == MOVE_RIGHT && m_vecGoalVelocity.z > 0.0f)
 		m_vecGoalVelocity.z = 0;
 }
 
@@ -108,14 +152,15 @@ void CCharacter::MoveThink()
 
 	TVector vecGoalVelocity = GetGoalVelocity();
 
-	m_vecMoveVelocity.x = Approach(vecGoalVelocity.x, m_vecMoveVelocity.x, (float)GameServer()->GetFrameTime()*CharacterAcceleration());
+	m_vecMoveVelocity.x = Approach((float)vecGoalVelocity.x, (float)m_vecMoveVelocity.x, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
 	m_vecMoveVelocity.y = 0;
-	m_vecMoveVelocity.z = Approach(vecGoalVelocity.z, m_vecMoveVelocity.z, (float)GameServer()->GetFrameTime()*CharacterAcceleration());
+	m_vecMoveVelocity.z = Approach((float)vecGoalVelocity.z, (float)m_vecMoveVelocity.z, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
 
-	if (m_vecMoveVelocity.LengthSqr() > 0)
+	TVector vecLocalVelocity;
+
+	if (m_vecMoveVelocity.LengthSqr() > 0.0f)
 	{
 		TVector vecMove = m_vecMoveVelocity * CharacterSpeed();
-		TVector vecLocalVelocity;
 
 		if (m_bTransformMoveByView)
 		{
@@ -127,25 +172,20 @@ void CCharacter::MoveThink()
 				vecUp = mGlobalToLocal.TransformVector(vecUp);
 			}
 
-			TMatrix m = GetLocalTransform();
-			m.SetAngles(GetViewAngles());
-
-			Vector vecRight = m.GetForwardVector().Cross(vecUp).Normalized();
-			Vector vecForward = vecUp.Cross(vecRight).Normalized();
-
-			m.SetForwardVector(vecForward);
-			m.SetUpVector(vecUp);
-			m.SetRightVector(vecRight);
+			TMatrix m = GetMovementVelocityTransform();
 
 			vecLocalVelocity = m.TransformVector(vecMove);
 		}
 		else
 			vecLocalVelocity = vecMove;
-
-		GamePhysics()->SetControllerWalkVelocity(this, vecLocalVelocity);
 	}
 	else
-		GamePhysics()->SetControllerWalkVelocity(this, Vector(0, 0, 0));
+		vecLocalVelocity = TVector();
+
+	if (IsInPhysics() && GamePhysics()->IsEntityAdded(this))
+		GamePhysics()->SetControllerMoveVelocity(this, vecLocalVelocity);
+	else
+		SetLocalVelocity(vecLocalVelocity);
 }
 
 void CCharacter::MoveThink_NoClip()
@@ -154,11 +194,11 @@ void CCharacter::MoveThink_NoClip()
 
 	TVector vecGoalVelocity = GetGoalVelocity();
 
-	m_vecMoveVelocity.x = Approach(vecGoalVelocity.x, m_vecMoveVelocity.x, (float)GameServer()->GetFrameTime()*CharacterAcceleration());
+	m_vecMoveVelocity.x = Approach((float)vecGoalVelocity.x, (float)m_vecMoveVelocity.x, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
 	m_vecMoveVelocity.y = 0;
-	m_vecMoveVelocity.z = Approach(vecGoalVelocity.z, m_vecMoveVelocity.z, (float)GameServer()->GetFrameTime()*CharacterAcceleration());
+	m_vecMoveVelocity.z = Approach((float)vecGoalVelocity.z, (float)m_vecMoveVelocity.z, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
 
-	if (m_vecMoveVelocity.LengthSqr() > 0)
+	if (m_vecMoveVelocity.LengthSqr() > 0.0f)
 	{
 		TVector vecMove = m_vecMoveVelocity * CharacterSpeed();
 		TVector vecLocalVelocity;
@@ -173,8 +213,7 @@ void CCharacter::MoveThink_NoClip()
 				vecUp = mGlobalToLocal.TransformVector(vecUp);
 			}
 
-			TMatrix m = GetLocalTransform();
-			m.SetAngles(GetViewAngles());
+			TMatrix m = GetMovementVelocityTransform();
 
 			vecLocalVelocity = m.TransformVector(vecMove);
 		}
@@ -183,6 +222,16 @@ void CCharacter::MoveThink_NoClip()
 
 		SetGlobalOrigin(GetGlobalOrigin() + (float)GameServer()->GetFrameTime()*vecLocalVelocity);
 	}
+}
+
+const TMatrix CCharacter::GetMovementVelocityTransform() const
+{
+	return TMatrix(GetViewAngles());
+}
+
+void CCharacter::CharacterMovement(class btCollisionWorld* pWorld, float flDelta)
+{
+	GamePhysics()->CharacterMovement(this, pWorld, flDelta);
 }
 
 void CCharacter::Jump()
@@ -194,19 +243,21 @@ void CCharacter::SetNoClip(bool bOn)
 {
 	m_bNoClip = bOn;
 
-	GamePhysics()->SetControllerWalkVelocity(this, Vector(0, 0, 0));
+	GamePhysics()->SetControllerMoveVelocity(this, Vector(0, 0, 0));
 	GamePhysics()->SetControllerColliding(this, !m_bNoClip);
 }
 
 bool CCharacter::CanAttack() const
 {
-	if (m_flLastAttack >= 0 && GameServer()->GetGameTime() - m_flLastAttack < AttackTime())
+	float flMeleeAttackTime = GetEquippedWeapon()?GetEquippedWeapon()->MeleeAttackTime():MeleeAttackTime();
+
+	if (m_flLastAttack >= 0 && GameServer()->GetGameTime() - m_flLastAttack < flMeleeAttackTime)
 		return false;
 
 	return true;
 }
 
-void CCharacter::Attack()
+void CCharacter::MeleeAttack()
 {
 	if (!CanAttack())
 		return;
@@ -214,13 +265,21 @@ void CCharacter::Attack()
 	m_flLastAttack = GameServer()->GetGameTime();
 	m_vecMoveVelocity = TVector();
 
-	TFloat flAttackSphereRadius = AttackSphereRadius();
-	TVector vecDamageSphereCenter = AttackSphereCenter();
+	CBaseWeapon* pWeapon = GetEquippedWeapon();
 
-	size_t iMaxEntities = GameServer()->GetMaxEntities();
-	for (size_t j = 0; j < iMaxEntities; j++)
+	float flAttackSphereRadius = pWeapon?pWeapon->MeleeAttackSphereRadius():MeleeAttackSphereRadius();
+	float flAttackDamage = pWeapon?pWeapon->MeleeAttackDamage():MeleeAttackDamage();
+	Vector vecDamageSphereCenter = pWeapon?pWeapon->MeleeAttackSphereCenter():MeleeAttackSphereCenter();
+
+	if (pWeapon)
+		pWeapon->MeleeAttack();
+
+	CTraceResult tr;
+	GamePhysics()->CheckSphere(tr, flAttackSphereRadius, vecDamageSphereCenter, this);
+
+	for (size_t j = 0; j < tr.m_aHits.size(); j++)
 	{
-		CBaseEntity* pEntity = CBaseEntity::GetEntity(j);
+		CBaseEntity* pEntity = tr.m_aHits[j].m_pHit;
 
 		if (!pEntity)
 			continue;
@@ -234,12 +293,8 @@ void CCharacter::Attack()
 		if (pEntity == this)
 			continue;
 
-		TFloat flRadius = pEntity->GetBoundingRadius() + flAttackSphereRadius;
-		flRadius = flRadius*flRadius;
-		if ((vecDamageSphereCenter - pEntity->GetGlobalCenter()).LengthSqr() > flRadius)
-			continue;
-
-		pEntity->TakeDamage(this, this, DAMAGE_GENERIC, AttackDamage());
+		//TMsg(tstring(GetClassName()) + " hit " + tstring(pEntity->GetClassName()) + "\n");
+		pEntity->TakeDamage(this, this, DAMAGE_GENERIC, flAttackDamage);
 	}
 }
 
@@ -248,7 +303,9 @@ bool CCharacter::IsAttacking() const
 	if (m_flLastAttack < 0)
 		return false;
 
-	return (GameServer()->GetGameTime() - m_flLastAttack < AttackTime());
+	float flMeleeAttackTime = GetEquippedWeapon()?GetEquippedWeapon()->MeleeAttackTime():MeleeAttackTime();
+
+	return (GameServer()->GetGameTime() - m_flLastAttack < flMeleeAttackTime);
 }
 
 void CCharacter::MoveToPlayerStart()
@@ -270,9 +327,9 @@ void CCharacter::MoveToPlayerStart()
 
 CVar debug_showplayervectors("debug_showplayervectors", "off");
 
-void CCharacter::PostRender(bool bTransparent) const
+void CCharacter::PostRender() const
 {
-	if (!bTransparent && debug_showplayervectors.GetBool())
+	if (!GameServer()->GetRenderer()->IsRenderingTransparent() && debug_showplayervectors.GetBool())
 		ShowPlayerVectors();
 }
 
@@ -329,6 +386,95 @@ void CCharacter::ShowPlayerVectors() const
 	c.EndRender();
 }
 
+void CCharacter::Weapon_Add(CBaseWeapon* pWeapon)
+{
+	TAssert(pWeapon);
+	if (!pWeapon)
+		return;
+
+	for (size_t i = 0; i < m_ahWeapons.size(); i++)
+	{
+		if (m_ahWeapons[i] == pWeapon)
+			return;
+	}
+
+	TAssert(!pWeapon->GetOwner());
+
+	m_ahWeapons.push_back(pWeapon);
+
+	pWeapon->SetOwner(this);
+
+	OnWeaponAdded(pWeapon);
+}
+
+void CCharacter::Weapon_Remove(CBaseWeapon* pWeapon)
+{
+	TAssert(pWeapon);
+	if (!pWeapon)
+		return;
+
+	size_t iIndex = ~0;
+	for (size_t i = 0; i < m_ahWeapons.size(); i++)
+	{
+		if (m_ahWeapons[i] == pWeapon)
+		{
+			iIndex = i;
+			break;
+		}
+	}
+
+	if (iIndex == ~0)
+		return;
+
+	TAssert(pWeapon->GetOwner() == this);
+
+	bool bWasEquipped = (GetEquippedWeaponIndex() == iIndex);
+	m_ahWeapons.erase_value(pWeapon);
+
+	pWeapon->SetOwner(nullptr);
+
+	OnWeaponRemoved(pWeapon, bWasEquipped);
+}
+
+void CCharacter::Weapon_Equip(CBaseWeapon* pWeapon)
+{
+	size_t iIndex = ~0;
+	for (size_t i = 0; i < m_ahWeapons.size(); i++)
+	{
+		if (m_ahWeapons[i] == pWeapon)
+		{
+			iIndex = i;
+			break;
+		}
+	}
+
+	TAssert(iIndex != ~0);
+	if (iIndex == ~0)
+		return;
+
+	m_iEquippedWeapon = iIndex;
+}
+
+CBaseWeapon* CCharacter::GetEquippedWeapon() const
+{
+	if (m_iEquippedWeapon == ~0)
+		return nullptr;
+
+	TAssert(m_iEquippedWeapon < m_ahWeapons.size());
+	TAssert(m_ahWeapons[m_iEquippedWeapon]);
+
+	return m_ahWeapons[m_iEquippedWeapon];
+}
+
+void CCharacter::OnDeleted(const CBaseEntity* pEntity)
+{
+	BaseClass::OnDeleted(pEntity);
+
+	const CBaseWeapon* pWeapon = dynamic_cast<const CBaseWeapon*>(pEntity);
+	if (pWeapon)
+		m_ahWeapons.erase_value(pWeapon);
+}
+
 void CCharacter::SetControllingPlayer(CPlayer* pCharacter)
 {
 	m_hControllingPlayer = pCharacter;
@@ -349,15 +495,9 @@ TFloat CCharacter::CharacterSpeed()
 		return BaseCharacterSpeed();
 }
 
-void CCharacter::SetViewAngles(const tvector<tstring>& asArgs)
+const TVector CCharacter::MeleeAttackSphereCenter() const
 {
-	if (asArgs.size() != 3)
-	{
-		TError("CCharacter::SetViewAngles with != 3 arguments. Was expecting \"p y r\"\n");
-		return;
-	}
-
-	SetViewAngles(EAngle((float)stof(asArgs[0]), (float)stof(asArgs[1]), (float)stof(asArgs[2])));
+	return GetPhysicsTransform().GetTranslation() + GetPhysicsTransform().GetUpVector()*((float)EyeHeight()*0.7f) + AngleVector(GetViewAngles()) * MeleeAttackSphereRadius();
 }
 
 void CCharacter::SetGroundEntity(CBaseEntity* pEntity)
@@ -367,4 +507,8 @@ void CCharacter::SetGroundEntity(CBaseEntity* pEntity)
 
 	m_hGround = pEntity;
 	SetMoveParent(pEntity);
+}
+
+void CCharacter::SetGroundEntityExtra(size_t iExtra)
+{
 }

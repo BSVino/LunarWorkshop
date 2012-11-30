@@ -146,7 +146,7 @@ public:
 	void					MouseWheel(int x, int y);
 
 	virtual TVector			GetCameraPosition();
-	virtual TVector			GetCameraDirection();
+	virtual Vector          GetCameraDirection();
 
 	virtual void			ManipulatorUpdated(const tstring& sArguments);
 	virtual void            DuplicateMove(const tstring& sArguments);

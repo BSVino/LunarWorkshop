@@ -96,7 +96,7 @@ void CParallelizeThread::Process()
 	}
 }
 
-CParallelizer::CParallelizer(JobCallback pfnCallback)
+CParallelizer::CParallelizer(JobCallback pfnCallback, int iThreads)
 {
 	pthread_mutex_init(&m_iDataMutex, NULL);
 	pthread_mutex_init(&m_iJobsMutex, NULL);
@@ -104,10 +104,13 @@ CParallelizer::CParallelizer(JobCallback pfnCallback)
 	m_iJobsGiven = 0;
 	m_iJobsDone = 0;
 
-	// Insert all first so that reallocations are all done before we pass the pointers to the threads.
-	m_aThreads.insert(m_aThreads.begin(), GetNumberOfProcessors(), CParallelizeThread());
+	if (iThreads <= 0)
+		iThreads = GetNumberOfProcessors();
 
-	for (size_t i = 0; i < GetNumberOfProcessors(); i++)
+	// Insert all first so that reallocations are all done before we pass the pointers to the threads.
+	m_aThreads.insert(m_aThreads.begin(), iThreads, CParallelizeThread());
+
+	for (size_t i = 0; i < (size_t)iThreads; i++)
 	{
 		CParallelizeThread* pThread = &m_aThreads[i];
 
@@ -216,9 +219,19 @@ void CParallelizer::RestartJobs()
 	Start();
 }
 
+CMutexLocker CParallelizer::GetLock()
+{
+	return CMutexLocker(this);
+}
+
 void CParallelizer::LockData()
 {
 	pthread_mutex_lock(&m_iDataMutex);
+}
+
+bool CParallelizer::TryLockData()
+{
+	return pthread_mutex_trylock(&m_iDataMutex) == 0;
 }
 
 void CParallelizer::UnlockData()
@@ -229,4 +242,57 @@ void CParallelizer::UnlockData()
 void CParallelizer::DispatchJob(void* pJobData)
 {
 	m_pfnCallback(pJobData);
+}
+
+CMutexLocker::CMutexLocker(CParallelizer* pParallelizer)
+{
+	m_pParallelizer = pParallelizer;
+	m_bHaveLock = false;
+}
+
+CMutexLocker::CMutexLocker(CMutexLocker&& r)
+{
+	m_pParallelizer = r.m_pParallelizer;
+	m_bHaveLock = r.m_bHaveLock;
+}
+
+CMutexLocker::CMutexLocker(const CMutexLocker& r)
+{
+	TAssertNoMsg(!m_bHaveLock);
+
+	m_pParallelizer = r.m_pParallelizer;
+	m_bHaveLock = false;
+}
+
+CMutexLocker::~CMutexLocker()
+{
+	if (m_bHaveLock)
+		Unlock();
+}
+
+void CMutexLocker::Lock()
+{
+	if (m_bHaveLock)
+		return;
+
+	m_pParallelizer->LockData();
+	m_bHaveLock = true;
+}
+
+bool CMutexLocker::TryLock()
+{
+	if (m_bHaveLock)
+		return true;
+
+	m_bHaveLock = m_pParallelizer->TryLockData();
+	return m_bHaveLock;
+}
+
+void CMutexLocker::Unlock()
+{
+	if (!m_bHaveLock)
+		return;
+
+	m_pParallelizer->UnlockData();
+	m_bHaveLock = false;
 }

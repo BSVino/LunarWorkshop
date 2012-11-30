@@ -27,6 +27,8 @@ INPUTS_TABLE_END();
 CPlayer::CPlayer()
 {
 	m_iClient = NETWORK_LOCAL;
+
+	m_flLastLesson = -1;
 }
 
 void NoClip(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
@@ -57,7 +59,7 @@ void NoClip(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring&
 
 CCommand noclip("noclip", ::NoClip);
 
-CVar m_sensitivity("m_sensitivity", "5");
+CVar m_sensitivity("m_sensitivity", "4");
 
 void CPlayer::MouseMotion(int x, int y)
 {
@@ -66,8 +68,8 @@ void CPlayer::MouseMotion(int x, int y)
 
 	EAngle angDirection = m_hCharacter->GetViewAngles();
 
-	angDirection.y += (x/m_sensitivity.GetFloat());
-	angDirection.p -= (y/m_sensitivity.GetFloat());
+	angDirection.y += (x*m_sensitivity.GetFloat()/20);
+	angDirection.p -= (y*m_sensitivity.GetFloat()/20);
 
 	if (angDirection.p > 89)
 		angDirection.p = 89;
@@ -149,6 +151,13 @@ void CPlayer::JoystickAxis(int iJoystick, int iAxis, float flValue, float flChan
 			m_hCharacter->StopMove(MOVE_FORWARD);
 		}
 	}
+}
+
+void CPlayer::Think()
+{
+	BaseClass::Think();
+
+	Instructor_Think();
 }
 
 void CPlayer::SetCharacter(CCharacter* pCharacter)

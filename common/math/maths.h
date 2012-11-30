@@ -53,6 +53,24 @@ inline const T LerpValue(const T& from, const T& to, float flLerp)
 	return to * flLerp + from * (1-flLerp);
 }
 
+template <class T>
+inline const T LerpValue(const T& from, const T& to, float flLerp, float flInLo, float flInHi)
+{
+	return (((flLerp-flInLo) / (flInHi-flInLo)) * (to-from)) + from;
+}
+
+template <class T>
+inline const T LerpValueClamped(const T& from, const T& to, float flLerp, float flInLo, float flInHi)
+{
+	if (flLerp < flInLo)
+		return from;
+
+	if (flLerp > flInHi)
+		return to;
+
+	return (((flLerp-flInLo) / (flInHi-flInLo)) * (to-from)) + from;
+}
+
 inline float RemapVal(float flInput, float flInLo, float flInHi, float flOutLo, float flOutHi)
 {
 	return (((flInput-flInLo) / (flInHi-flInLo)) * (flOutHi-flOutLo)) + flOutLo;
@@ -70,6 +88,17 @@ inline T RemapVal(T flInput, T flInLo, T flInHi, T flOutLo, T flOutHi)
 }
 
 inline float RemapValClamped(float flInput, float flInLo, float flInHi, float flOutLo, float flOutHi)
+{
+	if (flInput < flInLo)
+		return flOutLo;
+
+	if (flInput > flInHi)
+		return flOutHi;
+
+	return RemapVal(flInput, flInLo, flInHi, flOutLo, flOutHi);
+}
+
+inline double RemapValClamped(double flInput, double flInLo, double flInHi, double flOutLo, double flOutHi)
 {
 	if (flInput < flInLo)
 		return flOutLo;

@@ -18,12 +18,12 @@ public:
 	virtual void	Think();
 
 	virtual TVector	GetCameraPosition();
-	virtual TVector	GetCameraDirection();
-	virtual TVector	GetCameraUp();
+	virtual Vector  GetCameraDirection();
+	virtual Vector  GetCameraUp();
 	virtual float	GetCameraFOV();
 	virtual float	GetCameraOrthoHeight();
-	virtual float	GetCameraNear() { return 1.0f; };
-	virtual float	GetCameraFar() { return 10000.0f; };
+	virtual float	GetCameraNear();
+	virtual float	GetCameraFar();
 	virtual bool	ShouldRenderOrthographic();
 
 	virtual bool      UseCustomProjection() { return true; }

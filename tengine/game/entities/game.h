@@ -31,15 +31,20 @@ public:
 	virtual void								OnClientEnterGame(int iClient);
 	virtual void								OnClientDisconnect(int iClient);
 
+	virtual void                                OnDisplayLesson(const tstring& sTutorial) {};
+
 	virtual void								EnterGame();
 
 	void										AddPlayer(CPlayer* pPlayer);
-	void										RemovePlayer(CPlayer* pPlayer);
+	void										RemovePlayer(const CPlayer* pPlayer);
+
+	virtual void                                OnEntityKilled(CBaseEntity* pKilledBy) {};
 
 	virtual void								OnDeleted();
+	virtual void								OnDeleted(const CBaseEntity* pEntity);
 
+	virtual bool                                TakesDamageFrom(CBaseEntity* pVictim, CBaseEntity* pAttacker);
 	virtual void								OnTakeDamage(class CBaseEntity* pVictim, class CBaseEntity* pAttacker, class CBaseEntity* pInflictor, float flDamage, bool bDirectHit, bool bKilled) {};
-	virtual void								OnDeleted(class CBaseEntity* pEntity);
 
 	size_t										GetNumPlayers() const { return m_ahPlayers.size(); };
 	CPlayer*									GetPlayer(size_t i) const;

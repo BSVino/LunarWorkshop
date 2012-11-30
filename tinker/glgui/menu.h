@@ -64,9 +64,14 @@ namespace glgui
 		void						CloseMenu();
 
 		virtual void				AddSubmenu(const tstring& sTitle, IEventListener* pListener = NULL, IEventListener::Callback pfnCallback = NULL);
+		virtual void				AddSubmenu(CMenu* pMenu, IEventListener* pListener = NULL, IEventListener::Callback pfnCallback = NULL);
 		virtual void				ClearSubmenus();
+		virtual size_t              GetNumSubmenus() const { return m_ahEntries.size(); }
+		virtual CControl<CMenu>     GetSubmenu(size_t iMenu) const { if (iMenu >= GetNumSubmenus()) return nullptr; return m_ahEntries[iMenu]; }
 
 		virtual size_t				GetSelectedMenu();
+
+		virtual void                DirtyVisible();
 
 	protected:
 		class CSubmenuPanel : public CPanel
@@ -83,7 +88,7 @@ namespace glgui
 			void					Paint(float x, float y, float w, float h);
 			void					PostPaint();
 
-			virtual bool			IsVisible();
+			virtual void            CalculateVisible();
 
 			void					SetFakeHeight(float flFakeHeight) { m_flFakeHeight = flFakeHeight; };
 

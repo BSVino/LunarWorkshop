@@ -304,7 +304,12 @@ void CMenu::CloseMenu()
 
 void CMenu::AddSubmenu(const tstring& sTitle, IEventListener* pListener, IEventListener::Callback pfnCallback)
 {
-	CControl<CMenu> hMenu = m_hMenu->AddControl(new CMenu(sTitle, true), true);
+	AddSubmenu(new CMenu(sTitle, true), pListener, pfnCallback);
+}
+
+void CMenu::AddSubmenu(CMenu* pMenu, IEventListener* pListener, IEventListener::Callback pfnCallback)
+{
+	CControl<CMenu> hMenu = m_hMenu->AddControl(pMenu, true);
 	hMenu->SetAlign(TA_LEFTCENTER);
 	hMenu->SetWrap(false);
 	hMenu->EnsureTextFits();
@@ -327,7 +332,7 @@ void CMenu::AddSubmenu(const tstring& sTitle, IEventListener* pListener, IEventL
 		iTotalControls++;
 	}
 
-	hMenu->SetClickedListener(hMenu, Clicked, sprintf("%d " + sTitle, iTotalControls-1));
+	hMenu->SetClickedListener(hMenu, Clicked, sprintf("%d " + pMenu->GetText(), iTotalControls-1));
 
 	m_ahEntries.push_back(hMenu);
 }
@@ -358,6 +363,13 @@ size_t CMenu::GetSelectedMenu()
 	}
 
 	return ~0;
+}
+
+void CMenu::DirtyVisible()
+{
+	BaseClass::DirtyVisible();
+
+	m_hMenu->DirtyVisible();
 }
 
 CMenu::CSubmenuPanel::CSubmenuPanel(CControl<CMenu> hMenu)
@@ -419,10 +431,14 @@ void CMenu::CSubmenuPanel::PostPaint()
 	BaseClass::Paint(x, y, w, h);
 }
 
-bool CMenu::CSubmenuPanel::IsVisible()
+void CMenu::CSubmenuPanel::CalculateVisible()
 {
-	if (!m_hMenu)
-		return BaseClass::IsVisible();
+	BaseClass::CalculateVisible();
 
-	return m_hMenu->IsVisible() && BaseClass::IsVisible();
+	CBaseControl* pMenu = m_hMenu;
+	if (!pMenu)
+		return;
+
+	if (!pMenu->IsVisible())
+		m_bVisibleCalculated = false;
 }

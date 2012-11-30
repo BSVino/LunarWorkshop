@@ -58,7 +58,7 @@ void CTrigger::Think()
 
 	bool bVisible = false;
 	if (IsActive())
-		bVisible = GameServer()->GetRenderer()->IsSphereInFrustum(GetGlobalCenter(), GetBoundingRadius());
+		bVisible = GameServer()->GetRenderer()->IsSphereInFrustum(GetGlobalCenter(), (float)GetBoundingRadius());
 
 	if (bVisible && !m_bVisible)
 		StartVisible();

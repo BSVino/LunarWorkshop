@@ -10,6 +10,7 @@
 #include <common.h>
 
 #include <tengine_config.h>
+#include <tengine_config_data.h>
 
 #include <network/network.h>
 #include <game/entityhandle.h>
@@ -56,7 +57,7 @@ bool CanUnserializeString_AABB(const tstring& sData);
 bool UnserializeString_bool(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 size_t UnserializeString_size_t(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 const TVector UnserializeString_TVector(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
-const TVector UnserializeString_Vector2D(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
+const Vector2D UnserializeString_Vector2D(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 const EAngle UnserializeString_EAngle(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 const Matrix4x4 UnserializeString_Matrix4x4(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
 const AABB UnserializeString_AABB(const tstring& sData, const tstring& sName="", const tstring& sClass="", const tstring& sHandle="");
@@ -105,7 +106,7 @@ public:
 	bool					m_bOverride;
 	bool					m_bShowInEditor;
 	bool					m_bDefault;
-	char					m_oDefault[24];
+	char					m_oDefault[96];
 };
 
 typedef void (*EntityInputCallback)(const class CBaseEntity* pTarget, const tvector<tstring>& sArgs);
@@ -332,6 +333,7 @@ void entity::RegisterSaveData() \
 	pSaveData->m_pfnUnserializeString = &UnserializeString_##type; \
 	{ \
 		type iDefault = def; \
+		TAssert(sizeof(pSaveData->m_oDefault) >= sizeof(def)); \
 		memcpy(pSaveData->m_oDefault, &iDefault, sizeof(def)); \
 		pSaveData->m_bDefault = true; \
 	} \
@@ -482,6 +484,9 @@ public:
 	void									SetName(const tstring& sName) { m_sName = sName; };
 	tstring									GetName() const { return m_sName; };
 
+	CGameEntityData&						GameData() { return m_oGameData; }
+	const CGameEntityData&					GameData() const { return m_oGameData; }
+
 	void									SetMass(float flMass) { m_flMass = flMass; };
 	float									GetMass() const { return m_flMass; };
 
@@ -499,6 +504,9 @@ public:
 	class CModel*							GetModel() const;
 	virtual void							OnSetModel() {};
 
+	Matrix4x4								BaseGetRenderTransform() const { return m_oGameData.GetRenderTransform(); };
+	Vector									BaseGetRenderOrigin() const { return m_oGameData.GetRenderOrigin(); };
+
 	void									SetMaterialModel(const CMaterialHandle& hMaterial) { m_hMaterialModel = hMaterial; }
 	const CMaterialHandle&					GetMaterialModel() const { return m_hMaterialModel; };
 
@@ -515,6 +523,9 @@ public:
 	const TMatrix&							GetGlobalTransform();
 	const TMatrix							GetGlobalTransform() const;
 	void									SetGlobalTransform(const TMatrix& m);
+
+	virtual const Matrix4x4                 GetPhysicsTransform() const { return GetGlobalTransform(); }
+	virtual void                            SetPhysicsTransform(const Matrix4x4& m) { SetGlobalTransform(TMatrix(m)); }
 
 	const TMatrix							GetGlobalToLocalTransform();
 	const TMatrix							GetGlobalToLocalTransform() const;
@@ -538,6 +549,7 @@ public:
 	const TMatrix&							GetLocalTransform() const { return m_mLocalTransform; }
 	void									SetLocalTransform(const TMatrix& m);
 	virtual void							OnSetLocalTransform(TMatrix& m) {}
+	virtual void                            PostSetLocalTransform(const TMatrix& m) {}
 
 	const Quaternion&						GetLocalRotation() const { return m_qLocalRotation; }
 	void									SetLocalRotation(const Quaternion& q);
@@ -559,9 +571,14 @@ public:
 	DECLARE_ENTITY_INPUT(SetLocalOrigin);
 	DECLARE_ENTITY_INPUT(SetLocalAngles);
 
-	inline const Vector						GetScale() const { return m_vecScale; }
+	virtual void					SetViewAngles(const EAngle& angView) { m_angView = angView; }
+	virtual const EAngle			GetViewAngles() const { return m_angView; }
 
-	virtual const TVector					GetUpVector() const { return TVector(0, 1, 0); };
+	DECLARE_ENTITY_INPUT(SetViewAngles);
+
+	inline const Vector						GetScale() const { return m_vecScale.Get(); }
+
+	virtual const Vector					GetUpVector() const { return Vector(0, 1, 0); };
 
 	virtual bool							TransformsChildUp() const { return false; };
 
@@ -570,9 +587,11 @@ public:
 
 	DECLARE_ENTITY_INPUT(SetVisible);
 
+	void                                    SetInPhysics(bool b) { m_bInPhysics = b; }
 	bool									IsInPhysics() const { return m_bInPhysics; };
 	void									AddToPhysics(enum collision_type_e eCollisionType);
 	void									RemoveFromPhysics();
+	virtual collision_group_t               GetCollisionGroup() const { return CG_DEFAULT; }
 
 	size_t									GetHandle() const { return m_iHandle; }
 
@@ -594,7 +613,7 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnTakeDamage);
 	void									Kill();
 	void									Killed(CBaseEntity* pKilledBy);
-	virtual void							OnKilled(CBaseEntity* pKilledBy) {};
+	virtual void							OnKilled(CBaseEntity* pKilledBy);
 	DECLARE_ENTITY_OUTPUT(OnKilled);
 
 	void									SetActive(bool bActive);
@@ -608,22 +627,30 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnActivated);
 	DECLARE_ENTITY_OUTPUT(OnDeactivated);
 
-	virtual bool							ShouldRender() const { return (size_t)m_iModel != ~0 || m_hMaterialModel.IsValid(); };
+	void                                    Use(CBaseEntity* pUser);
+	virtual void                            OnUse(CBaseEntity* pUser);
+	DECLARE_ENTITY_INPUT(Use);
+	DECLARE_ENTITY_OUTPUT(OnUsed);
+
+	virtual bool							ShouldRender() const;
+	virtual bool                            ShouldRenderTransparent() const;
 	virtual bool							ShouldRenderModel() const { return true; };
 	virtual void							PreRender() const;
 	virtual void							ModifyContext(class CRenderingContext* pContext) const {};
 	virtual void							ModifyShader(class CRenderingContext* pContext) const {};
 	void									Render() const;
+	void                                    RenderTransparent() const;
 	virtual void							OnRender(class CRenderingContext* pContext) const {};
 	virtual void							PostRender() const {};
 
 	void									Delete();
 	virtual void							OnDeleted() {};
-	virtual void							OnDeleted(class CBaseEntity* pEntity) {};
+	virtual void							OnDeleted(const CBaseEntity* pEntity);
 	bool									IsDeleted() { return m_bDeleted; }
 	void									SetDeleted() { m_bDeleted = true; }
 	DECLARE_ENTITY_INPUT(Delete);
 
+	void									BaseThink() { m_oGameData.Think(); };
 	virtual void							Think() {};
 
 	virtual void							Touching(CBaseEntity* pOther) {};
@@ -649,6 +676,7 @@ public:
 	// definitely collide if true is returned here. If two objects should never collide,
 	// use collision groups instead to avoid the expensive collision checks.
 	virtual bool							ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const { return true; }
+	virtual bool							ShouldCollideWithExtra(size_t, const TVector& vecPoint) const { return true; }
 
 	size_t									GetSpawnSeed() const { return m_iSpawnSeed; }
 	void									SetSpawnSeed(size_t iSpawnSeed);
@@ -740,7 +768,8 @@ protected:
 	TVector									m_vecLastLocalOrigin;
 	CNetworkedEAngle						m_angLocalAngles;
 	CNetworkedVector						m_vecLocalVelocity;
-	CNetworkedVector						m_vecScale;
+	CNetworkedVariable<Vector>              m_vecScale;
+	EAngle                                  m_angView;
 
 	size_t									m_iHandle;
 
@@ -768,6 +797,8 @@ protected:
 
 	size_t									m_iSpawnSeed;
 	CNetworkedVariable<double>				m_flSpawnTime;
+
+	CGameEntityData							m_oGameData;
 
 private:
 	static tvector<CBaseEntity*>			s_apEntityList;

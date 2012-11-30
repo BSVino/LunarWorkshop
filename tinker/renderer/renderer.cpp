@@ -287,8 +287,6 @@ void CRenderer::ModifyContext(class CRenderingContext* pContext)
 
 void CRenderer::SetupFrame(class CRenderingContext* pContext)
 {
-	TPROF("CRenderer::SetupFrame");
-
 	pContext->ClearDepth();
 
 	if (m_bDrawBackground)
@@ -363,8 +361,6 @@ void CRenderer::FinishRendering(class CRenderingContext* pContext)
 	if (m_iScreenSamples)
 		glDisable(GL_MULTISAMPLE);
 
-	TPROF("CRenderer::FinishRendering");
-
 	if (show_frustum.GetBool())
 	{
 		TUnimplemented();
@@ -428,6 +424,7 @@ void CRenderer::RenderOffscreenBuffers(class CRenderingContext* pContext)
 				RenderMapToBuffer(m_oSceneBuffer.m_iMap, &m_oBloom1Buffers[i]);
 		}
 
+		// Blur it up! Oooooh darlin' blur it up! Come on baby
 		RenderBloomPass(m_oBloom1Buffers, m_oBloom2Buffers, true);
 		RenderBloomPass(m_oBloom2Buffers, m_oBloom1Buffers, false);
 
@@ -749,6 +746,9 @@ bool CRenderer::HardwareSupported()
 
 size_t CRenderer::LoadVertexDataIntoGL(size_t iSizeInBytes, float* aflVertices)
 {
+	// If it's only floats doubles and the occasional int then it should always be a multiple of four bytes.
+	TAssert(iSizeInBytes%4 == 0);
+
 	GLuint iVBO;
 	glGenBuffers(1, &iVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, iVBO);
@@ -759,6 +759,29 @@ size_t CRenderer::LoadVertexDataIntoGL(size_t iSizeInBytes, float* aflVertices)
 
     int iSize = 0;
     glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &iSize);
+    if(iSizeInBytes != iSize)
+    {
+        glDeleteBuffers(1, &iVBO);
+		TAssert(false);
+        TError("CRenderer::LoadVertexDataIntoGL(): Data size is mismatch with input array\n");
+		return 0;
+    }
+
+	return iVBO;
+}
+
+size_t CRenderer::LoadIndexDataIntoGL(size_t iSizeInBytes, unsigned int* aiIndices)
+{
+	GLuint iVBO;
+	glGenBuffers(1, &iVBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iVBO);
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, iSizeInBytes, 0, GL_STATIC_DRAW);
+
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iSizeInBytes, aiIndices);
+
+    int iSize = 0;
+    glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &iSize);
     if(iSizeInBytes != iSize)
     {
         glDeleteBuffers(1, &iVBO);

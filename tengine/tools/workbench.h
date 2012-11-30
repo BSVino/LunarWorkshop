@@ -15,7 +15,7 @@ public:
 	virtual void	Think();
 
 	virtual TVector	GetCameraPosition();
-	virtual TVector	GetCameraDirection();
+	virtual Vector  GetCameraDirection();
 	virtual float   GetCameraOrthoHeight();
 
 	virtual bool	ShouldRenderOrthographic();

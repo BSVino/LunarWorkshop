@@ -35,20 +35,25 @@ public:
 	void			debugDraw(btIDebugDraw* debugDrawer) {};
 
 	// btCharacterControllerInterface
+	virtual void	preStep(btCollisionWorld* collisionWorld);
+	virtual void	playerStep(btCollisionWorld* collisionWorld, btScalar dt);
 	virtual void	setWalkDirection(const btVector3& walkDirection);
 	virtual void	setVelocityForTimeInterval(const btVector3& velocity, btScalar timeInterval);
 	virtual void	reset() {};
 	virtual void	warp(const btVector3& origin);
-	virtual void	preStep(btCollisionWorld* collisionWorld);
-	virtual void	playerStep(btCollisionWorld* collisionWorld, btScalar dt);
 	virtual bool	canJump() const;
 	virtual void	jump();
 	virtual bool	onGround() const;
 
-	virtual void	SetLateralVelocity(const btVector3& velocity);
-	void			SetVerticalVelocity(btScalar flVerticalVelocity);
+	virtual void	CharacterMovement(btCollisionWorld* collisionWorld, float flDelta);
+	virtual bool    PreStep(btCollisionWorld* collisionWorld);
+	virtual bool    PlayerWalk(btCollisionWorld* collisionWorld, btScalar dt);
+	virtual bool    PlayerFall(btCollisionWorld* collisionWorld, btScalar dt);
+	virtual bool    PlayerFly(btCollisionWorld* collisionWorld, btScalar dt);
 
-	void			SetFallSpeed(btScalar fallSpeed);
+	virtual void    SetMoveVelocity(const btVector3& velocity);
+
+	void			SetMaxSpeed(btScalar flMaxSpeed);
 	void			SetJumpSpeed(btScalar jumpSpeed);
 	void			SetMaxJumpHeight(btScalar maxJumpHeight);
 
@@ -81,10 +86,10 @@ protected:
 	btVector3	PerpendicularComponent(const btVector3& direction, const btVector3& normal);
 
 	bool		RecoverFromPenetration(btCollisionWorld* collisionWorld);
-	void		StepUp(btCollisionWorld* collisionWorld);
+	void        StepUp(btCollisionWorld* collisionWorld);
 	void		UpdateTargetPositionBasedOnCollision(const btVector3& hit_normal, btScalar tangentMag = btScalar(0.0), btScalar normalMag = btScalar(1.0));
-	void		StepForwardAndStrafe(btCollisionWorld* collisionWorld, const btVector3& walkMove);
-	void		StepDown(btCollisionWorld* collisionWorld, btScalar dt);
+	void        StepForwardAndStrafe(btCollisionWorld* collisionWorld, const btVector3& walkMove);
+	void        StepDown(btCollisionWorld* collisionWorld, btScalar dt);
 
 	void		FindGround(btCollisionWorld* pCollisionWorld);
 
@@ -96,9 +101,7 @@ protected:
 	btPairCachingGhostObject* m_pGhostObject;
 	btConvexShape*	m_pConvexShape;		//is also in m_ghostObject, but it needs to be convex, so we store it here to avoid upcast
 
-	btScalar		m_flVerticalVelocity;
-	btScalar		m_flVerticalOffset;
-	btScalar		m_flMaxFallSpeed;
+	btScalar		m_flMaxSpeed;
 	btScalar		m_flJumpSpeed;
 	btScalar		m_flMaxSlopeRadians; // Slope angle that is set (used for returning the exact value)
 	btScalar		m_flMaxSlopeCosine;  // Cosine equivalent of m_maxSlopeRadians (calculated once when set, for optimization)
@@ -113,8 +116,10 @@ protected:
 	btScalar		m_flAddedMargin;	//@todo: remove this and fix the code
 
 	///this is the desired walk direction, set by the user
-	btVector3		m_vecWalkDirection;
-	btVector3		m_vecNormalizedDirection;
+	btVector3       m_vecMoveVelocity;
+	btVector3       m_vecMoveVelocityNormalized;
+
+	btVector3       m_vecCurrentVelocity;
 
 	//some internal variables
 	btVector3		m_vecCurrentPosition;
@@ -127,8 +132,6 @@ protected:
 	bool			m_bTouchingContact;
 	btVector3		m_vecTouchingNormal;
 
-	bool			m_bWasOnGround;
-	bool			m_bWasJumping;
 	bool			m_bColliding;
 };
 

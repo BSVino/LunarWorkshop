@@ -36,9 +36,16 @@ protected:
 	class CRenderContext
 	{
 	public:
+		CRenderContext();
+
+	public:
 		Matrix4x4			m_mProjection;
 		Matrix4x4			m_mView;
 		Matrix4x4			m_mTransformations;
+
+		bool                m_bProjectionUpdated;
+		bool                m_bViewUpdated;
+		bool                m_bTransformUpdated;
 
 		CMaterialHandle		m_hMaterial;
 		const class CFrameBuffer*	m_pFrameBuffer;
@@ -119,7 +126,7 @@ public:
 	// Immediate mode emulation
 	void					BeginRenderTris();
 	void					BeginRenderTriFan();
-	void					BeginRenderQuads();
+	void					BeginRenderTriStrip();
 	void					BeginRenderLines(float flWidth=1);
 	void					BeginRenderPoints(float flSize=1);
 	void					BeginRenderDebugLines();
@@ -132,6 +139,7 @@ public:
 	void					Color(const ::Color& c);	// Per-attribute color
 	void					Vertex(const Vector& v);
 	void					EndRender();
+	void                    CreateVBO(size_t& iVBO, size_t& iVBOSize);
 
 	void					BeginRenderVertexArray(size_t iBuffer=0);
 	void					SetPositionBuffer(float* pflBuffer, size_t iStrideBytes=0);
@@ -142,11 +150,12 @@ public:
 	void					SetTangentsBuffer(size_t iOffsetBytes, size_t iStrideBytes);
 	void					SetBitangentsBuffer(float* pflBuffer, size_t iStrideBytes=0);
 	void					SetBitangentsBuffer(size_t iOffsetBytes, size_t iStrideBytes);
-	void					SetTexCoordBuffer(float* pflBuffer, size_t iStrideBytes=0);
-	void					SetTexCoordBuffer(size_t iOffsetBytes, size_t iStrideBytes);
+	void					SetTexCoordBuffer(float* pflBuffer, size_t iStrideBytes=0, size_t iChannel=0);
+	void					SetTexCoordBuffer(size_t iOffsetBytes, size_t iStrideBytes, size_t iChannel=0);
 	void					SetCustomIntBuffer(const char* pszName, size_t iSize, size_t iOffset, size_t iStride);
 	void					EndRenderVertexArray(size_t iVertices, bool bWireframe = false);
 	void					EndRenderVertexArrayTriangles(size_t iTriangles, int* piIndices);
+	void					EndRenderVertexArrayIndexed(size_t iBuffer, size_t iVertices);
 
 	void					RenderText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize);
 	void					RenderText(const tstring& sText, unsigned iLength, class FTFont* pFont);
@@ -171,13 +180,13 @@ public:
 	bool					m_bTexCoord;
 	bool					m_bNormal;
 	bool					m_bColor;
-	tvector<Vector2D>		m_avecTexCoord;
-	tvector<tvector<Vector2D> >	m_aavecTexCoords;	// A vector of a vector of vectors. Inception!
-	Vector					m_vecNormal;
-	tvector<Vector>	m_avecNormals;
-	::Color					m_clrColor;
-	tvector< ::Color>		m_aclrColors;
-	tvector<Vector>			m_avecVertices;
+	::Color                 m_clrColor;
+	Vector                  m_vecNormal;
+	static tvector<Vector2D>    s_avecTexCoord;
+	static tvector<tvector<Vector2D> > s_aavecTexCoords;	// A vector of a vector of vectors. Inception!
+	static tvector<Vector>      s_avecNormals;
+	static tvector< ::Color>    s_aclrColors;
+	static tvector<Vector>      s_avecVertices;
 
 	static tvector<CRenderContext>	s_aContexts;
 };

@@ -17,6 +17,9 @@
 #include <textures/materiallibrary.h>
 #include <renderer/particles.h>
 #include <tools/workbench.h>
+#include <game/entities/game.h>
+#include <game/entities/weapon.h>
+#include <game/entities/character.h>
 
 #include "game_renderingcontext.h"
 
@@ -78,16 +81,19 @@ void CGameRenderer::Render()
 
 bool DistanceCompare(CBaseEntity* a, CBaseEntity* b)
 {
-	Vector vecCamera = GameServer()->GetCameraManager()->GetCameraPosition();
-	return ((a->GetGlobalOrigin() - vecCamera).LengthSqr() > (b->GetGlobalOrigin() - vecCamera).LengthSqr());
+	TVector vecCamera = GameServer()->GetCameraManager()->GetCameraPosition();
+	return ((a->BaseGetRenderOrigin() - vecCamera).LengthSqr() > (b->BaseGetRenderOrigin() - vecCamera).LengthSqr());
 }
 
 void CGameRenderer::RenderEverything()
 {
-	m_apRenderList.reserve(CBaseEntity::GetNumEntities());
-	m_apRenderList.clear();
+	m_apRenderOpaqueList.reserve(CBaseEntity::GetNumEntities());
+	m_apRenderOpaqueList.clear();
 
-	bool bFrustumCulling = r_cullfrustum.GetBool();
+	m_apRenderTransparentList.reserve(CBaseEntity::GetNumEntities());
+	m_apRenderTransparentList.clear();
+
+	bool bFrustumCulling = r_cullfrustum.GetBool() && ShouldCullByFrustum();
 
 	// None of these had better get deleted while we're doing this since they're not handles.
 	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
@@ -96,35 +102,50 @@ void CGameRenderer::RenderEverything()
 		if (!pEntity)
 			continue;
 
-		if (!pEntity->ShouldRender())
+		if (pEntity->IsDeleted())
+			continue;
+
+		if (!pEntity->IsVisible())
+			continue;
+
+		bool bRenderOpaque = pEntity->ShouldRender();
+		bool bRenderTransparent = pEntity->ShouldRenderTransparent();
+
+		if (!bRenderOpaque && !bRenderTransparent)
 			continue;
 
 		if (bFrustumCulling && !IsSphereInFrustum(pEntity->GetGlobalCenter(), (float)pEntity->GetBoundingRadius()))
 			continue;
 
-		m_apRenderList.push_back(pEntity);
-	}
+		if (bRenderOpaque)
+			m_apRenderOpaqueList.push_back(pEntity);
 
-	sort(m_apRenderList.begin(), m_apRenderList.end(), DistanceCompare);
+		if (bRenderTransparent)
+			m_apRenderTransparentList.push_back(pEntity);
+	}
 
 	m_bRenderingTransparent = false;
 
 	BeginBatching();
 
 	// First render all opaque objects
-	size_t iEntites = m_apRenderList.size();
+	size_t iEntites = m_apRenderOpaqueList.size();
 	for (size_t i = 0; i < iEntites; i++)
-		m_apRenderList[i]->Render();
+		m_apRenderOpaqueList[i]->Render();
 
 	RenderBatches();
 
 	m_bRenderingTransparent = true;
 
-	// Now render all transparent objects.
-	for (size_t i = 0; i < iEntites; i++)
-		m_apRenderList[i]->Render();
+	sort(m_apRenderTransparentList.begin(), m_apRenderTransparentList.end(), DistanceCompare);
 
-	CParticleSystemLibrary::Render();
+	// Now render all transparent objects.
+	iEntites = m_apRenderTransparentList.size();
+	for (size_t i = 0; i < iEntites; i++)
+		m_apRenderTransparentList[i]->RenderTransparent();
+
+	if (ShouldRenderParticles())
+		CParticleSystemLibrary::Render();
 }
 
 void CGameRenderer::SetupFrame(class CRenderingContext* pContext)
@@ -142,8 +163,6 @@ void CGameRenderer::SetupFrame(class CRenderingContext* pContext)
 void CGameRenderer::DrawSkybox(class CRenderingContext* pContext)
 {
 	TPROF("CGameRenderer::DrawSkybox");
-
-	TUnimplemented();	// Hasn't been tested since the 3.0 port
 
 	CCameraManager* pCamera = GameServer()->GetCameraManager();
 
@@ -164,7 +183,8 @@ void CGameRenderer::DrawSkybox(class CRenderingContext* pContext)
 			m_flCameraFar
 		));
 
-	c.SetView(Matrix4x4::ConstructCameraView(m_vecCameraPosition, m_vecCameraDirection, m_vecCameraUp));
+	c.SetView(Matrix4x4::ConstructCameraView(Vector(0, 0, 0), m_vecCameraDirection, m_vecCameraUp));
+	c.ResetTransformations();
 
 	c.SetDepthTest(false);
 	c.UseProgram("skybox");
@@ -214,18 +234,52 @@ CVar show_physics("debug_show_physics", "no");
 
 void CGameRenderer::FinishRendering(class CRenderingContext* pContext)
 {
-	TPROF("CGameRenderer::FinishRendering");
-
 	BaseClass::FinishRendering(pContext);
 
 	if (show_physics.GetBool() && ShouldRenderPhysicsDebug() && !CWorkbench::IsActive())
 		GamePhysics()->DebugDraw(show_physics.GetInt());
 }
 
+void CGameRenderer::FinishFrame(CRenderingContext* pContext)
+{
+	DrawWeaponViewModel();
+
+	BaseClass::FinishFrame(pContext);
+}
+
+void CGameRenderer::DrawWeaponViewModel()
+{
+	CPlayer* pLocalPlayer = GameServer()->GetGame()->GetLocalPlayer();
+	if (!pLocalPlayer)
+		return;
+
+	CCharacter* pLocalCharacter = pLocalPlayer->GetCharacter();
+	if (!pLocalCharacter)
+		return;
+
+	CBaseWeapon* pEquippedWeapon = pLocalCharacter->GetEquippedWeapon();
+	if (!pEquippedWeapon)
+		return;
+
+	CGameRenderingContext c(this, true);
+
+	c.SetProjection(Matrix4x4::ProjectPerspective(
+			m_flCameraFOV,
+			(float)m_iWidth/(float)m_iHeight,
+			0.001f,
+			1
+		));
+
+	c.SetView(Matrix4x4::ConstructCameraView(Vector(0, 0, 0), m_vecCameraDirection, m_vecCameraUp));
+	c.ResetTransformations();
+
+	c.ClearDepth();
+
+	pEquippedWeapon->DrawViewModel(&c);
+}
+
 void CGameRenderer::SetSkybox(const CTextureHandle& ft, const CTextureHandle& bk, const CTextureHandle& lf, const CTextureHandle& rt, const CTextureHandle& up, const CTextureHandle& dn)
 {
-	TUnimplemented(); // Not ported to GL3. Needs to be converted from quads to tris.
-
 	m_hSkyboxFT = ft;
 	m_hSkyboxLF = lf;
 	m_hSkyboxBK = bk;
@@ -233,40 +287,54 @@ void CGameRenderer::SetSkybox(const CTextureHandle& ft, const CTextureHandle& bk
 	m_hSkyboxDN = dn;
 	m_hSkyboxUP = up;
 
-	m_avecSkyboxTexCoords[0] = Vector2D(0, 1);
-	m_avecSkyboxTexCoords[1] = Vector2D(0, 0);
-	m_avecSkyboxTexCoords[2] = Vector2D(1, 0);
-	m_avecSkyboxTexCoords[3] = Vector2D(1, 1);
+	m_avecSkyboxTexCoords[0] = Vector2D(0, 0);
+	m_avecSkyboxTexCoords[1] = Vector2D(1, 0);
+	m_avecSkyboxTexCoords[2] = Vector2D(1, 1);
+	m_avecSkyboxTexCoords[3] = Vector2D(0, 0);
+	m_avecSkyboxTexCoords[4] = Vector2D(1, 1);
+	m_avecSkyboxTexCoords[5] = Vector2D(0, 1);
 
-	m_avecSkyboxFT[0] = Vector(100, 100, -100);
-	m_avecSkyboxFT[1] = Vector(100, -100, -100);
-	m_avecSkyboxFT[2] = Vector(100, -100, 100);
-	m_avecSkyboxFT[3] = Vector(100, 100, 100);
+	m_avecSkyboxFT[0] = Vector(100, -100, -100);
+	m_avecSkyboxFT[1] = Vector(100, -100, 100);
+	m_avecSkyboxFT[2] = Vector(100, 100, 100);
+	m_avecSkyboxFT[3] = Vector(100, -100, -100);
+	m_avecSkyboxFT[4] = Vector(100, 100, 100);
+	m_avecSkyboxFT[5] = Vector(100, 100, -100);
 
-	m_avecSkyboxBK[0] = Vector(-100, 100, 100);
-	m_avecSkyboxBK[1] = Vector(-100, -100, 100);
-	m_avecSkyboxBK[2] = Vector(-100, -100, -100);
-	m_avecSkyboxBK[3] = Vector(-100, 100, -100);
+	m_avecSkyboxBK[0] = Vector(-100, -100, 100);
+	m_avecSkyboxBK[1] = Vector(-100, -100, -100);
+	m_avecSkyboxBK[2] = Vector(-100, 100, -100);
+	m_avecSkyboxBK[3] = Vector(-100, -100, 100);
+	m_avecSkyboxBK[4] = Vector(-100, 100, -100);
+	m_avecSkyboxBK[5] = Vector(-100, 100, 100);
 
-	m_avecSkyboxLF[0] = Vector(-100, 100, -100);
-	m_avecSkyboxLF[1] = Vector(-100, -100, -100);
-	m_avecSkyboxLF[2] = Vector(100, -100, -100);
-	m_avecSkyboxLF[3] = Vector(100, 100, -100);
+	m_avecSkyboxLF[0] = Vector(-100, -100, -100);
+	m_avecSkyboxLF[1] = Vector(100, -100, -100);
+	m_avecSkyboxLF[2] = Vector(100, 100, -100);
+	m_avecSkyboxLF[3] = Vector(-100, -100, -100);
+	m_avecSkyboxLF[4] = Vector(100, 100, -100);
+	m_avecSkyboxLF[5] = Vector(-100, 100, -100);
 
-	m_avecSkyboxRT[0] = Vector(100, 100, 100);
-	m_avecSkyboxRT[1] = Vector(100, -100, 100);
-	m_avecSkyboxRT[2] = Vector(-100, -100, 100);
-	m_avecSkyboxRT[3] = Vector(-100, 100, 100);
+	m_avecSkyboxRT[0] = Vector(100, -100, 100);
+	m_avecSkyboxRT[1] = Vector(-100, -100, 100);
+	m_avecSkyboxRT[2] = Vector(-100, 100, 100);
+	m_avecSkyboxRT[3] = Vector(100, -100, 100);
+	m_avecSkyboxRT[4] = Vector(-100, 100, 100);
+	m_avecSkyboxRT[5] = Vector(100, 100, 100);
 
-	m_avecSkyboxUP[0] = Vector(-100, 100, -100);
-	m_avecSkyboxUP[1] = Vector(100, 100, -100);
-	m_avecSkyboxUP[2] = Vector(100, 100, 100);
-	m_avecSkyboxUP[3] = Vector(-100, 100, 100);
+	m_avecSkyboxUP[0] = Vector(100, 100, -100);
+	m_avecSkyboxUP[1] = Vector(100, 100, 100);
+	m_avecSkyboxUP[2] = Vector(-100, 100, 100);
+	m_avecSkyboxUP[3] = Vector(100, 100, -100);
+	m_avecSkyboxUP[4] = Vector(-100, 100, 100);
+	m_avecSkyboxUP[5] = Vector(-100, 100, -100);
 
-	m_avecSkyboxDN[0] = Vector(100, -100, -100);
-	m_avecSkyboxDN[1] = Vector(-100, -100, -100);
-	m_avecSkyboxDN[2] = Vector(-100, -100, 100);
-	m_avecSkyboxDN[3] = Vector(100, -100, 100);
+	m_avecSkyboxDN[0] = Vector(-100, -100, -100);
+	m_avecSkyboxDN[1] = Vector(-100, -100, 100);
+	m_avecSkyboxDN[2] = Vector(100, -100, 100);
+	m_avecSkyboxDN[3] = Vector(-100, -100, -100);
+	m_avecSkyboxDN[4] = Vector(100, -100, 100);
+	m_avecSkyboxDN[5] = Vector(100, -100, -100);
 }
 
 void CGameRenderer::DisableSkybox()

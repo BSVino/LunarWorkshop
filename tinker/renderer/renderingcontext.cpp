@@ -33,6 +33,12 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 #include <textures/materiallibrary.h>
 #include <renderer/renderer.h>
 
+tvector<Vector2D> CRenderingContext::s_avecTexCoord;
+tvector<tvector<Vector2D> > CRenderingContext::s_aavecTexCoords;
+tvector<Vector> CRenderingContext::s_avecNormals;
+tvector< ::Color> CRenderingContext::s_aclrColors;
+tvector<Vector> CRenderingContext::s_avecVertices;
+
 tvector<CRenderingContext::CRenderContext> CRenderingContext::s_aContexts;
 
 CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
@@ -46,26 +52,27 @@ CRenderingContext::CRenderingContext(CRenderer* pRenderer, bool bInherit)
 	if (bInherit && s_aContexts.size() > 1)
 	{
 		CRenderContext& oLastContext = s_aContexts[s_aContexts.size()-2];
+		CRenderContext& oThisContext = GetContext();
 
-		GetContext().m_mProjection = oLastContext.m_mProjection;
-		GetContext().m_mView = oLastContext.m_mView;
-		GetContext().m_mTransformations = oLastContext.m_mTransformations;
+		oThisContext.m_mProjection = oLastContext.m_mProjection;
+		oThisContext.m_mView = oLastContext.m_mView;
+		oThisContext.m_mTransformations = oLastContext.m_mTransformations;
 
-		GetContext().m_hMaterial = oLastContext.m_hMaterial;
-		GetContext().m_pFrameBuffer = oLastContext.m_pFrameBuffer;
-		tstrncpy(GetContext().m_szProgram, PROGRAM_LEN, oLastContext.m_szProgram, PROGRAM_LEN);
-		GetContext().m_pShader = oLastContext.m_pShader;
+		oThisContext.m_hMaterial = oLastContext.m_hMaterial;
+		oThisContext.m_pFrameBuffer = oLastContext.m_pFrameBuffer;
+		tstrncpy(oThisContext.m_szProgram, PROGRAM_LEN, oLastContext.m_szProgram, PROGRAM_LEN);
+		oThisContext.m_pShader = oLastContext.m_pShader;
 
-		GetContext().m_rViewport = oLastContext.m_rViewport;
-		GetContext().m_eBlend = oLastContext.m_eBlend;
-		GetContext().m_flAlpha = oLastContext.m_flAlpha;
-		GetContext().m_bDepthMask = oLastContext.m_bDepthMask;
-		GetContext().m_bDepthTest = oLastContext.m_bDepthTest;
-		GetContext().m_eDepthFunction = oLastContext.m_eDepthFunction;
-		GetContext().m_bCull = oLastContext.m_bCull;
-		GetContext().m_bWinding = oLastContext.m_bWinding;
+		oThisContext.m_rViewport = oLastContext.m_rViewport;
+		oThisContext.m_eBlend = oLastContext.m_eBlend;
+		oThisContext.m_flAlpha = oLastContext.m_flAlpha;
+		oThisContext.m_bDepthMask = oLastContext.m_bDepthMask;
+		oThisContext.m_bDepthTest = oLastContext.m_bDepthTest;
+		oThisContext.m_eDepthFunction = oLastContext.m_eDepthFunction;
+		oThisContext.m_bCull = oLastContext.m_bCull;
+		oThisContext.m_bWinding = oLastContext.m_bWinding;
 
-		m_pShader = GetContext().m_pShader;
+		m_pShader = oThisContext.m_pShader;
 
 		if (m_pShader)
 			m_iProgram = m_pShader->m_iProgram;
@@ -100,25 +107,27 @@ CRenderingContext::~CRenderingContext()
 
 	if (s_aContexts.size())
 	{
-		UseMaterial(GetContext().m_hMaterial);
-		UseFrameBuffer(GetContext().m_pFrameBuffer);
-		UseProgram(GetContext().m_pShader);
+		CRenderContext& oContext = GetContext();
 
-		if (*GetContext().m_szProgram)
+		UseMaterial(oContext.m_hMaterial);
+		UseFrameBuffer(oContext.m_pFrameBuffer);
+		UseProgram(oContext.m_pShader);
+
+		if (*oContext.m_szProgram)
 		{
-			SetUniform("mProjection", GetContext().m_mProjection);
-			SetUniform("mView", GetContext().m_mView);
-			SetUniform("mGlobal", GetContext().m_mTransformations);
+			oContext.m_bProjectionUpdated = false;
+			oContext.m_bViewUpdated = false;
+			oContext.m_bTransformUpdated = false;
 		}
 
-		SetViewport(GetContext().m_rViewport);
-		SetBlend(GetContext().m_eBlend);
-		SetAlpha(GetContext().m_flAlpha);
-		SetDepthMask(GetContext().m_bDepthMask);
-		SetDepthTest(GetContext().m_bDepthTest);
-		SetDepthFunction(GetContext().m_eDepthFunction);
-		SetBackCulling(GetContext().m_bCull);
-		SetWinding(GetContext().m_bWinding);
+		SetViewport(oContext.m_rViewport);
+		SetBlend(oContext.m_eBlend);
+		SetAlpha(oContext.m_flAlpha);
+		SetDepthMask(oContext.m_bDepthMask);
+		SetDepthTest(oContext.m_bDepthTest);
+		SetDepthFunction(oContext.m_eDepthFunction);
+		SetBackCulling(oContext.m_bCull);
+		SetWinding(oContext.m_bWinding);
 	}
 	else
 	{
@@ -146,28 +155,34 @@ CRenderingContext::~CRenderingContext()
 
 void CRenderingContext::SetProjection(const Matrix4x4& m)
 {
-	GetContext().m_mProjection = m;
+	CRenderContext& oContext = GetContext();
 
-	if (m_pShader)
-		SetUniform("mProjection", m);
+	oContext.m_mProjection = m;
+	GetContext().m_bProjectionUpdated = false;
 }
 
 void CRenderingContext::SetView(const Matrix4x4& m)
 {
-	GetContext().m_mView = m;
+	CRenderContext& oContext = GetContext();
 
-	if (m_pShader)
-		SetUniform("mView", m);
+	oContext.m_mView = m;
+	oContext.m_bViewUpdated = false;
 }
 
 void CRenderingContext::Transform(const Matrix4x4& m)
 {
-	GetContext().m_mTransformations *= m;
+	CRenderContext& oContext = GetContext();
+
+	oContext.m_mTransformations *= m;
+	oContext.m_bTransformUpdated = false;
 }
 
 void CRenderingContext::Translate(const Vector& vecTranslate)
 {
-	GetContext().m_mTransformations.AddTranslation(vecTranslate);
+	CRenderContext& oContext = GetContext();
+
+	oContext.m_mTransformations.AddTranslation(vecTranslate);
+	oContext.m_bTransformUpdated = false;
 }
 
 void CRenderingContext::Rotate(float flAngle, Vector vecAxis)
@@ -175,22 +190,34 @@ void CRenderingContext::Rotate(float flAngle, Vector vecAxis)
 	Matrix4x4 mRotation;
 	mRotation.SetRotation(flAngle, vecAxis);
 
-	GetContext().m_mTransformations *= mRotation;
+	CRenderContext& oContext = GetContext();
+
+	oContext.m_mTransformations *= mRotation;
+	oContext.m_bTransformUpdated = false;
 }
 
 void CRenderingContext::Scale(float flX, float flY, float flZ)
 {
-	GetContext().m_mTransformations.AddScale(Vector(flX, flY, flZ));
+	CRenderContext& oContext = GetContext();
+
+	oContext.m_mTransformations.AddScale(Vector(flX, flY, flZ));
+	oContext.m_bTransformUpdated = false;
 }
 
 void CRenderingContext::ResetTransformations()
 {
-	GetContext().m_mTransformations.Identity();
+	CRenderContext& oContext = GetContext();
+
+	oContext.m_mTransformations.Identity();
+	oContext.m_bTransformUpdated = false;
 }
 
 void CRenderingContext::LoadTransform(const Matrix4x4& m)
 {
-	GetContext().m_mTransformations = m;
+	CRenderContext& oContext = GetContext();
+
+	oContext.m_mTransformations = m;
+	oContext.m_bTransformUpdated = false;
 }
 
 void CRenderingContext::SetViewport(const Rect& rViewport)
@@ -325,7 +352,13 @@ void CRenderingContext::RenderBillboard(const CMaterialHandle& hMaterial, float 
 	vecUp *= flRadius;
 	vecRight *= flRadius;
 
-	UseMaterial(hMaterial);
+	// Clear out any existing rotation so that they don't interfere with the billboarding below.
+	GetContext().m_mTransformations.SetAngles(EAngle(0, 0, 0));
+	GetContext().m_bTransformUpdated = false;
+
+	if (GetContext().m_hMaterial != hMaterial)
+		UseMaterial(hMaterial);
+
 	BeginRenderTriFan();
 		TexCoord(0.0f, 1.0f);
 		Vertex(-vecRight + vecUp);
@@ -359,9 +392,11 @@ void CRenderingContext::UseFrameBuffer(const CFrameBuffer* pBuffer)
 
 void CRenderingContext::UseProgram(const tchar* pszProgram)
 {
-	tstrncpy(GetContext().m_szProgram, PROGRAM_LEN, pszProgram, PROGRAM_LEN);
+	CRenderContext& oContext = GetContext();
 
-	GetContext().m_pShader = m_pShader = CShaderLibrary::GetShader(pszProgram);
+	tstrncpy(oContext.m_szProgram, PROGRAM_LEN, pszProgram, PROGRAM_LEN);
+
+	oContext.m_pShader = m_pShader = CShaderLibrary::GetShader(pszProgram);
 
 	if (*pszProgram)
 		TAssert(m_pShader);
@@ -371,23 +406,25 @@ void CRenderingContext::UseProgram(const tchar* pszProgram)
 
 void CRenderingContext::UseProgram(class CShader* pShader)
 {
-	GetContext().m_pShader = m_pShader = pShader;
+	CRenderContext& oContext = GetContext();
+
+	oContext.m_pShader = m_pShader = pShader;
 
 	if (!m_pShader)
 	{
-		GetContext().m_szProgram[0] = '\0';
+		oContext.m_szProgram[0] = '\0';
 		m_iProgram = 0;
 		glUseProgram(0);
 		return;
 	}
 
-	tstrncpy(GetContext().m_szProgram, PROGRAM_LEN, pShader->m_sName.c_str(), PROGRAM_LEN);
+	tstrncpy(oContext.m_szProgram, PROGRAM_LEN, pShader->m_sName.c_str(), PROGRAM_LEN);
 
 	m_iProgram = m_pShader->m_iProgram;
 	glUseProgram((GLuint)m_pShader->m_iProgram);
 
-	SetUniform("mProjection", GetContext().m_mProjection);
-	SetUniform("mView", GetContext().m_mView);
+	oContext.m_bProjectionUpdated = false;
+	oContext.m_bViewUpdated = false;
 }
 
 void CRenderingContext::UseMaterial(const CMaterialHandle& hMaterial)
@@ -409,20 +446,22 @@ void CRenderingContext::UseMaterial(const tstring& sName)
 
 void CRenderingContext::SetupMaterial()
 {
-	if (!GetContext().m_hMaterial.IsValid())
+	CRenderContext& oContext = GetContext();
+
+	if (!oContext.m_hMaterial.IsValid())
 		return;
 
 	if (!m_pShader)
 		return;
 
-	const tstring& sMaterialBlend = GetContext().m_hMaterial->m_sBlend;
+	const tstring& sMaterialBlend = oContext.m_hMaterial->m_sBlend;
 	if (sMaterialBlend == "alpha")
 		SetBlend(BLEND_ALPHA);
 	else if (sMaterialBlend == "additive")
 		SetBlend(BLEND_ADDITIVE);
 	else
 	{
-		TAssert(!sMaterialBlend.length());
+		TAssert(sMaterialBlend == "none" || !sMaterialBlend.length());
 		SetBlend(BLEND_NONE);
 	}
 
@@ -479,9 +518,9 @@ void CRenderingContext::SetupMaterial()
 		}
 	}
 
-	for (size_t i = 0; i < GetContext().m_hMaterial->m_aParameters.size(); i++)
+	for (size_t i = 0; i < oContext.m_hMaterial->m_aParameters.size(); i++)
 	{
-		auto& oParameter = GetContext().m_hMaterial->m_aParameters[i];
+		auto& oParameter = oContext.m_hMaterial->m_aParameters[i];
 		CShader::CParameter* pShaderParameter = oParameter.m_pShaderParameter;
 
 		TAssert(pShaderParameter);
@@ -550,11 +589,11 @@ void CRenderingContext::SetupMaterial()
 
 	for (size_t i = 0; i < m_pShader->m_asTextures.size(); i++)
 	{
-		if (!GetContext().m_hMaterial->m_ahTextures[i].IsValid())
+		if (!oContext.m_hMaterial->m_ahTextures[i].IsValid())
 			continue;
 
 		glActiveTexture(GL_TEXTURE0+i);
-		glBindTexture(GL_TEXTURE_2D, (GLuint)GetContext().m_hMaterial->m_ahTextures[i]->m_iGLID);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)oContext.m_hMaterial->m_ahTextures[i]->m_iGLID);
 		SetUniform(m_pShader->m_asTextures[i].c_str(), (int)i);
 	}
 }
@@ -641,11 +680,12 @@ void CRenderingContext::SetColor(const ::Color& c)
 
 void CRenderingContext::BeginRenderTris()
 {
-	m_avecTexCoord.clear();
-	m_aavecTexCoords.clear();
-	m_avecNormals.clear();
-	m_aclrColors.clear();
-	m_avecVertices.clear();
+	s_avecTexCoord.clear();
+	for (size_t i = 0; i < s_aavecTexCoords.size(); i++)
+		s_aavecTexCoords[i].clear();
+	s_avecNormals.clear();
+	s_aclrColors.clear();
+	s_avecVertices.clear();
 
 	m_bTexCoord = false;
 	m_bNormal = false;
@@ -656,11 +696,12 @@ void CRenderingContext::BeginRenderTris()
 
 void CRenderingContext::BeginRenderTriFan()
 {
-	m_avecTexCoord.clear();
-	m_aavecTexCoords.clear();
-	m_avecNormals.clear();
-	m_aclrColors.clear();
-	m_avecVertices.clear();
+	s_avecTexCoord.clear();
+	for (size_t i = 0; i < s_aavecTexCoords.size(); i++)
+		s_aavecTexCoords[i].clear();
+	s_avecNormals.clear();
+	s_aclrColors.clear();
+	s_avecVertices.clear();
 
 	m_bTexCoord = false;
 	m_bNormal = false;
@@ -669,29 +710,30 @@ void CRenderingContext::BeginRenderTriFan()
 	m_iDrawMode = GL_TRIANGLE_FAN;
 }
 
-void CRenderingContext::BeginRenderQuads()
+void CRenderingContext::BeginRenderTriStrip()
 {
-	m_avecTexCoord.clear();
-	m_aavecTexCoords.clear();
-	m_avecNormals.clear();
-	m_aclrColors.clear();
-	m_avecVertices.clear();
+	s_avecTexCoord.clear();
+	for (size_t i = 0; i < s_aavecTexCoords.size(); i++)
+		s_aavecTexCoords[i].clear();
+	s_avecNormals.clear();
+	s_aclrColors.clear();
+	s_avecVertices.clear();
 
 	m_bTexCoord = false;
 	m_bNormal = false;
 	m_bColor = false;
 
-	TUnimplemented();
-	//m_iDrawMode = GL_QUADS;
+	m_iDrawMode = GL_TRIANGLE_STRIP;
 }
 
 void CRenderingContext::BeginRenderLines(float flWidth)
 {
-	m_avecTexCoord.clear();
-	m_aavecTexCoords.clear();
-	m_avecNormals.clear();
-	m_aclrColors.clear();
-	m_avecVertices.clear();
+	s_avecTexCoord.clear();
+	for (size_t i = 0; i < s_aavecTexCoords.size(); i++)
+		s_aavecTexCoords[i].clear();
+	s_avecNormals.clear();
+	s_aclrColors.clear();
+	s_avecVertices.clear();
 
 	m_bTexCoord = false;
 	m_bNormal = false;
@@ -708,11 +750,12 @@ void CRenderingContext::BeginRenderDebugLines()
 
 void CRenderingContext::BeginRenderPoints(float flSize)
 {
-	m_avecTexCoord.clear();
-	m_aavecTexCoords.clear();
-	m_avecNormals.clear();
-	m_aclrColors.clear();
-	m_avecVertices.clear();
+	s_avecTexCoord.clear();
+	for (size_t i = 0; i < s_aavecTexCoords.size(); i++)
+		s_aavecTexCoords[i].clear();
+	s_avecNormals.clear();
+	s_aclrColors.clear();
+	s_avecVertices.clear();
 
 	m_bTexCoord = false;
 	m_bNormal = false;
@@ -724,45 +767,45 @@ void CRenderingContext::BeginRenderPoints(float flSize)
 
 void CRenderingContext::TexCoord(float s, float t, int iChannel)
 {
-	if (iChannel >= (int)m_avecTexCoord.size())
-		m_avecTexCoord.resize(iChannel+1);
-	m_avecTexCoord[iChannel] = Vector2D(s, t);
+	if (iChannel >= (int)s_avecTexCoord.size())
+		s_avecTexCoord.resize(iChannel+1);
+	s_avecTexCoord[iChannel] = Vector2D(s, t);
 
 	m_bTexCoord = true;
 }
 
 void CRenderingContext::TexCoord(const Vector2D& v, int iChannel)
 {
-	if (iChannel >= (int)m_avecTexCoord.size())
-		m_avecTexCoord.resize(iChannel+1);
-	m_avecTexCoord[iChannel] = v;
+	if (iChannel >= (int)s_avecTexCoord.size())
+		s_avecTexCoord.resize(iChannel+1);
+	s_avecTexCoord[iChannel] = v;
 
 	m_bTexCoord = true;
 }
 
 void CRenderingContext::TexCoord(const DoubleVector2D& v, int iChannel)
 {
-	if (iChannel >= (int)m_avecTexCoord.size())
-		m_avecTexCoord.resize(iChannel+1);
-	m_avecTexCoord[iChannel] = Vector2D(v);
+	if (iChannel >= (int)s_avecTexCoord.size())
+		s_avecTexCoord.resize(iChannel+1);
+	s_avecTexCoord[iChannel] = Vector2D(v);
 
 	m_bTexCoord = true;
 }
 
 void CRenderingContext::TexCoord(const Vector& v, int iChannel)
 {
-	if (iChannel >= (int)m_avecTexCoord.size())
-		m_avecTexCoord.resize(iChannel+1);
-	m_avecTexCoord[iChannel] = v;
+	if (iChannel >= (int)s_avecTexCoord.size())
+		s_avecTexCoord.resize(iChannel+1);
+	s_avecTexCoord[iChannel] = v;
 
 	m_bTexCoord = true;
 }
 
 void CRenderingContext::TexCoord(const DoubleVector& v, int iChannel)
 {
-	if (iChannel >= (int)m_avecTexCoord.size())
-		m_avecTexCoord.resize(iChannel+1);
-	m_avecTexCoord[iChannel] = DoubleVector2D(v);
+	if (iChannel >= (int)s_avecTexCoord.size())
+		s_avecTexCoord.resize(iChannel+1);
+	s_avecTexCoord[iChannel] = DoubleVector2D(v);
 
 	m_bTexCoord = true;
 }
@@ -783,20 +826,20 @@ void CRenderingContext::Vertex(const Vector& v)
 {
 	if (m_bTexCoord)
 	{
-		if (m_aavecTexCoords.size() < m_avecTexCoord.size())
-			m_aavecTexCoords.resize(m_avecTexCoord.size());
+		if (s_aavecTexCoords.size() < s_avecTexCoord.size())
+			s_aavecTexCoords.resize(s_avecTexCoord.size());
 
-		for (size_t i = 0; i < m_aavecTexCoords.size(); i++)
-			m_aavecTexCoords[i].push_back(m_avecTexCoord[i]);
+		for (size_t i = 0; i < s_aavecTexCoords.size(); i++)
+			s_aavecTexCoords[i].push_back(s_avecTexCoord[i]);
 	}
 
 	if (m_bNormal)
-		m_avecNormals.push_back(m_vecNormal);
+		s_avecNormals.push_back(m_vecNormal);
 
 	if (m_bColor)
-		m_aclrColors.push_back(m_clrColor);
+		s_aclrColors.push_back(m_clrColor);
 
-	m_avecVertices.push_back(v);
+	s_avecVertices.push_back(v);
 }
 
 void CRenderingContext::EndRender()
@@ -809,41 +852,116 @@ void CRenderingContext::EndRender()
 			return;
 	}
 
-	SetUniform("mProjection", GetContext().m_mProjection);
-	SetUniform("mView", GetContext().m_mView);
-	SetUniform("mGlobal", GetContext().m_mTransformations);
+	CRenderContext& oContext = GetContext();
 
-	if (m_bTexCoord && m_pShader->m_iTexCoordAttribute != ~0)
+	if (!oContext.m_bProjectionUpdated)
+		SetUniform("mProjection", oContext.m_mProjection);
+
+	if (!oContext.m_bViewUpdated)
+		SetUniform("mView", oContext.m_mView);
+
+	if (!oContext.m_bTransformUpdated)
+		SetUniform("mGlobal", oContext.m_mTransformations);
+
+	oContext.m_bProjectionUpdated = oContext.m_bViewUpdated = oContext.m_bTransformUpdated = true;
+
+	if (m_bTexCoord)
 	{
-		glEnableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
-		glVertexAttribPointer(m_pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, 0, m_aavecTexCoords[0].data());
+		for (size_t i = 0; i < MAX_TEXTURE_CHANNELS; i++)
+		{
+			if (m_pShader->m_aiTexCoordAttributes[i] != ~0)
+			{
+				glEnableVertexAttribArray(m_pShader->m_aiTexCoordAttributes[i]);
+				glVertexAttribPointer(m_pShader->m_aiTexCoordAttributes[i], 2, GL_FLOAT, false, 0, s_aavecTexCoords[0].data());
+			}
+		}
 	}
 
 	if (m_bNormal && m_pShader->m_iNormalAttribute != ~0)
 	{
 		glEnableVertexAttribArray(m_pShader->m_iNormalAttribute);
-		glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, 0, m_avecNormals.data());
+		glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, 0, s_avecNormals.data());
 	}
 
 	if (m_bColor && m_pShader->m_iColorAttribute != ~0)
 	{
 		glEnableVertexAttribArray(m_pShader->m_iColorAttribute);
-		glVertexAttribPointer(m_pShader->m_iColorAttribute, 3, GL_UNSIGNED_BYTE, true, sizeof(::Color), m_aclrColors.data());
+		glVertexAttribPointer(m_pShader->m_iColorAttribute, 3, GL_UNSIGNED_BYTE, true, sizeof(::Color), s_aclrColors.data());
 	}
 
 	TAssert(m_pShader->m_iPositionAttribute != ~0);
 	glEnableVertexAttribArray(m_pShader->m_iPositionAttribute);
-	glVertexAttribPointer(m_pShader->m_iPositionAttribute, 3, GL_FLOAT, false, 0, m_avecVertices.data());
+	glVertexAttribPointer(m_pShader->m_iPositionAttribute, 3, GL_FLOAT, false, 0, s_avecVertices.data());
 
-	glDrawArrays(m_iDrawMode, 0, m_avecVertices.size());
+	glDrawArrays(m_iDrawMode, 0, s_avecVertices.size());
 
 	glDisableVertexAttribArray(m_pShader->m_iPositionAttribute);
-	if (m_pShader->m_iTexCoordAttribute != ~0)
-		glDisableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
+	for (size_t i = 0; i < MAX_TEXTURE_CHANNELS; i++)
+	{
+		if (m_pShader->m_aiTexCoordAttributes[i] != ~0)
+			glDisableVertexAttribArray(m_pShader->m_aiTexCoordAttributes[i]);
+	}
 	if (m_pShader->m_iNormalAttribute != ~0)
 		glDisableVertexAttribArray(m_pShader->m_iNormalAttribute);
 	if (m_pShader->m_iColorAttribute != ~0)
 		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
+}
+
+void CRenderingContext::CreateVBO(size_t& iVBO, size_t& iVBOSize)
+{
+	TAssert(m_pRenderer);
+	if (!m_pRenderer)
+		return;
+
+	TAssert(s_avecVertices.size());
+	if (!s_avecVertices.size())
+		return;
+
+	TAssert(m_iDrawMode == GL_TRIANGLES);
+
+	size_t iDataSize = 0;
+	iDataSize += s_avecVertices.size()*3;
+
+	for (size_t i = 0; i < s_aavecTexCoords.size(); i++)
+		iDataSize += s_aavecTexCoords[i].size()*2;
+
+	iDataSize += s_avecNormals.size()*3;
+
+	tvector<float> aflData;
+	aflData.reserve(iDataSize);
+
+	TAssert(!s_avecNormals.size() || s_avecVertices.size() == s_avecNormals.size());
+	for (size_t i = 0; i < s_aavecTexCoords.size(); i++)
+		TAssert(!s_aavecTexCoords[i].size() || s_avecVertices.size() == s_aavecTexCoords[i].size());
+
+	for (size_t i = 0; i < s_avecVertices.size(); i++)
+	{
+		Vector& vecVert = s_avecVertices[i];
+		aflData.push_back(vecVert.x);
+		aflData.push_back(vecVert.y);
+		aflData.push_back(vecVert.z);
+
+		if (s_avecNormals.size())
+		{
+			Vector& vecNormal = s_avecNormals[i];
+			aflData.push_back(vecNormal.x);
+			aflData.push_back(vecNormal.y);
+			aflData.push_back(vecNormal.z);
+		}
+
+		for (size_t j = 0; j < s_aavecTexCoords.size(); j++)
+		{
+			if (s_aavecTexCoords[j].size())
+			{
+				Vector2D& vecUV = s_aavecTexCoords[j][i];
+				aflData.push_back(vecUV.x);
+				aflData.push_back(vecUV.y);
+			}
+		}
+	}
+
+	iVBO = m_pRenderer->LoadVertexDataIntoGL(aflData.size()*sizeof(float), aflData.data());
+	iVBOSize = s_avecVertices.size();
 }
 
 void CRenderingContext::BeginRenderVertexArray(size_t iBuffer)
@@ -863,6 +981,7 @@ void CRenderingContext::SetPositionBuffer(float* pflBuffer, size_t iStride)
 
 void CRenderingContext::SetPositionBuffer(size_t iOffset, size_t iStride)
 {
+	TAssert(iOffset%4 == 0);	// Should be multiples of four because it's offsets in bytes and we're always working with floats or doubles
 	TAssert(m_pShader->m_iPositionAttribute != ~0);
 	glEnableVertexAttribArray(m_pShader->m_iPositionAttribute);
 	glVertexAttribPointer(m_pShader->m_iPositionAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
@@ -882,6 +1001,7 @@ void CRenderingContext::SetNormalsBuffer(size_t iOffset, size_t iStride)
 	if (m_pShader->m_iNormalAttribute == ~0)
 		return;
 
+	TAssert(iOffset%4 == 0);	// Should be multiples of four because it's offsets in bytes and we're always working with floats or doubles
 	glEnableVertexAttribArray(m_pShader->m_iNormalAttribute);
 	glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
 }
@@ -900,6 +1020,7 @@ void CRenderingContext::SetTangentsBuffer(size_t iOffset, size_t iStride)
 	if (m_pShader->m_iTangentAttribute == ~0)
 		return;
 
+	TAssert(iOffset%4 == 0);	// Should be multiples of four because it's offsets in bytes and we're always working with floats or doubles
 	glEnableVertexAttribArray(m_pShader->m_iTangentAttribute);
 	glVertexAttribPointer(m_pShader->m_iTangentAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
 }
@@ -918,26 +1039,32 @@ void CRenderingContext::SetBitangentsBuffer(size_t iOffset, size_t iStride)
 	if (m_pShader->m_iBitangentAttribute == ~0)
 		return;
 
+	TAssert(iOffset%4 == 0);	// Should be multiples of four because it's offsets in bytes and we're always working with floats or doubles
 	glEnableVertexAttribArray(m_pShader->m_iBitangentAttribute);
 	glVertexAttribPointer(m_pShader->m_iBitangentAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
 }
 
-void CRenderingContext::SetTexCoordBuffer(float* pflBuffer, size_t iStride)
+void CRenderingContext::SetTexCoordBuffer(float* pflBuffer, size_t iStride, size_t iChannel)
 {
-	if (m_pShader->m_iTexCoordAttribute == ~0)
+	TAssert(iChannel >= 0 && iChannel < MAX_TEXTURE_CHANNELS);
+
+	if (m_pShader->m_aiTexCoordAttributes[iChannel] == ~0)
 		return;
 
-	glEnableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
-	glVertexAttribPointer(m_pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, iStride, pflBuffer);
+	glEnableVertexAttribArray(m_pShader->m_aiTexCoordAttributes[iChannel]);
+	glVertexAttribPointer(m_pShader->m_aiTexCoordAttributes[iChannel], 2, GL_FLOAT, false, iStride, pflBuffer);
 }
 
-void CRenderingContext::SetTexCoordBuffer(size_t iOffset, size_t iStride)
+void CRenderingContext::SetTexCoordBuffer(size_t iOffset, size_t iStride, size_t iChannel)
 {
-	if (m_pShader->m_iTexCoordAttribute == ~0)
+	TAssert(iChannel >= 0 && iChannel < MAX_TEXTURE_CHANNELS);
+
+	if (m_pShader->m_aiTexCoordAttributes[iChannel] == ~0)
 		return;
 
-	glEnableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
-	glVertexAttribPointer(m_pShader->m_iTexCoordAttribute, 2, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
+	TAssert(iOffset%4 == 0);	// Should be multiples of four because it's offsets in bytes and we're always working with floats or doubles
+	glEnableVertexAttribArray(m_pShader->m_aiTexCoordAttributes[iChannel]);
+	glVertexAttribPointer(m_pShader->m_aiTexCoordAttributes[iChannel], 2, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
 }
 
 void CRenderingContext::SetCustomIntBuffer(const char* pszName, size_t iSize, size_t iOffset, size_t iStride)
@@ -948,15 +1075,25 @@ void CRenderingContext::SetCustomIntBuffer(const char* pszName, size_t iSize, si
 	if (iAttribute == ~0)
 		return;
 
+	TAssert(iOffset%4 == 0);	// Should be multiples of four because it's offsets in bytes and we're always working with floats or doubles
 	glEnableVertexAttribArray(iAttribute);
 	glVertexAttribIPointer(iAttribute, iSize, GL_INT, iStride, BUFFER_OFFSET(iOffset));
 }
 
 void CRenderingContext::EndRenderVertexArray(size_t iVertices, bool bWireframe)
 {
-	SetUniform("mProjection", GetContext().m_mProjection);
-	SetUniform("mView", GetContext().m_mView);
-	SetUniform("mGlobal", GetContext().m_mTransformations);
+	CRenderContext& oContext = GetContext();
+
+	if (!oContext.m_bProjectionUpdated)
+		SetUniform("mProjection", oContext.m_mProjection);
+
+	if (!oContext.m_bViewUpdated)
+		SetUniform("mView", oContext.m_mView);
+
+	if (!oContext.m_bTransformUpdated)
+		SetUniform("mGlobal", oContext.m_mTransformations);
+
+	oContext.m_bProjectionUpdated = oContext.m_bViewUpdated = oContext.m_bTransformUpdated = true;
 
 	if (bWireframe)
 	{
@@ -967,8 +1104,11 @@ void CRenderingContext::EndRenderVertexArray(size_t iVertices, bool bWireframe)
 		glDrawArrays(GL_TRIANGLES, 0, iVertices);
 
 	glDisableVertexAttribArray(m_pShader->m_iPositionAttribute);
-	if (m_pShader->m_iTexCoordAttribute != ~0)
-		glDisableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
+	for (size_t i = 0; i < MAX_TEXTURE_CHANNELS; i++)
+	{
+		if (m_pShader->m_aiTexCoordAttributes[i] != ~0)
+			glDisableVertexAttribArray(m_pShader->m_aiTexCoordAttributes[i]);
+	}
 	if (m_pShader->m_iNormalAttribute != ~0)
 		glDisableVertexAttribArray(m_pShader->m_iNormalAttribute);
 	if (m_pShader->m_iTangentAttribute != ~0)
@@ -983,15 +1123,27 @@ void CRenderingContext::EndRenderVertexArray(size_t iVertices, bool bWireframe)
 
 void CRenderingContext::EndRenderVertexArrayTriangles(size_t iTriangles, int* piIndices)
 {
-	SetUniform("mProjection", GetContext().m_mProjection);
-	SetUniform("mView", GetContext().m_mView);
-	SetUniform("mGlobal", GetContext().m_mTransformations);
+	CRenderContext& oContext = GetContext();
+
+	if (!oContext.m_bProjectionUpdated)
+		SetUniform("mProjection", oContext.m_mProjection);
+
+	if (!oContext.m_bViewUpdated)
+		SetUniform("mView", oContext.m_mView);
+
+	if (!oContext.m_bTransformUpdated)
+		SetUniform("mGlobal", oContext.m_mTransformations);
+
+	oContext.m_bProjectionUpdated = oContext.m_bViewUpdated = oContext.m_bTransformUpdated = true;
 
 	glDrawElements(GL_TRIANGLES, iTriangles*3, GL_UNSIGNED_INT, piIndices);
 
 	glDisableVertexAttribArray(m_pShader->m_iPositionAttribute);
-	if (m_pShader->m_iTexCoordAttribute != ~0)
-		glDisableVertexAttribArray(m_pShader->m_iTexCoordAttribute);
+	for (size_t i = 0; i < MAX_TEXTURE_CHANNELS; i++)
+	{
+		if (m_pShader->m_aiTexCoordAttributes[i] != ~0)
+			glDisableVertexAttribArray(m_pShader->m_aiTexCoordAttributes[i]);
+	}
 	if (m_pShader->m_iNormalAttribute != ~0)
 		glDisableVertexAttribArray(m_pShader->m_iNormalAttribute);
 	if (m_pShader->m_iTangentAttribute != ~0)
@@ -1002,6 +1154,45 @@ void CRenderingContext::EndRenderVertexArrayTriangles(size_t iTriangles, int* pi
 		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+CVar r_wireframe("r_wireframe", "off");
+
+void CRenderingContext::EndRenderVertexArrayIndexed(size_t iBuffer, size_t iVertices)
+{
+	CRenderContext& oContext = GetContext();
+
+	if (!oContext.m_bProjectionUpdated)
+		SetUniform("mProjection", oContext.m_mProjection);
+
+	if (!oContext.m_bViewUpdated)
+		SetUniform("mView", oContext.m_mView);
+
+	if (!oContext.m_bTransformUpdated)
+		SetUniform("mGlobal", oContext.m_mTransformations);
+
+	oContext.m_bProjectionUpdated = oContext.m_bViewUpdated = oContext.m_bTransformUpdated = true;
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
+	glDrawElements(r_wireframe.GetBool()?GL_LINES:GL_TRIANGLES, iVertices, GL_UNSIGNED_INT, nullptr);
+
+	glDisableVertexAttribArray(m_pShader->m_iPositionAttribute);
+	for (size_t i = 0; i < MAX_TEXTURE_CHANNELS; i++)
+	{
+		if (m_pShader->m_aiTexCoordAttributes[i] != ~0)
+			glDisableVertexAttribArray(m_pShader->m_aiTexCoordAttributes[i]);
+	}
+	if (m_pShader->m_iNormalAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iNormalAttribute);
+	if (m_pShader->m_iTangentAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iTangentAttribute);
+	if (m_pShader->m_iBitangentAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iBitangentAttribute);
+	if (m_pShader->m_iColorAttribute != ~0)
+		glDisableVertexAttribArray(m_pShader->m_iColorAttribute);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void CRenderingContext::RenderText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize)
@@ -1023,19 +1214,30 @@ void CRenderingContext::RenderText(const tstring& sText, unsigned iLength, FTFon
 	if (!m_pShader)
 		return;
 
-	TAssert(m_pShader->m_iPositionAttribute >= 0);
-	TAssert(m_pShader->m_iTexCoordAttribute >= 0);
+	CRenderContext& oContext = GetContext();
 
-	SetUniform("mProjection", GetContext().m_mProjection);
-	SetUniform("mView", GetContext().m_mView);
+	if (iLength == -1)
+		iLength = sText.length();
+
+	TAssert(m_pShader->m_iPositionAttribute >= 0);
+	TAssert(m_pShader->m_aiTexCoordAttributes[0] >= 0);
+
+	if (!oContext.m_bProjectionUpdated)
+		SetUniform("mProjection", oContext.m_mProjection);
+
+	if (!oContext.m_bViewUpdated)
+		SetUniform("mView", oContext.m_mView);
 
 	// Take the position out and let FTGL do it. It looks sharper that way.
-	Matrix4x4 mTransformations = GetContext().m_mTransformations;
+	Matrix4x4 mTransformations = oContext.m_mTransformations;
 	Vector vecPosition = mTransformations.GetTranslation();
 	mTransformations.SetTranslation(Vector());
 	SetUniform("mGlobal", mTransformations);
 
-	ftglSetAttributeLocations(m_pShader->m_iPositionAttribute, m_pShader->m_iTexCoordAttribute);
+	oContext.m_bProjectionUpdated = oContext.m_bViewUpdated = oContext.m_bTransformUpdated = true;
+
+	ftglSetAttributeLocations(m_pShader->m_iPositionAttribute, m_pShader->m_aiTexCoordAttributes[0]);
+
 	pFont->Render(sText.c_str(), iLength, FTPoint(vecPosition.x, vecPosition.y, vecPosition.z));
 }
 
@@ -1049,3 +1251,9 @@ void CRenderingContext::Finish()
 	glFinish();
 }
 
+CRenderingContext::CRenderContext::CRenderContext()
+{
+	m_bProjectionUpdated = false;
+	m_bViewUpdated = false;
+	m_bTransformUpdated = false;
+}

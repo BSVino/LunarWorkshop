@@ -256,7 +256,7 @@ TVector CToyViewer::GetCameraPosition()
 	return pMesh->m_aabbVisBoundingBox.Center() - AngleVector(m_angPreview)*m_flPreviewDistance;
 }
 
-TVector CToyViewer::GetCameraDirection()
+Vector CToyViewer::GetCameraDirection()
 {
 	return AngleVector(m_angPreview);
 }

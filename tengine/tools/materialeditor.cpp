@@ -437,7 +437,7 @@ void CMaterialEditor::RenderScene()
 	Vector vecRight = Vector(0, 0, 0.5f) * (float)hBaseTexture->m_iWidth/100;
 
 	float flAlpha = 0.3f;
-	if (GetCameraDirection().Dot(Vector(1, 0, 0)) > 0)
+	if (Vector(GetCameraDirection()).Dot(Vector(1, 0, 0)) > 0)
 		flAlpha = 0.1f;
 
 	c.UseProgram("model");
@@ -545,7 +545,7 @@ TVector CMaterialEditor::GetCameraPosition()
 	return -vecPreviewAngle;
 }
 
-TVector CMaterialEditor::GetCameraDirection()
+Vector CMaterialEditor::GetCameraDirection()
 {
 	return AngleVector(m_angPreview);
 }

@@ -33,6 +33,14 @@ Matrix4x4::Matrix4x4(const Matrix4x4& i)
 	m[3][0] = i.m[3][0]; m[3][1] = i.m[3][1]; m[3][2] = i.m[3][2]; m[3][3] = i.m[3][3];
 }
 
+Matrix4x4::Matrix4x4(const DoubleMatrix4x4& i)
+{
+	m[0][0] = (float)i.m[0][0]; m[0][1] = (float)i.m[0][1]; m[0][2] = (float)i.m[0][2]; m[0][3] = (float)i.m[0][3];
+	m[1][0] = (float)i.m[1][0]; m[1][1] = (float)i.m[1][1]; m[1][2] = (float)i.m[1][2]; m[1][3] = (float)i.m[1][3];
+	m[2][0] = (float)i.m[2][0]; m[2][1] = (float)i.m[2][1]; m[2][2] = (float)i.m[2][2]; m[2][3] = (float)i.m[2][3];
+	m[3][0] = (float)i.m[3][0]; m[3][1] = (float)i.m[3][1]; m[3][2] = (float)i.m[3][2]; m[3][3] = (float)i.m[3][3];
+}
+
 Matrix4x4::Matrix4x4(float* aflValues)
 {
 	memcpy(&m[0][0], aflValues, sizeof(float)*16);
@@ -413,6 +421,17 @@ Matrix4x4 Matrix4x4::operator+=(const Vector& v)
 	return *this;
 }
 
+Matrix4x4 Matrix4x4::operator-(const Vector& v) const
+{
+	Matrix4x4 r = *this;
+
+	r.m[3][0] -= v.x;
+	r.m[3][1] -= v.y;
+	r.m[3][2] -= v.z;
+
+	return r;
+}
+
 Matrix4x4 Matrix4x4::operator+=(const EAngle& a)
 {
 	Matrix4x4 r;
@@ -521,28 +540,28 @@ EAngle Matrix4x4::GetAngles() const
 {
 #ifdef _DEBUG
 	// If any of the below is not true then you have a matrix that has been scaled or reflected or something and it won't work to try to pull its Eulers
-	bool b = fabs(GetForwardVector().LengthSqr() - 1) < 0.00001f;
+	bool b = fabs(GetForwardVector().LengthSqr() - 1) < 0.001f;
 	if (!b)
 	{
 		TAssertNoMsg(b);
 		return EAngle(0, 0, 0);
 	}
 
-	b = fabs(GetUpVector().LengthSqr() - 1) < 0.00001f;
+	b = fabs(GetUpVector().LengthSqr() - 1) < 0.001f;
 	if (!b)
 	{
 		TAssertNoMsg(b);
 		return EAngle(0, 0, 0);
 	}
 
-	b = fabs(GetRightVector().LengthSqr() - 1) < 0.00001f;
+	b = fabs(GetRightVector().LengthSqr() - 1) < 0.001f;
 	if (!b)
 	{
 		TAssertNoMsg(b);
 		return EAngle(0, 0, 0);
 	}
 
-	b = GetRightVector().Cross(GetForwardVector()) == GetUpVector();
+	b = GetRightVector().Cross(GetForwardVector()).Equals(GetUpVector(), 0.001f);
 	if (!b)
 	{
 		TAssertNoMsg(b);
@@ -551,9 +570,9 @@ EAngle Matrix4x4::GetAngles() const
 #endif
 
 	if (m[0][1] > 0.999999f)
-		return EAngle(asin(m[0][1]) * 180/M_PI, -atan2(m[2][0], m[2][2]) * 180/M_PI, 0);
+		return EAngle(asin(Clamp(m[0][1], -1.0f, 1.0f)) * 180/M_PI, -atan2(m[2][0], m[2][2]) * 180/M_PI, 0);
 	else if (m[0][1] < -0.999999f)
-		return EAngle(asin(m[0][1]) * 180/M_PI, -atan2(m[2][0], m[2][2]) * 180/M_PI, 0);
+		return EAngle(asin(Clamp(m[0][1], -1.0f, 1.0f)) * 180/M_PI, -atan2(m[2][0], m[2][2]) * 180/M_PI, 0);
 
 	// Clamp to [-1, 1] looping
 	float flPitch = fmod(m[0][1], 2);
@@ -693,4 +712,140 @@ Matrix4x4 Matrix4x4::InvertedRT() const
 float Matrix4x4::Trace() const
 {
 	return m[0][0] + m[1][1] + m[2][2];
+}
+
+DoubleMatrix4x4::DoubleMatrix4x4(const Matrix4x4& i)
+{
+	m[0][0] = i.m[0][0]; m[0][1] = i.m[0][1]; m[0][2] = i.m[0][2]; m[0][3] = i.m[0][3];
+	m[1][0] = i.m[1][0]; m[1][1] = i.m[1][1]; m[1][2] = i.m[1][2]; m[1][3] = i.m[1][3];
+	m[2][0] = i.m[2][0]; m[2][1] = i.m[2][1]; m[2][2] = i.m[2][2]; m[2][3] = i.m[2][3];
+	m[3][0] = i.m[3][0]; m[3][1] = i.m[3][1]; m[3][2] = i.m[3][2]; m[3][3] = i.m[3][3];
+}
+
+void DoubleMatrix4x4::Identity()
+{
+	memset(this, 0, sizeof(DoubleMatrix4x4));
+
+	m[0][0] = m[1][1] = m[2][2] = m[3][3] = 1.0;
+}
+
+bool DoubleMatrix4x4::operator==(const DoubleMatrix4x4& t) const
+{
+	double flEp = 0.000001f;
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (fabs(m[i][j] - t.m[i][j]) > flEp)
+				return false;
+		}
+	}
+
+	return true;
+}
+
+void DoubleMatrix4x4::SetTranslation(const DoubleVector& vecPos)
+{
+	m[3][0] = vecPos.x;
+	m[3][1] = vecPos.y;
+	m[3][2] = vecPos.z;
+}
+
+DoubleMatrix4x4 DoubleMatrix4x4::operator-(const DoubleVector& v) const
+{
+	DoubleMatrix4x4 r = *this;
+
+	r.m[3][0] -= v.x;
+	r.m[3][1] -= v.y;
+	r.m[3][2] -= v.z;
+
+	return r;
+}
+
+DoubleVector DoubleMatrix4x4::GetTranslation() const
+{
+	return DoubleVector((double*)&m[3][0]);
+}
+
+DoubleMatrix4x4 DoubleMatrix4x4::operator*(const DoubleMatrix4x4& t) const
+{
+	DoubleMatrix4x4 r;
+
+	// [a b c d][A B C D]   [aA+bE+cI+dM
+	// [e f g h][E F G H] = [eA+fE+gI+hM ...
+	// [i j k l][I J K L]
+	// [m n o p][M N O P]
+
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+			r.m[i][j] = m[0][j]*t.m[i][0] + m[1][j]*t.m[i][1] + m[2][j]*t.m[i][2] + m[3][j]*t.m[i][3];
+	}
+
+	return r;
+}
+
+DoubleVector DoubleMatrix4x4::operator*(const DoubleVector& v) const
+{
+	// [a b c x][X] 
+	// [d e f y][Y] = [aX+bY+cZ+x dX+eY+fZ+y gX+hY+iZ+z]
+	// [g h i z][Z]
+	//          [1]
+
+	DoubleVector vecResult;
+	vecResult.x = m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z + m[3][0];
+	vecResult.y = m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z + m[3][1];
+	vecResult.z = m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z + m[3][2];
+	return vecResult;
+}
+
+DoubleVector DoubleMatrix4x4::TransformVector(const DoubleVector& v) const
+{
+	// [a b c][X] 
+	// [d e f][Y] = [aX+bY+cZ dX+eY+fZ gX+hY+iZ]
+	// [g h i][Z]
+
+	DoubleVector vecResult;
+	vecResult.x = m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z;
+	vecResult.y = m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z;
+	vecResult.z = m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z;
+	return vecResult;
+}
+
+void DoubleMatrix4x4::SetForwardVector(const DoubleVector& v)
+{
+	m[0][0] = v.x;
+	m[0][1] = v.y;
+	m[0][2] = v.z;
+}
+
+void DoubleMatrix4x4::SetUpVector(const DoubleVector& v)
+{
+	m[1][0] = v.x;
+	m[1][1] = v.y;
+	m[1][2] = v.z;
+}
+
+void DoubleMatrix4x4::SetRightVector(const DoubleVector& v)
+{
+	m[2][0] = v.x;
+	m[2][1] = v.y;
+	m[2][2] = v.z;
+}
+
+DoubleMatrix4x4 DoubleMatrix4x4::InvertedRT() const
+{
+	TAssertNoMsg(fabs(GetForwardVector().LengthSqr() - 1) < 0.00001);
+	TAssertNoMsg(fabs(GetUpVector().LengthSqr() - 1) < 0.00001);
+	TAssertNoMsg(fabs(GetRightVector().LengthSqr() - 1) < 0.00001);
+
+	DoubleMatrix4x4 r;
+
+	for (int h = 0; h < 3; h++)
+		for (int v = 0; v < 3; v++)
+			r.m[h][v] = m[v][h];
+
+	r.SetTranslation(r*(-GetTranslation()));
+
+	return r;
 }

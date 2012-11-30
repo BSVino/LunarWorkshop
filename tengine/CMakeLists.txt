@@ -32,6 +32,7 @@ set (TENGINE_GAME_SOURCES
 
 set (TENGINE_GAME_ENTITY_SOURCES
 	game/entities/baseentity.cpp
+	game/entities/baseentitydata.cpp
 	game/entities/beam.cpp
 	game/entities/camera.cpp
 	game/entities/counter.cpp
@@ -48,6 +49,7 @@ set (TENGINE_GAME_ENTITY_SOURCES
 	game/entities/target.cpp
 	game/entities/team.cpp
 	game/entities/trigger.cpp
+	game/entities/weapon.cpp
 )
 
 set (TENGINE_MODELS_SOURCES
@@ -92,6 +94,7 @@ set (TENGINE_UI_SOURCES
 	ui/hudviewport.cpp
 	ui/gamewindow.cpp
 	ui/chatbox.cpp
+	ui/instructor.cpp
 )
 
 set (TENGINE_LOBBY_SOURCES

@@ -4,6 +4,7 @@
 #include <tengine/game/entities/baseentity.h>
 
 class CPlayer;
+class CBaseWeapon;
 
 typedef enum
 {
@@ -23,6 +24,7 @@ public:
 public:
 	virtual void					Spawn();
 	virtual void					Think();
+	virtual void                    Simulate();
 
 	void							Move(movetype_t);
 	void							StopMove(movetype_t);
@@ -30,18 +32,32 @@ public:
 	virtual void					MoveThink();
 	virtual void					MoveThink_NoClip();
 	virtual void					Jump();
+	virtual const TMatrix           GetMovementVelocityTransform() const;
+
+	virtual void                    CharacterMovement(class btCollisionWorld*, float flDelta);
 
 	virtual void					SetNoClip(bool bOn);
 	virtual bool					GetNoClip() const { return m_bNoClip; }
 
 	virtual bool					CanAttack() const;
-	virtual void					Attack();
+	virtual void					MeleeAttack();
 	virtual bool					IsAttacking() const;
 
 	virtual void					MoveToPlayerStart();
 
-	virtual void					PostRender(bool bTransparent) const;
+	virtual void					PostRender() const;
 	virtual void					ShowPlayerVectors() const;
+
+	void                            Weapon_Add(CBaseWeapon* pWeapon);
+	void                            Weapon_Remove(CBaseWeapon* pWeapon);
+	virtual void                    OnWeaponAdded(CBaseWeapon* pWeapon) {}
+	virtual void                    OnWeaponRemoved(CBaseWeapon* pWeapon, bool bWasEquipped) {}
+	void                            Weapon_Equip(CBaseWeapon* pWeapon);
+	const tvector<CEntityHandle<CBaseWeapon>>& GetWeapons() const { return m_ahWeapons; }
+	size_t                          GetEquippedWeaponIndex() const { return m_iEquippedWeapon; }
+	CBaseWeapon*                    GetEquippedWeapon() const;
+
+	void                            OnDeleted(const CBaseEntity* pEntity);
 
 	void							SetControllingPlayer(CPlayer* pCharacter);
 	CPlayer*						GetControllingPlayer() const;
@@ -51,44 +67,46 @@ public:
 	virtual TFloat					CharacterAcceleration() { return 4.0f; }
 	virtual TFloat					JumpStrength() { return 150.0f; }
 	virtual TFloat					CharacterSpeed();
+	virtual bool                    IsFlying() const { return false; }   // Is the character under controlled flight without the influence of gravity?
 
-	virtual float					AttackTime() const { return 0.3f; }
-	virtual float					AttackDamage() const { return 50; }
-	virtual float					AttackSphereRadius() const { return 40.0f; }
-	virtual const TVector			AttackSphereCenter() const { return GetGlobalCenter(); }
+	virtual float                   MeleeAttackTime() const { return 0.3f; }
+	virtual float                   MeleeAttackDamage() const { return 50; }
+	virtual float                   MeleeAttackSphereRadius() const { return 40.0f; }
+	virtual const TVector           MeleeAttackSphereCenter() const;
 
 	virtual bool					ShouldCollide() const { return false; }
-
-	virtual void					SetViewAngles(const EAngle& angView) { m_angView = angView; }
-	virtual const EAngle			GetViewAngles() const { return m_angView; }
-
-	DECLARE_ENTITY_INPUT(SetViewAngles);
 
 	virtual const EAngle			GetThirdPersonCameraAngles() const { return GetViewAngles(); }
 
 	CBaseEntity*					GetGroundEntity() const { return m_hGround; }
-	void							SetGroundEntity(CBaseEntity* pEntity);
+	virtual void                    SetGroundEntity(CBaseEntity* pEntity);
+	virtual void                    SetGroundEntityExtra(size_t iExtra);
 
 	TFloat							GetMaxStepHeight() const { return m_flMaxStepSize; }
+
+	double                          GetLastSpawn() const { return m_flLastSpawn; }
 
 	virtual bool					UsePhysicsModelForController() const { return false; }
 
 protected:
 	CNetworkedHandle<CPlayer>		m_hControllingPlayer;
 
-	EAngle							m_angView;
-
 	CNetworkedHandle<CBaseEntity>	m_hGround;
 
 	bool							m_bNoClip;
 
 	bool							m_bTransformMoveByView;
-	Vector							m_vecGoalVelocity;
-	Vector							m_vecMoveVelocity;
+	TVector							m_vecGoalVelocity;
+	TVector							m_vecMoveVelocity;
+	double							m_flMoveSimulationTime;
 
 	double							m_flLastAttack;
+	double                          m_flLastSpawn;
 
 	TFloat							m_flMaxStepSize;
+
+	size_t                              m_iEquippedWeapon;
+	tvector<CEntityHandle<CBaseWeapon>> m_ahWeapons;
 };
 
 #endif

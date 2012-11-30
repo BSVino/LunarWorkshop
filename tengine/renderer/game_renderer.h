@@ -36,6 +36,8 @@ public:
 	virtual void	ModifySkyboxContext(class CRenderingContext* c) {};
 	virtual void	ModifyShader(const class CBaseEntity* pEntity, class CRenderingContext* c) {};
 	virtual void	FinishRendering(class CRenderingContext* pContext);
+	virtual void	FinishFrame(class CRenderingContext* pContext);
+	virtual void    DrawWeaponViewModel();
 
 	void			SetSkybox(const CTextureHandle& ft, const CTextureHandle& bk, const CTextureHandle& lf, const CTextureHandle& rt, const CTextureHandle& up, const CTextureHandle& dn);
 	void			DisableSkybox();
@@ -55,7 +57,9 @@ public:
 
 	const class CBaseEntity*	GetRenderingEntity() { return m_pRendering; }
 
+	virtual bool    ShouldCullByFrustum() const { return true; }
 	virtual bool	ShouldRenderPhysicsDebug() const { return true; };
+	virtual bool    ShouldRenderParticles() const { return true; }
 
 protected:
 	CTextureHandle	m_hSkyboxFT;
@@ -73,7 +77,8 @@ protected:
 	Vector			m_avecSkyboxUP[6];
 	Vector			m_avecSkyboxDN[6];
 
-	tvector<CBaseEntity*>	m_apRenderList;
+	tvector<CBaseEntity*>	m_apRenderOpaqueList;
+	tvector<CBaseEntity*>	m_apRenderTransparentList;
 	bool			m_bRenderingTransparent;
 
 	bool			m_bBatchThisFrame;

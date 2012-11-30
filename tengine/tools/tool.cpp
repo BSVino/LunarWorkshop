@@ -58,7 +58,7 @@ TVector CWorkbenchTool::GetCameraPosition()
 	return m_vecEditCamera;
 }
 
-TVector CWorkbenchTool::GetCameraDirection()
+Vector CWorkbenchTool::GetCameraDirection()
 {
 	return AngleVector(m_angEditCamera);
 }
