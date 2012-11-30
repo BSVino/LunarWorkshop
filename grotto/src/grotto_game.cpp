@@ -96,3 +96,8 @@ CGrottoRenderer* CGrottoGame::GetGrottoRenderer()
 {
 	return static_cast<CGrottoRenderer*>(GameServer()->GetRenderer());
 }
+
+pfnConditionsMet Game_GetInstructorConditions(const tstring& sConditions)
+{
+	return false;
+}

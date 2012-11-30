@@ -142,7 +142,7 @@ void CPlayerCharacter::FindItems()
 				return;
 			}
 
-			if (pReceptacle->GetToken() && m_hToken == nullptr)
+			if (pReceptacle->GetToken() && !m_hToken)
 			{
 				pToken = pReceptacle->GetToken();
 				pReceptacle->SetToken(nullptr);
@@ -173,7 +173,7 @@ void CPlayerCharacter::FindItems()
 
 void CPlayerCharacter::DropToken()
 {
-	if (m_hToken == nullptr)
+	if (!m_hToken)
 		return;
 
 	m_hToken->SetMoveParent(nullptr);

@@ -82,7 +82,7 @@ void CReceptacle::SetToken(CToken* pToken)
 
 	m_hToken = pToken;
 
-	if (m_hToken == nullptr)
+	if (!m_hToken)
 		return;
 
 	pToken->SetMoveParent(this);
