@@ -249,6 +249,9 @@ void CGameRenderer::FinishFrame(CRenderingContext* pContext)
 
 void CGameRenderer::DrawWeaponViewModel()
 {
+	if (!GameServer()->GetGame()->GetNumLocalPlayers())
+		return;
+
 	CPlayer* pLocalPlayer = GameServer()->GetGame()->GetLocalPlayer();
 	if (!pLocalPlayer)
 		return;

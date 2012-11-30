@@ -930,7 +930,16 @@ void CBaseEntity::Use(const tvector<tstring>& sArgs)
 bool CBaseEntity::ShouldRender() const
 {
 	if ((size_t)m_iModel != ~0)
-		return true;
+	{
+		CModel* pModel = CModelLibrary::GetModel(m_iModel);
+
+		for (size_t i = 0; i < pModel->m_ahMaterials.size(); i++)
+		{
+			CMaterialHandle& hMaterial = pModel->m_ahMaterials[i];
+			if (!hMaterial->m_sBlend.length() || hMaterial->m_sBlend == "none")
+				return true;
+		}
+	}
 	
 	if (m_hMaterialModel.IsValid())
 		return m_hMaterialModel->m_sBlend == "none";
@@ -941,7 +950,19 @@ bool CBaseEntity::ShouldRender() const
 bool CBaseEntity::ShouldRenderTransparent() const
 {
 	if (m_hMaterialModel.IsValid())
-		return m_hMaterialModel->m_sBlend != "none";
+		return m_hMaterialModel->m_sBlend.length() && m_hMaterialModel->m_sBlend != "none";
+
+	if ((size_t)m_iModel != ~0)
+	{
+		CModel* pModel = CModelLibrary::GetModel(m_iModel);
+
+		for (size_t i = 0; i < pModel->m_ahMaterials.size(); i++)
+		{
+			CMaterialHandle& hMaterial = pModel->m_ahMaterials[i];
+			if (hMaterial->m_sBlend.length() && hMaterial->m_sBlend != "none")
+				return true;
+		}
+	}
 
 	return false;
 }
