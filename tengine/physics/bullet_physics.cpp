@@ -778,6 +778,15 @@ void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4
 			pPhysicsEntity->m_apPhysicsShapes[i]->setCenterOfMassTransform(m);
 		}
 	}
+
+	if (pPhysicsEntity->m_pRigidBody && pPhysicsEntity->m_pRigidBody->getActivationState() == DISABLE_SIMULATION)
+		m_pDynamicsWorld->updateSingleAabb(pPhysicsEntity->m_pRigidBody);
+
+	for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+	{
+		if (pPhysicsEntity->m_apPhysicsShapes[i]->getActivationState() == DISABLE_SIMULATION)
+			m_pDynamicsWorld->updateSingleAabb(pPhysicsEntity->m_apPhysicsShapes[i]);
+	}
 }
 
 void CBulletPhysics::SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity)

@@ -8,4 +8,6 @@ class CStatic : public CBaseEntity
 
 public:
 	virtual void		OnSetModel();
+
+	collision_group_t   GetCollisionGroup() const { return CG_STATIC; }
 };

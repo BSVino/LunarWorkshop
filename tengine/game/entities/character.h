@@ -87,6 +87,7 @@ public:
 	double                          GetLastSpawn() const { return m_flLastSpawn; }
 
 	virtual bool					UsePhysicsModelForController() const { return false; }
+	collision_group_t               GetCollisionGroup() const { return CG_CHARACTER_PASS; }
 
 protected:
 	CNetworkedHandle<CPlayer>		m_hControllingPlayer;
