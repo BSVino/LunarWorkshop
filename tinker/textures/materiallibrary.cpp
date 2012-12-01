@@ -346,11 +346,18 @@ void CMaterial::FillParameter(size_t iParameter, const tstring& sData, class CSh
 					m_ahTextures[k] = CTextureHandle(sData);
 					if (!m_ahTextures[k].IsValid())
 					{
+						tstring sPrefix = "";
+						if (oPar.m_sValue.startswith("["))
+						{
+							oPar.m_sValue = oPar.m_sValue.substr(1);
+							sPrefix = "[";
+						}
+
 						if (m_sTextureDirectory.length())
-							m_ahTextures[k] = CTextureHandle(m_sTextureDirectory + "/" + oPar.m_sValue);
+							m_ahTextures[k] = CTextureHandle(sPrefix + m_sTextureDirectory + "/" + oPar.m_sValue);
 
 						if (!m_ahTextures[k].IsValid())
-							m_ahTextures[k] = CTextureHandle(GetDirectory(m_sFile) + "/" + oPar.m_sValue);
+							m_ahTextures[k] = CTextureHandle(sPrefix + GetDirectory(m_sFile) + "/" + oPar.m_sValue);
 
 						if (!m_ahTextures[k].IsValid())
 							TError("Couldn't load texture '" + sData + "' in material " + m_sFile + "\n");

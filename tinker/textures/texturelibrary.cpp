@@ -57,14 +57,23 @@ CTexture* CTextureLibrary::AddAsset(const tstring& sTexture, int iClamp)
 	if (!sTexture.length())
 		return nullptr;
 
+	bool bNearestFiltering = false;
+
+	tstring sRealTexture = sTexture;
+	if (sRealTexture.startswith("["))
+	{
+		bNearestFiltering = true;
+		sRealTexture = sRealTexture.substr(1);
+	}
+
 	int w, h;
-	Color* pclrTexture = CRenderer::LoadTextureData(sTexture, w, h);
+	Color* pclrTexture = CRenderer::LoadTextureData(sRealTexture, w, h);
 	if (!pclrTexture)
 		return nullptr;
 
 	CTexture oTex;
-	
-	oTex.m_iGLID = CRenderer::LoadTextureIntoGL(pclrTexture, w, h, iClamp);
+
+	oTex.m_iGLID = CRenderer::LoadTextureIntoGL(pclrTexture, w, h, iClamp, bNearestFiltering);
 	oTex.m_iWidth = w;
 	oTex.m_iHeight = h;
 

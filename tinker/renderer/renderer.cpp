@@ -833,14 +833,14 @@ size_t CRenderer::LoadTextureIntoGL(tstring sFilename, int iClamp)
 	return iGLId;
 }
 
-size_t CRenderer::LoadTextureIntoGL(Color* pclrData, int x, int y, int iClamp)
+size_t CRenderer::LoadTextureIntoGL(Color* pclrData, int x, int y, int iClamp, bool bNearestFiltering)
 {
 	GLuint iGLId;
 	glGenTextures(1, &iGLId);
 	glBindTexture(GL_TEXTURE_2D, iGLId);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, bNearestFiltering?GL_NEAREST:GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bNearestFiltering?GL_NEAREST:GL_LINEAR);
 
 	if (iClamp == 1)
 	{
