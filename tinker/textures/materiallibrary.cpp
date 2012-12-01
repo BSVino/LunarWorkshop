@@ -121,6 +121,12 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 			continue;
 		}
 
+		if (sParameter == "Clamp")
+		{
+			oMat.m_bClamp = pParameter->GetValueBool();
+			continue;
+		}
+
 		auto it = pShader->m_aParameters.find(sParameter);
 		TAssert(it != pShader->m_aParameters.end());
 		if (it == pShader->m_aParameters.end())
@@ -349,7 +355,7 @@ void CMaterial::FillParameter(size_t iParameter, const tstring& sData, class CSh
 			{
 				if (sData.length())
 				{
-					m_ahTextures[k] = CTextureHandle(sData);
+					m_ahTextures[k] = CTextureLibrary::AddTexture(sData, m_bClamp);
 					if (!m_ahTextures[k].IsValid())
 					{
 						tstring sPrefix = "";
@@ -360,10 +366,10 @@ void CMaterial::FillParameter(size_t iParameter, const tstring& sData, class CSh
 						}
 
 						if (m_sTextureDirectory.length())
-							m_ahTextures[k] = CTextureHandle(sPrefix + m_sTextureDirectory + "/" + oPar.m_sValue);
+							m_ahTextures[k] = CTextureLibrary::AddTexture(sPrefix + m_sTextureDirectory + "/" + oPar.m_sValue, m_bClamp);
 
 						if (!m_ahTextures[k].IsValid())
-							m_ahTextures[k] = CTextureHandle(sPrefix + GetDirectory(m_sFile) + "/" + oPar.m_sValue);
+							m_ahTextures[k] = CTextureLibrary::AddTexture(sPrefix + GetDirectory(m_sFile) + "/" + oPar.m_sValue, m_bClamp);
 
 						if (!m_ahTextures[k].IsValid())
 							TError("Couldn't load texture '" + sData + "' in material " + m_sFile + "\n");

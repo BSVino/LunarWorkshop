@@ -36,6 +36,7 @@ public:
 	{
 		m_iReferences = 0; 
 		m_iTexelsPerMeter = 100;
+		m_bClamp = false;
 	}
 
 public:
@@ -67,6 +68,7 @@ public:
 	tstring			m_sBlend;
 
 	size_t          m_iTexelsPerMeter;
+	bool            m_bClamp;
 
 	class CParameter
 	{
