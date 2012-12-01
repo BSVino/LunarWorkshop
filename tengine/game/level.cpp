@@ -409,11 +409,11 @@ AABB CLevelEntity::CalculateBoundingBox(CLevelEntity* pThis)
 			aabbBounds.m_vecMins.x = -0.01f;
 			aabbBounds.m_vecMaxs.x = 0.01f;
 
-			aabbBounds.m_vecMaxs.y *= (float)hBaseTexture->m_iHeight/100;
-			aabbBounds.m_vecMins.y *= (float)hBaseTexture->m_iHeight/100;
+			aabbBounds.m_vecMaxs.y *= (float)hBaseTexture->m_iHeight/pThis->m_hMaterialModel->m_iTexelsPerMeter;
+			aabbBounds.m_vecMins.y *= (float)hBaseTexture->m_iHeight/pThis->m_hMaterialModel->m_iTexelsPerMeter;
 
-			aabbBounds.m_vecMaxs.z *= (float)hBaseTexture->m_iWidth/100;
-			aabbBounds.m_vecMins.z *= (float)hBaseTexture->m_iWidth/100;
+			aabbBounds.m_vecMaxs.z *= (float)hBaseTexture->m_iWidth/pThis->m_hMaterialModel->m_iTexelsPerMeter;
+			aabbBounds.m_vecMins.z *= (float)hBaseTexture->m_iWidth/pThis->m_hMaterialModel->m_iTexelsPerMeter;
 		}
 	}
 

@@ -35,6 +35,7 @@ public:
 	CMaterial()
 	{
 		m_iReferences = 0; 
+		m_iTexelsPerMeter = 100;
 	}
 
 public:
@@ -64,6 +65,8 @@ public:
 
 	tstring			m_sShader;
 	tstring			m_sBlend;
+
+	size_t          m_iTexelsPerMeter;
 
 	class CParameter
 	{

@@ -142,8 +142,8 @@ void CGameRenderingContext::RenderMaterialModel(const CMaterialHandle& hMaterial
 	if (!hBaseTexture)
 		return;
 
-	Vector vecUp = Vector(0, 0.5f, 0) * (float)hBaseTexture->m_iHeight/100;		// One texel is a centimeter.
-	Vector vecRight = Vector(0, 0, 0.5f) * (float)hBaseTexture->m_iWidth/100;
+	Vector vecUp = Vector(0, 0.5f, 0) * ((float)hBaseTexture->m_iHeight/hMaterial->m_iTexelsPerMeter);    // One texel is a centimeter.
+	Vector vecRight = Vector(0, 0, 0.5f) * ((float)hBaseTexture->m_iWidth/hMaterial->m_iTexelsPerMeter);
 
 	UseMaterial(hMaterial);
 	m_pRenderer->ModifyShader(pEntity, this);

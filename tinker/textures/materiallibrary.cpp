@@ -115,6 +115,12 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 		if (sParameter == "_TextureDirectory")
 			continue;
 
+		if (sParameter == "TexelsPerMeter")
+		{
+			oMat.m_iTexelsPerMeter = pParameter->GetValueInt();
+			continue;
+		}
+
 		auto it = pShader->m_aParameters.find(sParameter);
 		TAssert(it != pShader->m_aParameters.end());
 		if (it == pShader->m_aParameters.end())
