@@ -342,7 +342,9 @@ bool CLevelEntity::CalculateVisible(CLevelEntity* pThis)
 	if (sVisible.length() && CanUnserializeString_bool(sVisible))
 		return UnserializeString_bool(sVisible);
 
-	return *((bool*)&CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "Visible")->m_oDefault);
+	CSaveData oDefault;
+	CBaseEntity::FindSaveDataValuesByHandle(("C" + pThis->m_sClass).c_str(), "Visible", &oDefault);
+	return *((bool*)&oDefault.m_oDefault);
 }
 
 bool CLevelEntity::CalculateRenderInverted(CLevelEntity* pThis)

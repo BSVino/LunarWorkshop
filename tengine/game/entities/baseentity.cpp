@@ -206,13 +206,26 @@ CBaseEntity::~CBaseEntity()
 
 void CBaseEntity::SetSaveDataDefaults()
 {
+	tvector<tstring> asParents;
+	CEntityRegistration* pRegistration;
 	const char* pszClassName = m_sClassName.c_str();
 
-	// Set all defaults.
-	CEntityRegistration* pRegistration;
-	do
+	while (pszClassName)
 	{
 		pRegistration = CBaseEntity::GetRegisteredEntity(pszClassName);
+
+		TAssert(pRegistration);
+		if (!pRegistration)
+			break;
+
+		asParents.push_back(pszClassName);
+		pszClassName = pRegistration->m_pszParentClass;
+	}
+
+	// Set all defaults.
+	for (size_t k = asParents.size()-1; k < asParents.size(); k--)
+	{
+		pRegistration = CBaseEntity::GetRegisteredEntity(asParents[k]);
 
 		for (size_t i = 0; i < pRegistration->m_aSaveData.size(); i++)
 		{
@@ -221,11 +234,21 @@ void CBaseEntity::SetSaveDataDefaults()
 			if (!pSaveData->m_bDefault)
 				continue;
 
-			if (pSaveData->m_bOverride)
-				continue;
-
 			if (!pSaveData->m_pszHandle || pSaveData->m_pszHandle[0] == '\0')
 				continue;
+
+			char* pDefault = &pSaveData->m_oDefault[0];
+
+			if (pSaveData->m_bOverride)
+			{
+				size_t j = k;
+				while (!pSaveData->m_iOffset && j < asParents.size())
+					pSaveData = FindSaveDataByHandle(asParents[j++].c_str(), pSaveData->m_pszHandle);
+
+				TAssert(pSaveData);
+				if (!pSaveData)
+					continue;
+			}
 
 			TAssert(pSaveData->m_iOffset);
 			if (!pSaveData->m_iOffset)
@@ -235,13 +258,13 @@ void CBaseEntity::SetSaveDataDefaults()
 			switch(pSaveData->m_eType)
 			{
 			case CSaveData::DATA_COPYTYPE:
-				memcpy(pData, &pSaveData->m_oDefault[0], pSaveData->m_iSizeOfType);
+				memcpy(pData, pDefault, pSaveData->m_iSizeOfType);
 				break;
 
 			case CSaveData::DATA_NETVAR:
 			{
 				CNetworkedVariableBase* pVariable = (CNetworkedVariableBase*)pData;
-				pVariable->Set(pSaveData->m_iSizeOfType, &pSaveData->m_oDefault[0]);
+				pVariable->Set(pSaveData->m_iSizeOfType, pDefault);
 				break;
 			}
 
@@ -257,7 +280,7 @@ void CBaseEntity::SetSaveDataDefaults()
 		}
 
 		pszClassName = pRegistration->m_pszParentClass;
-	} while (pRegistration->m_pszParentClass);
+	}
 }
 
 void CBaseEntity::Spawn()
@@ -1905,14 +1928,12 @@ CSaveData* CBaseEntity::FindSaveDataValuesByHandle(const char* pszClassName, con
 					TAssert(pVarData->m_bOverride || pVarData->m_bShowInEditor);
 					if (pVarData->m_bShowInEditor)
 						pSaveData->m_bShowInEditor = true;
-					if (pVarData->m_bDefault)
+					if (pVarData->m_bOverride && pVarData->m_bDefault)
 					{
 						pSaveData->m_bDefault = true;
 						memcpy(pSaveData->m_oDefault, pVarData->m_oDefault, sizeof(pSaveData->m_oDefault));
 					}
 				}
-
-				break;
 			}
 		}
 	}
