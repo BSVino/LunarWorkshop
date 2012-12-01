@@ -169,6 +169,7 @@ protected:
 
 	bool					m_bRotatingPreview;
 	EAngle					m_angPreview;
+	bool					m_bDollyingPreview;
 	float					m_flPreviewDistance;
 
 	bool					m_bSaved;

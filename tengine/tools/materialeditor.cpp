@@ -433,8 +433,8 @@ void CMaterialEditor::RenderScene()
 	if (!hBaseTexture)
 		return;
 
-	Vector vecUp = Vector(0, 0.5f, 0) * (float)hBaseTexture->m_iHeight/100;		// One texel is a centimeter.
-	Vector vecRight = Vector(0, 0, 0.5f) * (float)hBaseTexture->m_iWidth/100;
+	Vector vecUp = Vector(0, 0.5f, 0) * ((float)hBaseTexture->m_iHeight/(float)m_hMaterial->m_iTexelsPerMeter);
+	Vector vecRight = Vector(0, 0, 0.5f) * ((float)hBaseTexture->m_iWidth/(float)m_hMaterial->m_iTexelsPerMeter);
 
 	float flAlpha = 0.3f;
 	if (Vector(GetCameraDirection()).Dot(Vector(1, 0, 0)) > 0)
@@ -483,7 +483,7 @@ void CMaterialEditor::ResetPreviewDistance()
 		CTextureHandle hBaseTexture = m_hMaterial->m_ahTextures[0];
 
 		if (hBaseTexture)
-			m_flPreviewDistance = (float)(hBaseTexture->m_iHeight + hBaseTexture->m_iWidth)/100;
+			m_flPreviewDistance = (float)(hBaseTexture->m_iHeight + hBaseTexture->m_iWidth)/m_hMaterial->m_iTexelsPerMeter;
 	}
 }
 

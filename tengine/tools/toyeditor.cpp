@@ -510,6 +510,7 @@ CToyEditor::CToyEditor()
 
 	m_bRotatingPreview = false;
 	m_angPreview = EAngle(-20, 20, 0);
+	m_bDollyingPreview = false;
 
 	m_bSaved = false;
 }
@@ -599,7 +600,7 @@ void CToyEditor::Layout()
 			{
 				CTextureHandle hBaseTexture = m_hMaterialPreview->m_ahTextures[0];
 
-				m_flPreviewDistance = (float)(hBaseTexture->m_iHeight + hBaseTexture->m_iWidth)/100;
+				m_flPreviewDistance = (float)(hBaseTexture->m_iHeight + hBaseTexture->m_iWidth)/hMaterialPreview->m_iTexelsPerMeter;
 			}
 		}
 	}
@@ -816,6 +817,12 @@ bool CToyEditor::MouseInput(int iButton, tinker_mouse_state_t iState)
 		return true;
 	}
 
+	if (iButton == TINKER_KEY_MOUSE_RIGHT)
+	{
+		m_bDollyingPreview = (iState == TINKER_MOUSE_PRESSED);
+		return true;
+	}
+
 	return false;
 }
 
@@ -829,6 +836,13 @@ void CToyEditor::MouseMotion(int x, int y)
 			m_angPreview.y += (float)(x-lx);
 			m_angPreview.p -= (float)(y-ly);
 		}
+	}
+
+	if (m_bDollyingPreview)
+	{
+		int lx, ly;
+		if (GameWindow()->GetLastMouse(lx, ly))
+			m_flPreviewDistance += (float)(y-ly);
 	}
 }
 

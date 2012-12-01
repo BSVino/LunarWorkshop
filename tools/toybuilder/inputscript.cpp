@@ -287,8 +287,8 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 
 			stbi_image_free(pData); // Don't need it, just need the dimensions.
 
-			Vector vecUp = Vector(0, 0.5f, 0) * (float)y/100;
-			Vector vecRight = Vector(0, 0, 0.5f) * (float)x/100;
+			Vector vecUp = Vector(0, 0.5f, 0) * ((float)y/100);
+			Vector vecRight = Vector(0, 0, 0.5f) * ((float)x/100);
 
 			if (IsAbsolutePath(pMesh->GetValueString()))
 				t.AddMaterial(GetPath(pMesh->GetValueString()));
@@ -320,8 +320,8 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 			float w = (float)hMaterial->m_ahTextures[0]->m_iWidth;
 			float h = (float)hMaterial->m_ahTextures[0]->m_iHeight;
 
-			Vector vecUp = Vector(0, 0.5f, 0) * h/100;
-			Vector vecRight = Vector(0, 0, 0.5f) * w/100;
+			Vector vecUp = Vector(0, 0.5f, 0) * (h/hMaterial->m_iTexelsPerMeter);
+			Vector vecRight = Vector(0, 0, 0.5f) * (w/hMaterial->m_iTexelsPerMeter);
 
 			t.AddMaterial(pMesh->GetValueString());
 
