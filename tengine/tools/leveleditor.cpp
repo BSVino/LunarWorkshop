@@ -699,6 +699,9 @@ void CEditorPanel::Paint(float x, float y, float w, float h)
 		{
 			CLevelEntity* pEnt = &pLevel->GetEntityData()[i];
 
+			if (m_hEntities->GetSelectedNodeId() != i && !pEnt->GetName().length())
+				continue;
+
 			Vector vecCenter = pEnt->GetGlobalTransform().GetTranslation();
 			if (!GameServer()->GetRenderer()->IsSphereInFrustum(vecCenter, pEnt->GetBoundingBox().Size().Length()/2))
 				continue;
@@ -741,7 +744,7 @@ void CEditorPanel::Paint(float x, float y, float w, float h)
 			c.SetProjection(mFontProjection);
 
 			if (m_hEntities->GetSelectedNodeId() == i)
-				c.SetUniform("vecColor", Color(255, 255, 255, 255));
+				c.SetUniform("vecColor", Color(255, 0, 0, 255));
 			else
 				c.SetUniform("vecColor", Color(255, 255, 255, 200));
 

@@ -473,6 +473,19 @@ void CTreeNode::Paint(float x, float y, float w, float h, bool bFloating)
 	if (!IsVisible())
 		return;
 
+	CBaseControl* pParent = GetParent();
+	if (pParent)
+	{
+		FRect rParent;
+		rParent = pParent->GetAbsDimensions();
+
+		if (y > rParent.Bottom())
+			return;
+
+		if (y+h < rParent.y)
+			return;
+	}
+
 	if (bFloating)
 		CBaseControl::PaintRect(x, y, w, h, Color(0, 0, 0, 50));
 
@@ -489,7 +502,8 @@ void CTreeNode::Paint(float x, float y, float w, float h, bool bFloating)
 		PaintTexture(m_hIconMaterial, x+12, y, flIconSize, flIconSize);
 	}
 
-	m_hLabel->Paint(x + m_hLabel->GetLeft(), y + m_hLabel->GetTop());
+	CLabel* pLabel = m_hLabel;
+	pLabel->Paint(x + pLabel->GetLeft(), y + pLabel->GetTop());
 
 	if (m_hVisibilityButton)
 		m_hVisibilityButton->Paint();
