@@ -89,6 +89,8 @@ bool CManipulatorTool::MouseInput(int iButton, tinker_mouse_state_t iState)
 
 	Vector vecPosition = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 1));
 	Vector vecCamera = GameServer()->GetRenderer()->GetCameraPosition();
+	if (GameServer()->GetRenderer()->ShouldRenderOrthographic())
+		vecCamera = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 0));
 
 	float flClosest = -1;
 	m_iLockedAxis = -1;
