@@ -14,7 +14,6 @@ public:
 	void						Precache();
 	void						Spawn();
 
-	bool						ShouldRender() const { return true; };
 	virtual const Matrix4x4		GetRenderTransform() const;
 
 	virtual TFloat				EyeHeight() const;

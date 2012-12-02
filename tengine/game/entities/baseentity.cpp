@@ -965,7 +965,7 @@ bool CBaseEntity::ShouldRender() const
 	}
 	
 	if (m_hMaterialModel.IsValid())
-		return m_hMaterialModel->m_sBlend == "none";
+		return (!m_hMaterialModel->m_sBlend.length() || m_hMaterialModel->m_sBlend == "none");
 
 	return false;
 }
@@ -1033,6 +1033,13 @@ void CBaseEntity::Render() const
 			{
 				TPROF("CRenderingContext::RenderModel()");
 				r.RenderModel(GetModelID(), this);
+			}
+
+			if (m_hMaterialModel.IsValid())
+			{
+				TPROF("CRenderingContext::RenderModel(Material)");
+				r.Scale(0, (float)m_vecScale.Get().y, (float)m_vecScale.Get().x);
+				r.RenderMaterialModel(m_hMaterialModel, this);
 			}
 		}
 
