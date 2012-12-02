@@ -967,10 +967,21 @@ void CLevelEditor::Think()
 
 	int x, y;
 	Application()->GetMousePosition(x, y);
-	Vector vecCamera = GameServer()->GetRenderer()->GetCameraPosition();
-	Vector vecPosition = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 1));
 
-	m_iHoverEntity = TraceLine(Ray(vecCamera, (vecPosition-vecCamera).Normalized()));
+	if (ShouldRenderOrthographic())
+	{
+		Vector vecPosition1 = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 1));
+		Vector vecPosition0 = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 0));
+
+		m_iHoverEntity = TraceLine(Ray(vecPosition0, (vecPosition1-vecPosition0).Normalized()));
+	}
+	else
+	{
+		Vector vecCamera = GameServer()->GetRenderer()->GetCameraPosition();
+		Vector vecPosition = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 1));
+
+		m_iHoverEntity = TraceLine(Ray(vecCamera, (vecPosition-vecCamera).Normalized()));
+	}
 }
 
 void CLevelEditor::RenderEntity(size_t i)
@@ -1309,10 +1320,23 @@ bool CLevelEditor::MouseInput(int iButton, tinker_mouse_state_t iState)
 
 	if (iState == TINKER_MOUSE_PRESSED && iButton == TINKER_KEY_MOUSE_LEFT)
 	{
-		Vector vecPosition = PositionFromMouse();
-		Vector vecCamera = GameServer()->GetRenderer()->GetCameraPosition();
+		size_t iSelected;
+		if (ShouldRenderOrthographic())
+		{
+			int x, y;
+			Application()->GetMousePosition(x, y);
+			Vector vecPosition1 = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 1));
+			Vector vecPosition0 = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 0));
 
-		size_t iSelected = TraceLine(Ray(vecCamera, (vecPosition-vecCamera).Normalized()));
+			iSelected = TraceLine(Ray(vecPosition0, (vecPosition1-vecPosition0).Normalized()));
+		}
+		else
+		{
+			Vector vecPosition = PositionFromMouse();
+			Vector vecCamera = GameServer()->GetRenderer()->GetCameraPosition();
+
+			iSelected = TraceLine(Ray(vecCamera, (vecPosition-vecCamera).Normalized()));
+		}
 
 		m_hEditorPanel->m_hEntities->SetSelectedNode(iSelected);
 
