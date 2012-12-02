@@ -1056,12 +1056,8 @@ void CBaseEntity::Render() const
 		r.BeginRenderDebugLines();
 			r.Vertex(Vector(-1, 0, 0));
 			r.Vertex(Vector(1, 0, 0));
-		r.EndRender();
-		r.BeginRenderDebugLines();
 			r.Vertex(Vector(0, -1, 0));
 			r.Vertex(Vector(0, 1, 0));
-		r.EndRender();
-		r.BeginRenderDebugLines();
 			r.Vertex(Vector(0, 0, -1));
 			r.Vertex(Vector(0, 0, 1));
 		r.EndRender();

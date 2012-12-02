@@ -313,7 +313,7 @@ void CRenderingContext::RenderSphere()
 
 void CRenderingContext::RenderWireBox(const AABB& aabbBounds)
 {
-	BeginRenderLines();
+	BeginRenderLineLoop();
 		Vertex(aabbBounds.m_vecMaxs);
 		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMaxs.z));
 		Vertex(Vector(aabbBounds.m_vecMins.x, aabbBounds.m_vecMaxs.y, aabbBounds.m_vecMins.z));
@@ -726,7 +726,7 @@ void CRenderingContext::BeginRenderTriStrip()
 	m_iDrawMode = GL_TRIANGLE_STRIP;
 }
 
-void CRenderingContext::BeginRenderLines(float flWidth)
+void CRenderingContext::BeginRenderLines()
 {
 	s_avecTexCoord.clear();
 	for (size_t i = 0; i < s_aavecTexCoords.size(); i++)
@@ -739,13 +739,28 @@ void CRenderingContext::BeginRenderLines(float flWidth)
 	m_bNormal = false;
 	m_bColor = false;
 
-	glLineWidth( flWidth );
+	m_iDrawMode = GL_LINES;
+}
+
+void CRenderingContext::BeginRenderLineLoop()
+{
+	s_avecTexCoord.clear();
+	for (size_t i = 0; i < s_aavecTexCoords.size(); i++)
+		s_aavecTexCoords[i].clear();
+	s_avecNormals.clear();
+	s_aclrColors.clear();
+	s_avecVertices.clear();
+
+	m_bTexCoord = false;
+	m_bNormal = false;
+	m_bColor = false;
+
 	m_iDrawMode = GL_LINE_LOOP;
 }
 
 void CRenderingContext::BeginRenderDebugLines()
 {
-	BeginRenderLines(3);
+	BeginRenderLines();
 }
 
 void CRenderingContext::BeginRenderPoints(float flSize)

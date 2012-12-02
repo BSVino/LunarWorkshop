@@ -357,30 +357,22 @@ void CCharacter::ShowPlayerVectors() const
 	c.BeginRenderDebugLines();
 	c.Vertex(Vector(0,0,0));
 	c.Vertex((float)EyeHeight() * vecUp);
-	c.EndRender();
 
 	if (!GetGlobalVelocity().IsZero())
 	{
-		c.BeginRenderDebugLines();
 		c.Vertex(vecEyeHeight);
 		c.Vertex(vecEyeHeight + GetGlobalVelocity());
-		c.EndRender();
 	}
 
 	c.SetColor(Color(255, 0, 0));
-	c.BeginRenderDebugLines();
 	c.Vertex(vecEyeHeight);
 	c.Vertex(vecEyeHeight + vecForward);
-	c.EndRender();
 
 	c.SetColor(Color(0, 255, 0));
-	c.BeginRenderDebugLines();
 	c.Vertex(vecEyeHeight);
 	c.Vertex(vecEyeHeight + vecRight);
-	c.EndRender();
 
 	c.SetColor(Color(0, 0, 255));
-	c.BeginRenderDebugLines();
 	c.Vertex(vecEyeHeight);
 	c.Vertex(vecEyeHeight + vecUp);
 	c.EndRender();

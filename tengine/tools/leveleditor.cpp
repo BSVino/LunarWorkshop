@@ -1355,6 +1355,62 @@ void CLevelEditor::RenderScene()
 
 	TPROF("CLevelEditor::RenderEntities()");
 
+	{
+		CRenderingContext c(GameServer()->GetRenderer(), true);
+
+		c.UseProgram("model");
+
+		c.SetUniform("bDiffuse", false);
+		c.SetBlend(BLEND_ALPHA);
+
+		c.SetUniform("vecColor", Vector4D(0.7f, 0.2f, 0.2f, 0.7f));
+		c.BeginRenderLines();
+			c.Vertex(Vector(-10000, 0, 0));
+			c.Vertex(Vector(10000, 0, 0));
+		c.EndRender();
+
+		c.SetUniform("vecColor", Vector4D(0.2f, 0.7f, 0.2f, 0.7f));
+		c.BeginRenderLines();
+			c.Vertex(Vector(0, -10000, 0));
+			c.Vertex(Vector(0, 10000, 0));
+		c.EndRender();
+
+		c.SetUniform("vecColor", Vector4D(0.2f, 0.2f, 0.7f, 0.7f));
+		c.BeginRenderLines();
+			c.Vertex(Vector(0, 0, -10000));
+			c.Vertex(Vector(0, 0, 10000));
+		c.EndRender();
+
+		c.SetUniform("vecColor", Vector4D(1.0f, 1.0f, 1.0f, 0.2f));
+
+		int i;
+
+		Vector vecStartX(-10, 0, -10);
+		Vector vecEndX(-10, 0, 10);
+		Vector vecStartZ(-10, 0, -10);
+		Vector vecEndZ(10, 0, -10);
+
+		c.BeginRenderLines();
+		for (i = 0; i <= 20; i++)
+		{
+			if (i != 10)
+			{
+				c.Vertex(vecStartX);
+				c.Vertex(vecEndX);
+				c.Vertex(vecStartZ);
+				c.Vertex(vecEndZ);
+			}
+
+			vecStartX.x += 1;
+			vecEndX.x += 1;
+			vecStartZ.z += 1;
+			vecEndZ.z += 1;
+		}
+		c.EndRender();
+
+		c.SetUniform("vecColor", Vector4D(1.0f, 1.0f, 1.0f, 1.0f));
+	}
+
 	GameServer()->GetRenderer()->SetRenderingTransparent(false);
 
 	auto& aEntityData = m_pLevel->GetEntityData();

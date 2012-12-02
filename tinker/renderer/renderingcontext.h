@@ -127,7 +127,8 @@ public:
 	void					BeginRenderTris();
 	void					BeginRenderTriFan();
 	void					BeginRenderTriStrip();
-	void					BeginRenderLines(float flWidth=1);
+	void					BeginRenderLines();
+	void					BeginRenderLineLoop();
 	void					BeginRenderPoints(float flSize=1);
 	void					BeginRenderDebugLines();
 	void					TexCoord(float s, float t, int iChannel = 0);

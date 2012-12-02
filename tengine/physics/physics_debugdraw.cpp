@@ -121,7 +121,7 @@ void CPhysicsDebugDrawer::drawContactPoint(const btVector3& pointOnB,const btVec
 	r.SetColor(Color(Vector((const float*)color)));
 
 	r.BeginRenderDebugLines();
-	r.Vertex(Vector((const float*)from));
-	r.Vertex(Vector((const float*)to));
+		r.Vertex(Vector((const float*)from));
+		r.Vertex(Vector((const float*)to));
 	r.EndRender();
 }
