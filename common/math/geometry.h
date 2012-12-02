@@ -725,12 +725,7 @@ inline bool ClipRay(float flMin, float flMax, float a, float d, float& tmin, flo
 	const float flEpsilon = 1e-5f;
 
 	if (fabs(d) < flEpsilon)
-	{
-		if (d >= 0.0f)
-			return (a <= flMax);
-		else
-			return (a >= flMin);
-	}
+		return a <= flMax && a >= flMin;
 
 	float umin = (flMin - a)/d;
 	float umax = (flMax - a)/d;
