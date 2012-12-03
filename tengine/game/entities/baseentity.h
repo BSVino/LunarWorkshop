@@ -640,7 +640,7 @@ public:
 	virtual void							ModifyShader(class CRenderingContext* pContext) const {};
 	void									Render() const;
 	void                                    RenderTransparent() const;
-	virtual void							OnRender(class CRenderingContext* pContext) const {};
+	virtual void							OnRender(class CGameRenderingContext* pContext) const {};
 	virtual void							PostRender() const {};
 
 	void									Delete();
