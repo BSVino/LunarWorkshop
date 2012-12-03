@@ -79,10 +79,15 @@ void CGameRenderer::Render()
 	PostRender();
 }
 
+static Vector g_vecNearPlanePoint;
+static Vector g_vecNearPlaneNormal;
+
 bool DistanceCompare(CBaseEntity* a, CBaseEntity* b)
 {
-	TVector vecCamera = GameServer()->GetCameraManager()->GetCameraPosition();
-	return ((a->BaseGetRenderOrigin() - vecCamera).LengthSqr() > (b->BaseGetRenderOrigin() - vecCamera).LengthSqr());
+	float flADistance = DistanceToPlaneSqr(a->BaseGetRenderOrigin(), g_vecNearPlanePoint, g_vecNearPlaneNormal);
+	float flBDistance = DistanceToPlaneSqr(b->BaseGetRenderOrigin(), g_vecNearPlanePoint, g_vecNearPlaneNormal);
+
+	return flADistance > flBDistance;
 }
 
 void CGameRenderer::RenderEverything()
@@ -136,6 +141,10 @@ void CGameRenderer::RenderEverything()
 	RenderBatches();
 
 	m_bRenderingTransparent = true;
+
+	// Used in DistanceCompare()
+	g_vecNearPlanePoint = GameServer()->GetCameraManager()->GetCameraPosition() + GameServer()->GetCameraManager()->GetCameraDirection() * GameServer()->GetCameraManager()->GetCameraNear();
+	g_vecNearPlaneNormal = GameServer()->GetCameraManager()->GetCameraDirection();
 
 	sort(m_apRenderTransparentList.begin(), m_apRenderTransparentList.end(), DistanceCompare);
 

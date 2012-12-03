@@ -392,16 +392,28 @@ inline float DistanceToLineSegment(const Vector& p, const Vector& v1, const Vect
 	return (vb - p).Length();
 }
 
-inline float DistanceToPlane(const Vector& p, const Vector& v, const Vector& n)
+inline float DistanceToPlane(const Vector& vecPoint, const Vector& vecPlane, const Vector& vecPlaneNormal)
 {
 	float sb, sn, sd;
 
-	sn = -n.Dot(p - v);
-	sd = n.Dot(n);
+	sn = -vecPlaneNormal.Dot(vecPoint - vecPlane);
+	sd = vecPlaneNormal.Dot(vecPlaneNormal);
 	sb = sn/sd;
 
-	Vector b = p + n * sb;
-	return (p - b).Length();
+	Vector b = vecPoint + vecPlaneNormal * sb;
+	return (vecPoint - b).Length();
+}
+
+inline float DistanceToPlaneSqr(const Vector& vecPoint, const Vector& vecPlane, const Vector& vecPlaneNormal)
+{
+	float sb, sn, sd;
+
+	sn = -vecPlaneNormal.Dot(vecPoint - vecPlane);
+	sd = vecPlaneNormal.Dot(vecPlaneNormal);
+	sb = sn/sd;
+
+	Vector b = vecPoint + vecPlaneNormal * sb;
+	return (vecPoint - b).LengthSqr();
 }
 
 #define smaller(l, r) (((l)<(r))?(l):(r))
@@ -474,18 +486,6 @@ inline float DistanceToPolygon(const Vector& p, tvector<Vector>& v, Vector n)
 	}
 
 	return flClosestPoint;
-}
-
-inline float DistanceToPlaneSqr(const Vector& p, const Vector& v, const Vector& n)
-{
-	float sb, sn, sd;
-
-	sn = -n.Dot(p - v);
-	sd = n.Dot(n);
-	sb = sn/sd;
-
-	Vector b = p + n * sb;
-	return (p - b).LengthSqr();
 }
 
 inline float DistanceToLineSqr(const Vector& p, const Vector& v1, const Vector& v2)
