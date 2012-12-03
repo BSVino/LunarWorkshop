@@ -28,7 +28,7 @@ void CProp::OnRender(class CGameRenderingContext* c) const
 	if (m_flThickness > 0 && ShouldRenderModel() && m_hMaterialModel.IsValid())
 	{
 		c->SetWinding(false);
-		c->Translate(GetGlobalTransform().GetForwardVector() * -m_flThickness);
+		c->Translate(GetGlobalTransform().GetForwardVector() * m_flThickness);
 		c->RenderMaterialModel(m_hMaterialModel, this);
 	}
 }

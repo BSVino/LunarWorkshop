@@ -42,6 +42,8 @@ void CMirror::Precache()
 
 void CMirror::Spawn()
 {
+	m_iBuffer = ~0;
+
 	SetMirrorType(MIRROR_VERTICAL);
 
 	s_ahMirrors.push_back(this);
