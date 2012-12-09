@@ -1,6 +1,7 @@
 #include "grotto_playercharacter.h"
 
 #include <tinker/application.h>
+#include <tinker/cvar.h>
 #include <physics/physics.h>
 #include <renderer/game_renderingcontext.h>
 #include <textures/materiallibrary.h>
@@ -57,6 +58,26 @@ const Matrix4x4 CPlayerCharacter::GetRenderTransform() const
 float CPlayerCharacter::EyeHeight() const
 {
 	return 0;
+}
+
+float CPlayerCharacter::BaseCharacterSpeed()
+{
+	if (Application()->IsShiftDown())
+	{
+#ifdef _DEBUG
+		bool bAllowShift = true;
+#else
+		bool bAllowShift = false;
+#endif
+
+		if (CVar::GetCVarBool("cheats"))
+			bAllowShift = true;
+
+		if (bAllowShift)
+			return 6;
+	}
+
+	return 3;
 }
 
 void CPlayerCharacter::PlaceMirror(mirror_t eMirror)

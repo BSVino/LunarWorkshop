@@ -17,7 +17,7 @@ public:
 	virtual const Matrix4x4		GetRenderTransform() const;
 
 	virtual TFloat				EyeHeight() const;
-	virtual TFloat				BaseCharacterSpeed() { return 3.0f; }
+	virtual TFloat				BaseCharacterSpeed();
 	virtual TFloat				JumpStrength() { return 3.0f; }
 
 	void						PlaceMirror(mirror_t eMirror);
