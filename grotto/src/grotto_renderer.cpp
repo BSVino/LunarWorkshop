@@ -108,7 +108,7 @@ void CGrottoRenderer::ModifyShader(const class CBaseEntity* pEntity, class CRend
 {
 	BaseClass::ModifyShader(pEntity, c);
 
-	if (pEntity && c->GetActiveShader() && c->GetActiveShader()->m_sName == "reflection")
+	if (pEntity && c->GetActiveShader() && c->GetActiveShader()->m_sName == "reflection" && dynamic_cast<const CMirror*>(pEntity))
 	{
 		size_t iBuffer = static_cast<const CMirror*>(pEntity)->GetBuffer();
 
