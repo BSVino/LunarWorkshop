@@ -208,7 +208,7 @@ void CBulletPhysics::AddShape(class CBaseEntity* pEntity, collision_type_t eColl
 
 	pPhysicsEntity->m_bCenterMassOffset = true;
 
-	Vector vecHalf = pEntity->GetPhysBoundingBox().m_vecMaxs-pEntity->GetPhysBoundingBox().Center();
+	Vector vecHalf = (pEntity->GetPhysBoundingBox().m_vecMaxs - pEntity->GetPhysBoundingBox().Center()) * pEntity->GetScale();
 	pCollisionShape = new btBoxShape(ToBTVector(vecHalf));
 
 	btTransform mTransform;

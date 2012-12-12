@@ -351,6 +351,13 @@ CModel* CBaseEntity::GetModel() const
 	return CModelLibrary::GetModel(GetModelID());
 }
 
+void CBaseEntity::SetMaterialModel(const CMaterialHandle& hMaterial)
+{
+	m_hMaterialModel = hMaterial;
+
+	OnSetModel();
+}
+
 void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 {
 	if (IsInPhysics() && pParent)
@@ -1038,7 +1045,7 @@ void CBaseEntity::Render() const
 			if (m_hMaterialModel.IsValid())
 			{
 				TPROF("CRenderingContext::RenderModel(Material)");
-				r.Scale(1, (float)m_vecScale.Get().y, (float)m_vecScale.Get().x);
+				r.Scale((float)m_vecScale.Get().x, (float)m_vecScale.Get().y, (float)m_vecScale.Get().z);
 				r.RenderMaterialModel(m_hMaterialModel, this);
 			}
 		}
@@ -1105,7 +1112,7 @@ void CBaseEntity::RenderTransparent() const
 			{
 				TPROF("CRenderingContext::RenderModel(Material)");
 				r.SetBlend(BLEND_ALPHA);
-				r.Scale(1, (float)m_vecScale.Get().y, (float)m_vecScale.Get().x);
+				r.Scale((float)m_vecScale.Get().x, (float)m_vecScale.Get().y, (float)m_vecScale.Get().z);
 				r.RenderMaterialModel(m_hMaterialModel, this);
 			}
 		}

@@ -281,6 +281,23 @@ void CGameServer::LoadLevel(tstring sFile)
 	}
 }
 
+static void UnserializeParameter(const tstring& sHandle, const tstring& sValue, CBaseEntity* pEntity)
+{
+	CSaveData oSaveDataValues;
+	CSaveData* pSaveData = CBaseEntity::FindSaveDataValuesByHandle(pEntity->GetClassName(), sHandle.c_str(), &oSaveDataValues);
+	TAssert(pSaveData && pSaveData->m_pszHandle);
+	if (!pSaveData || !pSaveData->m_pszHandle)
+	{
+		TError("Unknown handle '" + sHandle + "'\n");
+		return;
+	}
+
+	if (!pSaveData->m_pfnUnserializeString)
+		return;
+
+	pSaveData->m_pfnUnserializeString(sValue, pSaveData, pEntity);
+}
+
 void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 {
 	// Create and name the entities first and add them to this array. This way we avoid a problem where
@@ -352,6 +369,13 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 		auto pLevelEntity = &aEntities[it->first];
 		CBaseEntity* pEntity = it->second;
 
+		// Force physics related stuff first so it's available if there's a physics model.
+		if (pLevelEntity->GetParameters().find("Scale") != pLevelEntity->GetParameters().end())
+			UnserializeParameter("Scale", pLevelEntity->GetParameters()["Scale"], pEntity);
+
+		if (pLevelEntity->GetParameters().find("Origin") != pLevelEntity->GetParameters().end())
+			UnserializeParameter("Origin", pLevelEntity->GetParameters()["Origin"], pEntity);
+
 		for (auto it = pLevelEntity->GetParameters().begin(); it != pLevelEntity->GetParameters().end(); it++)
 		{
 			tstring sHandle = it->first;
@@ -360,40 +384,18 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 			if (sHandle == "MoveParent")
 				continue;
 
-			CSaveData oSaveDataValues;
-			CSaveData* pSaveData = CBaseEntity::FindSaveDataValuesByHandle(pEntity->GetClassName(), sHandle.c_str(), &oSaveDataValues);
-			TAssert(pSaveData && pSaveData->m_pszHandle);
-			if (!pSaveData || !pSaveData->m_pszHandle)
-			{
-				TError("Unknown handle '" + sHandle + "'\n");
-				continue;
-			}
-
-			if (!pSaveData->m_pfnUnserializeString)
+			if (sHandle == "Scale")
 				continue;
 
-			pSaveData->m_pfnUnserializeString(sValue, pSaveData, pEntity);
+			if (sHandle == "Origin")
+				continue;
+
+			UnserializeParameter(sHandle, sValue, pEntity);
 		}
 
 		// Force MoveParent last so that global -> local conversion is performed.
 		if (pLevelEntity->GetParameters().find("MoveParent") != pLevelEntity->GetParameters().end())
-		{
-			tstring sHandle = "MoveParent";
-
-			CSaveData oSaveDataValues;
-			CSaveData* pSaveData = CBaseEntity::FindSaveDataValuesByHandle(pEntity->GetClassName(), sHandle.c_str(), &oSaveDataValues);
-			TAssert(pSaveData && pSaveData->m_pszHandle);
-			if (!pSaveData || !pSaveData->m_pszHandle)
-			{
-				TError("Unknown handle '" + sHandle + "'\n");
-				continue;
-			}
-
-			if (!pSaveData->m_pfnUnserializeString)
-				continue;
-
-			pSaveData->m_pfnUnserializeString(pLevelEntity->GetParameters()["MoveParent"], pSaveData, pEntity);
-		}
+			UnserializeParameter("MoveParent", pLevelEntity->GetParameters()["MoveParent"], pEntity);
 	}
 }
 

@@ -491,7 +491,7 @@ public:
 	float									GetMass() const { return m_flMass; };
 
 	virtual const AABB&						GetVisBoundingBox() const { return m_aabbVisBoundingBox; }
-	virtual const AABB&						GetPhysBoundingBox() const { return m_aabbPhysBoundingBox; }
+	virtual const AABB                      GetPhysBoundingBox() const { return m_aabbPhysBoundingBox; }
 	virtual const TVector					GetLocalCenter() const;
 	virtual const TVector					GetGlobalCenter() const;
 	virtual const TFloat					GetBoundingRadius() const;
@@ -507,7 +507,7 @@ public:
 	Matrix4x4								BaseGetRenderTransform() const { return m_oGameData.GetRenderTransform(); };
 	Vector									BaseGetRenderOrigin() const { return m_oGameData.GetRenderOrigin(); };
 
-	void									SetMaterialModel(const CMaterialHandle& hMaterial) { m_hMaterialModel = hMaterial; }
+	void									SetMaterialModel(const CMaterialHandle& hMaterial);
 	const CMaterialHandle&					GetMaterialModel() const { return m_hMaterialModel; };
 
 	virtual const Matrix4x4					GetRenderTransform() const { return Matrix4x4(GetGlobalTransform()); };

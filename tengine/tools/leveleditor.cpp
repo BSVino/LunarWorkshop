@@ -1065,7 +1065,7 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 
 			r.SetColor(clrEnt);
 
-			r.Scale(0, vecScale.y, vecScale.x);
+			r.Scale(vecScale.x, vecScale.y, vecScale.z);
 			r.RenderMaterialModel(pEntity->GetMaterialModel());
 
 			r.SetUniform("bDiffuse", false);
@@ -1467,12 +1467,15 @@ void CLevelEditor::ManipulatorUpdated(const tstring& sArguments)
 	if (iSelected >= GetLevel()->GetEntityData().size())
 		return;
 
+	CLevelEntity* pEntity = &GetLevel()->GetEntityData()[iSelected];
+
 	Vector vecTranslation = Manipulator()->GetTRS().m_vecTranslation;
 	EAngle angRotation = Manipulator()->GetTRS().m_angRotation;
 	Vector vecScaling = Manipulator()->GetTRS().m_vecScaling;
-	GetLevel()->GetEntityData()[iSelected].SetParameterValue("Origin", pretty_float(vecTranslation.x) + " " + pretty_float(vecTranslation.y) + " " + pretty_float(vecTranslation.z));
-	GetLevel()->GetEntityData()[iSelected].SetParameterValue("Angles", pretty_float(angRotation.p) + " " + pretty_float(angRotation.y) + " " + pretty_float(angRotation.r));
-	GetLevel()->GetEntityData()[iSelected].SetParameterValue("Scale", pretty_float(vecScaling.x) + " " + pretty_float(vecScaling.y) + " " + pretty_float(vecScaling.z));
+
+	pEntity->SetParameterValue("Origin", pretty_float(vecTranslation.x) + " " + pretty_float(vecTranslation.y) + " " + pretty_float(vecTranslation.z));
+	pEntity->SetParameterValue("Angles", pretty_float(angRotation.p) + " " + pretty_float(angRotation.y) + " " + pretty_float(angRotation.r));
+	pEntity->SetParameterValue("Scale", pretty_float(vecScaling.x) + " " + pretty_float(vecScaling.y) + " " + pretty_float(vecScaling.z));
 
 	m_hEditorPanel->LayoutEntity();
 }
