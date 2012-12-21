@@ -18,8 +18,7 @@
 #include <textures/materiallibrary.h>
 #include <tinker/keys.h>
 #include <game/gameserver.h>
-
-#include "manipulator.h"
+#include <tools/manipulator/manipulator.h>
 
 extern int g_iImportLevelEditor;
 extern int g_iImportMaterialEditor;
@@ -104,9 +103,6 @@ bool CWorkbench::KeyPress(int c)
 
 bool CWorkbench::MouseInput(int iButton, tinker_mouse_state_t iState)
 {
-	if (Manipulator()->MouseInput(iButton, iState))
-		return true;
-
 	return GetActiveTool()->MouseInput(iButton, iState);
 }
 
@@ -243,7 +239,7 @@ void CWorkbench::RenderScene()
 
 	Workbench()->GetActiveTool()->RenderScene();
 
-	Manipulator()->Render();
+	CManipulatorTool::Render(GameServer()->GetRenderer());
 }
 
 CCameraManager* CWorkbench::GetCameraManager()

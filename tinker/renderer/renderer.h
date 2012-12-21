@@ -120,6 +120,10 @@ public:
 	void			SetCustomProjection(bool bCustomProjection) { m_bCustomProjection = bCustomProjection; }
 	void			SetCustomProjection(const Matrix4x4& mCustomProjection) { m_mCustomProjection = mCustomProjection; }
 
+	const double*   GetModelView() const;
+	const double*   GetProjection() const;
+	const int*      GetViewport() const;
+
 	Vector			GetCameraPosition() { return m_vecCameraPosition; };
 	Vector			GetCameraDirection() { return m_vecCameraDirection; };
 	float			GetCameraFOV() { return m_flCameraFOV; };

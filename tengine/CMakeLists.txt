@@ -104,7 +104,6 @@ set (TENGINE_LOBBY_SOURCES
 
 set (TENGINE_TOOLS_SOURCES
 	tools/leveleditor.cpp
-	tools/manipulator.cpp
 	tools/materialeditor.cpp
 	tools/toyeditor.cpp
 	tools/toyviewer.cpp

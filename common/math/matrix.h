@@ -108,6 +108,7 @@ public:
 
 	Vector		GetTranslation() const;
 	EAngle		GetAngles() const;
+	Vector      GetScale() const;
 
 	// Transform a vector
 	Vector		operator*(const Vector& v) const;

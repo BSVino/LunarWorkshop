@@ -22,9 +22,9 @@
 #include <game/level.h>
 #include <game/gameserver.h>
 #include <models/models.h>
+#include <tools/manipulator/manipulator.h>
 
 #include "workbench.h"
-#include "manipulator.h"
 
 CEntityPropertiesPanel::CEntityPropertiesPanel(bool bCommon)
 {

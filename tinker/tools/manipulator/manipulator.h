@@ -30,20 +30,18 @@ public:
 	void				Activate(IManipulatorListener* pListener, const TRS& trs=TRS(), const tstring& sArguments="");
 	void				Deactivate();
 	bool				IsActive() { return m_bActive; }
-	bool				IsTransforming() { return m_bTransforming; }
+	bool				IsTransforming();
 
-	void				SetTransfromType(TransformType eTransform) { m_eTransform = eTransform; }
+	void				SetTransfromType(TransformType eTransform);
 	TransformType		GetTransfromType() { return m_eTransform; }
-
-	bool				MouseInput(int iButton, tinker_mouse_state_t iState);
-
-	void				Render();
 
 	Matrix4x4			GetTransform(bool bRotation = true, bool bScaling = true);
 	TRS					GetTRS() { return m_trsTransform; }
 	void				SetTRS(const TRS& trs) { m_trsTransform = trs; }
 
 	TRS					GetNewTRS();
+
+	class CRenderer*    GetRenderer();
 
 	EVENT_CALLBACK(CManipulatorTool, TranslateMode);
 	EVENT_CALLBACK(CManipulatorTool, RotateMode);
@@ -53,6 +51,7 @@ protected:
 	bool				m_bActive;
 	bool				m_bTransforming;
 	TransformType		m_eTransform;
+	bool                m_bHasMouse;
 
 	char				m_iLockedAxis;
 	float				m_flStartX;
@@ -60,6 +59,7 @@ protected:
 	float				m_flOriginalDistance;
 
 	TRS					m_trsTransform;
+	Matrix4x4           m_mTransform;
 
 	IManipulatorListener*	m_pListener;
 	tstring				m_sListenerArguments;
@@ -68,8 +68,18 @@ protected:
 	glgui::CPictureButton*	m_pRotateButton;
 	glgui::CPictureButton*	m_pScaleButton;
 
+	class IGizmo*       m_pTranslateGizmo;
+	class IGizmo*       m_pRotateGizmo;
+	class IGizmo*       m_pScaleGizmo;
+
+	class CRenderer*    m_pRenderer;
+
 public:
 	static CManipulatorTool*	Get();
+
+	static bool                 MouseInput(int iButton, tinker_mouse_state_t iState, int mx, int my);
+	static void                 MouseMoved(int mx, int my);
+	static void                 Render(class CRenderer* pRenderer);
 
 protected:
 	static CManipulatorTool*	s_pManipulatorTool;

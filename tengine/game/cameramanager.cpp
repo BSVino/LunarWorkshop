@@ -54,7 +54,7 @@ void CCameraManager::Think()
 
 		m_flFreeOrthoHeight -= ((float)GameServer()->GetFrameTime() * (float)m_vecFreeVelocity.x * 5);
 		if (m_flFreeOrthoHeight < 1)
-			m_flFreeOrthoHeight = 0.1f;
+			m_flFreeOrthoHeight = 1;
 	}
 	else
 	{

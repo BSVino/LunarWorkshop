@@ -3,9 +3,9 @@
 #include <trs.h>
 
 #include <glgui/movablepanel.h>
+#include <tools/manipulator/manipulator.h>
 
 #include "tool.h"
-#include "manipulator.h"
 
 class CCreateToySourcePanel : public glgui::CMovablePanel
 {

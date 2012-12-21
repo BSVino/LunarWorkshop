@@ -129,6 +129,7 @@ public:
 	void					BeginRenderTriStrip();
 	void					BeginRenderLines();
 	void					BeginRenderLineLoop();
+	void					BeginRenderLineStrip();
 	void					BeginRenderPoints(float flSize=1);
 	void					BeginRenderDebugLines();
 	void					TexCoord(float s, float t, int iChannel = 0);

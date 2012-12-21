@@ -6,9 +6,9 @@
 #include <glgui/movablepanel.h>
 #include <game/cameramanager.h>
 #include <textures/materialhandle.h>
+#include <tools/manipulator/manipulator.h>
 
 #include "tool.h"
-#include "manipulator.h"
 
 class CCreateMaterialPanel : public glgui::CMovablePanel
 {

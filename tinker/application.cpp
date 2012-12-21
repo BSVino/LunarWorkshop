@@ -32,6 +32,7 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 #include <tinker/cvar.h>
 #include <glgui/rootpanel.h>
 #include <tinker/renderer/renderer.h>
+#include <tools/manipulator/manipulator.h>
 
 #include "console.h"
 
@@ -400,6 +401,8 @@ void CApplication::WindowResize(int w, int h)
 void CApplication::MouseMotion(int x, int y)
 {
 	glgui::CRootPanel::Get()->CursorMoved(x, y);
+
+	CManipulatorTool::MouseMoved(x, y);
 }
 
 bool CApplication::MouseInput(int iButton, tinker_mouse_state_t iState)
@@ -438,6 +441,9 @@ bool CApplication::MouseInput(int iButton, tinker_mouse_state_t iState)
 			return true;
 		}
 	}
+
+	if (CManipulatorTool::MouseInput(iButton, iState, mx, my))
+		return true;
 
 	return false;
 }

@@ -27,9 +27,9 @@
 #include <textures/materiallibrary.h>
 #include <toys/toy.h>
 #include <modelconverter/modelconverter.h>
+#include <tools/manipulator/manipulator.h>
 
 #include "workbench.h"
-#include "manipulator.h"
 
 REGISTER_WORKBENCH_TOOL(ToyEditor);
 

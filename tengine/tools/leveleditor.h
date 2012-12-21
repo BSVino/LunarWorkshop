@@ -7,9 +7,9 @@
 #include <glgui/movablepanel.h>
 #include <game/cameramanager.h>
 #include <game/level.h>
+#include <tools/manipulator/manipulator.h>
 
 #include "tool.h"
-#include "manipulator.h"
 
 class CEntityPropertiesPanel : public glgui::CPanel, public glgui::IEventListener
 {

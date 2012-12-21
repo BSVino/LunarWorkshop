@@ -584,6 +584,15 @@ EAngle Matrix4x4::GetAngles() const
 	return EAngle(asin(flPitch) * 180/M_PI, -atan2(-m[0][2], m[0][0]) * 180/M_PI, atan2(-m[2][1], m[1][1]) * 180/M_PI);
 }
 
+Vector Matrix4x4::GetScale() const
+{
+	Vector vecReturn;
+	vecReturn.x = GetForwardVector().Length();
+	vecReturn.y = GetUpVector().Length();
+	vecReturn.z = GetRightVector().Length();
+	return vecReturn;
+}
+
 Vector Matrix4x4::operator*(const Vector& v) const
 {
 	// [a b c x][X] 

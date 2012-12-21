@@ -43,6 +43,16 @@ set (TINKER_TEXTURES_SOURCES
 	textures/texturesheet.cpp
 )
 
+set (TINKER_MANIPULATOR_SOURCES
+	tools/manipulator/manipulator.cpp
+	tools/manipulator/GizmoTransformMove.cpp
+	tools/manipulator/GizmoTransformRender.cpp
+	tools/manipulator/GizmoTransformRotate.cpp
+	tools/manipulator/GizmoTransformScale.cpp
+	tools/manipulator/ZBaseMaths.cpp
+	tools/manipulator/ZMathsFunc.cpp
+)
+
 set (TINKER_SOURCES
 	shell.cpp
 	application.cpp
@@ -55,11 +65,13 @@ set (TINKER_SOURCES
 	${TINKER_GLGUI_SOURCES}
 	${TINKER_RENDERER_SOURCES}
 	${TINKER_TEXTURES_SOURCES}
+	${TINKER_MANIPULATOR_SOURCES}
 )
 
 source_group(GLGUI FILES ${TINKER_GLGUI_SOURCES})
 source_group(Renderer FILES ${TINKER_RENDERER_SOURCES})
 source_group(Textures FILES ${TINKER_TEXTURES_SOURCES})
+source_group(Tools\\Manipulator FILES ${TINKER_MANIPULATOR_SOURCES})
 
 include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/glfw/include)
 include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/ftgl-gl3/src)

@@ -758,6 +758,22 @@ void CRenderingContext::BeginRenderLineLoop()
 	m_iDrawMode = GL_LINE_LOOP;
 }
 
+void CRenderingContext::BeginRenderLineStrip()
+{
+	s_avecTexCoord.clear();
+	for (size_t i = 0; i < s_aavecTexCoords.size(); i++)
+		s_aavecTexCoords[i].clear();
+	s_avecNormals.clear();
+	s_aclrColors.clear();
+	s_avecVertices.clear();
+
+	m_bTexCoord = false;
+	m_bNormal = false;
+	m_bColor = false;
+
+	m_iDrawMode = GL_LINE_STRIP;
+}
+
 void CRenderingContext::BeginRenderDebugLines()
 {
 	BeginRenderLines();

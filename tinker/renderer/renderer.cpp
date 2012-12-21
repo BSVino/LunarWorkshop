@@ -571,6 +571,21 @@ void CRenderer::RenderMapToBuffer(size_t iMap, CFrameBuffer* pBuffer, bool bMapI
 	c.EndRenderVertexArray(6);
 }
 
+const double* CRenderer::GetModelView() const
+{
+	return &m_aflModelView[0];
+}
+
+const double* CRenderer::GetProjection() const
+{
+	return &m_aflProjection[0];
+}
+
+const int* CRenderer::GetViewport() const
+{
+	return &m_aiViewport[0];
+}
+
 void CRenderer::FrustumOverride(Vector vecPosition, Vector vecDirection, float flFOV, float flNear, float flFar)
 {
 	m_bFrustumOverride = true;
