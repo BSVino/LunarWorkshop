@@ -45,6 +45,7 @@ set (TINKER_TEXTURES_SOURCES
 
 set (TINKER_MANIPULATOR_SOURCES
 	tools/manipulator/manipulator.cpp
+	tools/manipulator/GizmoTransform.cpp
 	tools/manipulator/GizmoTransformMove.cpp
 	tools/manipulator/GizmoTransformRender.cpp
 	tools/manipulator/GizmoTransformRotate.cpp

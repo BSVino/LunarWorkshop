@@ -129,24 +129,7 @@ public:
 
 	// tools
 
-	void BuildRay(int x, int y, tvector3 &rayOrigin, tvector3 &rayDir)
-	{
-        float frameX = (float)mScreenWidth;
-        float frameY = (float)mScreenHeight;
-        tvector3 screen_space;
-
-        // device space to normalized screen space
-        screen_space.x = ( ( (2.f * (float)x) / frameX ) - 1 ) / m_Proj.m[0][0];//.right.x;
-        screen_space.y = -( ( (2.f * (float)y) / frameY ) - 1 ) / m_Proj.m[1][1];
-        screen_space.z = -1.f;
-
-        // screen space to world space
-
-        rayOrigin = m_invmodel.V4.position;
-        rayDir.TransformVector(screen_space, m_invmodel);
-        rayDir.Normalize();
-    }
-	
+	void BuildRay(int x, int y, tvector3 &rayOrigin, tvector3 &rayDir);
 
 	tvector3 GetVector(int vtID)
 	{
@@ -235,11 +218,7 @@ public:
 	    return df;
     }
 
-	float GetScreenFactor()
-	{
-		return m_ScreenFactor;
-	}
-
+	float GetScreenFactor();
 
 	// snap
 	virtual void UseSnap(bool bUseSnap)
