@@ -828,6 +828,19 @@ void CBulletPhysics::SetControllerMoveVelocity(class CBaseEntity* pEnt, const Ve
 		pPhysicsEntity->m_pCharacterController->SetMoveVelocity(ToBTVector(vecVelocity));
 }
 
+const Vector CBulletPhysics::GetControllerMoveVelocity(class CBaseEntity* pEnt)
+{
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
+	if (!pPhysicsEntity)
+		return Vector();
+
+	TAssert(pPhysicsEntity->m_pCharacterController);
+	if (pPhysicsEntity->m_pCharacterController)
+		return ToTVector(pPhysicsEntity->m_pCharacterController->GetMoveVelocity());
+
+	return Vector();
+}
+
 void CBulletPhysics::SetControllerColliding(class CBaseEntity* pEnt, bool bColliding)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);

@@ -52,6 +52,7 @@ public:
 	virtual bool    PlayerFly(btCollisionWorld* collisionWorld, btScalar dt);
 
 	virtual void    SetMoveVelocity(const btVector3& velocity);
+	btVector3       GetMoveVelocity() const;
 
 	void			SetMaxSpeed(btScalar flMaxSpeed);
 	void			SetJumpSpeed(btScalar jumpSpeed);

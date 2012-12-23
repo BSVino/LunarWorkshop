@@ -132,9 +132,9 @@ void CGrottoCharacter::Reflect(const Matrix4x4& mMirror, const Matrix4x4& mRefle
 #endif
 
 	// Reflect the velocity
-	Vector vecVelocity = GetGlobalVelocity();
+	Vector vecVelocity = GamePhysics()->GetControllerMoveVelocity(this);
 	Vector vecReflectedVelocity = mReflection.TransformVector(vecVelocity);
-	SetGlobalVelocity(vecReflectedVelocity);
+	GamePhysics()->SetControllerMoveVelocity(this, vecReflectedVelocity);
 
 	// Reflect the character's orientation
 	Vector vecForward = GetGlobalTransform().GetForwardVector();

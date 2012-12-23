@@ -330,6 +330,11 @@ void CCharacterController::SetMoveVelocity(const btVector3& velocity)
 	m_vecMoveVelocityNormalized = getNormalizedVector(velocity);
 }
 
+btVector3 CCharacterController::GetMoveVelocity() const
+{
+	return m_vecMoveVelocity;
+}
+
 void CCharacterController::SetMaxSpeed (btScalar flMaxSpeed)
 {
 	m_flMaxSpeed = flMaxSpeed;
