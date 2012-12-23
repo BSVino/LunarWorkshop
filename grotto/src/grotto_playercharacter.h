@@ -37,6 +37,8 @@ public:
 
 	void						GoIntoMirror();
 
+	virtual TFloat              CharacterAcceleration() { return 8.0f; }
+
 protected:
 	CEntityHandle<CMirror>		m_hMirror;
 	CEntityHandle<CToken>		m_hToken;
