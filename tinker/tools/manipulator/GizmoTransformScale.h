@@ -79,6 +79,7 @@ protected:
 
 
 	unsigned int m_LockX, m_LockY;
+	tvector3 m_vecLockSize;
 	float m_ScaleSnap;
 
 	bool GetOpType(SCALETYPE &type, unsigned int x, unsigned int y);

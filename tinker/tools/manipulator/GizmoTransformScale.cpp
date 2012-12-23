@@ -74,6 +74,13 @@ bool CGizmoTransformScale::GetOpType(SCALETYPE &type, unsigned int x, unsigned i
 	mt.NoTrans();
 	mt.Inverse();
 
+	tvector3 rayOrigin, rayDir, inters;
+
+	BuildRay(x, y, rayOrigin, rayDir);
+	m_plan.RayInter(inters, rayOrigin, rayDir);
+
+	m_vecLockSize = inters-m_pMatrix->GetTranslation();
+	m_vecLockSize /= GetScreenFactor();
 
 	//tmatrix mt;
     if (mLocation == LOCATE_LOCAL)
@@ -88,7 +95,7 @@ bool CGizmoTransformScale::GetOpType(SCALETYPE &type, unsigned int x, unsigned i
     }
 
 	// ray casting
-	tvector3 rayOrigin,rayDir,df2;
+	tvector3 df2;
 	BuildRay(x, y, rayOrigin, rayDir);
 
 	// plan 1 : X/Z
@@ -156,20 +163,54 @@ void CGizmoTransformScale::OnMouseMove(unsigned int x, unsigned int y)
 		BuildRay(x, y, rayOrigin, rayDir);
 		m_plan.RayInter(inters,rayOrigin,rayDir);
 
+		df = inters-m_pMatrix->GetTranslation();
+		df /= GetScreenFactor();
+
+		if (m_vecLockSize.x != 0)
+			df.x /= m_vecLockSize.x;
+		else
+			df.x = 1;
+
+		if (m_vecLockSize.y != 0)
+			df.y /= m_vecLockSize.y;
+		else
+			df.y = 1;
+
+		if (m_vecLockSize.z != 0)
+			df.z /= m_vecLockSize.z;
+		else
+			df.z = 1;
+
+		tvector3 axeX(1,0,0),axeY(0,1,0),axeZ(0,0,1);
+
+        if (mLocation == LOCATE_LOCAL)
+        {
+            axeX.TransformVector(*m_pMatrix);
+		    axeY.TransformVector(*m_pMatrix);
+		    axeZ.TransformVector(*m_pMatrix);
+		    axeX.Normalize();
+		    axeY.Normalize();
+		    axeZ.Normalize();
+        }
+
 		switch (m_ScaleType)
 		{
-		case SCALE_XZ: scVect = tvector3(1,0,1); break;
-		case SCALE_X:  scVect = tvector3(1,0,0); break;
-		case SCALE_Z:  scVect = tvector3(0,0,1); break;
-		case SCALE_XY: scVect = tvector3(1,1,0); break;
-		case SCALE_YZ: scVect = tvector3(0,1,1); break;
-		case SCALE_Y:  scVect = tvector3(0,1,0); break;
-		case SCALE_XYZ:scVect = tvector3(1,1,1); break;
+		case SCALE_XZ: scVect = tvector3(df.Dot(axeX), 1,            df.Dot(axeZ)); break;
+		case SCALE_X:  scVect = tvector3(df.Dot(axeX), 1,            1); break;
+		case SCALE_Z:  scVect = tvector3(1,            1,            df.Dot(axeZ)); break;
+		case SCALE_XY: scVect = tvector3(df.Dot(axeX), df.Dot(axeY), 1); break;
+		case SCALE_YZ: scVect = tvector3(1,            df.Dot(axeY), df.Dot(axeZ)); break;
+		case SCALE_Y:  scVect = tvector3(1,            df.Dot(axeY), 1); break;
+		case SCALE_XYZ:scVect = tvector3(df.Dot(axeX), df.Dot(axeY), df.Dot(axeZ)); break;
 		}
 
-		df = inters-m_pMatrix->GetTranslation();
-		df/=GetScreenFactor();
-		scVect2 = tvector3(1,1,1) - scVect;
+		// This is to prevent zero size scales. It also prevents negative size scales, which is okay by me.
+		if (scVect.x < 0.001f)
+			scVect.x = 0.001f;
+		if (scVect.y < 0.001f)
+			scVect.y = 0.001f;
+		if (scVect.z < 0.001f)
+			scVect.z = 0.001f;
 
 		if (m_ScaleType == SCALE_XYZ)
 		{
@@ -180,37 +221,9 @@ void CGizmoTransformScale::OnMouseMove(unsigned int x, unsigned int y)
 		}
 		else
 		{
-            int difx = x - m_LockX;
-            int dify = y - m_LockY;
-
-            float len = sqrtf( (float)(difx*difx) + (float)(dify*dify) );
-
-            float lng2 = len /100.f;
-            /*
-			float lng2 = ( df.Dot(m_LockVertex));
-            char tmps[512];
-            sprintf(tmps, "%5.4f\n", lng2 );
-            OutputDebugStringA( tmps );
-
-
-			if (lng2 < 1.f)
-			{
-				if ( lng2<= 0.001f )
-					lng2 = 0.001f;
-				else
-				{
-					//lng2+=4.f;
-					lng2/=5.f;
-				}
-			}
-            else
-            {
-                int a = 1;
-            }
-            */
-			SnapScale(lng2);
-			scVect *= lng2;
-			scVect += scVect2;
+			SnapScale(scVect.x);
+			SnapScale(scVect.y);
+			SnapScale(scVect.z);
 		}
 
 

@@ -17,6 +17,7 @@ CManipulatorTool::CManipulatorTool()
 	m_pListener = nullptr;
 	m_bTransforming = false;
 	m_eTransform = MT_TRANSLATE;
+	m_pRenderer = nullptr;
 
 	m_pTranslateGizmo = CreateMoveGizmo();
 	m_pRotateGizmo = CreateRotateGizmo();
@@ -163,10 +164,10 @@ void CManipulatorTool::Render(CRenderer* pRenderer)
 	if (!s_pManipulatorTool)
 		return;
 
+	s_pManipulatorTool->m_pRenderer = pRenderer;
+
 	if (!s_pManipulatorTool->IsActive())
 		return;
-
-	s_pManipulatorTool->m_pRenderer = pRenderer;
 
 	const double* pflModelView = pRenderer->GetModelView();
 	const double* pflProjection = pRenderer->GetProjection();

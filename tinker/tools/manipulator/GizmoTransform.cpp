@@ -50,7 +50,7 @@ void CGizmoTransform::BuildRay(int x, int y, tvector3 &rayOrigin, tvector3 &rayD
 	rayDir.TransformVector(screen_space, m_invmodel);
 	rayDir.Normalize();
 
-	if (Manipulator()->GetRenderer()->ShouldRenderOrthographic())
+	if (Manipulator()->GetRenderer() && Manipulator()->GetRenderer()->ShouldRenderOrthographic())
 	{
 		rayOrigin = tvector3(Manipulator()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 0)));
 		rayDir = tvector3((Manipulator()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 1)) - Vector(rayOrigin)).Normalized());
@@ -59,7 +59,7 @@ void CGizmoTransform::BuildRay(int x, int y, tvector3 &rayOrigin, tvector3 &rayD
 
 float CGizmoTransform::GetScreenFactor()
 {
-	if (Manipulator()->GetRenderer()->ShouldRenderOrthographic())
+	if (Manipulator()->GetRenderer() && Manipulator()->GetRenderer()->ShouldRenderOrthographic())
 		return m_ScreenFactor / m_Proj.m[0][0];
 
 	return m_ScreenFactor;
