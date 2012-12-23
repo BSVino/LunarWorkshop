@@ -105,6 +105,46 @@ void CGizmoTransformRender::DrawAxis(class CRenderingContext* c, const tvector3 
 	c->EndRender();
 }
 
+void CGizmoTransformRender::DrawAxisScale(class CRenderingContext* c, const tvector3 &orig, const tvector3 &axis, const tvector3 &vtx,const tvector3 &vty, float fct,float fct2,const tvector4 &col)
+{
+	c->SetDepthTest(false);
+	c->SetUniform("vecColor", Vector4D(&col.x));
+
+	c->SetBlend(BLEND_NONE);
+	c->SetBackCulling(true);
+
+	c->BeginRenderLines();
+		c->Vertex(Vector(&orig.x));
+		c->Vertex(Vector(orig.x+axis.x,orig.y+axis.y,orig.z+axis.z));
+	c->EndRender();
+
+	float flSize = axis.Length() * fct;
+
+	Vector vecEnd = Vector(orig.x+axis.x,orig.y+axis.y,orig.z+axis.z) - Vector(axis).Normalized()*(flSize/2);
+
+	c->BeginRenderTriFan();
+		c->Vertex(vecEnd + Vector(flSize, flSize, flSize));
+		c->Vertex(vecEnd + Vector(-flSize, flSize, flSize));
+		c->Vertex(vecEnd + Vector(-flSize, -flSize, flSize));
+		c->Vertex(vecEnd + Vector(flSize, -flSize, flSize));
+		c->Vertex(vecEnd + Vector(flSize, -flSize, -flSize));
+		c->Vertex(vecEnd + Vector(flSize, flSize, -flSize));
+		c->Vertex(vecEnd + Vector(-flSize, flSize, -flSize));
+		c->Vertex(vecEnd + Vector(-flSize, flSize, flSize));
+	c->EndRender();
+
+	c->BeginRenderTriFan();
+		c->Vertex(vecEnd + Vector(-flSize, -flSize, -flSize));
+		c->Vertex(vecEnd + Vector(flSize, -flSize, -flSize));
+		c->Vertex(vecEnd + Vector(flSize, -flSize, flSize));
+		c->Vertex(vecEnd + Vector(-flSize, -flSize, flSize));
+		c->Vertex(vecEnd + Vector(-flSize, flSize, flSize));
+		c->Vertex(vecEnd + Vector(-flSize, flSize, -flSize));
+		c->Vertex(vecEnd + Vector(flSize, flSize, -flSize));
+		c->Vertex(vecEnd + Vector(flSize, -flSize, -flSize));
+	c->EndRender();
+}
+
 void CGizmoTransformRender::DrawCamem(class CRenderingContext* c, const tvector3& orig,const tvector3& vtx,const tvector3& vty,float ng)
 {
 	c->SetDepthTest(false);

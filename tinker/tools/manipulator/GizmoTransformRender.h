@@ -44,6 +44,7 @@ public:
 	static void DrawCircle(class CRenderingContext* c, const tvector3 &orig,float r,float g,float b,const tvector3 &vtx,const tvector3 &vty);
 	static void DrawCircleHalf(class CRenderingContext* c, const tvector3 &orig,float r,float g,float b,const tvector3 &vtx,const tvector3 &vty,tplane &camPlan);
 	static void DrawAxis(class CRenderingContext* c, const tvector3 &orig, const tvector3 &axis, const tvector3 &vtx,const tvector3 &vty, float fct,float fct2,const tvector4 &col);
+	static void DrawAxisScale(class CRenderingContext* c, const tvector3 &orig, const tvector3 &axis, const tvector3 &vtx,const tvector3 &vty, float fct,float fct2,const tvector4 &col);
 	static void DrawCamem(class CRenderingContext* c, const tvector3& orig,const tvector3& vtx,const tvector3& vty,float ng);
 	static void DrawQuad(class CRenderingContext* c, const tvector3& orig, float size, bool bSelected, const tvector3& axisU, const tvector3 &axisV);
 	static void DrawTri(class CRenderingContext* c, const tvector3& orig, float size, bool bSelected, const tvector3& axisU, const tvector3& axisV);

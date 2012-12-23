@@ -292,21 +292,21 @@ void CGizmoTransformScale::Draw()
 
 		// plan1
 		if (m_ScaleTypePredict != SCALE_X)
-			DrawAxis(&c, orig,axeX,axeY,axeZ,0.05f,0.83f,vector4(1,0,0,1));
+			DrawAxisScale(&c, orig,axeX,axeY,axeZ,0.05f,0.83f,vector4(1,0,0,1));
 		else
-			DrawAxis(&c, orig,axeX,axeY,axeZ,0.05f,0.83f,vector4(1,1,1,1));
+			DrawAxisScale(&c, orig,axeX,axeY,axeZ,0.05f,0.83f,vector4(1,1,1,1));
 
 		//plan2
 		if (m_ScaleTypePredict != SCALE_Y)
-			DrawAxis(&c, orig,axeY,axeX,axeZ,0.05f,0.83f,vector4(0,1,0,1));
+			DrawAxisScale(&c, orig,axeY,axeX,axeZ,0.05f,0.83f,vector4(0,1,0,1));
 		else
-			DrawAxis(&c, orig,axeY,axeX,axeZ,0.05f,0.83f,vector4(1,1,1,1));
+			DrawAxisScale(&c, orig,axeY,axeX,axeZ,0.05f,0.83f,vector4(1,1,1,1));
 
 		//plan3
 		if (m_ScaleTypePredict != SCALE_Z)
-			DrawAxis(&c, orig,axeZ,axeX,axeY,0.05f,0.83f,vector4(0,0,1,1));
+			DrawAxisScale(&c, orig,axeZ,axeX,axeY,0.05f,0.83f,vector4(0,0,1,1));
 		else
-			DrawAxis(&c, orig,axeZ,axeX,axeY,0.05f,0.83f,vector4(1,1,1,1));
+			DrawAxisScale(&c, orig,axeZ,axeX,axeY,0.05f,0.83f,vector4(1,1,1,1));
 
 /*
 		// debug
