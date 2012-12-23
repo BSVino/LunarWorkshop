@@ -47,6 +47,10 @@ public:
 	EVENT_CALLBACK(CManipulatorTool, RotateMode);
 	EVENT_CALLBACK(CManipulatorTool, ScaleMode);
 
+	EVENT_CALLBACK(CManipulatorTool, TransformLocal);
+	EVENT_CALLBACK(CManipulatorTool, TransformWorld);
+	EVENT_CALLBACK(CManipulatorTool, TransformView);
+
 protected:
 	bool				m_bActive;
 	bool				m_bTransforming;
@@ -67,6 +71,8 @@ protected:
 	glgui::CPictureButton*	m_pTranslateButton;
 	glgui::CPictureButton*	m_pRotateButton;
 	glgui::CPictureButton*	m_pScaleButton;
+
+	glgui::CMenu*       m_pTransformMenu;
 
 	class IGizmo*       m_pTranslateGizmo;
 	class IGizmo*       m_pRotateGizmo;

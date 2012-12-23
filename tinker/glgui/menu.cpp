@@ -222,26 +222,6 @@ void CMenu::Paint(float x, float y, float w, float h)
 
 void CMenu::PostPaint()
 {
-	if (m_hMenu->IsVisible())
-	{
-		float mx, my, mw, mh;
-		m_hMenu->GetAbsDimensions(mx, my, mw, mh);
-
-		float flMenuHeight = Lerp(m_flMenuHeight, 0.6f);
-		if (flMenuHeight > 0.99f)
-			flMenuHeight = 0.99f;	// When it hits 1 it jerks.
-
-		Color clrBox = g_clrBox;
-		clrBox.SetAlpha((int)RemapVal(m_flMenuHighlight, 0, 1, 0, 255));
-		CRootPanel::PaintRect(mx, (float)(my), mw, (float)(mh*flMenuHeight), clrBox);
-
-		if (m_flMenuSelectionHighlight > 0)
-		{
-			clrBox = g_clrBoxHi;
-			clrBox.SetAlpha((int)(255 * m_flMenuSelectionHighlight * flMenuHeight));
-			CRootPanel::PaintRect((float)m_MenuSelection.x, (float)m_MenuSelection.y+1, (float)m_MenuSelection.w, (float)m_MenuSelection.h-2, clrBox);
-		}
-	}
 }
 
 void CMenu::CursorIn()
@@ -426,8 +406,32 @@ void CMenu::CSubmenuPanel::Paint(float x, float y, float w, float h)
 
 void CMenu::CSubmenuPanel::PostPaint()
 {
+	CMenu* pMenuParent = m_hMenu;
+
+	if (pMenuParent->IsVisible())
+	{
+		float mx, my, mw, mh;
+		GetAbsDimensions(mx, my, mw, mh);
+
+		float flMenuHeight = Lerp(pMenuParent->m_flMenuHeight, 0.6f);
+		if (flMenuHeight > 0.99f)
+			flMenuHeight = 0.99f;	// When it hits 1 it jerks.
+
+		Color clrBox = g_clrBox;
+		clrBox.SetAlpha((int)RemapVal(pMenuParent->m_flMenuHighlight, 0, 1, 0, 255));
+		CRootPanel::PaintRect(mx, (float)(my), mw, (float)(mh*flMenuHeight), clrBox);
+
+		if (pMenuParent->m_flMenuSelectionHighlight > 0)
+		{
+			clrBox = g_clrBoxHi;
+			clrBox.SetAlpha((int)(255 * pMenuParent->m_flMenuSelectionHighlight * flMenuHeight));
+			CRootPanel::PaintRect((float)pMenuParent->m_MenuSelection.x, (float)pMenuParent->m_MenuSelection.y+1, (float)pMenuParent->m_MenuSelection.w, (float)pMenuParent->m_MenuSelection.h-2, clrBox);
+		}
+	}
+
 	float x, y, w, h;
 	GetAbsDimensions(x, y, w, h);
+
 	BaseClass::Paint(x, y, w, h);
 }
 

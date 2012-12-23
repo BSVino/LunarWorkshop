@@ -6,6 +6,7 @@
 #include <renderer/renderer.h>
 #include <glgui/rootpanel.h>
 #include <glgui/picturebutton.h>
+#include <glgui/menu.h>
 #include <textures/materiallibrary.h>
 #include <renderer/renderingcontext.h>
 
@@ -23,10 +24,18 @@ CManipulatorTool::CManipulatorTool()
 	m_pRotateGizmo = CreateRotateGizmo();
 	m_pScaleGizmo = CreateScaleGizmo();
 
+	m_pTranslateGizmo->SetSnap(1, 1, 1);
+	m_pRotateGizmo->SetSnap(15);
+	m_pScaleGizmo->SetSnap(0.1f);
+
+	m_pTranslateGizmo->SetLocation(IGizmo::LOCATE_WORLD);
+	m_pRotateGizmo->SetLocation(IGizmo::LOCATE_WORLD);
+	m_pScaleGizmo->SetLocation(IGizmo::LOCATE_WORLD);
+
 	m_pTranslateButton = new glgui::CPictureButton("Translate", CMaterialLibrary::AddMaterial("editor/translate.mat"));
 	glgui::CRootPanel::Get()->AddControl(m_pTranslateButton, true);
 	m_pTranslateButton->Layout_AlignBottom(nullptr, 20);
-	m_pTranslateButton->Layout_ColumnFixed(3, 0, m_pTranslateButton->GetWidth());
+	m_pTranslateButton->Layout_ColumnFixed(4, 0, m_pTranslateButton->GetWidth());
 	m_pTranslateButton->SetClickedListener(this, TranslateMode);
 	m_pTranslateButton->SetTooltip("Translate");
 	m_pTranslateButton->SetVisible(false);
@@ -34,7 +43,7 @@ CManipulatorTool::CManipulatorTool()
 	m_pRotateButton = new glgui::CPictureButton("Rotate", CMaterialLibrary::AddMaterial("editor/rotate.mat"));
 	glgui::CRootPanel::Get()->AddControl(m_pRotateButton, true);
 	m_pRotateButton->Layout_AlignBottom(nullptr, 20);
-	m_pRotateButton->Layout_ColumnFixed(3, 1, m_pRotateButton->GetWidth());
+	m_pRotateButton->Layout_ColumnFixed(4, 1, m_pRotateButton->GetWidth());
 	m_pRotateButton->SetClickedListener(this, RotateMode);
 	m_pRotateButton->SetTooltip("Rotate");
 	m_pRotateButton->SetVisible(false);
@@ -42,10 +51,20 @@ CManipulatorTool::CManipulatorTool()
 	m_pScaleButton = new glgui::CPictureButton("Scale", CMaterialLibrary::AddMaterial("editor/scale.mat"));
 	glgui::CRootPanel::Get()->AddControl(m_pScaleButton, true);
 	m_pScaleButton->Layout_AlignBottom(nullptr, 20);
-	m_pScaleButton->Layout_ColumnFixed(3, 2, m_pScaleButton->GetWidth());
+	m_pScaleButton->Layout_ColumnFixed(4, 2, m_pScaleButton->GetWidth());
 	m_pScaleButton->SetClickedListener(this, ScaleMode);
 	m_pScaleButton->SetTooltip("Scale");
 	m_pScaleButton->SetVisible(false);
+
+	m_pTransformMenu = new glgui::CMenu("World");
+	glgui::CRootPanel::Get()->AddControl(m_pTransformMenu, true);
+	m_pTransformMenu->AddSubmenu("Local", this, TransformLocal);
+	m_pTransformMenu->AddSubmenu("World", this, TransformWorld);
+//	m_pTransformMenu->AddSubmenu("View", this, TransformView);
+	m_pTransformMenu->Layout_AlignBottom(nullptr, 20);
+	m_pTransformMenu->Layout_ColumnFixed(4, 3, m_pTransformMenu->GetWidth());
+	m_pTransformMenu->SetTooltip("Set manipulator alignment");
+	m_pTransformMenu->SetVisible(false);
 }
 
 void CManipulatorTool::Activate(IManipulatorListener* pListener, const TRS& trs, const tstring& sArguments)
@@ -57,6 +76,7 @@ void CManipulatorTool::Activate(IManipulatorListener* pListener, const TRS& trs,
 	m_pTranslateButton->SetVisible(true);
 	m_pRotateButton->SetVisible(true);
 	m_pScaleButton->SetVisible(true);
+	m_pTransformMenu->SetVisible(true);
 
 	m_mTransform = trs.GetMatrix4x4();
 
@@ -71,6 +91,7 @@ void CManipulatorTool::Deactivate()
 	m_pTranslateButton->SetVisible(false);
 	m_pRotateButton->SetVisible(false);
 	m_pScaleButton->SetVisible(false);
+	m_pTransformMenu->SetVisible(false);
 }
 
 bool CManipulatorTool::IsTransforming()
@@ -100,6 +121,10 @@ bool CManipulatorTool::MouseInput(int iButton, tinker_mouse_state_t iState, int 
 
 	if (!s_pManipulatorTool->IsActive())
 		return false;
+
+	s_pManipulatorTool->m_pTranslateGizmo->UseSnap(Application()->IsCtrlDown());
+	s_pManipulatorTool->m_pRotateGizmo->UseSnap(Application()->IsCtrlDown());
+	s_pManipulatorTool->m_pScaleGizmo->UseSnap(Application()->IsCtrlDown());
 
 	if (iState == TINKER_MOUSE_PRESSED)
 	{
@@ -150,6 +175,10 @@ void CManipulatorTool::MouseMoved(int mx, int my)
 
 	if (!s_pManipulatorTool->IsActive())
 		return;
+
+	s_pManipulatorTool->m_pTranslateGizmo->UseSnap(Application()->IsCtrlDown());
+	s_pManipulatorTool->m_pRotateGizmo->UseSnap(Application()->IsCtrlDown());
+	s_pManipulatorTool->m_pScaleGizmo->UseSnap(Application()->IsCtrlDown());
 
 	if (s_pManipulatorTool->m_eTransform == MT_TRANSLATE)
 		s_pManipulatorTool->m_pTranslateGizmo->OnMouseMove(mx, my);
@@ -239,6 +268,36 @@ void CManipulatorTool::RotateModeCallback(const tstring& sArgs)
 void CManipulatorTool::ScaleModeCallback(const tstring& sArgs)
 {
 	SetTransfromType(MT_SCALE);
+}
+
+void CManipulatorTool::TransformLocalCallback(const tstring& sArgs)
+{
+	m_pTranslateGizmo->SetLocation(IGizmo::LOCATE_LOCAL);
+	m_pRotateGizmo->SetLocation(IGizmo::LOCATE_LOCAL);
+	m_pScaleGizmo->SetLocation(IGizmo::LOCATE_LOCAL);
+
+	m_pTransformMenu->SetText("Local");
+	m_pTransformMenu->CloseMenu();
+}
+
+void CManipulatorTool::TransformWorldCallback(const tstring& sArgs)
+{
+	m_pTranslateGizmo->SetLocation(IGizmo::LOCATE_WORLD);
+	m_pRotateGizmo->SetLocation(IGizmo::LOCATE_WORLD);
+	m_pScaleGizmo->SetLocation(IGizmo::LOCATE_WORLD);
+
+	m_pTransformMenu->SetText("World");
+	m_pTransformMenu->CloseMenu();
+}
+
+void CManipulatorTool::TransformViewCallback(const tstring& sArgs)
+{
+	m_pTranslateGizmo->SetLocation(IGizmo::LOCATE_VIEW);
+	m_pRotateGizmo->SetLocation(IGizmo::LOCATE_VIEW);
+	m_pScaleGizmo->SetLocation(IGizmo::LOCATE_VIEW);
+
+	m_pTransformMenu->SetText("View");
+	m_pTransformMenu->CloseMenu();
 }
 
 CRenderer* CManipulatorTool::GetRenderer()
