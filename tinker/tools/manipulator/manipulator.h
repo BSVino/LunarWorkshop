@@ -37,7 +37,7 @@ public:
 
 	Matrix4x4			GetTransform(bool bRotation = true, bool bScaling = true);
 	TRS					GetTRS() { return m_trsTransform; }
-	void				SetTRS(const TRS& trs) { m_trsTransform = trs; }
+	void				SetTRS(const TRS& trs);
 
 	TRS					GetNewTRS();
 

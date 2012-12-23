@@ -204,6 +204,12 @@ Matrix4x4 CManipulatorTool::GetTransform(bool bRotation, bool bScaling)
 	return m_trsTransform.GetMatrix4x4(bRotation, bScaling);
 }
 
+void CManipulatorTool::SetTRS(const TRS& trs)
+{
+	m_trsTransform = trs;
+	m_mTransform = trs.GetMatrix4x4();
+}
+
 TRS CManipulatorTool::GetNewTRS()
 {
 	Matrix4x4 mTransform = m_mTransform;
