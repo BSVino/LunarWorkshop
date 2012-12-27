@@ -169,6 +169,17 @@ inline float Approach(float flGoal, float flInput, float flAmount)
 		return flGoal;
 }
 
+inline float AngleNormalize( float a )
+{
+	while ( a >= 180 )
+		a -= 360;
+
+	while ( a <= -180 )
+		a += 360;
+
+	return a;
+}
+
 inline float AngleDifference( float a, float b )
 {
 	if (a != a || b != b)
