@@ -166,7 +166,7 @@ void CCharacter::MoveThink()
 		{
 			Vector vecUp = GetUpVector();
 
-			if (HasMoveParent() && GetMoveParent()->TransformsChildUp())
+			if (HasMoveParent() && GetMoveParent()->TransformsChildView())
 			{
 				TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
 				vecUp = mGlobalToLocal.TransformVector(vecUp);
@@ -207,7 +207,7 @@ void CCharacter::MoveThink_NoClip()
 		{
 			Vector vecUp = GetUpVector();
 
-			if (HasMoveParent() && GetMoveParent()->TransformsChildUp())
+			if (HasMoveParent() && GetMoveParent()->TransformsChildView())
 			{
 				TMatrix mGlobalToLocal = GetMoveParent()->GetGlobalToLocalTransform();
 				vecUp = mGlobalToLocal.TransformVector(vecUp);

@@ -379,6 +379,8 @@ void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 		TVector vecPreviousVelocity = GetGlobalVelocity();
 		TVector vecPreviousLastOrigin = mPreviousGlobal * GetLastLocalOrigin();
 		EAngle angPreviousGlobalView = (Matrix4x4(m_hMoveParent->GetGlobalTransform()) * Matrix4x4(m_angView)).GetAngles();
+		if (!m_hMoveParent->TransformsChildView())
+			angPreviousGlobalView = m_angView;
 
 		for (size_t i = 0; i < m_hMoveParent->m_ahMoveChildren.size(); i++)
 		{
@@ -425,7 +427,9 @@ void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 	m_vecLocalOrigin = m_mLocalTransform.GetTranslation();
 	m_qLocalRotation = Quaternion(m_mLocalTransform);
 	m_angLocalAngles = m_mLocalTransform.GetAngles();
-	m_angView = (Matrix4x4(mGlobalToLocal) * Matrix4x4(m_angView)).GetAngles();
+
+	if (m_hMoveParent->TransformsChildView())
+		m_angView = (Matrix4x4(mGlobalToLocal) * Matrix4x4(m_angView)).GetAngles();
 
 	TFloat flVelocityLength = vecPreviousVelocity.Length();
 	if (flVelocityLength > TFloat(0))

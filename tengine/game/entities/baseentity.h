@@ -580,7 +580,7 @@ public:
 
 	virtual const Vector					GetUpVector() const { return Vector(0, 1, 0); };
 
-	virtual bool							TransformsChildUp() const { return false; };
+	virtual bool							TransformsChildView() const { return false; };
 
 	bool									IsVisible() const { return m_bVisible; }
 	void									SetVisible(bool bVisible) { m_bVisible = bVisible; }
