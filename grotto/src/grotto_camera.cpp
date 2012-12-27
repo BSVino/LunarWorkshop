@@ -22,6 +22,8 @@ SAVEDATA_TABLE_BEGIN_EDITOR(CGrottoCamera);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, EAngle, m_angTargetGoal);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, double, m_flLastTargetChange);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flDistance);
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bLockToPlayerHeight, "LockToPlayerHeight", false);
+	SAVEDATA_EDITOR_VARIABLE("LockToPlayerHeight");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CGrottoCamera);
@@ -139,6 +141,10 @@ void CGrottoCamera::CameraThink()
 		}
 
 		Vector vecCamera = vecClosestPoint - AngleVector(GetGlobalAngles())*m_flDistance;
+
+		if (m_bLockToPlayerHeight)
+			vecCamera.y = m_hCameraTarget->GetGlobalOrigin().y + m_hCameraTarget->GetPhysBoundingBox().Center().y;
+
 		SetGlobalOrigin(vecCamera);
 	}
 }

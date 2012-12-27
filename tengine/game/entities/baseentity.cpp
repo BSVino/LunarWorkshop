@@ -310,7 +310,7 @@ const TFloat CBaseEntity::GetBoundingRadius() const
 		size_t iWidth = m_hMaterialModel->m_ahTextures[0]->m_iWidth;
 		size_t iHeight = m_hMaterialModel->m_ahTextures[0]->m_iHeight;
 
-		return (GetGlobalTransform() * ((TVector(0, (float)iWidth, (float)iHeight)/2.0f) * m_vecScale.Get())).Length()/2.0f;
+		return (GetGlobalTransform() * ((TVector(0, (float)iWidth, (float)iHeight)/float(m_hMaterialModel->m_iTexelsPerMeter)) * m_vecScale.Get())).Length()/2.0f;
 	}
 
 	return (m_aabbVisBoundingBox.Size()*m_vecScale.Get()).Length()/2;
