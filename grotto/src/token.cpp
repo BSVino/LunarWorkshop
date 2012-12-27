@@ -34,6 +34,7 @@ void CToken::Precache()
 void CToken::Spawn()
 {
 	m_bReflected = false;
+	m_bDisableBackCulling = true;
 }
 
 CReceptacle* CToken::GetReceptacle() const
