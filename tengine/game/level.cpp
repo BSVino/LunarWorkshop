@@ -408,9 +408,6 @@ AABB CLevelEntity::CalculateBoundingBox(CLevelEntity* pThis)
 
 		if (hBaseTexture.IsValid())
 		{
-			aabbBounds.m_vecMins.x = -0.01f;
-			aabbBounds.m_vecMaxs.x = 0.01f;
-
 			aabbBounds.m_vecMaxs.y *= (float)hBaseTexture->m_iHeight/pThis->m_hMaterialModel->m_iTexelsPerMeter;
 			aabbBounds.m_vecMins.y *= (float)hBaseTexture->m_iHeight/pThis->m_hMaterialModel->m_iTexelsPerMeter;
 
