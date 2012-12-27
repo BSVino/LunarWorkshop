@@ -144,8 +144,10 @@ typedef TRect<float> FRect;
 class Ray
 {
 public:
-				Ray(Vector vecPos, Vector vecDir);
+	Ray() {};
+	Ray(Vector vecPos, Vector vecDir);
 
+public:
 	Vector		m_vecPos;
 	Vector		m_vecDir;
 };

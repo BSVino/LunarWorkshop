@@ -1055,7 +1055,6 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 		{
 			TPROF("CLevelEditor::RenderModel(Material)");
 			r.UseProgram("model");
-			r.SetUniform("bDiffuse", true);
 
 			Color clrEnt;
 			if (bSelected)
@@ -1063,20 +1062,20 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 			else
 				clrEnt = Color(255, 255, 255, (char)(255*flAlpha));
 
-			r.SetColor(clrEnt);
-
-			r.Scale(vecScale.x, vecScale.y, vecScale.z);
-			r.RenderMaterialModel(pEntity->GetMaterialModel());
-
-			r.SetUniform("bDiffuse", false);
-
 			if (!bHover)
 				clrEnt.SetAlpha(clrEnt.a()/3);
 
 			r.SetBlend(BLEND_ALPHA);
 			r.SetUniform("vecColor", clrEnt);
+			r.SetUniform("bDiffuse", false);
 
 			r.RenderWireBox(pEntity->GetBoundingBox());
+
+			r.SetColor(clrEnt);
+			r.SetUniform("bDiffuse", true);
+
+			r.Scale(vecScale.x, vecScale.y, vecScale.z);
+			r.RenderMaterialModel(pEntity->GetMaterialModel());
 		}
 	}
 	else
@@ -1166,11 +1165,16 @@ size_t CLevelEditor::TraceLine(const Ray& vecTrace)
 			}
 		}
 
+		Matrix4x4 mRotation = pEnt->GetGlobalTRS().GetMatrix4x4(true, false);
+		Matrix4x4 mInverseRotation = mRotation.InvertedRT();
+
+		Ray vecLocalTrace = mInverseRotation * vecTrace;
+
 		Vector vecIntersection;
-		if (!RayIntersectsAABB(vecTrace, aabbGlobalBounds, vecIntersection))
+		if (!RayIntersectsAABB(vecLocalTrace, aabbLocalBounds, vecIntersection))
 			continue;
 
-		float flDistanceSqr = (vecTrace.m_vecPos-vecIntersection).LengthSqr();
+		float flDistanceSqr = (vecLocalTrace.m_vecPos-vecIntersection).LengthSqr();
 
 		if (iNearest == ~0)
 		{

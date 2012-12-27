@@ -391,14 +391,16 @@ AABB CLevelEntity::CalculateBoundingBox(CLevelEntity* pThis)
 
 	tstring sAABB = pThis->GetParameterValue("BoundingBox");
 
-	if (CanUnserializeString_AABB(sAABB))
-		return UnserializeString_AABB(sAABB, pThis->GetName(), pThis->m_sClass, "BoundingBox");
-
 	AABB aabbBounds = AABB(Vector(-0.5f, -0.5f, -0.5f), Vector(0.5f, 0.5f, 0.5f));
 
-	CSaveData* pSaveData = CBaseEntity::FindSaveDataByHandle(tstring("C"+pThis->m_sClass).c_str(), "BoundingBox");
-	if (pSaveData && pSaveData->m_bDefault)
-		memcpy(&aabbBounds, &pSaveData->m_oDefault, sizeof(aabbBounds));
+	if (CanUnserializeString_AABB(sAABB))
+		aabbBounds = UnserializeString_AABB(sAABB, pThis->GetName(), pThis->m_sClass, "BoundingBox");
+	else
+	{
+		CSaveData* pSaveData = CBaseEntity::FindSaveDataByHandle(tstring("C"+pThis->m_sClass).c_str(), "BoundingBox");
+		if (pSaveData && pSaveData->m_bDefault)
+			memcpy(&aabbBounds, &pSaveData->m_oDefault, sizeof(aabbBounds));
+	}
 
 	if (pThis->m_hMaterialModel.IsValid() && pThis->m_hMaterialModel->m_ahTextures.size())
 	{
@@ -416,6 +418,9 @@ AABB CLevelEntity::CalculateBoundingBox(CLevelEntity* pThis)
 			aabbBounds.m_vecMins.z *= (float)hBaseTexture->m_iWidth/pThis->m_hMaterialModel->m_iTexelsPerMeter;
 		}
 	}
+
+	aabbBounds.m_vecMins = aabbBounds.m_vecMins * pThis->GetScale();
+	aabbBounds.m_vecMaxs = aabbBounds.m_vecMaxs * pThis->GetScale();
 
 	return aabbBounds;
 }

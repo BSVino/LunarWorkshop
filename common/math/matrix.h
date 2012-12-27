@@ -23,6 +23,7 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 // The red pill
 
 class Quaternion;
+class Ray;
 
 // This Matrix4x4 class is for use in right-handed coordinate spaces with Y up.
 // A column is in sequential memory positions (m[0][0], m[0][1], m[0][2], m[0][3])
@@ -117,6 +118,7 @@ public:
 															// It's not immune to scaling though! A matrix with scaling will output a vector of different length than the input.
 
 	Vector4D	operator*(const Vector4D& v) const;
+	const Ray   operator*(const Ray& r) const;
 
 	// Try not to use these in case the underlying format changes.
 	Vector4D	GetRow(int i);

@@ -19,6 +19,7 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 
 #include "quaternion.h"
 #include "common.h"
+#include "geometry.h"
 
 Matrix4x4::Matrix4x4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33)
 {
@@ -605,6 +606,14 @@ Vector Matrix4x4::operator*(const Vector& v) const
 	vecResult.y = m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z + m[3][1];
 	vecResult.z = m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z + m[3][2];
 	return vecResult;
+}
+
+const Ray Matrix4x4::operator*(const Ray& r) const
+{
+	Ray rResult;
+	rResult.m_vecDir = TransformVector(r.m_vecDir);
+	rResult.m_vecPos = (*this) * r.m_vecPos;
+	return rResult;
 }
 
 Vector Matrix4x4::TransformVector(const Vector& v) const
