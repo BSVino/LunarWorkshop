@@ -191,8 +191,11 @@ public:
 	    tvector3 df,inters;
 
 	    m_plan=vector4(m_pMatrix->GetTranslation(), norm);
-	    m_plan.RayInter(inters,rayOrigin,rayDir);
-        df.TransformPoint( inters, mt );
+		if (!m_plan.RayInter(inters,rayOrigin,rayDir))
+			// Really it should return false but this should suffice since the return value is checked for 0 <= x <= 1
+			return tvector3(FLT_MAX, FLT_MAX, FLT_MAX);
+
+		df.TransformPoint( inters, mt );
         
         df /=GetScreenFactor();
         /*

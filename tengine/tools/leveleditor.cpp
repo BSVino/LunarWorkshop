@@ -1062,16 +1062,19 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 			else
 				clrEnt = Color(255, 255, 255, (char)(255*flAlpha));
 
+			Color clrEntHover = clrEnt;
 			if (!bHover)
-				clrEnt.SetAlpha(clrEnt.a()/3);
+				clrEntHover.SetAlpha(clrEnt.a()/3);
 
 			r.SetBlend(BLEND_ALPHA);
-			r.SetUniform("vecColor", clrEnt);
+			r.SetColor(clrEntHover);
+			r.SetUniform("vecColor", clrEntHover);
 			r.SetUniform("bDiffuse", false);
 
 			r.RenderWireBox(pEntity->GetBoundingBox());
 
 			r.SetColor(clrEnt);
+			r.SetUniform("vecColor", clrEnt);
 			r.SetUniform("bDiffuse", true);
 
 			r.Scale(vecScale.x, vecScale.y, vecScale.z);
@@ -1493,9 +1496,24 @@ void CLevelEditor::DuplicateMove(const tstring& sArguments)
 	if (iSelected >= aEntityData.size())
 		return;
 
+	Vector vecTranslation = Manipulator()->GetNewTRS().m_vecTranslation;
+	EAngle angRotation = Manipulator()->GetNewTRS().m_angRotation;
+	Vector vecScaling = Manipulator()->GetNewTRS().m_vecScaling;
+
 	aEntityData.push_back(aEntityData[iSelected]);
 	auto& oNewEntity = aEntityData.back();
 
 	m_hEditorPanel->Layout();
+
+	size_t iNewObject = aEntityData.size()-1;
+
+	CLevelEntity* pEntity = &GetLevel()->GetEntityData()[iNewObject];
+
+	pEntity->SetParameterValue("Origin", pretty_float(vecTranslation.x) + " " + pretty_float(vecTranslation.y) + " " + pretty_float(vecTranslation.z));
+	pEntity->SetParameterValue("Angles", pretty_float(angRotation.p) + " " + pretty_float(angRotation.y) + " " + pretty_float(angRotation.r));
+	pEntity->SetParameterValue("Scale", pretty_float(vecScaling.x) + " " + pretty_float(vecScaling.y) + " " + pretty_float(vecScaling.z));
+
 	m_hEditorPanel->m_hEntities->SetSelectedNode(aEntityData.size()-1);
+
+	m_hEditorPanel->LayoutEntity();
 }
