@@ -1112,9 +1112,16 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 
 		r.SetUniform("bDiffuse", false);
 
-		r.Scale(vecScale.x, vecScale.y, vecScale.z);
+		AABB aabbBounds = pEntity->GetBoundingBox();
 
-		r.RenderWireBox(pEntity->GetBoundingBox());
+		// A bit of a hack to fix up the scale of the AABB to render it properly while dragging the manipulator scale handle
+		if (bSelected && Manipulator()->IsTransforming())
+		{
+			aabbBounds.m_vecMins = aabbBounds.m_vecMins / pEntity->GetScale() * vecScale;
+			aabbBounds.m_vecMaxs = aabbBounds.m_vecMaxs / pEntity->GetScale() * vecScale;
+		}
+
+		r.RenderWireBox(aabbBounds);
 	}
 }
 
