@@ -1037,17 +1037,18 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 	}
 	else if (pEntity->GetMaterialModel().IsValid())
 	{
+		bool bRenderMaterial = true;
 		if (!pEntity->ShouldDisableBackCulling())
 		{
 			if (pEntity->ShouldRenderInverted())
 			{
 				if ((pEntity->GetGlobalTransform().GetTranslation() - GetCameraPosition()).Dot(pEntity->GetGlobalTransform().GetForwardVector()) > 0)
-					return;
+					bRenderMaterial = false;
 			}
 			else
 			{
 				if ((pEntity->GetGlobalTransform().GetTranslation() - GetCameraPosition()).Dot(pEntity->GetGlobalTransform().GetForwardVector()) < 0)
-					return;
+					bRenderMaterial = false;
 			}
 		}
 
@@ -1063,6 +1064,9 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 				clrEnt = Color(255, 255, 255, (char)(255*flAlpha));
 
 			Color clrEntHover = clrEnt;
+			if (!bRenderMaterial)
+				clrEnt.SetAlpha(clrEnt.a()/5);
+
 			if (!bHover)
 				clrEntHover.SetAlpha(clrEnt.a()/3);
 
@@ -1082,12 +1086,15 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 
 			r.RenderWireBox(aabbBounds);
 
-			r.SetColor(clrEnt);
-			r.SetUniform("vecColor", clrEnt);
-			r.SetUniform("bDiffuse", true);
+			if (bRenderMaterial)
+			{
+				r.SetColor(clrEnt);
+				r.SetUniform("vecColor", clrEnt);
+				r.SetUniform("bDiffuse", true);
 
-			r.Scale(vecScale.x, vecScale.y, vecScale.z);
-			r.RenderMaterialModel(pEntity->GetMaterialModel());
+				r.Scale(vecScale.x, vecScale.y, vecScale.z);
+				r.RenderMaterialModel(pEntity->GetMaterialModel());
+			}
 		}
 	}
 	else
