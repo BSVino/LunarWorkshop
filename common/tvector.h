@@ -48,7 +48,7 @@ public:
 public:
 	void erase_value(const T& value)
 	{
-		remove(begin(), end(), value);
+		erase(remove(begin(), end(), value), end());
 	}
 
 #ifndef WITH_EASTL
