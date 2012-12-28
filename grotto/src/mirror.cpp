@@ -17,6 +17,8 @@ void UnserializeString_MirrorType(const tstring& sData, CSaveData* pSaveData, CB
 SAVEDATA_TABLE_BEGIN_EDITOR(CMirror);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", UnserializeString_MirrorType);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iBuffer);
+	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bDisableBackCulling, "DisableBackCulling", true);
+	SAVEDATA_EDITOR_VARIABLE("DisableBackCulling");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CMirror);
@@ -47,8 +49,6 @@ void CMirror::Spawn()
 	SetMirrorType(MIRROR_VERTICAL);
 
 	s_ahMirrors.push_back(this);
-
-	m_bDisableBackCulling = true;
 }
 
 bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const

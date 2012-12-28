@@ -406,6 +406,7 @@ void entity::RegisterSaveData() \
 	pSaveData->m_pszHandle = handle; \
 	pSaveData->m_bOverride = true; \
 	pSaveData->m_bShowInEditor = false; \
+	pSaveData->m_pszType = #type; \
 	{ \
 		CSaveData* pHandleData = FindSaveDataByHandle(handle); \
 		TAssert(pHandleData); \
