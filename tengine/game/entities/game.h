@@ -22,6 +22,8 @@ public:
 
 	virtual void								SetupGame(tstring sType) {};
 
+	DECLARE_ENTITY_INPUT(LoadLevel);
+
 	virtual void								Simulate() {};
 	virtual bool								ShouldRunSimulation() { return true; };
 

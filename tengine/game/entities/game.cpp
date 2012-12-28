@@ -9,6 +9,8 @@
 #include <tinker/application.h>
 #include <tinker/cvar.h>
 #include <game/cameramanager.h>
+#include <ui/gamewindow.h>
+#include <game/level.h>
 
 REGISTER_ENTITY(CGame);
 
@@ -22,6 +24,7 @@ SAVEDATA_TABLE_BEGIN(CGame);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CGame);
+	INPUT_DEFINE(LoadLevel);
 INPUTS_TABLE_END();
 
 CGame::CGame()
@@ -39,6 +42,20 @@ void CGame::Spawn()
 	BaseClass::Spawn();
 
 	RegisterNetworkFunctions();
+}
+
+void CGame::LoadLevel(const tvector<tstring>& asArgs)
+{
+	tstring sLevel;
+	for (size_t i = 0; i < asArgs.size(); i++)
+		sLevel += asArgs[i] + " ";
+
+	CHandle<CLevel> pLevel = GameServer()->GetLevel(sLevel);
+	if (!pLevel)
+		return;
+
+	GameWindow()->Restart("level");
+	CVar::SetCVar("game_level", pLevel->GetFile());
 }
 
 void CGame::RegisterNetworkFunctions()

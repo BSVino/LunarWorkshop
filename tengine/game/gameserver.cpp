@@ -459,6 +459,7 @@ void CGameServer::ReadLevelInfo(tstring sFile)
 CHandle<CLevel> CGameServer::GetLevel(tstring sFile)
 {
 	sFile = sFile.replace("\\", "/");
+	sFile.trim();
 	for (size_t i = 0; i < m_apLevels.size(); i++)
 	{
 		CResource<CLevel>& pLevel = m_apLevels[i];
