@@ -408,7 +408,7 @@ inline EAngle::EAngle(float* pyr)
 
 inline const EAngle EAngle::operator+(const EAngle& v) const
 {
-	return EAngle(p+v.p, y+v.y, r+v.r);
+	return EAngle(AngleNormalize(p+v.p), AngleNormalize(y+v.y), AngleNormalize(r+v.r));
 }
 
 inline const EAngle EAngle::operator-(const EAngle& v) const
