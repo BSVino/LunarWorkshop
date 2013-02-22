@@ -425,11 +425,13 @@ void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 	m_vecLastLocalOrigin = mGlobalToLocal * vecPreviousLastOrigin;
 	m_mLocalTransform = mGlobalToLocal * mPreviousTransform;
 	m_vecLocalOrigin = m_mLocalTransform.GetTranslation();
-	m_qLocalRotation = Quaternion(m_mLocalTransform);
-	m_angLocalAngles = m_mLocalTransform.GetAngles();
 
 	if (m_hMoveParent->TransformsChildView())
+	{
+		m_qLocalRotation = Quaternion(m_mLocalTransform);
+		m_angLocalAngles = m_mLocalTransform.GetAngles();
 		m_angView = (Matrix4x4(mGlobalToLocal) * Matrix4x4(m_angView)).GetAngles();
+	}
 
 	TFloat flVelocityLength = vecPreviousVelocity.Length();
 	if (flVelocityLength > TFloat(0))
@@ -512,8 +514,12 @@ void CBaseEntity::SetGlobalTransform(const TMatrix& m)
 	}
 
 	m_vecLocalOrigin = m_mLocalTransform.GetTranslation();
-	m_angLocalAngles = m_mLocalTransform.GetAngles();
-	m_qLocalRotation = Quaternion(m_mLocalTransform);
+
+	if (HasMoveParent() && GetMoveParent()->TransformsChildView())
+	{
+		m_angLocalAngles = m_mLocalTransform.GetAngles();
+		m_qLocalRotation = Quaternion(m_mLocalTransform);
+	}
 
 	if (IsInPhysics())
 		GamePhysics()->SetEntityTransform(this, GetGlobalTransform());
@@ -570,7 +576,7 @@ void CBaseEntity::SetGlobalOrigin(const TVector& vecOrigin)
 
 void CBaseEntity::SetGlobalAngles(const EAngle& angAngles)
 {
-	if (!m_hMoveParent)
+	if (!m_hMoveParent || !GetMoveParent()->TransformsChildView())
 		SetLocalAngles(angAngles);
 	else
 	{
@@ -728,9 +734,13 @@ void CBaseEntity::SetLocalAngles(const EAngle& angAngles)
 		TMatrix mLocal = m_mLocalTransform;
 		mLocal.SetAngles(angAngles);
 
-		TMatrix mGlobal = GetParentGlobalTransform() * mLocal;
-
-		GamePhysics()->SetEntityTransform(this, mGlobal);
+		if (!GetMoveParent() || !GetMoveParent()->TransformsChildView())
+			GamePhysics()->SetEntityTransform(this, mLocal);
+		else
+		{
+			TMatrix mGlobal = GetParentGlobalTransform() * mLocal;
+			GamePhysics()->SetEntityTransform(this, mGlobal);
+		}
 	}
 
 	EAngle angDifference = angAngles - m_angLocalAngles;
