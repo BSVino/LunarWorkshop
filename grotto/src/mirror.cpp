@@ -3,9 +3,9 @@
 #include <models/models.h>
 #include <physics/physics.h>
 
-#include "reflection_renderer.h"
-#include "reflection_game.h"
-#include "reflection_character.h"
+#include "grotto_renderer.h"
+#include "grotto_game.h"
+#include "grotto_character.h"
 
 REGISTER_ENTITY(CMirror);
 
@@ -98,7 +98,7 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 			}
 		}
 
-		CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
+		CGrottoCharacter* pPlayerCharacter = GrottoGame()->GetLocalPlayerCharacter();
 		AABB aabbPlayerBox = bPhysics?pPlayerCharacter->GetPhysBoundingBox():pPlayerCharacter->GetVisBoundingBox();
 
 		aabbBox.m_vecMins += aabbPlayerBox.m_vecMins;

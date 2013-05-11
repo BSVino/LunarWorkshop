@@ -1,35 +1,35 @@
-#include "reflection_player.h"
+#include "grotto_player.h"
 
 #include <tengine/game/entities/character.h>
 #include <tinker/cvar.h>
 #include <tinker/application.h>
 #include <tinker/keys.h>
 
-#include "reflection_playercharacter.h"
+#include "grotto_playercharacter.h"
 
-REGISTER_ENTITY(CReflectionPlayer);
+REGISTER_ENTITY(CGrottoPlayer);
 
-NETVAR_TABLE_BEGIN(CReflectionPlayer);
+NETVAR_TABLE_BEGIN(CGrottoPlayer);
 NETVAR_TABLE_END();
 
-SAVEDATA_TABLE_BEGIN(CReflectionPlayer);
+SAVEDATA_TABLE_BEGIN(CGrottoPlayer);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, mirror_t, m_eCurrentMirror);
 SAVEDATA_TABLE_END();
 
-INPUTS_TABLE_BEGIN(CReflectionPlayer);
+INPUTS_TABLE_BEGIN(CGrottoPlayer);
 INPUTS_TABLE_END();
 
-void CReflectionPlayer::Spawn()
+void CGrottoPlayer::Spawn()
 {
 	m_eCurrentMirror = MIRROR_VERTICAL;
 }
 
-CPlayerCharacter* CReflectionPlayer::GetPlayerCharacter()
+CPlayerCharacter* CGrottoPlayer::GetPlayerCharacter()
 {
 	return static_cast<CPlayerCharacter*>(m_hCharacter.GetPointer());
 }
 
-void CReflectionPlayer::MouseMotion(int x, int y)
+void CGrottoPlayer::MouseMotion(int x, int y)
 {
 	if (!GetPlayerCharacter())
 		return;
@@ -47,7 +47,7 @@ void CReflectionPlayer::MouseMotion(int x, int y)
 		BaseClass::MouseMotion(x, y);
 }
 
-void CReflectionPlayer::MouseInput(int iButton, int iState)
+void CGrottoPlayer::MouseInput(int iButton, int iState)
 {
 	BaseClass::MouseInput(iButton, iState);
 
@@ -59,7 +59,7 @@ void CReflectionPlayer::MouseInput(int iButton, int iState)
 //		GetPlayerCharacter()->PlaceMirror(m_eCurrentMirror);
 }
 
-void CReflectionPlayer::KeyPress(int c)
+void CGrottoPlayer::KeyPress(int c)
 {
 	if (m_hCharacter == NULL)
 		return;

@@ -1,13 +1,12 @@
-#ifndef REFLECTION_PLAYER_H
-#define REFLECTION_PLAYER_H
+#pragma once
 
 #include <tengine/game/entities/player.h>
 
 #include "mirror.h"
 
-class CReflectionPlayer : public CPlayer
+class CGrottoPlayer : public CPlayer
 {
-	REGISTER_ENTITY_CLASS(CReflectionPlayer, CPlayer);
+	REGISTER_ENTITY_CLASS(CGrottoPlayer, CPlayer);
 
 public:
 	virtual void					Spawn();
@@ -23,5 +22,3 @@ public:
 public:
 	mirror_t						m_eCurrentMirror;
 };
-
-#endif

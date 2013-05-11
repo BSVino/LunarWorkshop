@@ -4,7 +4,7 @@
 #include <physics/physics.h>
 #include <tinker/application.h>
 
-#include "reflection_renderer.h"
+#include "grotto_renderer.h"
 #include "receptacle.h"
 
 REGISTER_ENTITY(CToken);

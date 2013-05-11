@@ -1,18 +1,17 @@
-#ifndef REFLECTION_CHARACTER_H
-#define REFLECTION_CHARACTER_H
+#pragma once
 
 #include <tengine/game/entities/character.h>
 
-#include "reflection.h"
+#include "grotto.h"
 
 class CMirror;
 
-class CReflectionCharacter : public CCharacter
+class CGrottoCharacter : public CCharacter
 {
-	REGISTER_ENTITY_CLASS(CReflectionCharacter, CCharacter);
+	REGISTER_ENTITY_CLASS(CGrottoCharacter, CCharacter);
 
 public:
-								CReflectionCharacter();
+								CGrottoCharacter();
 
 public:
 	virtual void				Spawn();
@@ -50,5 +49,3 @@ protected:
 	Matrix4x4					m_mVerticalReflection;	// For rendering
 	CEntityHandle<CMirror>		m_hMirrorInside;
 };
-
-#endif

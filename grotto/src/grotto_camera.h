@@ -1,14 +1,13 @@
-#ifndef REFLECTION_CAMERA_H
-#define REFLECTION_CAMERA_H
+#pragma once
 
 #include <game/entities/charactercamera.h>
 
-class CReflectionCamera : public CCharacterCamera
+class CGrottoCamera : public CCharacterCamera
 {
-	DECLARE_CLASS(CReflectionCamera, CCharacterCamera);
+	DECLARE_CLASS(CGrottoCamera, CCharacterCamera);
 
 public:
-								CReflectionCamera();
+								CGrottoCamera();
 
 public:
 	virtual void				Think();
@@ -17,5 +16,3 @@ public:
 	virtual float				GetCameraNear() { return 0.01f; };
 	virtual float				GetCameraFar() { return 500.0f; };
 };
-
-#endif

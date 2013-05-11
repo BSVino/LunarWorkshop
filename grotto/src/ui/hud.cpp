@@ -10,16 +10,16 @@
 #include <tinker/cvar.h>
 #include <tinker/keys.h>
 
-#include "../reflection_character.h"
-#include "../reflection_playercharacter.h"
-#include "../reflection_game.h"
-#include "../reflection_player.h"
+#include "../grotto_character.h"
+#include "../grotto_playercharacter.h"
+#include "../grotto_game.h"
+#include "../grotto_player.h"
 #include "../token.h"
 #include "../receptacle.h"
 #include "../momento.h"
 #include "levelselector.h"
 
-CReflectionHUD::CReflectionHUD()
+CGrottoHUD::CGrottoHUD()
 {
 	m_pSelector = new CLevelSelector();
 	AddControl(m_pSelector);
@@ -27,15 +27,15 @@ CReflectionHUD::CReflectionHUD()
 	m_pSelector->SetVisible(CVar::GetCVarValue("game_mode") == "menu");
 }
 
-void CReflectionHUD::Paint(float x, float y, float w, float h)
+void CGrottoHUD::Paint(float x, float y, float w, float h)
 {
 	BaseClass::Paint(x, y, w, h);
 
 	if (CVar::GetCVarValue("game_mode") == "menu")
 		return;
 
-	CPlayerCharacter* pPlayerCharacter = static_cast<CPlayerCharacter*>(ReflectionGame()->GetLocalPlayerCharacter());
-	CReflectionPlayer* pPlayer = static_cast<CReflectionPlayer*>(ReflectionGame()->GetLocalPlayer());
+	CPlayerCharacter* pPlayerCharacter = static_cast<CPlayerCharacter*>(GrottoGame()->GetLocalPlayerCharacter());
+	CGrottoPlayer* pPlayer = static_cast<CGrottoPlayer*>(GrottoGame()->GetLocalPlayer());
 
 /*	if (pPlayer)
 	{
@@ -198,7 +198,7 @@ void CReflectionHUD::Paint(float x, float y, float w, float h)
 	}
 }
 
-bool CReflectionHUD::KeyPressed(int code, bool bCtrlDown)
+bool CGrottoHUD::KeyPressed(int code, bool bCtrlDown)
 {
 	if (code == TINKER_KEY_ESCAPE)
 	{

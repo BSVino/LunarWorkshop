@@ -1,16 +1,15 @@
-#ifndef REFLECTION_HUD_H
-#define REFLECTION_HUD_H
+#pragma once
 
 #include <ui/hudviewport.h>
 
 class CLevelSelector;
 
-class CReflectionHUD : public CHUDViewport
+class CGrottoHUD : public CHUDViewport
 {
-	DECLARE_CLASS(CReflectionHUD, CHUDViewport);
+	DECLARE_CLASS(CGrottoHUD, CHUDViewport);
 
 public:
-					CReflectionHUD();
+					CGrottoHUD();
 
 public:
 	virtual void	Paint(float x, float y, float w, float h);
@@ -20,5 +19,3 @@ public:
 protected:
 	CLevelSelector*		m_pSelector;
 };
-
-#endif

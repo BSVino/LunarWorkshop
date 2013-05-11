@@ -6,8 +6,8 @@
 #include <ui/gamewindow.h>
 #include <game/entities/beam.h>
 
-#include "reflection_game.h"
-#include "reflection_character.h"
+#include "grotto_game.h"
+#include "grotto_character.h"
 
 REGISTER_ENTITY(CKaleidobeast);
 
@@ -66,7 +66,7 @@ void CKaleidobeast::Think()
 		m_hBeam->SetEnd(m_vecInitialPosition + GetUpVector()*EyeHeight() + AngleVector(m_angInitialPosition)*100);
 	}
 
-	CReflectionCharacter* pPlayer = ReflectionGame()->GetLocalPlayerCharacter();
+	CGrottoCharacter* pPlayer = GrottoGame()->GetLocalPlayerCharacter();
 
 	if (!m_bSeesPlayer)
 	{

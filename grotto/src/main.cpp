@@ -1,8 +1,8 @@
-#include "reflection_window.h"
+#include "grotto_window.h"
 
 void CreateApplication(int argc, char** argv)
 {
-	CReflectionWindow oWindow(argc, argv);
+	CGrottoWindow oWindow(argc, argv);
 
 	oWindow.OpenWindow();
 	oWindow.Run();

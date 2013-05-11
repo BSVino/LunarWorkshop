@@ -1,17 +1,16 @@
-#ifndef REFLECTION_RENDERER_H
-#define REFLECTION_RENDERER_H
+#pragma once
 
 #include <renderer/game_renderer.h>
 #include <game/entityhandle.h>
 
 class CMirror;
 
-class CReflectionRenderer : public CGameRenderer
+class CGrottoRenderer : public CGameRenderer
 {
-	DECLARE_CLASS(CReflectionRenderer, CGameRenderer);
+	DECLARE_CLASS(CGrottoRenderer, CGameRenderer);
 
 public:
-					CReflectionRenderer();
+					CGrottoRenderer();
 
 public:
 	virtual void	Initialize();
@@ -36,6 +35,4 @@ protected:
 	bool						m_bRenderingReflection;
 };
 
-CReflectionRenderer* ReflectionRenderer();
-
-#endif
+CGrottoRenderer* GrottoRenderer();

@@ -1,9 +1,8 @@
-#ifndef REFLECTION_MIRROR_H
-#define REFLECTION_MIRROR_H
+#pragma once
 
 #include <game/entities/baseentity.h>
 
-#include "reflection.h"
+#include "grotto.h"
 
 typedef enum
 {
@@ -46,5 +45,3 @@ protected:
 
 	static tvector<CEntityHandle<CMirror> >	m_ahMirrors;
 };
-
-#endif

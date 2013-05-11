@@ -1,45 +1,45 @@
-#include "reflection_character.h"
+#include "grotto_character.h"
 
 #include <tinker/application.h>
 #include <tinker/cvar.h>
 #include <renderer/renderingcontext.h>
 #include <physics/physics.h>
 
-#include "reflection_game.h"
-#include "reflection_renderer.h"
-#include "reflection_playercharacter.h"
+#include "grotto_game.h"
+#include "grotto_renderer.h"
+#include "grotto_playercharacter.h"
 #include "mirror.h"
 #include "reflectionproxy.h"
 
-REGISTER_ENTITY(CReflectionCharacter);
+REGISTER_ENTITY(CGrottoCharacter);
 
-NETVAR_TABLE_BEGIN(CReflectionCharacter);
+NETVAR_TABLE_BEGIN(CGrottoCharacter);
 NETVAR_TABLE_END();
 
-SAVEDATA_TABLE_BEGIN(CReflectionCharacter);
+SAVEDATA_TABLE_BEGIN(CGrottoCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iReflected);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mLateralReflection);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mVerticalReflection);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CMirror>, m_hMirrorInside);
 SAVEDATA_TABLE_END();
 
-INPUTS_TABLE_BEGIN(CReflectionCharacter);
+INPUTS_TABLE_BEGIN(CGrottoCharacter);
 	INPUT_DEFINE(ReflectVertical);
 	INPUT_DEFINE(ReflectLateral);
 INPUTS_TABLE_END();
 
-CReflectionCharacter::CReflectionCharacter()
+CGrottoCharacter::CGrottoCharacter()
 {
 }
 
-void CReflectionCharacter::Spawn()
+void CGrottoCharacter::Spawn()
 {
 	BaseClass::Spawn();
 
 	m_iReflected = 0;
 }
 
-const TVector CReflectionCharacter::GetGoalVelocity()
+const TVector CGrottoCharacter::GetGoalVelocity()
 {
 	TVector vecGoalVelocity = BaseClass::GetGoalVelocity();
 
@@ -49,16 +49,16 @@ const TVector CReflectionCharacter::GetGoalVelocity()
 	return vecGoalVelocity;
 }
 
-float CReflectionCharacter::EyeHeight() const
+float CGrottoCharacter::EyeHeight() const
 {
 	return 1.65f;
 }
 
-void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
+void CGrottoCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 {
 	BaseClass::OnSetLocalTransform(mNew);
 
-	if (!ReflectionGame()->GetLocalPlayerCharacter())
+	if (!GrottoGame()->GetLocalPlayerCharacter())
 		return;
 
 	Vector vecGlobal = GetParentGlobalTransform() * mNew.GetTranslation();
@@ -76,7 +76,7 @@ void CReflectionCharacter::OnSetLocalTransform(Matrix4x4& mNew)
 	}
 }
 
-void CReflectionCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
+void CGrottoCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
 {
 	Vector vecNewOrigin = mNew.GetTranslation();
 
@@ -99,7 +99,7 @@ void CReflectionCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
 	}
 }
 
-void CReflectionCharacter::Reflect(const Matrix4x4& mMirror, const Matrix4x4& mReflection, reflection_t eReflectionType, Matrix4x4& mNew, CMirror* pMirror)
+void CGrottoCharacter::Reflect(const Matrix4x4& mMirror, const Matrix4x4& mReflection, reflection_t eReflectionType, Matrix4x4& mNew, CMirror* pMirror)
 {
 	Vector vecNewOrigin = mNew.GetTranslation();
 	Vector vecNewGlobalOrigin = GetParentGlobalTransform() * vecNewOrigin;
@@ -206,7 +206,7 @@ if ((x) > (y)) \
 		CReflectionProxy::OnPlayerGravity(IsReflected(REFLECTION_VERTICAL));
 }
 
-void CReflectionCharacter::ReflectVertical(const tvector<tstring>& asArgs)
+void CGrottoCharacter::ReflectVertical(const tvector<tstring>& asArgs)
 {
 	Matrix4x4 mReflection, mTransform;
 	mReflection.SetReflection(Vector(0, 1, 0));
@@ -217,7 +217,7 @@ void CReflectionCharacter::ReflectVertical(const tvector<tstring>& asArgs)
 	SetGlobalTransform(mTransform);
 }
 
-void CReflectionCharacter::ReflectLateral(const tvector<tstring>& asArgs)
+void CGrottoCharacter::ReflectLateral(const tvector<tstring>& asArgs)
 {
 	Matrix4x4 mReflection, mTransform;
 	mReflection.SetReflection(Vector(1, 0, 0));
@@ -228,7 +228,7 @@ void CReflectionCharacter::ReflectLateral(const tvector<tstring>& asArgs)
 	SetGlobalTransform(mTransform);
 }
 
-bool CReflectionCharacter::IsReflected(reflection_t eReflectionType) const
+bool CGrottoCharacter::IsReflected(reflection_t eReflectionType) const
 {
 	if (eReflectionType == REFLECTION_ANY)
 		return !!m_iReflected;
@@ -236,12 +236,12 @@ bool CReflectionCharacter::IsReflected(reflection_t eReflectionType) const
 	return !!(m_iReflected&(1<<eReflectionType));
 }
 
-CMirror* CReflectionCharacter::GetMirrorInside() const
+CMirror* CGrottoCharacter::GetMirrorInside() const
 {
 	return m_hMirrorInside;
 }
 
-const TVector CReflectionCharacter::GetUpVector() const
+const TVector CGrottoCharacter::GetUpVector() const
 {
 	if (IsReflected(REFLECTION_VERTICAL))
 		return Vector(0, -1, 0);
@@ -249,7 +249,7 @@ const TVector CReflectionCharacter::GetUpVector() const
 		return Vector(0, 1, 0);
 }
 
-bool CReflectionCharacter::IsNearMirror(class CMirror* pMirror, const Vector& vecPoint) const
+bool CGrottoCharacter::IsNearMirror(class CMirror* pMirror, const Vector& vecPoint) const
 {
 	if (!pMirror)
 		return false;
@@ -257,7 +257,7 @@ bool CReflectionCharacter::IsNearMirror(class CMirror* pMirror, const Vector& ve
 	return pMirror->IsPointInside(vecPoint);
 }
 
-bool CReflectionCharacter::ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const
+bool CGrottoCharacter::ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const
 {
 	if (tstring(pOther->GetClassName()) == "CWorld")
 	{

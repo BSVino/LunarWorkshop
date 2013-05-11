@@ -1,9 +1,8 @@
-#ifndef REFLECTION_TOKEN_H
-#define REFLECTION_TOKEN_H
+#pragma once
 
 #include <game/entities/baseentity.h>
 
-#include "reflection.h"
+#include "grotto.h"
 
 class CReceptacle;
 
@@ -32,5 +31,3 @@ protected:
 	bool				m_bReflected;
 	tstring				m_sType;
 };
-
-#endif

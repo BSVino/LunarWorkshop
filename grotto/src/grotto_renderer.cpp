@@ -1,4 +1,4 @@
-#include "reflection_renderer.h"
+#include "grotto_renderer.h"
 
 #include <GL3/gl3w.h>
 
@@ -9,28 +9,28 @@
 #include <tinker/profiler.h>
 #include <models/models.h>
 
-#include "reflection_game.h"
+#include "grotto_game.h"
 #include "mirror.h"
-#include "reflection_playercharacter.h"
+#include "grotto_playercharacter.h"
 #include "kaleidobeast.h"
 
-CReflectionRenderer::CReflectionRenderer()
+CGrottoRenderer::CGrottoRenderer()
 	: CGameRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
 {
 	for (size_t i = 0; i < 5; i++)
 		m_aoReflectionBuffers.push_back(CreateFrameBuffer(m_iWidth, m_iHeight, (fb_options_e)(FB_TEXTURE|FB_DEPTH|FB_LINEAR)));
 }
 
-void CReflectionRenderer::Initialize()
+void CGrottoRenderer::Initialize()
 {
 	BaseClass::Initialize();
 
 	m_bRenderingReflection = false;
 }
 
-void CReflectionRenderer::PreRender()
+void CGrottoRenderer::PreRender()
 {
-	TPROF("CReflectionRenderer::SetupFrame");
+	TPROF("CGrottoRenderer::SetupFrame");
 
 	tvector<CEntityHandle<CMirror> > apMirrors;
 	apMirrors.reserve(CMirror::GetNumMirrors());
@@ -77,7 +77,7 @@ void CReflectionRenderer::PreRender()
 
 		m_bRenderingReflection = true;
 
-		CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
+		CGrottoCharacter* pPlayerCharacter = GrottoGame()->GetLocalPlayerCharacter();
 
 		if (pPlayerCharacter)
 			c.SetWinding(!(pPlayerCharacter->IsReflected(REFLECTION_LATERAL) == pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)));
@@ -91,20 +91,20 @@ void CReflectionRenderer::PreRender()
 	BaseClass::PreRender();
 }
 
-void CReflectionRenderer::ModifyContext(class CRenderingContext* pContext)
+void CGrottoRenderer::ModifyContext(class CRenderingContext* pContext)
 {
 	BaseClass::ModifyContext(pContext);
 
 	if (!Game()->GetNumLocalPlayers())
 		return;
 
-	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
+	CGrottoCharacter* pPlayerCharacter = GrottoGame()->GetLocalPlayerCharacter();
 
 	if (pPlayerCharacter)
 		pContext->SetWinding(pPlayerCharacter->IsReflected(REFLECTION_LATERAL) == pPlayerCharacter->IsReflected(REFLECTION_VERTICAL));
 }
 
-void CReflectionRenderer::SetupFrame(class CRenderingContext* pContext)
+void CGrottoRenderer::SetupFrame(class CRenderingContext* pContext)
 {
 	if (CVar::GetCVarValue("game_mode") == "menu")
 		m_bDrawBackground = true;
@@ -114,7 +114,7 @@ void CReflectionRenderer::SetupFrame(class CRenderingContext* pContext)
 	BaseClass::SetupFrame(pContext);
 }
 
-void CReflectionRenderer::StartRendering(class CRenderingContext* pContext)
+void CGrottoRenderer::StartRendering(class CRenderingContext* pContext)
 {
 	if (CVar::GetCVarValue("game_mode") == "menu")
 	{
@@ -122,7 +122,7 @@ void CReflectionRenderer::StartRendering(class CRenderingContext* pContext)
 		return;
 	}
 
-	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
+	CGrottoCharacter* pPlayerCharacter = GrottoGame()->GetLocalPlayerCharacter();
 
 	pContext->SetProjection(Matrix4x4::ProjectPerspective(
 			m_flCameraFOV,
@@ -180,7 +180,7 @@ void CReflectionRenderer::StartRendering(class CRenderingContext* pContext)
 	glGetIntegerv( GL_VIEWPORT, m_aiViewport );
 }
 
-void CReflectionRenderer::FinishRendering(class CRenderingContext* pContext)
+void CGrottoRenderer::FinishRendering(class CRenderingContext* pContext)
 {
 	BaseClass::FinishRendering(pContext);
 
@@ -188,7 +188,7 @@ void CReflectionRenderer::FinishRendering(class CRenderingContext* pContext)
 		return;
 }
 
-void CReflectionRenderer::StartRenderingReflection(class CRenderingContext* pContext, CMirror* pMirror)
+void CGrottoRenderer::StartRenderingReflection(class CRenderingContext* pContext, CMirror* pMirror)
 {
 	pContext->SetProjection(Matrix4x4::ProjectPerspective(
 			m_flCameraFOV,
@@ -204,7 +204,7 @@ void CReflectionRenderer::StartRenderingReflection(class CRenderingContext* pCon
 	Vector vecCameraDirection = m_vecCameraDirection;
 	Vector vecCameraUp = m_vecCameraUp;
 
-	CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
+	CGrottoCharacter* pPlayerCharacter = GrottoGame()->GetLocalPlayerCharacter();
 
 	Matrix4x4 mReflect = pPlayerCharacter->GetReflectionMatrix();
 
@@ -248,17 +248,17 @@ void CReflectionRenderer::StartRenderingReflection(class CRenderingContext* pCon
 	glViewport(0, 0, (GLsizei)m_oSceneBuffer.m_iWidth, (GLsizei)m_oSceneBuffer.m_iHeight);
 }
 
-CFrameBuffer& CReflectionRenderer::GetReflectionBuffer(size_t i)
+CFrameBuffer& CGrottoRenderer::GetReflectionBuffer(size_t i)
 {
 	return m_aoReflectionBuffers[i];
 }
 
-bool CReflectionRenderer::ShouldRenderPhysicsDebug() const
+bool CGrottoRenderer::ShouldRenderPhysicsDebug() const
 {
 	return !IsRenderingReflection();
 }
 
-CReflectionRenderer* ReflectionRenderer()
+CGrottoRenderer* GrottoRenderer()
 {
-	return static_cast<CReflectionRenderer*>(GameServer()->GetRenderer());
+	return static_cast<CGrottoRenderer*>(GameServer()->GetRenderer());
 }

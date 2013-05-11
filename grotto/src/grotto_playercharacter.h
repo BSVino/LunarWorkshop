@@ -1,16 +1,15 @@
-#ifndef REFLECTION_PLAYER_CHARACTER_H
-#define REFLECTION_PLAYER_CHARACTER_H
+#pragma once
 
-#include "reflection_character.h"
+#include "grotto_character.h"
 
 #include "mirror.h"
 
 class CToken;
 class CCharacterCamera;
 
-class CPlayerCharacter : public CReflectionCharacter
+class CPlayerCharacter : public CGrottoCharacter
 {
-	REGISTER_ENTITY_CLASS(CPlayerCharacter, CReflectionCharacter);
+	REGISTER_ENTITY_CLASS(CPlayerCharacter, CGrottoCharacter);
 
 public:
 	void						Precache();
@@ -33,5 +32,3 @@ protected:
 	CEntityHandle<CMirror>		m_hMirror;
 	CEntityHandle<CToken>		m_hToken;
 };
-
-#endif
