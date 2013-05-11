@@ -20,20 +20,15 @@ CGame* CreateGame()
 	return GameServer()->Create<CReflectionGame>("CReflectionGame");
 }
 
-CRenderer* CreateRenderer()
-{
-	return new CReflectionRenderer();
-}
-
 CCamera* CreateCamera()
 {
 	CCamera* pCamera = new CReflectionCamera();
 	return pCamera;
 }
 
-CLevel* CreateLevel()
+CResource<CLevel> CreateLevel()
 {
-	return new CLevel();
+	return CResource<CLevel>(new CLevel());
 }
 
 CHUDViewport* CreateHUD()
@@ -108,7 +103,7 @@ CReflectionRenderer* CReflectionGame::GetReflectionRenderer()
 	return static_cast<CReflectionRenderer*>(GameServer()->GetRenderer());
 }
 
-CReflectionCamera* CReflectionGame::GetReflectionCamera()
+pfnConditionsMet Game_GetInstructorConditions(const tstring& sConditions)
 {
-	return static_cast<CReflectionCamera*>(GameServer()->GetCamera());
+	return false;
 }

@@ -1,7 +1,7 @@
 #ifndef REFLECTION_GAME_H
 #define REFLECTION_GAME_H
 
-#include <game/game.h>
+#include <game/entities/game.h>
 
 class CReflectionGame : public CGame
 {
@@ -16,7 +16,6 @@ public:
 
 	class CReflectionCharacter*	GetLocalPlayerCharacter();
 	class CReflectionRenderer*	GetReflectionRenderer();
-	class CReflectionCamera*	GetReflectionCamera();
 };
 
 inline class CReflectionGame* ReflectionGame()

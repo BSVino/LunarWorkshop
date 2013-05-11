@@ -361,7 +361,7 @@ void CBulletPhysics::AddModelTris(class CBaseEntity* pEntity, collision_type_t e
 			pBody->setActivationState(DISABLE_DEACTIVATION);
 		}
 		else if (eCollisionType == CT_STATIC_MESH)
-			pPhysicsEntity->m_pRigidBody->setActivationState(DISABLE_SIMULATION);
+			pBody->setActivationState(DISABLE_SIMULATION);
 
 		m_pDynamicsWorld->addRigidBody(pBody, pEntity->GetCollisionGroup(), GetMaskForGroup(pEntity->GetCollisionGroup()));
 	}

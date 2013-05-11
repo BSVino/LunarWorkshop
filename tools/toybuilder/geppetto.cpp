@@ -92,7 +92,7 @@ CGeppetto::CGeppetto(bool bForce, const tstring& sCWD)
 	m_bForceCompile = bForce;
 
 	m_sCWD = sCWD;
-	if (m_sCWD.back() != '/' && m_sCWD.back() != '\\')
+	if (m_sCWD.length() && m_sCWD.back() != '/' && m_sCWD.back() != '\\')
 		m_sCWD.append("/");
 }
 
@@ -158,7 +158,7 @@ bool CGeppetto::Compile()
 
 void CGeppetto::LoadFromFiles(const tstring& sMesh, const tstring& sPhysics)
 {
-	TMsg("Reading model '%s" + sMesh + "' ...");
+	TMsg("Reading model '" + sMesh + "' ...");
 	std::shared_ptr<CConversionScene> pScene(new CConversionScene());
 	CModelConverter c(pScene.get());
 

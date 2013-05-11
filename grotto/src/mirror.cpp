@@ -51,6 +51,8 @@ void CMirror::Spawn()
 
 bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 {
+	AABB aabbBox = bPhysics?GetPhysBoundingBox():GetVisBoundingBox();
+
 	switch(m_eMirrorType)
 	{
 	case MIRROR_VERTICAL:
@@ -59,7 +61,7 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 			if (vecPoint.y < GetGlobalOrigin().y + 0.05f)
 				return false;
 
-			if (vecPoint.y > GetGlobalOrigin().y + GetBoundingBox().Size().y)
+			if (vecPoint.y > GetGlobalOrigin().y + aabbBox.Size().y)
 				return false;
 		}
 		else
@@ -67,11 +69,11 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 			if (vecPoint.y > GetGlobalOrigin().y - 0.05f)
 				return false;
 
-			if (vecPoint.y < GetGlobalOrigin().y - GetBoundingBox().Size().y)
+			if (vecPoint.y < GetGlobalOrigin().y - aabbBox.Size().y)
 				return false;
 		}
 
-		return (vecPoint - GetGlobalOrigin()).Length2D() < GetBoundingBox().Size().Length2D()/2;
+		return (vecPoint - GetGlobalOrigin()).Length2D() < aabbBox.Size().Length2D()/2;
 
 	case MIRROR_HORIZONTAL:
 		if (bPhysics)
@@ -97,15 +99,16 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 		}
 
 		CReflectionCharacter* pPlayerCharacter = ReflectionGame()->GetLocalPlayerCharacter();
-		AABB aabb = GetBoundingBox();
-		aabb.m_vecMins += pPlayerCharacter->GetBoundingBox().m_vecMins;
-		aabb.m_vecMaxs += pPlayerCharacter->GetBoundingBox().m_vecMaxs;
+		AABB aabbPlayerBox = bPhysics?pPlayerCharacter->GetPhysBoundingBox():pPlayerCharacter->GetVisBoundingBox();
+
+		aabbBox.m_vecMins += aabbPlayerBox.m_vecMins;
+		aabbBox.m_vecMaxs += aabbPlayerBox.m_vecMaxs;
 
 		// Use a tighter area for physics to make sure we never fall outside the level
 		if (bPhysics)
-			return aabb.Inside2D(vecPoint - GetGlobalOrigin());
+			return aabbBox.Inside2D(vecPoint - GetGlobalOrigin());
 		else
-			return (aabb*1.2f).Inside2D(vecPoint - GetGlobalOrigin());
+			return (aabbBox*1.2f).Inside2D(vecPoint - GetGlobalOrigin());
 	}
 
 	return false;

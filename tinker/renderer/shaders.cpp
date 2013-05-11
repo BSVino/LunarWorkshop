@@ -41,7 +41,6 @@ CShaderLibrary::CShaderLibrary()
 
 	FILE* f = tfopen("shaders/functions.si", "r");
 
-	TAssert(f);
 	if (f)
 	{
 		tstring sLine;
@@ -53,7 +52,6 @@ CShaderLibrary::CShaderLibrary()
 
 	f = tfopen("shaders/header.si", "r");
 
-	TAssert(f);
 	if (f)
 	{
 		tstring sLine;
@@ -178,6 +176,9 @@ void CShaderLibrary::AddShader(const tstring& sFile)
 
 void CShaderLibrary::CompileShaders(int iSamples)
 {
+	TAssert(Get()->m_sFunctions.length());
+	TAssert(Get()->m_sHeader.length());
+
 	if (iSamples != -1)
 		Get()->m_iSamples = iSamples;
 

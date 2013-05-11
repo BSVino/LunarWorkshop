@@ -24,7 +24,7 @@ CLevelSelector::CLevelSelector()
 	pLabel->SetAlign(CLabel::TA_TOPCENTER);
 	AddControl(pLabel);
 
-	m_pLevels = new CTree(0, 0, 0);
+	m_pLevels = new CTree();
 	m_pLevels->SetLeft(15);
 	m_pLevels->SetTop(25);
 	m_pLevels->SetWidth(250);

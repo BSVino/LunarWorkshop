@@ -2,6 +2,7 @@
 
 #include <tinker/application.h>
 #include <physics/physics.h>
+#include <game/entities/charactercamera.h>
 
 #include "mirror.h"
 #include "token.h"
@@ -28,11 +29,14 @@ void CPlayerCharacter::Precache()
 void CPlayerCharacter::Spawn()
 {
 	SetMass(60);
-	m_aabbBoundingBox = AABB(Vector(-0.35f, 0, -0.35f), Vector(0.35f, 2, 0.35f));
+	m_aabbPhysBoundingBox = AABB(Vector(-0.35f, 0, -0.35f), Vector(0.35f, 2, 0.35f));
 
 	SetGlobalGravity(Vector(0, -9.8f, 0)*2);
 
 	BaseClass::Spawn();
+
+	m_hCamera = GameServer()->Create<CCharacterCamera>("CCharacterCamera");
+	m_hCamera->SetCharacter(this);
 }
 
 void CPlayerCharacter::PlaceMirror(mirror_t eMirror)
@@ -118,7 +122,7 @@ void CPlayerCharacter::FindItems()
 				return;
 			}
 
-			if (pReceptacle->GetToken() && m_hToken == nullptr)
+			if (pReceptacle->GetToken() && !m_hToken)
 			{
 				pToken = pReceptacle->GetToken();
 				pReceptacle->SetToken(nullptr);
@@ -149,7 +153,7 @@ void CPlayerCharacter::FindItems()
 
 void CPlayerCharacter::DropToken()
 {
-	if (m_hToken == nullptr)
+	if (!m_hToken)
 		return;
 
 	m_hToken->SetMoveParent(nullptr);

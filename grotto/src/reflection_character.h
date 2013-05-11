@@ -17,7 +17,7 @@ public:
 public:
 	virtual void				Spawn();
 
-	virtual TVector				GetGoalVelocity();
+	virtual const TVector       GetGoalVelocity();
 
 	virtual TFloat				EyeHeight() const;
 	virtual TFloat				BaseCharacterSpeed() { return 5.0f; }
@@ -34,7 +34,7 @@ public:
 	CMirror*					GetMirrorInside() const;
 	virtual void				Reflected(reflection_t eReflectionType) {};
 
-	virtual TVector				GetUpVector() const;
+	virtual const TVector       GetUpVector() const;
 
 	// Is the point near enough to a mirror to be considered inside of it for physics purposes?
 	bool						IsNearMirror(class CMirror* pMirror, const Vector& vecPoint) const;

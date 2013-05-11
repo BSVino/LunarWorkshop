@@ -19,12 +19,14 @@ public:
 	virtual TVector			GetThirdPersonCameraPosition();
 	virtual TVector			GetThirdPersonCameraDirection();
 
-	virtual bool			KeyDown(int c);
-
 	void					SetThirdPerson(bool bOn) { m_bThirdPerson = bOn; };
 	bool					GetThirdPerson() { return m_bThirdPerson; };
 
-public:
+	virtual float           GetCameraNear() const { return 0.05f; }
+
+	void                    SetCharacter(CCharacter* pCharacter);
+
+private:
 	bool						m_bThirdPerson;
 	CEntityHandle<CCharacter>	m_hCharacter;
 

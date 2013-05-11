@@ -40,7 +40,7 @@ CCreateToySourcePanel::CCreateToySourcePanel()
 	SetHeaderColor(Color(100, 100, 100, 255));
 	SetBorder(glgui::CPanel::BT_SOME);
 
-	m_pToyFileLabel = new glgui::CLabel("Toy File:", "sans-serif", 10);
+	m_pToyFileLabel = new glgui::CLabel("Output Toy File:", "sans-serif", 10);
 	m_pToyFileLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
 	AddControl(m_pToyFileLabel);
 	m_pToyFileText = new glgui::CTextField();
@@ -192,7 +192,7 @@ CSourcePanel::CSourcePanel()
 	m_pFilename = new glgui::CLabel("", "sans-serif", 16);
 	AddControl(m_pFilename);
 
-	m_pToyFileLabel = new glgui::CLabel("Toy File: ", "sans-serif", 10);
+	m_pToyFileLabel = new glgui::CLabel("Output Toy File: ", "sans-serif", 10);
 	m_pToyFileLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
 	AddControl(m_pToyFileLabel);
 

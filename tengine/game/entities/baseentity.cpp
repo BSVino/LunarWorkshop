@@ -5,6 +5,7 @@
 #include <tvector.h>
 
 #include <models/models.h>
+#include <toys/toy.h>
 #include <renderer/renderingcontext.h>
 #include <renderer/particles.h>
 #include <sound/sound.h>
@@ -980,11 +981,37 @@ bool CBaseEntity::ShouldRender() const
 		for (size_t i = 0; i < pModel->m_ahMaterials.size(); i++)
 		{
 			CMaterialHandle& hMaterial = pModel->m_ahMaterials[i];
+
+			if (!hMaterial.IsValid())
+				continue;
+
 			if (!hMaterial->m_sBlend.length() || hMaterial->m_sBlend == "none")
 				return true;
 		}
+
+		for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
+		{
+			size_t iSceneAreaModel = CModelLibrary::FindModel(pModel->m_pToy->GetSceneAreaFileName(i));
+			CModel* pSceneAreaModel = CModelLibrary::GetModel(iSceneAreaModel);
+
+			TAssert(pSceneAreaModel);
+
+			if (!pSceneAreaModel)
+				continue;
+
+			for (size_t j = 0; j < pSceneAreaModel->m_pToy->GetNumMaterials(); j++)
+			{
+				CMaterialHandle& hMaterial = pSceneAreaModel->m_ahMaterials[j];
+
+				if (!hMaterial.IsValid())
+					continue;
+
+				if (!hMaterial->m_sBlend.length() || hMaterial->m_sBlend == "none")
+					return true;
+			}
+		}
 	}
-	
+
 	if (m_hMaterialModel.IsValid())
 		return (!m_hMaterialModel->m_sBlend.length() || m_hMaterialModel->m_sBlend == "none");
 
@@ -1003,6 +1030,10 @@ bool CBaseEntity::ShouldRenderTransparent() const
 		for (size_t i = 0; i < pModel->m_ahMaterials.size(); i++)
 		{
 			CMaterialHandle& hMaterial = pModel->m_ahMaterials[i];
+
+			if (!hMaterial.IsValid())
+				continue;
+
 			if (hMaterial->m_sBlend.length() && hMaterial->m_sBlend != "none")
 				return true;
 		}

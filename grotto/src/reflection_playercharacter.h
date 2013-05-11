@@ -6,6 +6,7 @@
 #include "mirror.h"
 
 class CToken;
+class CCharacterCamera;
 
 class CPlayerCharacter : public CReflectionCharacter
 {
@@ -27,6 +28,8 @@ public:
 	virtual void				Reflected(reflection_t eReflectionType);
 
 protected:
+	CEntityHandle<CCharacterCamera> m_hCamera;
+
 	CEntityHandle<CMirror>		m_hMirror;
 	CEntityHandle<CToken>		m_hToken;
 };

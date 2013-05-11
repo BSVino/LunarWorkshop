@@ -1,7 +1,7 @@
 #ifndef REFLECTION_MIRROR_H
 #define REFLECTION_MIRROR_H
 
-#include <game/baseentity.h>
+#include <game/entities/baseentity.h>
 
 #include "reflection.h"
 

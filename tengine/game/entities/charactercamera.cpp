@@ -14,6 +14,7 @@ SAVEDATA_TABLE_BEGIN(CCharacterCamera);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flBack);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flUp);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, float, m_flSide);
+	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_COPYTYPE, float, m_flFOV, "FOV", 90);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CCharacterCamera);
@@ -29,9 +30,6 @@ CCharacterCamera::CCharacterCamera()
 
 void CCharacterCamera::CameraThink()
 {
-	// This whole entity is untested since the move to the camera manager.
-	TUnimplemented();
-
 	BaseClass::CameraThink();
 
 	CCharacter* pCharacter = m_hCharacter;
@@ -45,7 +43,6 @@ void CCharacterCamera::CameraThink()
 	}
 	else
 	{
-		TUnimplemented();
 		SetGlobalOrigin(pCharacter->GetGlobalOrigin() + pCharacter->GetUpVector() * (TFloat)pCharacter->EyeHeight());
 		SetGlobalAngles(pCharacter->GetViewAngles());
 	}
@@ -76,4 +73,9 @@ TVector CCharacterCamera::GetThirdPersonCameraDirection()
 		return TVector();
 
 	return AngleVector(pCharacter->GetThirdPersonCameraAngles());
+}
+
+void CCharacterCamera::SetCharacter(CCharacter* pCharacter)
+{
+	m_hCharacter = pCharacter;
 }

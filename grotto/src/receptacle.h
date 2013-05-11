@@ -1,6 +1,6 @@
 #pragma once
 
-#include <game/baseentity.h>
+#include <game/entities/baseentity.h>
 
 class CToken;
 

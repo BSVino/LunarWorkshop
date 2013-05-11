@@ -1,7 +1,7 @@
 #ifndef REFLECTION_CAMERA_H
 #define REFLECTION_CAMERA_H
 
-#include <game/charactercamera.h>
+#include <game/entities/charactercamera.h>
 
 class CReflectionCamera : public CCharacterCamera
 {
@@ -13,9 +13,6 @@ public:
 public:
 	virtual void				Think();
 
-	virtual Vector				GetCameraPosition();
-	virtual Vector				GetCameraDirection();
-	virtual Vector				GetCameraUp();
 	virtual float				GetCameraFOV();
 	virtual float				GetCameraNear() { return 0.01f; };
 	virtual float				GetCameraFar() { return 500.0f; };

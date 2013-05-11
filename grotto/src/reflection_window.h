@@ -18,6 +18,7 @@ public:
 
 	virtual void				RenderLoading();
 
+	virtual class CRenderer*	CreateRenderer();
 	class CReflectionRenderer*	GetRenderer();
 	class CReflectionHUD*		GetHUD() { return m_pHUD; };
 
