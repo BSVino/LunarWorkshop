@@ -76,7 +76,6 @@ if (BUILD_ENGINE)
 	add_subdirectory (tengine)
 	add_subdirectory (tools)
 
-	#add_subdirectory (reflection)
 	add_subdirectory (grotto)
 endif (BUILD_ENGINE)
 
