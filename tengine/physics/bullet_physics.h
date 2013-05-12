@@ -82,7 +82,7 @@ public:
 		CTraceResult::CTraceHit& th = m_tr.m_aHits.push_back();
 
 		th.m_flFraction = cp.getDistance();
-		th.m_pHit = CEntityHandle<CBaseEntity>((size_t)colObj1->getUserPointer()).GetPointer();
+		th.m_pHit = (IPhysicsEntity*)colObj1->getUserPointer();
 		th.m_vecHit = ToTVector(cp.getPositionWorldOnB());
 
 		if (th.m_flFraction < m_tr.m_flFraction)
@@ -116,7 +116,7 @@ public:
 
 public:
 	class CBulletPhysics*			m_pPhysics;
-	CEntityHandle<CBaseEntity>		m_hEntity;
+	IPhysicsEntity*                 m_pEntity;
 };
 
 class CPhysicsEntity
@@ -157,17 +157,17 @@ public:
 							~CBulletPhysics();
 
 public:
-	virtual void			AddEntity(class CBaseEntity* pEnt, collision_type_t eCollisionType);
-	virtual void            AddShape(class CBaseEntity* pEnt, collision_type_t eCollisionType);
-	virtual void			AddModel(class CBaseEntity* pEnt, collision_type_t eCollisionType, size_t iModel);
-	virtual void			AddModelTris(class CBaseEntity* pEnt, collision_type_t eCollisionType, size_t iModel);
-	virtual void			RemoveEntity(class CBaseEntity* pEnt);
+	virtual void			AddEntity(IPhysicsEntity* pEnt, collision_type_t eCollisionType);
+	virtual void            AddShape(IPhysicsEntity* pEnt, collision_type_t eCollisionType);
+	virtual void			AddModel(IPhysicsEntity* pEnt, collision_type_t eCollisionType, size_t iModel);
+	virtual void			AddModelTris(IPhysicsEntity* pEnt, collision_type_t eCollisionType, size_t iModel);
+	virtual void			RemoveEntity(IPhysicsEntity* pEnt);
 	virtual void			RemoveEntity(CPhysicsEntity* pEntity);
 	virtual size_t          AddExtra(size_t iExtraMesh, const Vector& vecOrigin);  // Input is result from LoadExtraCollisionMesh
 	virtual size_t          AddExtraBox(const Vector& vecCenter, const Vector& vecSize);
 	virtual void            RemoveExtra(size_t iExtra);   // Input is result from AddExtra*
 	virtual void			RemoveAllEntities();
-	virtual bool            IsEntityAdded(class CBaseEntity* pEnt);
+	virtual bool            IsEntityAdded(IPhysicsEntity* pEnt);
 
 	virtual void			LoadCollisionMesh(const tstring& sModel, size_t iTris, int* aiTris, size_t iVerts, float* aflVerts);
 	virtual void			UnloadCollisionMesh(const tstring& sModel);
@@ -178,29 +178,29 @@ public:
 
 	virtual void			DebugDraw(int iLevel);
 
-	virtual collision_type_t	GetEntityCollisionType(class CBaseEntity* pEnt);
+	virtual collision_type_t	GetEntityCollisionType(IPhysicsEntity* pEnt);
 
-	virtual void			SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform);
-	virtual void			SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity);
-	virtual Vector			GetEntityVelocity(class CBaseEntity* pEnt);
-	virtual void			SetControllerMoveVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity);
-	virtual const Vector    GetControllerMoveVelocity(class CBaseEntity* pEnt);
-	virtual void			SetControllerColliding(class CBaseEntity* pEnt, bool bColliding);
-	virtual void			SetEntityGravity(class CBaseEntity* pEnt, const Vector& vecGravity);
-	virtual void			SetEntityUpVector(class CBaseEntity* pEnt, const Vector& vecUp);
-	virtual void			SetLinearFactor(class CBaseEntity* pEnt, const Vector& vecFactor);
-	virtual void			SetAngularFactor(class CBaseEntity* pEnt, const Vector& vecFactor);
+	virtual void			SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& mTransform);
+	virtual void			SetEntityVelocity(IPhysicsEntity* pEnt, const Vector& vecVelocity);
+	virtual Vector			GetEntityVelocity(IPhysicsEntity* pEnt);
+	virtual void			SetControllerMoveVelocity(IPhysicsEntity* pEnt, const Vector& vecVelocity);
+	virtual const Vector    GetControllerMoveVelocity(IPhysicsEntity* pEnt);
+	virtual void			SetControllerColliding(IPhysicsEntity* pEnt, bool bColliding);
+	virtual void			SetEntityGravity(IPhysicsEntity* pEnt, const Vector& vecGravity);
+	virtual void			SetEntityUpVector(IPhysicsEntity* pEnt, const Vector& vecUp);
+	virtual void			SetLinearFactor(IPhysicsEntity* pEnt, const Vector& vecFactor);
+	virtual void			SetAngularFactor(IPhysicsEntity* pEnt, const Vector& vecFactor);
 
-	virtual void            CharacterMovement(class CBaseEntity* pEnt, class btCollisionWorld* pCollisionWorld, float flDelta);
+	virtual void            CharacterMovement(IPhysicsEntity* pEnt, class btCollisionWorld* pCollisionWorld, float flDelta);
 
-	virtual void            TraceLine(CTraceResult& tr, const Vector& v1, const Vector& v2, class CBaseEntity* pIgnore=nullptr);
-	virtual void            TraceEntity(CTraceResult& tr, class CBaseEntity* pEntity, const Vector& v1, const Vector& v2);
-	virtual void            CheckSphere(CTraceResult& tr, float flRadius, const Vector& vecCenter, class CBaseEntity* pIgnore=nullptr);
+	virtual void            TraceLine(CTraceResult& tr, const Vector& v1, const Vector& v2, IPhysicsEntity* pIgnore=nullptr);
+	virtual void            TraceEntity(CTraceResult& tr, IPhysicsEntity* pEntity, const Vector& v1, const Vector& v2);
+	virtual void            CheckSphere(CTraceResult& tr, float flRadius, const Vector& vecCenter, IPhysicsEntity* pIgnore=nullptr);
 
-	virtual void			CharacterJump(class CBaseEntity* pEnt);
+	virtual void			CharacterJump(IPhysicsEntity* pEnt);
 
-	virtual CPhysicsEntity*	GetPhysicsEntity(class CBaseEntity* pEnt);
-	virtual CBaseEntity*    GetBaseEntity(class btCollisionObject* pObject);
+	virtual CPhysicsEntity* GetPhysicsEntity(IPhysicsEntity* pEnt);
+	virtual IPhysicsEntity* GetGameEntity(class btCollisionObject* pObject);
 
 	short                   GetMaskForGroup(collision_group_t eGroup);
 
@@ -214,6 +214,8 @@ protected:
 	class btGhostPairCallback*				m_pGhostPairCallback;
 	btDiscreteDynamicsWorld*				m_pDynamicsWorld;
 
+	class CPhysicsDebugDrawer*				m_pDebugDrawer;
+
 	class CCollisionMesh
 	{
 	public:
@@ -221,11 +223,9 @@ protected:
 		btCollisionShape*						m_pCollisionShape;
 	};
 
-	tmap<size_t, CCollisionMesh>		m_apCollisionMeshes;
-	tvector<CCollisionMesh*>            m_apExtraCollisionMeshes;
-	tmap<tstring, btConvexShape*>		m_apCharacterShapes;
-
-	class CPhysicsDebugDrawer*				m_pDebugDrawer;
+	static tmap<size_t, CCollisionMesh>     s_apCollisionMeshes;
+	static tvector<CCollisionMesh*>         s_apExtraCollisionMeshes;
+	static tmap<tstring, btConvexShape*>    s_apCharacterShapes;
 };
 
 #endif

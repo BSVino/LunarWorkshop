@@ -12,6 +12,10 @@
 
 #include "physics_debugdraw.h"
 
+tmap<size_t, CBulletPhysics::CCollisionMesh>     CBulletPhysics::s_apCollisionMeshes;
+tvector<CBulletPhysics::CCollisionMesh*>         CBulletPhysics::s_apExtraCollisionMeshes;
+tmap<tstring, btConvexShape*>                    CBulletPhysics::s_apCharacterShapes;
+
 CBulletPhysics::CBulletPhysics()
 {
 	// Allocate all memory up front to avoid reallocations
@@ -32,11 +36,6 @@ CBulletPhysics::CBulletPhysics()
 CBulletPhysics::~CBulletPhysics()
 {
 	delete m_pDynamicsWorld;
-	for (tmap<size_t, CCollisionMesh>::iterator it = m_apCollisionMeshes.begin(); it != m_apCollisionMeshes.end(); it++)
-	{
-		delete it->second.m_pCollisionShape;
-		delete it->second.m_pIndexVertexArray;
-	}
 	delete m_pBroadphase;
 	delete m_pGhostPairCallback;
 	delete m_pDispatcher;
@@ -46,7 +45,7 @@ CBulletPhysics::~CBulletPhysics()
 		delete m_pDebugDrawer;
 }
 
-void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollisionType)
+void CBulletPhysics::AddEntity(IPhysicsEntity* pEntity, collision_type_t eCollisionType)
 {
 	TAssert(eCollisionType != CT_NONE);
 	if (eCollisionType == CT_NONE)
@@ -62,7 +61,7 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 
 	CPhysicsEntity* pPhysicsEntity = &m_aEntityList[iHandle];
 	pPhysicsEntity->m_eCollisionType = eCollisionType;
-	pPhysicsEntity->m_oMotionState.m_hEntity = pEntity;
+	pPhysicsEntity->m_oMotionState.m_pEntity = pEntity;
 	pPhysicsEntity->m_oMotionState.m_pPhysics = this;
 
 	if (eCollisionType == CT_CHARACTER)
@@ -85,26 +84,26 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 		else
 			sIdentifier = pEntity->GetClassName();
 
-		auto it = m_apCharacterShapes.find(sIdentifier);
-		if (it == m_apCharacterShapes.end())
+		auto it = s_apCharacterShapes.find(sIdentifier);
+		if (it == s_apCharacterShapes.end())
 		{
 			if (pCharacter->UsePhysicsModelForController())
 			{
 				TAssert(pEntity->GetModelID() != ~0);
 
 				Vector vecHalf = pEntity->GetModel()->m_aabbPhysBoundingBox.m_vecMaxs - pEntity->GetModel()->m_aabbPhysBoundingBox.Center();
-				m_apCharacterShapes[sIdentifier] = new btBoxShape(ToBTVector(vecHalf));
+				s_apCharacterShapes[sIdentifier] = new btBoxShape(ToBTVector(vecHalf));
 			}
 			else
 			{
 				TAssert(flHeight >= flRadius*2); // Couldn't very well make a capsule this way could we?
 
-				m_apCharacterShapes[sIdentifier] = new btCapsuleShapeZ(flRadius, flHeight - flRadius*2);
+				s_apCharacterShapes[sIdentifier] = new btCapsuleShapeZ(flRadius, flHeight - flRadius*2);
 			}
 		}
 
 #ifdef _DEBUG
-		btCapsuleShape* pCapsuleShape = dynamic_cast<btCapsuleShape*>(m_apCharacterShapes[sIdentifier]);
+		btCapsuleShape* pCapsuleShape = dynamic_cast<btCapsuleShape*>(s_apCharacterShapes[sIdentifier]);
 		if (pCapsuleShape)
 		{
 			// Varying character sizes not yet supported!
@@ -113,7 +112,7 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 		}
 #endif
 
-		btConvexShape* pConvexShape = m_apCharacterShapes[sIdentifier];
+		btConvexShape* pConvexShape = s_apCharacterShapes[sIdentifier];
 
 		btTransform mTransform;
 		mTransform.setIdentity();
@@ -200,7 +199,7 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 	}
 }
 
-void CBulletPhysics::AddShape(class CBaseEntity* pEntity, collision_type_t eCollisionType)
+void CBulletPhysics::AddShape(IPhysicsEntity* pEntity, collision_type_t eCollisionType)
 {
 	CPhysicsEntity* pPhysicsEntity = &m_aEntityList[pEntity->GetHandle()];
 
@@ -234,7 +233,7 @@ void CBulletPhysics::AddShape(class CBaseEntity* pEntity, collision_type_t eColl
 	m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_apPhysicsShapes.back(), pEntity->GetCollisionGroup(), GetMaskForGroup(pEntity->GetCollisionGroup()));
 }
 
-void CBulletPhysics::AddModel(class CBaseEntity* pEntity, collision_type_t eCollisionType, size_t iModel)
+void CBulletPhysics::AddModel(IPhysicsEntity* pEntity, collision_type_t eCollisionType, size_t iModel)
 {
 	CModel* pModel = CModelLibrary::GetModel(iModel);
 	if (!pModel)
@@ -283,7 +282,7 @@ void CBulletPhysics::AddModel(class CBaseEntity* pEntity, collision_type_t eColl
 	}
 }
 
-void CBulletPhysics::AddModelTris(class CBaseEntity* pEntity, collision_type_t eCollisionType, size_t iModel)
+void CBulletPhysics::AddModelTris(IPhysicsEntity* pEntity, collision_type_t eCollisionType, size_t iModel)
 {
 	CModel* pModel = CModelLibrary::GetModel(iModel);
 	if (!pModel)
@@ -302,14 +301,14 @@ void CBulletPhysics::AddModelTris(class CBaseEntity* pEntity, collision_type_t e
 		pPhysicsEntity->m_bCenterMassOffset = false;
 
 		flMass = 0;
-		pCollisionShape = m_apCollisionMeshes[iModel].m_pCollisionShape;
+		pCollisionShape = s_apCollisionMeshes[iModel].m_pCollisionShape;
 	}
 	else if (eCollisionType == CT_KINEMATIC)
 	{
 		pPhysicsEntity->m_bCenterMassOffset = false;
 
 		flMass = 0;
-		pCollisionShape = m_apCollisionMeshes[iModel].m_pCollisionShape;
+		pCollisionShape = s_apCollisionMeshes[iModel].m_pCollisionShape;
 	}
 	else
 	{
@@ -367,7 +366,7 @@ void CBulletPhysics::AddModelTris(class CBaseEntity* pEntity, collision_type_t e
 	}
 }
 
-void CBulletPhysics::RemoveEntity(CBaseEntity* pEntity)
+void CBulletPhysics::RemoveEntity(IPhysicsEntity* pEntity)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEntity);
 	if (!pPhysicsEntity)
@@ -438,12 +437,12 @@ size_t CBulletPhysics::AddExtra(size_t iExtraMesh, const Vector& vecOrigin)
 	CPhysicsEntity* pPhysicsEntity = m_apExtraEntityList[iIndex];
 	pPhysicsEntity->m_bCenterMassOffset = false;
 
-	TAssert(m_apExtraCollisionMeshes[iExtraMesh]);
-	if (!m_apExtraCollisionMeshes[iExtraMesh])
+	TAssert(s_apExtraCollisionMeshes[iExtraMesh]);
+	if (!s_apExtraCollisionMeshes[iExtraMesh])
 		return ~0;
 
 	float flMass = 0;
-	btCollisionShape* pCollisionShape = m_apExtraCollisionMeshes[iExtraMesh]->m_pCollisionShape;
+	btCollisionShape* pCollisionShape = s_apExtraCollisionMeshes[iExtraMesh]->m_pCollisionShape;
 
 	TAssert(pCollisionShape);
 
@@ -548,7 +547,7 @@ void CBulletPhysics::RemoveAllEntities()
 	}
 }
 
-bool CBulletPhysics::IsEntityAdded(CBaseEntity* pEntity)
+bool CBulletPhysics::IsEntityAdded(IPhysicsEntity* pEntity)
 {
 	TAssert(pEntity);
 	if (!pEntity)
@@ -570,12 +569,12 @@ void CBulletPhysics::LoadCollisionMesh(const tstring& sModel, size_t iTris, int*
 
 	TAssert(iModel != ~0);
 
-	TAssert(!m_apCollisionMeshes[iModel].m_pIndexVertexArray);
-	TAssert(!m_apCollisionMeshes[iModel].m_pCollisionShape);
-	if (m_apCollisionMeshes[iModel].m_pIndexVertexArray)
+	TAssert(!s_apCollisionMeshes[iModel].m_pIndexVertexArray);
+	TAssert(!s_apCollisionMeshes[iModel].m_pCollisionShape);
+	if (s_apCollisionMeshes[iModel].m_pIndexVertexArray)
 		return;
 
-	m_apCollisionMeshes[iModel].m_pIndexVertexArray = new btTriangleIndexVertexArray();
+	s_apCollisionMeshes[iModel].m_pIndexVertexArray = new btTriangleIndexVertexArray();
 
 	btIndexedMesh m;
 	m.m_numTriangles = iTris;
@@ -584,9 +583,9 @@ void CBulletPhysics::LoadCollisionMesh(const tstring& sModel, size_t iTris, int*
 	m.m_numVertices = iVerts;
 	m.m_vertexBase = (const unsigned char *)aflVerts;
 	m.m_vertexStride = sizeof(Vector);
-	m_apCollisionMeshes[iModel].m_pIndexVertexArray->addIndexedMesh(m, PHY_INTEGER);
+	s_apCollisionMeshes[iModel].m_pIndexVertexArray->addIndexedMesh(m, PHY_INTEGER);
 
-	m_apCollisionMeshes[iModel].m_pCollisionShape = new btBvhTriangleMeshShape(m_apCollisionMeshes[iModel].m_pIndexVertexArray, true);
+	s_apCollisionMeshes[iModel].m_pCollisionShape = new btBvhTriangleMeshShape(s_apCollisionMeshes[iModel].m_pIndexVertexArray, true);
 }
 
 void CBulletPhysics::UnloadCollisionMesh(const tstring& sModel)
@@ -597,9 +596,9 @@ void CBulletPhysics::UnloadCollisionMesh(const tstring& sModel)
 	if (iModel == ~0)
 		return;
 
-	auto it = m_apCollisionMeshes.find(iModel);
-	TAssert(it != m_apCollisionMeshes.end());
-	if (it == m_apCollisionMeshes.end())
+	auto it = s_apCollisionMeshes.find(iModel);
+	TAssert(it != s_apCollisionMeshes.end());
+	if (it == s_apCollisionMeshes.end())
 		return;
 
 	// Make sure there are no objects using this collision shape.
@@ -609,42 +608,42 @@ void CBulletPhysics::UnloadCollisionMesh(const tstring& sModel)
 		TAssert(pObject->getCollisionShape() != it->second.m_pCollisionShape);
 		if (pObject->getCollisionShape() == it->second.m_pCollisionShape)
 		{
-			CEntityHandle<CBaseEntity> hEntity(GetBaseEntity(pObject));
-			if (hEntity.GetPointer())
-				TError("Entity found with collision shape '" + sModel + "' which is being unloaded: " + tstring(hEntity->GetClassName()) + ":" + hEntity->GetName() + "\n");
+			IPhysicsEntity* pEntity = GetGameEntity(pObject);
+			if (pEntity)
+				TError("Entity found with collision shape '" + sModel + "' which is being unloaded: " + tstring(pEntity->GetClassName()) + ":" + pEntity->GetName() + "\n");
 			else
 				TError("Entity found with 'extra' collision shape which is being unloaded\n");
 
-			RemoveEntity(hEntity);
+			RemoveEntity(pEntity);
 		}
 	}
 
 	delete it->second.m_pCollisionShape;
 	delete it->second.m_pIndexVertexArray;
 
-	m_apCollisionMeshes.erase(it->first);
+	s_apCollisionMeshes.erase(it->first);
 }
 
 size_t CBulletPhysics::LoadExtraCollisionMesh(size_t iTris, int* aiTris, size_t iVerts, float* aflVerts)
 {
 	size_t iIndex = ~0;
-	for (size_t i = 0; i < m_apExtraCollisionMeshes.size(); i++)
+	for (size_t i = 0; i < s_apExtraCollisionMeshes.size(); i++)
 	{
-		if (!m_apExtraCollisionMeshes[i])
+		if (!s_apExtraCollisionMeshes[i])
 		{
 			iIndex = i;
-			m_apExtraCollisionMeshes[i] = new CCollisionMesh();
+			s_apExtraCollisionMeshes[i] = new CCollisionMesh();
 			break;
 		}
 	}
 
 	if (iIndex == ~0)
 	{
-		iIndex = m_apExtraCollisionMeshes.size();
-		m_apExtraCollisionMeshes.push_back(new CCollisionMesh());
+		iIndex = s_apExtraCollisionMeshes.size();
+		s_apExtraCollisionMeshes.push_back(new CCollisionMesh());
 	}
 
-	m_apExtraCollisionMeshes[iIndex]->m_pIndexVertexArray = new btTriangleIndexVertexArray();
+	s_apExtraCollisionMeshes[iIndex]->m_pIndexVertexArray = new btTriangleIndexVertexArray();
 
 	btIndexedMesh m;
 	m.m_numTriangles = iTris;
@@ -653,36 +652,36 @@ size_t CBulletPhysics::LoadExtraCollisionMesh(size_t iTris, int* aiTris, size_t 
 	m.m_numVertices = iVerts;
 	m.m_vertexBase = (const unsigned char *)aflVerts;
 	m.m_vertexStride = sizeof(Vector);
-	m_apExtraCollisionMeshes[iIndex]->m_pIndexVertexArray->addIndexedMesh(m, PHY_INTEGER);
+	s_apExtraCollisionMeshes[iIndex]->m_pIndexVertexArray->addIndexedMesh(m, PHY_INTEGER);
 
-	m_apExtraCollisionMeshes[iIndex]->m_pCollisionShape = new btBvhTriangleMeshShape(m_apExtraCollisionMeshes[iIndex]->m_pIndexVertexArray, true);
+	s_apExtraCollisionMeshes[iIndex]->m_pCollisionShape = new btBvhTriangleMeshShape(s_apExtraCollisionMeshes[iIndex]->m_pIndexVertexArray, true);
 
 	return iIndex;
 }
 
 void CBulletPhysics::UnloadExtraCollisionMesh(size_t iIndex)
 {
-	TAssert(m_apExtraCollisionMeshes[iIndex]);
-	if (!m_apExtraCollisionMeshes[iIndex])
+	TAssert(s_apExtraCollisionMeshes[iIndex]);
+	if (!s_apExtraCollisionMeshes[iIndex])
 		return;
 
 	// Make sure there are no objects using this collision shape.
 	for (int i = 0; i < m_pDynamicsWorld->getCollisionObjectArray().size(); i++)
 	{
 		auto pObject = m_pDynamicsWorld->getCollisionObjectArray()[i];
-		TAssert(pObject->getCollisionShape() != m_apExtraCollisionMeshes[iIndex]->m_pCollisionShape);
-		if (pObject->getCollisionShape() == m_apExtraCollisionMeshes[iIndex]->m_pCollisionShape)
+		TAssert(pObject->getCollisionShape() != s_apExtraCollisionMeshes[iIndex]->m_pCollisionShape);
+		if (pObject->getCollisionShape() == s_apExtraCollisionMeshes[iIndex]->m_pCollisionShape)
 		{
 			RemoveExtra(iIndex);
 			TError("Entity found with collision mesh which is being unloaded\n");
 		}
 	}
 
-	delete m_apExtraCollisionMeshes[iIndex]->m_pCollisionShape;
-	delete m_apExtraCollisionMeshes[iIndex]->m_pIndexVertexArray;
+	delete s_apExtraCollisionMeshes[iIndex]->m_pCollisionShape;
+	delete s_apExtraCollisionMeshes[iIndex]->m_pIndexVertexArray;
 
-	delete m_apExtraCollisionMeshes[iIndex];
-	m_apExtraCollisionMeshes[iIndex] = nullptr;
+	delete s_apExtraCollisionMeshes[iIndex];
+	s_apExtraCollisionMeshes[iIndex] = nullptr;
 }
 
 #ifdef _DEBUG
@@ -720,7 +719,7 @@ void CBulletPhysics::DebugDraw(int iLevel)
 	m_pDebugDrawer->SetDrawing(false);
 }
 
-collision_type_t CBulletPhysics::GetEntityCollisionType(class CBaseEntity* pEnt)
+collision_type_t CBulletPhysics::GetEntityCollisionType(IPhysicsEntity* pEnt)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -729,7 +728,7 @@ collision_type_t CBulletPhysics::GetEntityCollisionType(class CBaseEntity* pEnt)
 	return pPhysicsEntity->m_eCollisionType;
 }
 
-void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform)
+void CBulletPhysics::SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& mTransform)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -789,7 +788,7 @@ void CBulletPhysics::SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4
 	}
 }
 
-void CBulletPhysics::SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity)
+void CBulletPhysics::SetEntityVelocity(IPhysicsEntity* pEnt, const Vector& vecVelocity)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -803,7 +802,7 @@ void CBulletPhysics::SetEntityVelocity(class CBaseEntity* pEnt, const Vector& ve
 		TAssert(false);
 }
 
-Vector CBulletPhysics::GetEntityVelocity(class CBaseEntity* pEnt)
+Vector CBulletPhysics::GetEntityVelocity(IPhysicsEntity* pEnt)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -817,7 +816,7 @@ Vector CBulletPhysics::GetEntityVelocity(class CBaseEntity* pEnt)
 	return Vector();
 }
 
-void CBulletPhysics::SetControllerMoveVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity)
+void CBulletPhysics::SetControllerMoveVelocity(IPhysicsEntity* pEnt, const Vector& vecVelocity)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -828,7 +827,7 @@ void CBulletPhysics::SetControllerMoveVelocity(class CBaseEntity* pEnt, const Ve
 		pPhysicsEntity->m_pCharacterController->SetMoveVelocity(ToBTVector(vecVelocity));
 }
 
-const Vector CBulletPhysics::GetControllerMoveVelocity(class CBaseEntity* pEnt)
+const Vector CBulletPhysics::GetControllerMoveVelocity(IPhysicsEntity* pEnt)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -841,7 +840,7 @@ const Vector CBulletPhysics::GetControllerMoveVelocity(class CBaseEntity* pEnt)
 	return Vector();
 }
 
-void CBulletPhysics::SetControllerColliding(class CBaseEntity* pEnt, bool bColliding)
+void CBulletPhysics::SetControllerColliding(IPhysicsEntity* pEnt, bool bColliding)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -852,7 +851,7 @@ void CBulletPhysics::SetControllerColliding(class CBaseEntity* pEnt, bool bColli
 		pPhysicsEntity->m_pCharacterController->SetColliding(bColliding);
 }
 
-void CBulletPhysics::SetEntityGravity(class CBaseEntity* pEnt, const Vector& vecGravity)
+void CBulletPhysics::SetEntityGravity(IPhysicsEntity* pEnt, const Vector& vecGravity)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -866,7 +865,7 @@ void CBulletPhysics::SetEntityGravity(class CBaseEntity* pEnt, const Vector& vec
 		pPhysicsEntity->m_pCharacterController->SetGravity(v);
 }
 
-void CBulletPhysics::SetEntityUpVector(class CBaseEntity* pEnt, const Vector& vecUp)
+void CBulletPhysics::SetEntityUpVector(IPhysicsEntity* pEnt, const Vector& vecUp)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -879,7 +878,7 @@ void CBulletPhysics::SetEntityUpVector(class CBaseEntity* pEnt, const Vector& ve
 		pPhysicsEntity->m_pCharacterController->SetUpVector(v);
 }
 
-void CBulletPhysics::SetLinearFactor(class CBaseEntity* pEnt, const Vector& vecFactor)
+void CBulletPhysics::SetLinearFactor(IPhysicsEntity* pEnt, const Vector& vecFactor)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -893,7 +892,7 @@ void CBulletPhysics::SetLinearFactor(class CBaseEntity* pEnt, const Vector& vecF
 		pPhysicsEntity->m_pCharacterController->SetLinearFactor(v);
 }
 
-void CBulletPhysics::SetAngularFactor(class CBaseEntity* pEnt, const Vector& vecFactor)
+void CBulletPhysics::SetAngularFactor(IPhysicsEntity* pEnt, const Vector& vecFactor)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -906,7 +905,7 @@ void CBulletPhysics::SetAngularFactor(class CBaseEntity* pEnt, const Vector& vec
 		pPhysicsEntity->m_pRigidBody->setAngularFactor(v);
 }
 
-void CBulletPhysics::CharacterMovement(class CBaseEntity* pEnt, class btCollisionWorld* pCollisionWorld, float flDelta)
+void CBulletPhysics::CharacterMovement(IPhysicsEntity* pEnt, class btCollisionWorld* pCollisionWorld, float flDelta)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -918,7 +917,7 @@ void CBulletPhysics::CharacterMovement(class CBaseEntity* pEnt, class btCollisio
 	pPhysicsEntity->m_pCharacterController->CharacterMovement(pCollisionWorld, flDelta);
 }
 
-void CBulletPhysics::TraceLine(CTraceResult& tr, const Vector& v1, const Vector& v2, class CBaseEntity* pIgnore)
+void CBulletPhysics::TraceLine(CTraceResult& tr, const Vector& v1, const Vector& v2, IPhysicsEntity* pIgnore)
 {
 	btVector3 vecFrom, vecTo;
 	vecFrom = ToBTVector(v1);
@@ -933,13 +932,13 @@ void CBulletPhysics::TraceLine(CTraceResult& tr, const Vector& v1, const Vector&
 		tr.m_flFraction = callback.m_closestHitFraction;
 		tr.m_vecHit = ToTVector(callback.m_hitPointWorld);
 		tr.m_vecNormal = ToTVector(callback.m_hitNormalWorld);
-		tr.m_pHit = CEntityHandle<CBaseEntity>((size_t)callback.m_collisionObject->getUserPointer()).GetPointer();
+		tr.m_pHit = (IPhysicsEntity*)callback.m_collisionObject->getUserPointer();
 		if ((size_t)callback.m_collisionObject->getUserPointer() >= GameServer()->GetMaxEntities())
 			tr.m_iHitExtra = (size_t)callback.m_collisionObject->getUserPointer() - GameServer()->GetMaxEntities();
 	}
 }
 
-void CBulletPhysics::TraceEntity(CTraceResult& tr, class CBaseEntity* pEntity, const Vector& v1, const Vector& v2)
+void CBulletPhysics::TraceEntity(CTraceResult& tr, IPhysicsEntity* pEntity, const Vector& v1, const Vector& v2)
 {
 	btVector3 vecFrom, vecTo;
 	vecFrom = ToBTVector(v1);
@@ -980,13 +979,13 @@ void CBulletPhysics::TraceEntity(CTraceResult& tr, class CBaseEntity* pEntity, c
 		tr.m_flFraction = callback.m_closestHitFraction;
 		tr.m_vecHit = ToTVector(callback.m_hitPointWorld);
 		tr.m_vecNormal = ToTVector(callback.m_hitNormalWorld);
-		tr.m_pHit = CEntityHandle<CBaseEntity>((size_t)callback.m_hitCollisionObject->getUserPointer()).GetPointer();
+		tr.m_pHit = (IPhysicsEntity*)callback.m_hitCollisionObject->getUserPointer();
 		if ((size_t)callback.m_hitCollisionObject->getUserPointer() >= GameServer()->GetMaxEntities())
 			tr.m_iHitExtra = (size_t)callback.m_hitCollisionObject->getUserPointer() - GameServer()->GetMaxEntities();
 	}
 }
 
-void CBulletPhysics::CheckSphere(CTraceResult& tr, float flRadius, const Vector& vecCenter, class CBaseEntity* pIgnore)
+void CBulletPhysics::CheckSphere(CTraceResult& tr, float flRadius, const Vector& vecCenter, IPhysicsEntity* pIgnore)
 {
 	btTransform mTransform = btTransform::getIdentity();
 	mTransform.setOrigin(ToBTVector(vecCenter));
@@ -1011,7 +1010,7 @@ void CBulletPhysics::CheckSphere(CTraceResult& tr, float flRadius, const Vector&
 	m_pDynamicsWorld->contactTest(pSphere.get(), callback);
 }
 
-void CBulletPhysics::CharacterJump(class CBaseEntity* pEnt)
+void CBulletPhysics::CharacterJump(IPhysicsEntity* pEnt)
 {
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
@@ -1024,7 +1023,7 @@ void CBulletPhysics::CharacterJump(class CBaseEntity* pEnt)
 	pPhysicsEntity->m_pCharacterController->jump();
 }
 
-CPhysicsEntity* CBulletPhysics::GetPhysicsEntity(class CBaseEntity* pEnt)
+CPhysicsEntity* CBulletPhysics::GetPhysicsEntity(IPhysicsEntity* pEnt)
 {
 	TAssert(pEnt);
 	if (!pEnt)
@@ -1041,10 +1040,9 @@ CPhysicsEntity* CBulletPhysics::GetPhysicsEntity(class CBaseEntity* pEnt)
 	return pPhysicsEntity;
 }
 
-CBaseEntity* CBulletPhysics::GetBaseEntity(btCollisionObject* pObject)
+IPhysicsEntity* CBulletPhysics::GetGameEntity(btCollisionObject* pObject)
 {
-	CEntityHandle<CBaseEntity> hEntity((size_t)pObject->getUserPointer());
-	return hEntity;
+	return (IPhysicsEntity*)pObject->getUserPointer();
 }
 
 short CBulletPhysics::GetMaskForGroup(collision_group_t eGroup)
@@ -1070,27 +1068,17 @@ short CBulletPhysics::GetMaskForGroup(collision_group_t eGroup)
 	}
 }
 
-CPhysicsManager::CPhysicsManager()
-{
-	m_pModel = new CBulletPhysics();
-}
-
-CPhysicsManager::~CPhysicsManager()
-{
-	delete m_pModel;
-}
-
 void CMotionState::getWorldTransform(btTransform& mCenterOfMass) const
 {
-	if (m_pPhysics->GetPhysicsEntity(m_hEntity)->m_bCenterMassOffset)
+	if (m_pPhysics->GetPhysicsEntity(m_pEntity)->m_bCenterMassOffset)
 	{
 		Matrix4x4 mCenter;
-		mCenter.SetTranslation(m_hEntity->GetPhysBoundingBox().Center());
+		mCenter.SetTranslation(m_pEntity->GetPhysBoundingBox().Center());
 
-		mCenterOfMass.setFromOpenGLMatrix(mCenter * m_hEntity->GetPhysicsTransform());
+		mCenterOfMass.setFromOpenGLMatrix(mCenter * m_pEntity->GetPhysicsTransform());
 	}
 	else
-		mCenterOfMass.setFromOpenGLMatrix(m_hEntity->GetPhysicsTransform());
+		mCenterOfMass.setFromOpenGLMatrix(m_pEntity->GetPhysicsTransform());
 }
 
 void CMotionState::setWorldTransform(const btTransform& mCenterOfMass)
@@ -1098,19 +1086,66 @@ void CMotionState::setWorldTransform(const btTransform& mCenterOfMass)
 	Matrix4x4 mGlobal;
 	mCenterOfMass.getOpenGLMatrix(mGlobal);
 
-	if (m_pPhysics->GetPhysicsEntity(m_hEntity)->m_bCenterMassOffset)
+	if (m_pPhysics->GetPhysicsEntity(m_pEntity)->m_bCenterMassOffset)
 	{
 		Matrix4x4 mCenter;
-		mCenter.SetTranslation(m_hEntity->GetPhysBoundingBox().Center());
+		mCenter.SetTranslation(m_pEntity->GetPhysBoundingBox().Center());
 
-		m_hEntity->SetPhysicsTransform(mCenter.InvertedRT() * mGlobal);
+		m_pEntity->SetPhysicsTransform(mCenter.InvertedRT() * mGlobal);
 	}
 	else
-		m_hEntity->SetPhysicsTransform(mGlobal);
+		m_pEntity->SetPhysicsTransform(mGlobal);
 }
+
+class CPhysicsManager
+{
+public:
+	CPhysicsManager();
+	~CPhysicsManager();
+
+public:
+	static CPhysicsModel*   GetModel(size_t i);
+
+private:
+	tvector<CPhysicsModel*> m_apModel;
+
+	static CPhysicsManager  s_apPhysicsManager;
+};
+
+CPhysicsManager::CPhysicsManager()
+{
+}
+
+CPhysicsManager::~CPhysicsManager()
+{
+	for (size_t i = 0; i < m_apModel.size(); i++)
+		delete m_apModel[i];
+}
+
+CPhysicsModel* CPhysicsManager::GetModel(size_t i)
+{
+	while (s_apPhysicsManager.m_apModel.size() <= i)
+		s_apPhysicsManager.m_apModel.push_back(nullptr);
+
+	if (!s_apPhysicsManager.m_apModel[i])
+		s_apPhysicsManager.m_apModel[i] = new CBulletPhysics();
+
+	return s_apPhysicsManager.m_apModel[i];
+}
+
+CPhysicsManager CPhysicsManager::s_apPhysicsManager;
 
 CPhysicsModel* GamePhysics()
 {
-	static CPhysicsModel* pModel = new CBulletPhysics();
-	return pModel;
+	return CPhysicsManager::GetModel(PHYSWORLD_GAME);
+}
+
+CPhysicsModel* EditorPhysics()
+{
+	return CPhysicsManager::GetModel(PHYSWORLD_EDITOR);
+}
+
+CPhysicsModel* Physics(physics_world_t ePhysWorld)
+{
+	return CPhysicsManager::GetModel(ePhysWorld);
 }

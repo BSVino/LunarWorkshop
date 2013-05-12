@@ -6,14 +6,14 @@
 #include "BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h"
 
 #include <game/entityhandle.h>
+#include <physics/physics.h>
 
-class CBaseEntity;
 class btPairCachingGhostObject;
 
 class CTriggerController : public btActionInterface
 {
 public:
-	CTriggerController(CBaseEntity* pEntity, btPairCachingGhostObject* ghostObject);
+	CTriggerController(IPhysicsEntity* pEntity, btPairCachingGhostObject* ghostObject);
 
 public:
 	// btActionInterface
@@ -22,12 +22,12 @@ public:
 
 	btPairCachingGhostObject* GetGhostObject();
 
-	CBaseEntity*	GetEntity() const;
+	IPhysicsEntity* GetEntity() const;
 
 protected:
 	btManifoldArray				m_aManifolds;
 
-	CEntityHandle<CBaseEntity>	m_hEntity;
+	IPhysicsEntity*             m_pEntity;
 
 	btPairCachingGhostObject*	m_pGhostObject;
 };

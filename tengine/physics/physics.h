@@ -1,6 +1,8 @@
 #ifndef TINKER_PHYSICS_H
 #define TINKER_PHYSICS_H
 
+#include <tengine_config.h>
+
 #include <matrix.h>
 
 #include <models/models.h>
@@ -23,6 +25,33 @@ typedef enum
 	CG_CHARACTER_CLIP = (1<<3),
 	CG_TRIGGER = (1<<4),
 } collision_group_t;
+
+class IPhysicsEntity
+{
+public:
+	virtual ~IPhysicsEntity() {};
+
+public:
+	virtual size_t            GetHandle() const { return ~0; }
+	virtual const tstring&    GetName() const { static tstring s; return s; };
+	virtual class CModel*     GetModel() const { return nullptr; }
+	virtual const char*       GetClassName() const { return ""; }
+	virtual size_t            GetModelID() const { return ~0; };
+	virtual collision_group_t GetCollisionGroup() const { return CG_DEFAULT; }
+	virtual const Vector      GetScale() const { return Vector(); }
+
+	virtual const AABB        GetPhysBoundingBox() const { return AABB(); }
+	virtual const AABB&       GetVisBoundingBox() const { static AABB r; return r; }
+	virtual const TVector     GetGlobalOrigin() const { return TVector(); }
+	virtual const Matrix4x4   GetPhysicsTransform() const { return Matrix4x4(); }
+	virtual void              SetPhysicsTransform(const Matrix4x4& m) { }
+
+	// Triggers
+	virtual void              Touching(IPhysicsEntity* pOther) {};
+	virtual void              BeginTouchingList() {};
+	virtual void              EndTouchingList() {};
+	virtual bool              ShouldCollideWith(IPhysicsEntity* pOther, const TVector& vecPoint) const { return true; }
+};
 
 class CTraceResult
 {
@@ -48,7 +77,7 @@ public:
 	public:
 		float              m_flFraction;
 		Vector             m_vecHit;
-		class CBaseEntity* m_pHit;
+		IPhysicsEntity*    m_pHit;
 		size_t             m_iHitExtra;
 	};
 
@@ -59,7 +88,7 @@ public:
 	float                  m_flFraction;
 	Vector                 m_vecHit;
 	Vector                 m_vecNormal;
-	class CBaseEntity*     m_pHit;
+	IPhysicsEntity*        m_pHit;
 	size_t                 m_iHitExtra;
 };
 
@@ -69,13 +98,13 @@ public:
 	virtual					~CPhysicsModel() {}
 
 public:
-	virtual void			AddEntity(class CBaseEntity* pEnt, collision_type_t eCollisionType) {};
-	virtual void			RemoveEntity(class CBaseEntity* pEnt) {};
+	virtual void			AddEntity(IPhysicsEntity* pEnt, collision_type_t eCollisionType) {};
+	virtual void			RemoveEntity(IPhysicsEntity* pEnt) {};
 	virtual size_t          AddExtra(size_t iExtraMesh, const Vector& vecOrigin) { return ~0; };  // Input is result from LoadExtraCollisionMesh
 	virtual size_t          AddExtraBox(const Vector& vecCenter, const Vector& vecSize) { return ~0; };
 	virtual void            RemoveExtra(size_t iExtra) {};               // Input is result from AddExtra*
 	virtual void			RemoveAllEntities() {};
-	virtual bool            IsEntityAdded(class CBaseEntity* pEnt) { return false; };
+	virtual bool            IsEntityAdded(IPhysicsEntity* pEnt) { return false; };
 
 	virtual void			LoadCollisionMesh(const tstring& sModel, size_t iTris, int* aiTris, size_t iVerts, float* aflVerts) {};
 	virtual void			UnloadCollisionMesh(const tstring& sModel) {};
@@ -86,41 +115,36 @@ public:
 
 	virtual void			DebugDraw(int iLevel) {};
 
-	virtual collision_type_t	GetEntityCollisionType(class CBaseEntity* pEnt) { return CT_NONE; };
+	virtual collision_type_t	GetEntityCollisionType(IPhysicsEntity* pEnt) { return CT_NONE; };
 
-	virtual void			SetEntityTransform(class CBaseEntity* pEnt, const Matrix4x4& mTransform) {};
-	virtual void			SetEntityVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity) {};
-	virtual Vector			GetEntityVelocity(class CBaseEntity* pEnt) { return Vector(0, 0, 0); };
-	virtual void			SetControllerMoveVelocity(class CBaseEntity* pEnt, const Vector& vecVelocity) {};
-	virtual const Vector    GetControllerMoveVelocity(class CBaseEntity* pEnt) { return Vector(0, 0, 0); }
-	virtual void			SetControllerColliding(class CBaseEntity* pEnt, bool bColliding) {};
-	virtual void			SetEntityGravity(class CBaseEntity* pEnt, const Vector& vecGravity) {};
-	virtual void			SetEntityUpVector(class CBaseEntity* pEnt, const Vector& vecUp) {};
-	virtual void			SetLinearFactor(class CBaseEntity* pEnt, const Vector& vecFactor) {};
-	virtual void			SetAngularFactor(class CBaseEntity* pEnt, const Vector& vecFactor) {};
+	virtual void			SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& mTransform) {};
+	virtual void			SetEntityVelocity(IPhysicsEntity* pEnt, const Vector& vecVelocity) {};
+	virtual Vector			GetEntityVelocity(IPhysicsEntity* pEnt) { return Vector(0, 0, 0); };
+	virtual void			SetControllerMoveVelocity(IPhysicsEntity* pEnt, const Vector& vecVelocity) {};
+	virtual const Vector    GetControllerMoveVelocity(IPhysicsEntity* pEnt) { return Vector(0, 0, 0); }
+	virtual void			SetControllerColliding(IPhysicsEntity* pEnt, bool bColliding) {};
+	virtual void			SetEntityGravity(IPhysicsEntity* pEnt, const Vector& vecGravity) {};
+	virtual void			SetEntityUpVector(IPhysicsEntity* pEnt, const Vector& vecUp) {};
+	virtual void			SetLinearFactor(IPhysicsEntity* pEnt, const Vector& vecFactor) {};
+	virtual void			SetAngularFactor(IPhysicsEntity* pEnt, const Vector& vecFactor) {};
 
-	virtual void            CharacterMovement(class CBaseEntity* pEnt, class btCollisionWorld* pCollisionWorld, float flDelta) {};
+	virtual void            CharacterMovement(IPhysicsEntity* pEnt, class btCollisionWorld* pCollisionWorld, float flDelta) {};
 
-	virtual void            TraceLine(CTraceResult& tr, const Vector& v1, const Vector& v2, class CBaseEntity* pIgnore=nullptr) {};
-	virtual void            TraceEntity(CTraceResult& tr, class CBaseEntity* pEntity, const Vector& v1, const Vector& v2) {};
-	virtual void            CheckSphere(CTraceResult& tr, float flRadius, const Vector& vecCenter, class CBaseEntity* pIgnore=nullptr) {};
+	virtual void            TraceLine(CTraceResult& tr, const Vector& v1, const Vector& v2, IPhysicsEntity* pIgnore=nullptr) {};
+	virtual void            TraceEntity(CTraceResult& tr, IPhysicsEntity* pEntity, const Vector& v1, const Vector& v2) {};
+	virtual void            CheckSphere(CTraceResult& tr, float flRadius, const Vector& vecCenter, IPhysicsEntity* pIgnore=nullptr) {};
 
-	virtual void			CharacterJump(class CBaseEntity* pEnt) {};
+	virtual void			CharacterJump(IPhysicsEntity* pEnt) {};
 };
 
-class CPhysicsManager
+typedef enum
 {
-public:
-							CPhysicsManager();
-							~CPhysicsManager();
-
-public:
-	CPhysicsModel*			GetModel() { return m_pModel; }
-
-protected:
-	CPhysicsModel*			m_pModel;
-};
+	PHYSWORLD_GAME,
+	PHYSWORLD_EDITOR,
+} physics_world_t;
 
 CPhysicsModel* GamePhysics();
+CPhysicsModel* EditorPhysics();
+CPhysicsModel* Physics(physics_world_t ePhysWorld = PHYSWORLD_GAME);
 
 #endif

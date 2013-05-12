@@ -38,7 +38,7 @@ public:
 	// Is the point near enough to a mirror to be considered inside of it for physics purposes?
 	bool						IsNearMirror(class CMirror* pMirror, const Vector& vecPoint) const;
 
-	virtual bool				ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const;
+	virtual bool				ShouldCollideWith(IPhysicsEntity* pOther, const TVector& vecPoint) const;
 
 	Matrix4x4					GetReflectionMatrix() const { return m_mLateralReflection * m_mVerticalReflection; }
 

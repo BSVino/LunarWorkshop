@@ -15,7 +15,7 @@ public:
 
 	virtual void		Think();
 
-	virtual void		Touching(CBaseEntity* pOther);
+	virtual void		Touching(IPhysicsEntity* pOther);
 	virtual void		BeginTouchingList();
 	virtual void		EndTouchingList();
 

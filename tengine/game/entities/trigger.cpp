@@ -66,25 +66,27 @@ void CTrigger::Think()
 		EndVisible();
 }
 
-void CTrigger::Touching(CBaseEntity* pOther)
+void CTrigger::Touching(IPhysicsEntity* pOther)
 {
+	CBaseEntity* pBaseOther = static_cast<CBaseEntity*>(pOther);
+
 	if (!IsActive())
 		return;
 
 	for (size_t i = 0; i < m_ahLastTouching.size(); i++)
 	{
-		if (m_ahLastTouching[i] == (const CBaseEntity*)pOther)
+		if (m_ahLastTouching[i] == (const CBaseEntity*)pBaseOther)
 		{
 			// We were touching before and we still are. Great.
-			m_ahTouching.push_back(pOther);
+			m_ahTouching.push_back(pBaseOther);
 			m_ahLastTouching.erase(m_ahLastTouching.begin()+i);
 			return;
 		}
 	}
 
 	// Not in the LastTouching list, so it must be a new touch.
-	StartTouch(pOther);
-	m_ahTouching.push_back(pOther);
+	StartTouch(pBaseOther);
+	m_ahTouching.push_back(pBaseOther);
 }
 
 void CTrigger::BeginTouchingList()

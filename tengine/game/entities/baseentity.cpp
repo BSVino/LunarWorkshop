@@ -464,21 +464,6 @@ const TMatrix CBaseEntity::GetParentGlobalTransform() const
 	return GetMoveParent()->GetGlobalTransform();
 }
 
-const TMatrix& CBaseEntity::GetGlobalTransform()
-{
-	if (!m_bGlobalTransformsDirty)
-		return m_mGlobalTransform;
-
-	if (!m_hMoveParent)
-		m_mGlobalTransform = m_mLocalTransform;
-	else
-		m_mGlobalTransform = m_hMoveParent->GetGlobalTransform() * m_mLocalTransform;
-
-	m_bGlobalTransformsDirty = false;
-
-	return m_mGlobalTransform;
-}
-
 const TMatrix CBaseEntity::GetGlobalTransform() const
 {
 	if (!m_bGlobalTransformsDirty)
@@ -528,30 +513,12 @@ void CBaseEntity::SetGlobalTransform(const TMatrix& m)
 	PostSetLocalTransform(mNew);
 }
 
-const TMatrix CBaseEntity::GetGlobalToLocalTransform()
-{
-	if (HasMoveParent())
-		return (GetMoveParent()->GetGlobalTransform() * GetLocalTransform()).InvertedRT();
-	else
-		return GetGlobalTransform().InvertedRT();
-}
-
 const TMatrix CBaseEntity::GetGlobalToLocalTransform() const
 {
 	if (HasMoveParent())
 		return (GetMoveParent()->GetGlobalTransform() * GetLocalTransform()).InvertedRT();
 	else
 		return GetGlobalTransform().InvertedRT();
-}
-
-const TVector CBaseEntity::GetGlobalOrigin()
-{
-	return GetGlobalTransform().GetTranslation();
-}
-
-const EAngle CBaseEntity::GetGlobalAngles()
-{
-	return GetGlobalTransform().GetAngles();
 }
 
 const TVector CBaseEntity::GetGlobalOrigin() const

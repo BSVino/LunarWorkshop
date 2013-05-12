@@ -11,15 +11,15 @@
 
 #include "bullet_physics.h"
 
-CTriggerController::CTriggerController(CBaseEntity* pEntity, btPairCachingGhostObject* ghostObject)
+CTriggerController::CTriggerController(IPhysicsEntity* pEntity, btPairCachingGhostObject* ghostObject)
 {
-	m_hEntity = pEntity;
+	m_pEntity = pEntity;
 	m_pGhostObject = ghostObject;
 }
 
 void CTriggerController::updateAction(btCollisionWorld* pCollisionWorld, btScalar flDeltaTime)
 {
-	m_hEntity->BeginTouchingList();
+	m_pEntity->BeginTouchingList();
 
 	pCollisionWorld->getDispatcher()->dispatchAllCollisionPairs(m_pGhostObject->getOverlappingPairCache(), pCollisionWorld->getDispatchInfo(), pCollisionWorld->getDispatcher());
 
@@ -41,16 +41,16 @@ void CTriggerController::updateAction(btCollisionWorld* pCollisionWorld, btScala
 			btCollisionObject* obB = static_cast<btCollisionObject*>(pManifold->getBody1());
 
 			btScalar directionSign;
-			CEntityHandle<CBaseEntity> hOther;
+			IPhysicsEntity* pOther;
 			if (obA == m_pGhostObject)
 			{
 				directionSign = btScalar(-1.0);
-				hOther = CEntityHandle<CBaseEntity>((size_t)obB->getUserPointer());
+				pOther = (IPhysicsEntity*)obB->getUserPointer();
 			}
 			else
 			{
 				directionSign = btScalar(1.0);
-				hOther = CEntityHandle<CBaseEntity>((size_t)obA->getUserPointer());
+				pOther = (IPhysicsEntity*)obA->getUserPointer();
 			}
 
 			bool bTouching = false;
@@ -61,12 +61,12 @@ void CTriggerController::updateAction(btCollisionWorld* pCollisionWorld, btScala
 
 				if (obA == m_pGhostObject)
 				{
-					if (!m_hEntity->ShouldCollideWith(hOther, Vector(pt.getPositionWorldOnB())))
+					if (!m_pEntity->ShouldCollideWith(pOther, Vector(pt.getPositionWorldOnB())))
 						continue;
 				}
 				else
 				{
-					if (!m_hEntity->ShouldCollideWith(hOther, Vector(pt.getPositionWorldOnA())))
+					if (!m_pEntity->ShouldCollideWith(pOther, Vector(pt.getPositionWorldOnA())))
 						continue;
 				}
 
@@ -78,13 +78,13 @@ void CTriggerController::updateAction(btCollisionWorld* pCollisionWorld, btScala
 			}
 
 			if (bTouching)
-				m_hEntity->Touching(hOther);
+				m_pEntity->Touching(pOther);
 
 			//pManifold->clearManifold();
 		}
 	}
 
-	m_hEntity->EndTouchingList();
+	m_pEntity->EndTouchingList();
 }
 
 btPairCachingGhostObject* CTriggerController::GetGhostObject()
@@ -92,7 +92,7 @@ btPairCachingGhostObject* CTriggerController::GetGhostObject()
 	return m_pGhostObject;
 }
 
-CBaseEntity* CTriggerController::GetEntity() const
+IPhysicsEntity* CTriggerController::GetEntity() const
 {
-	return m_hEntity;
+	return m_pEntity;
 }

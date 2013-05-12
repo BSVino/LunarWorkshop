@@ -189,7 +189,7 @@ static void PrecacheCallback##entity() \
 } \
 static const char* Get##entity##ParentClass() { return NULL; } \
  \
-virtual const char* GetClassName() { return #entity; } \
+virtual const char* GetClassName() const { return #entity; } \
 virtual void RegisterNetworkVariables(); \
 virtual void RegisterSaveData(); \
 virtual void RegisterInputData(); \
@@ -229,7 +229,7 @@ static void PrecacheCallback##entity() \
 } \
 static const char* Get##entity##ParentClass() { return #base; } \
  \
-virtual const char* GetClassName() { return #entity; } \
+virtual const char* GetClassName() const { return #entity; } \
 virtual void RegisterNetworkVariables(); \
 virtual void RegisterSaveData(); \
 virtual void RegisterInputData(); \
@@ -466,7 +466,7 @@ void entity::RegisterInputData() \
 
 class CTeam;
 
-class CBaseEntity
+class CBaseEntity : public IPhysicsEntity
 {
 	friend class CGameServer;
 
@@ -483,7 +483,7 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnSpawn);
 
 	void									SetName(const tstring& sName) { m_sName = sName; };
-	tstring									GetName() const { return m_sName; };
+	const tstring&                          GetName() const { return m_sName; };
 
 	CGameEntityData&						GameData() { return m_oGameData; }
 	const CGameEntityData&					GameData() const { return m_oGameData; }
@@ -521,18 +521,13 @@ public:
 	void									InvalidateGlobalTransforms();
 	const TMatrix							GetParentGlobalTransform() const;
 
-	const TMatrix&							GetGlobalTransform();
 	const TMatrix							GetGlobalTransform() const;
 	void									SetGlobalTransform(const TMatrix& m);
 
 	virtual const Matrix4x4                 GetPhysicsTransform() const { return GetGlobalTransform(); }
 	virtual void                            SetPhysicsTransform(const Matrix4x4& m) { SetGlobalTransform(TMatrix(m)); }
 
-	const TMatrix							GetGlobalToLocalTransform();
 	const TMatrix							GetGlobalToLocalTransform() const;
-
-	virtual const TVector					GetGlobalOrigin();
-	virtual const EAngle					GetGlobalAngles();
 
 	virtual const TVector					GetGlobalOrigin() const;
 	virtual const EAngle					GetGlobalAngles() const;
@@ -654,7 +649,7 @@ public:
 	void									BaseThink() { m_oGameData.Think(); };
 	virtual void							Think() {};
 
-	virtual void							Touching(CBaseEntity* pOther) {};
+	virtual void							Touching(IPhysicsEntity* pOther) {};
 	virtual void							BeginTouchingList() {};
 	virtual void							EndTouchingList() {};
 
@@ -676,7 +671,7 @@ public:
 	// At this point the expensive collision checks have passed and the two objects will
 	// definitely collide if true is returned here. If two objects should never collide,
 	// use collision groups instead to avoid the expensive collision checks.
-	virtual bool							ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const { return true; }
+	virtual bool							ShouldCollideWith(IPhysicsEntity* pOther, const TVector& vecPoint) const { return true; }
 	virtual bool							ShouldCollideWithExtra(size_t, const TVector& vecPoint) const { return true; }
 
 	size_t									GetSpawnSeed() const { return m_iSpawnSeed; }
