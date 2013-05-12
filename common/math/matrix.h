@@ -25,7 +25,7 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 class Quaternion;
 class Ray;
 
-// This Matrix4x4 class is for use in right-handed coordinate spaces with Y up.
+// This Matrix4x4 class is for use in right-handed coordinate spaces with Z up.
 // A column is in sequential memory positions (m[0][0], m[0][1], m[0][2], m[0][3])
 // A row is in strided positions (m[0][0], m[1][0], m[2][0], m[3][0])
 // Its values are stored with Forward/Up/Right vectors residing in the columns 0, 1, 2
@@ -38,11 +38,11 @@ class Ray;
 // [02 12 22 32]
 // [03 13 23 33]
 
-// The layout in that notation of the base vectors (f u r t = forward up right translation)
-// [fx ux rx tx]
-// [fy uy ry ty]
-// [fz uz rz tz]
-// [fw uw rw tw]
+// The layout in that notation of the base vectors (f l u t = forward left up translation)
+// [fx lx ux tx]
+// [fy ly uy ty]
+// [fz lz uz tz]
+// [fw lw uw tw]
 
 class DoubleMatrix4x4;
 
@@ -54,7 +54,7 @@ public:
 	            Matrix4x4(const Matrix4x4& m);
 	            Matrix4x4(const DoubleMatrix4x4& m);
 	explicit    Matrix4x4(float* aflValues);
-	explicit    Matrix4x4(const Vector& vecForward, const Vector& vecUp, const Vector& vecRight, const Vector& vecPosition = Vector(0,0,0));
+	explicit    Matrix4x4(const Vector& vecForward, const Vector& vecLeft, const Vector& vecUp, const Vector& vecPosition = Vector(0,0,0));
 	explicit    Matrix4x4(const Quaternion& q);
 	explicit    Matrix4x4(const EAngle& angDirection, const Vector& vecPosition=Vector(0,0,0));
 
@@ -77,7 +77,7 @@ public:
 	void		SetAngles(const EAngle& angDir);
 	void		SetRotation(float flAngle, const Vector& vecAxis);		// Assumes the axis is a normalized vector.
 	void		SetRotation(const Quaternion& q);
-	void		SetOrientation(const Vector& vecDir, const Vector& vecUp = Vector(0, 1, 0));
+	void		SetOrientation(const Vector& vecDir, const Vector& vecUp = Vector(0, 0, 1));
 	void		SetScale(const Vector& vecScale);
 	void		SetReflection(const Vector& vecPlaneNormal);			// Reflection around a plane with this normal which passes through the center of the local space.
 																		// Assumes the plane normal passed in is normalized.
@@ -120,18 +120,17 @@ public:
 	Vector4D	operator*(const Vector4D& v) const;
 	const Ray   operator*(const Ray& r) const;
 
-	// Try not to use these in case the underlying format changes.
-	Vector4D	GetRow(int i);
+	// Try not to use these in case the underlying format changes. Use SetXVector() below.
 	Vector4D	GetColumn(int i) const;
 	void		SetColumn(int i, const Vector4D& vecColumn);
 	void		SetColumn(int i, const Vector& vecColumn);
 
 	void		SetForwardVector(const Vector& vecForward);
+	void		SetLeftVector(const Vector& vecLeft);
 	void		SetUpVector(const Vector& vecUp);
-	void		SetRightVector(const Vector& vecRight);
 	Vector		GetForwardVector() const { return Vector((float*)&m[0][0]); }
-	Vector		GetUpVector() const { return Vector((float*)&m[1][0]); }
-	Vector		GetRightVector() const { return Vector((float*)&m[2][0]); }
+	Vector		GetLeftVector() const { return Vector((float*)&m[1][0]); }
+	Vector		GetUpVector() const { return Vector((float*)&m[2][0]); }
 
 	void		InvertRT();
 	Matrix4x4	InvertedRT() const;
@@ -175,11 +174,11 @@ public:
 	DoubleVector    TransformVector(const DoubleVector& v) const;		// Same as homogenous vector with w=0 transform, no translation.
 
 	void            SetForwardVector(const DoubleVector& vecForward);
+	void            SetLeftVector(const DoubleVector& vecLeft);
 	void            SetUpVector(const DoubleVector& vecUp);
-	void            SetRightVector(const DoubleVector& vecRight);
 	DoubleVector    GetForwardVector() const { return DoubleVector((double*)&m[0][0]); }
-	DoubleVector    GetUpVector() const { return DoubleVector((double*)&m[1][0]); }
-	DoubleVector    GetRightVector() const { return DoubleVector((double*)&m[2][0]); }
+	DoubleVector    GetLeftVector() const { return DoubleVector((double*)&m[1][0]); }
+	DoubleVector    GetUpVector() const { return DoubleVector((double*)&m[2][0]); }
 
 	DoubleMatrix4x4 InvertedRT() const;
 

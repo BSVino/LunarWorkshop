@@ -59,8 +59,8 @@ TVector CCharacterCamera::GetThirdPersonCameraPosition()
 	TMatrix mView = TMatrix(pCharacter->GetThirdPersonCameraAngles(), TVector());
 	TVector vecThird = pCharacter->GetGlobalTransform().GetTranslation() + vecEyeHeight;
 	vecThird -= Vector(mView.GetForwardVector()) * m_flBack;
-	vecThird += Vector(mView.GetRightVector()) * m_flSide;
 	vecThird += Vector(mView.GetUpVector()) * m_flUp;
+	vecThird += Vector(mView.GetLeftVector()) * m_flSide;
 
 	return vecThird;
 }

@@ -120,10 +120,10 @@ void CCharacter::Move(movetype_t eMoveType)
 		m_vecGoalVelocity.x = 1;
 	else if (eMoveType == MOVE_BACKWARD)
 		m_vecGoalVelocity.x = -1;
-	else if (eMoveType == MOVE_RIGHT)
-		m_vecGoalVelocity.z = 1;
 	else if (eMoveType == MOVE_LEFT)
-		m_vecGoalVelocity.z = -1;
+		m_vecGoalVelocity.y = 1;
+	else if (eMoveType == MOVE_RIGHT)
+		m_vecGoalVelocity.y = -1;
 }
 
 void CCharacter::StopMove(movetype_t eMoveType)
@@ -132,10 +132,10 @@ void CCharacter::StopMove(movetype_t eMoveType)
 		m_vecGoalVelocity.x = 0;
 	else if (eMoveType == MOVE_BACKWARD && m_vecGoalVelocity.x < 0.0f)
 		m_vecGoalVelocity.x = 0;
-	else if (eMoveType == MOVE_LEFT && m_vecGoalVelocity.z < 0.0f)
-		m_vecGoalVelocity.z = 0;
-	else if (eMoveType == MOVE_RIGHT && m_vecGoalVelocity.z > 0.0f)
-		m_vecGoalVelocity.z = 0;
+	else if (eMoveType == MOVE_LEFT && m_vecGoalVelocity.y > 0.0f)
+		m_vecGoalVelocity.y = 0;
+	else if (eMoveType == MOVE_RIGHT && m_vecGoalVelocity.y < 0.0f)
+		m_vecGoalVelocity.y = 0;
 }
 
 const TVector CCharacter::GetGoalVelocity()
@@ -153,8 +153,8 @@ void CCharacter::MoveThink()
 	TVector vecGoalVelocity = GetGoalVelocity();
 
 	m_vecMoveVelocity.x = Approach((float)vecGoalVelocity.x, (float)m_vecMoveVelocity.x, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
-	m_vecMoveVelocity.y = 0;
-	m_vecMoveVelocity.z = Approach((float)vecGoalVelocity.z, (float)m_vecMoveVelocity.z, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
+	m_vecMoveVelocity.y = Approach((float)vecGoalVelocity.y, (float)m_vecMoveVelocity.y, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
+	m_vecMoveVelocity.z = 0;
 
 	TVector vecLocalVelocity;
 
@@ -195,8 +195,8 @@ void CCharacter::MoveThink_NoClip()
 	TVector vecGoalVelocity = GetGoalVelocity();
 
 	m_vecMoveVelocity.x = Approach((float)vecGoalVelocity.x, (float)m_vecMoveVelocity.x, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
-	m_vecMoveVelocity.y = 0;
-	m_vecMoveVelocity.z = Approach((float)vecGoalVelocity.z, (float)m_vecMoveVelocity.z, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
+	m_vecMoveVelocity.y = Approach((float)vecGoalVelocity.y, (float)m_vecMoveVelocity.y, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
+	m_vecMoveVelocity.z = 0;
 
 	if (m_vecMoveVelocity.LengthSqr() > 0.0f)
 	{
@@ -339,11 +339,11 @@ void CCharacter::ShowPlayerVectors() const
 	m.SetAngles(m_angView);
 
 	Vector vecUp = GetUpVector();
-	Vector vecRight = m.GetForwardVector().Cross(vecUp).Normalized();
-	Vector vecForward = vecUp.Cross(vecRight).Normalized();
+	Vector vecLeft = -m.GetForwardVector().Cross(vecUp).Normalized();
+	Vector vecForward = -vecUp.Cross(vecLeft).Normalized();
 	m.SetForwardVector(vecForward);
+	m.SetLeftVector(vecLeft);
 	m.SetUpVector(vecUp);
-	m.SetRightVector(vecRight);
 
 	CCharacter* pLocalCharacter = Game()->GetLocalPlayer()->GetCharacter();
 
@@ -370,7 +370,7 @@ void CCharacter::ShowPlayerVectors() const
 
 	c.SetColor(Color(0, 255, 0));
 	c.Vertex(vecEyeHeight);
-	c.Vertex(vecEyeHeight + vecRight);
+	c.Vertex(vecEyeHeight + vecLeft);
 
 	c.SetColor(Color(0, 0, 255));
 	c.Vertex(vecEyeHeight);

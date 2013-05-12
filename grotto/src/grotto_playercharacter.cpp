@@ -29,9 +29,9 @@ void CPlayerCharacter::Precache()
 void CPlayerCharacter::Spawn()
 {
 	SetMass(60);
-	m_aabbPhysBoundingBox = AABB(Vector(-0.35f, 0, -0.35f), Vector(0.35f, 2, 0.35f));
+	m_aabbPhysBoundingBox = AABB(Vector(-0.35f, -0.35f, 0), Vector(0.35f, 0.35f, 2));
 
-	SetGlobalGravity(Vector(0, -9.8f, 0)*2);
+	SetGlobalGravity(Vector(0, 0, -9.8f)*2);
 
 	BaseClass::Spawn();
 

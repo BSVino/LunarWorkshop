@@ -44,7 +44,7 @@ const TVector CGrottoCharacter::GetGoalVelocity()
 	TVector vecGoalVelocity = BaseClass::GetGoalVelocity();
 
 	if (IsReflected(REFLECTION_LATERAL) ^ IsReflected(REFLECTION_VERTICAL))
-		vecGoalVelocity.z = -vecGoalVelocity.z;
+		vecGoalVelocity.y = -vecGoalVelocity.y;
 
 	return vecGoalVelocity;
 }
@@ -166,7 +166,7 @@ if ((x) > (y)) \
 	m_aabbPhysBoundingBox = AABB(vecReflectedMins, vecReflectedMaxs);
 
 	if (eReflectionType == REFLECTION_LATERAL)
-		m_vecMoveVelocity.z = -m_vecMoveVelocity.z;
+		m_vecMoveVelocity.y = -m_vecMoveVelocity.y;
 
 	bool bWasReflected = !!(m_iReflected&(1<<eReflectionType));
 	if (bWasReflected)
@@ -182,12 +182,12 @@ if ((x) > (y)) \
 	if (eReflectionType == REFLECTION_VERTICAL)
 	{
 		if (IsReflected(REFLECTION_VERTICAL))
-			GamePhysics()->SetEntityUpVector(this, Vector(0, -1, 0));
+			GamePhysics()->SetEntityUpVector(this, Vector(0, 0, -1));
 		else
-			GamePhysics()->SetEntityUpVector(this, Vector(0, 1, 0));
+			GamePhysics()->SetEntityUpVector(this, Vector(0, 0, 1));
 
 		if (IsReflected(REFLECTION_VERTICAL))
-			m_mVerticalReflection.SetReflection(Vector(0, 1, 0));
+			m_mVerticalReflection.SetReflection(Vector(0, 0, 1));
 		else
 			m_mVerticalReflection.Identity();
 	}
@@ -209,7 +209,7 @@ if ((x) > (y)) \
 void CGrottoCharacter::ReflectVertical(const tvector<tstring>& asArgs)
 {
 	Matrix4x4 mReflection, mTransform;
-	mReflection.SetReflection(Vector(0, 1, 0));
+	mReflection.SetReflection(Vector(0, 0, 1));
 	mTransform = GetGlobalTransform();
 
 	Reflect(GetGlobalTransform(), mReflection, REFLECTION_VERTICAL, mTransform);
@@ -244,9 +244,9 @@ CMirror* CGrottoCharacter::GetMirrorInside() const
 const TVector CGrottoCharacter::GetUpVector() const
 {
 	if (IsReflected(REFLECTION_VERTICAL))
-		return Vector(0, -1, 0);
+		return Vector(0, 0, -1);
 	else
-		return Vector(0, 1, 0);
+		return Vector(0, 0, 1);
 }
 
 bool CGrottoCharacter::IsNearMirror(class CMirror* pMirror, const Vector& vecPoint) const

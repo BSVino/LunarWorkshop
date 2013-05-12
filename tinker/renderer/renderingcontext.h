@@ -101,7 +101,7 @@ public:
 	void					RenderSphere();
 	void					RenderWireBox(const AABB& aabbBounds);
 
-	void					RenderBillboard(const CMaterialHandle& hMaterial, float flRadius, Vector vecUp, Vector vecRight);
+	void					RenderBillboard(const CMaterialHandle& hMaterial, float flRadius, Vector vecRight, Vector vecUp);
 
 	void					UseFrameBuffer(const class CFrameBuffer* pBuffer);
 	const class CFrameBuffer* GetActiveFrameBuffer() { return GetContext().m_pFrameBuffer; }

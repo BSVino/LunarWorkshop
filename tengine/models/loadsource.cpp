@@ -104,8 +104,10 @@ void LoadSceneNodeIntoToy(CConversionScene* pScene, CConversionSceneNode* pNode,
 
 void LoadSceneIntoToy(CConversionScene* pScene)
 {
+	Matrix4x4 mUpLeftSwap(Vector(1, 0, 0), Vector(0, 0, 1), Vector(0, -1, 0));
+
 	for (size_t i = 0; i < pScene->GetNumScenes(); i++)
-		LoadSceneNodeIntoToy(pScene, pScene->GetScene(i), Matrix4x4());
+		LoadSceneNodeIntoToy(pScene, pScene->GetScene(i), mUpLeftSwap);
 }
 
 bool CModel::LoadSourceFile()

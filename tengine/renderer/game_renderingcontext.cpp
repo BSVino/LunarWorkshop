@@ -142,8 +142,8 @@ void CGameRenderingContext::RenderMaterialModel(const CMaterialHandle& hMaterial
 	if (!hBaseTexture)
 		return;
 
-	Vector vecUp = Vector(0, 0.5f, 0) * ((float)hBaseTexture->m_iHeight/hMaterial->m_iTexelsPerMeter);
-	Vector vecRight = Vector(0, 0, 0.5f) * ((float)hBaseTexture->m_iWidth/hMaterial->m_iTexelsPerMeter);
+	Vector vecLeft = Vector(0, 0.5f, 0) * ((float)hBaseTexture->m_iWidth/hMaterial->m_iTexelsPerMeter);
+	Vector vecUp = Vector(0, 0, 0.5f) * ((float)hBaseTexture->m_iHeight/hMaterial->m_iTexelsPerMeter);
 
 	UseMaterial(hMaterial);
 	m_pRenderer->ModifyShader(pEntity, this);
@@ -152,20 +152,20 @@ void CGameRenderingContext::RenderMaterialModel(const CMaterialHandle& hMaterial
 
 	BeginRenderTriFan();
 		TexCoord(0.0f, 1.0f);
-		Vertex(-vecRight + vecUp);
+		Vertex(-vecLeft + vecUp);
 		TexCoord(0.0f, 0.0f);
-		Vertex(-vecRight - vecUp);
+		Vertex(-vecLeft - vecUp);
 		TexCoord(1.0f, 0.0f);
-		Vertex(vecRight - vecUp);
+		Vertex(vecLeft - vecUp);
 		TexCoord(1.0f, 1.0f);
-		Vertex(vecRight + vecUp);
+		Vertex(vecLeft + vecUp);
 	EndRender();
 }
 
 void CGameRenderingContext::RenderBillboard(const tstring& sMaterial, float flRadius)
 {
-	Vector vecUp, vecRight;
-	m_pRenderer->GetCameraVectors(NULL, &vecRight, &vecUp);
+	Vector vecLeft, vecUp;
+	m_pRenderer->GetCameraVectors(NULL, &vecLeft, &vecUp);
 
-	BaseClass::RenderBillboard(sMaterial, flRadius, vecUp, vecRight);
+	BaseClass::RenderBillboard(sMaterial, flRadius, vecLeft, vecUp);
 }

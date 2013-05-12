@@ -579,7 +579,7 @@ public:
 
 	inline const Vector						GetScale() const { return m_vecScale.Get(); }
 
-	virtual const Vector					GetUpVector() const { return Vector(0, 1, 0); };
+	virtual const Vector					GetUpVector() const { return Vector(0, 0, 1); };
 
 	virtual bool							TransformsChildView() const { return false; };
 

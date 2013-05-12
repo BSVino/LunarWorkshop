@@ -151,8 +151,8 @@ bool CManipulatorTool::MouseInput(int iButton, tinker_mouse_state_t iState, int 
 		s_pManipulatorTool->m_trsTransform.m_vecScaling = mTransform.GetScale();
 
 		mTransform.SetForwardVector(mTransform.GetForwardVector()/s_pManipulatorTool->m_trsTransform.m_vecScaling.x);
+		mTransform.SetLeftVector(mTransform.GetLeftVector()/s_pManipulatorTool->m_trsTransform.m_vecScaling.z);
 		mTransform.SetUpVector(mTransform.GetUpVector()/s_pManipulatorTool->m_trsTransform.m_vecScaling.y);
-		mTransform.SetRightVector(mTransform.GetRightVector()/s_pManipulatorTool->m_trsTransform.m_vecScaling.z);
 
 		s_pManipulatorTool->m_trsTransform.m_angRotation = mTransform.GetAngles();
 
@@ -247,8 +247,8 @@ TRS CManipulatorTool::GetNewTRS()
 	m_trsTransform.m_vecScaling = mTransform.GetScale();
 
 	mTransform.SetForwardVector(mTransform.GetForwardVector()/m_trsTransform.m_vecScaling.x);
-	mTransform.SetUpVector(mTransform.GetUpVector()/m_trsTransform.m_vecScaling.y);
-	mTransform.SetRightVector(mTransform.GetRightVector()/m_trsTransform.m_vecScaling.z);
+	mTransform.SetLeftVector(mTransform.GetLeftVector()/m_trsTransform.m_vecScaling.y);
+	mTransform.SetUpVector(mTransform.GetUpVector()/m_trsTransform.m_vecScaling.z);
 
 	m_trsTransform.m_angRotation = mTransform.GetAngles();
 

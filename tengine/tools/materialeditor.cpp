@@ -433,8 +433,8 @@ void CMaterialEditor::RenderScene()
 	if (!hBaseTexture)
 		return;
 
-	Vector vecUp = Vector(0, 0.5f, 0) * ((float)hBaseTexture->m_iHeight/(float)m_hMaterial->m_iTexelsPerMeter);
-	Vector vecRight = Vector(0, 0, 0.5f) * ((float)hBaseTexture->m_iWidth/(float)m_hMaterial->m_iTexelsPerMeter);
+	Vector vecUp = Vector(0, 0, 0.5f) * ((float)hBaseTexture->m_iHeight/(float)m_hMaterial->m_iTexelsPerMeter);
+	Vector vecLeft = Vector(0, 0.5f, 0) * ((float)hBaseTexture->m_iWidth/(float)m_hMaterial->m_iTexelsPerMeter);
 
 	float flAlpha = 0.3f;
 	if (Vector(GetCameraDirection()).Dot(Vector(1, 0, 0)) > 0)
@@ -444,7 +444,7 @@ void CMaterialEditor::RenderScene()
 	c.SetUniform("bDiffuse", false);
 	c.SetBlend(BLEND_ALPHA);
 	c.SetUniform("vecColor", Color(155, 40, 20, (char)(255*flAlpha)));
-	c.RenderWireBox(AABB(-vecUp-vecRight, vecUp+vecRight));
+	c.RenderWireBox(AABB(-vecUp-vecLeft, vecUp+vecLeft));
 }
 
 void CMaterialEditor::NewMaterialCallback(const tstring& sArgs)

@@ -88,13 +88,15 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 
 		TMsg("Building scene area toy ...");
 
+		Matrix4x4 mUpLeftSwap(Vector(1, 0, 0), Vector(0, 0, 1), Vector(0, -1, 0));
+
 		if (pMeshNode)
-			LoadSceneNodeIntoToy(asScenes[sFile].get(), pMeshNode, Matrix4x4(), &ts);
+			LoadSceneNodeIntoToy(asScenes[sFile].get(), pMeshNode, mUpLeftSwap, &ts);
 		else
 			TError("Couldn't find a scene node in '" + sFile + "' named '" + sMesh + "'\n");
 
 		if (pPhysicsNode)
-			LoadSceneNodeIntoToyPhysics(asScenes[sFile].get(), pPhysicsNode, Matrix4x4(), &ts);
+			LoadSceneNodeIntoToyPhysics(asScenes[sFile].get(), pPhysicsNode, mUpLeftSwap, &ts);
 		else
 			TError("Couldn't find a scene node in '" + sFile + "' named '" + sMesh + "'\n");
 
@@ -287,20 +289,20 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 
 			stbi_image_free(pData); // Don't need it, just need the dimensions.
 
-			Vector vecUp = Vector(0, 0.5f, 0) * ((float)y/100);
-			Vector vecRight = Vector(0, 0, 0.5f) * ((float)x/100);
+			Vector vecUp = Vector(0, 0, 0.5f) * ((float)y/100);
+			Vector vecLeft = Vector(0, 0.5f, 0) * ((float)x/100);
 
 			if (IsAbsolutePath(pMesh->GetValueString()))
 				t.AddMaterial(GetPath(pMesh->GetValueString()));
 			else
 				t.AddMaterial(t.GetOutputDirectory() + "/" + pMesh->GetValueString(), GetPath(pMesh->GetValueString()));
-			t.AddVertex(0, -vecRight + vecUp, Vector2D(0.0f, 1.0f));
-			t.AddVertex(0, -vecRight - vecUp, Vector2D(0.0f, 0.0f));
-			t.AddVertex(0, vecRight - vecUp, Vector2D(1.0f, 0.0f));
+			t.AddVertex(0, -vecLeft + vecUp, Vector2D(0.0f, 1.0f));
+			t.AddVertex(0, -vecLeft - vecUp, Vector2D(0.0f, 0.0f));
+			t.AddVertex(0, vecLeft - vecUp, Vector2D(1.0f, 0.0f));
 
-			t.AddVertex(0, -vecRight + vecUp, Vector2D(0.0f, 1.0f));
-			t.AddVertex(0, vecRight - vecUp, Vector2D(1.0f, 0.0f));
-			t.AddVertex(0, vecRight + vecUp, Vector2D(1.0f, 1.0f));
+			t.AddVertex(0, -vecLeft + vecUp, Vector2D(0.0f, 1.0f));
+			t.AddVertex(0, vecLeft - vecUp, Vector2D(1.0f, 0.0f));
+			t.AddVertex(0, vecLeft + vecUp, Vector2D(1.0f, 1.0f));
 		}
 		else if (sExtension == ".mat")
 		{

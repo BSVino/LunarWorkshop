@@ -28,7 +28,7 @@ bool EAngle::EqualsExhaustive(const EAngle& v, float flEp) const
 	return m.Equals(n, flEp);
 }
 
-void AngleVectors(const EAngle& a, Vector* pvecF, Vector* pvecU, Vector* pvecR)
+void AngleVectors(const EAngle& a, Vector* pvecF, Vector* pvecL, Vector* pvecU)
 {
 	Matrix4x4 m;
 	m.SetAngles(a);
@@ -36,9 +36,9 @@ void AngleVectors(const EAngle& a, Vector* pvecF, Vector* pvecU, Vector* pvecR)
 	if (pvecF)
 		*pvecF = m.GetForwardVector();
 
+	if (pvecL)
+		*pvecL = m.GetLeftVector();
+
 	if (pvecU)
 		*pvecU = m.GetUpVector();
-
-	if (pvecR)
-		*pvecR = m.GetRightVector();
 }

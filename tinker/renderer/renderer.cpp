@@ -368,12 +368,12 @@ void CRenderer::FinishRendering(class CRenderingContext* pContext)
 		for (size_t i = 0; i < 6; i++)
 		{
 			Vector vecForward = m_oFrustum.p[i].n;
-			Vector vecRight = vecForward.Cross(Vector(0, 1, 0)).Normalized();
-			Vector vecUp = vecRight.Cross(vecForward).Normalized();
+			Vector vecLeft = -vecForward.Cross(Vector(0, 0, 1)).Normalized();
+			Vector vecUp = -vecLeft.Cross(vecForward).Normalized();
 			Vector vecCenter = vecForward * m_oFrustum.p[i].d;
 
 			vecForward *= 100;
-			vecRight *= 100;
+			vecLeft *= 100;
 			vecUp *= 100;
 
 /*			glBegin(GL_QUADS);
@@ -606,22 +606,22 @@ Vector CRenderer::GetCameraVector()
 	return m_vecCameraDirection;
 }
 
-void CRenderer::GetCameraVectors(Vector* pvecForward, Vector* pvecRight, Vector* pvecUp)
+void CRenderer::GetCameraVectors(Vector* pvecForward, Vector* pvecLeft, Vector* pvecUp)
 {
 	Vector vecForward = GetCameraVector();
-	Vector vecRight;
+	Vector vecLeft;
 
 	if (pvecForward)
 		(*pvecForward) = vecForward;
 
-	if (pvecRight || pvecUp)
-		vecRight = vecForward.Cross(m_vecCameraUp).Normalized();
+	if (pvecLeft || pvecUp)
+		vecLeft = m_vecCameraUp.Cross(vecForward).Normalized();
 
-	if (pvecRight)
-		(*pvecRight) = vecRight;
+	if (pvecLeft)
+		(*pvecLeft) = vecLeft;
 
 	if (pvecUp)
-		(*pvecUp) = vecRight.Cross(vecForward).Normalized();
+		(*pvecUp) = vecForward.Cross(vecLeft).Normalized();
 }
 
 bool CRenderer::IsSphereInFrustum(const Vector& vecCenter, float flRadius)

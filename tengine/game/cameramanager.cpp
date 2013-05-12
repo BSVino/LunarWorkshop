@@ -41,16 +41,16 @@ void CCameraManager::Think()
 
 	if (GetFreeMode())
 	{
-		Vector vecForward, vecRight, vecUp;
-		AngleVectors(m_angFreeCamera, &vecForward, &vecUp, &vecRight);
+		Vector vecForward, vecLeft, vecUp;
+		AngleVectors(m_angFreeCamera, &vecForward, &vecLeft, &vecUp);
 
 		float flScaleSpeed = 20;
 		if (ShouldRenderOrthographic())
 			flScaleSpeed = m_flFreeOrthoHeight;
 
 		m_vecFreeCamera += vecForward * m_vecFreeVelocity.x * (float)GameServer()->GetFrameTime() * flScaleSpeed;
-		m_vecFreeCamera += vecRight * m_vecFreeVelocity.z * (float)GameServer()->GetFrameTime() * flScaleSpeed;
-		m_vecFreeCamera += vecUp * m_vecFreeVelocity.y * (float)GameServer()->GetFrameTime() * flScaleSpeed;
+		m_vecFreeCamera += vecLeft * m_vecFreeVelocity.y * (float)GameServer()->GetFrameTime() * flScaleSpeed;
+		m_vecFreeCamera += vecUp * m_vecFreeVelocity.z * (float)GameServer()->GetFrameTime() * flScaleSpeed;
 
 		m_flFreeOrthoHeight -= ((float)GameServer()->GetFrameTime() * (float)m_vecFreeVelocity.x * 5);
 		if (m_flFreeOrthoHeight < 1)
@@ -118,7 +118,7 @@ Vector CCameraManager::GetCameraUp()
 {
 	CCamera* pCamera = GetActiveCamera();
 	if (!pCamera)
-		return Vector(0, 1, 0);
+		return Vector(0, 0, 1);
 
 	if (ShouldTransition())
 	{
@@ -136,7 +136,7 @@ float CCameraManager::GetCameraFOV()
 {
 	CCamera* pCamera = GetActiveCamera();
 	if (!pCamera)
-		return 44.0f;
+		return 80.0f;
 
 	if (ShouldTransition())
 	{
@@ -325,7 +325,7 @@ void CCameraManager::MouseInput(int x, int y)
 
 	if (m_bFreeMode)
 	{
-		m_angFreeCamera.y += (dx/5.0f);
+		m_angFreeCamera.y -= (dx/5.0f);
 		m_angFreeCamera.p -= (dy/5.0f);
 
 		if (m_angFreeCamera.p > 89)
@@ -380,25 +380,25 @@ bool CCameraManager::KeyDown(int c)
 
 		if (c == 'D')
 		{
-			m_vecFreeVelocity.z = 1.0f;
+			m_vecFreeVelocity.y = -1.0f;
 			return true;
 		}
 
 		if (c == 'A')
 		{
-			m_vecFreeVelocity.z = -1.0f;
+			m_vecFreeVelocity.y = 1.0f;
 			return true;
 		}
 
 		if (c == ' ')
 		{
-			m_vecFreeVelocity.y = 1.0f;
+			m_vecFreeVelocity.z = 1.0f;
 			return true;
 		}
 
 		if (c == 'V')
 		{
-			m_vecFreeVelocity.y = -1.0f;
+			m_vecFreeVelocity.z = -1.0f;
 			return true;
 		}
 	}
@@ -424,25 +424,25 @@ bool CCameraManager::KeyUp(int c)
 
 		if (c == 'D')
 		{
-			m_vecFreeVelocity.z = 0.0f;
+			m_vecFreeVelocity.y = 0.0f;
 			return true;
 		}
 
 		if (c == 'A')
 		{
-			m_vecFreeVelocity.z = 0.0f;
+			m_vecFreeVelocity.y = 0.0f;
 			return true;
 		}
 
 		if (c == ' ')
 		{
-			m_vecFreeVelocity.y = 0.0f;
+			m_vecFreeVelocity.z = 0.0f;
 			return true;
 		}
 
 		if (c == 'V' || c == TINKER_KEY_LCTRL)
 		{
-			m_vecFreeVelocity.y = 0.0f;
+			m_vecFreeVelocity.z = 0.0f;
 			return true;
 		}
 	}

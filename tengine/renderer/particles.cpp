@@ -291,7 +291,7 @@ CParticleSystem::CParticleSystem(tstring sName)
 	m_flFadeIn = 0.0f;
 	m_flFadeOut = 0.25f;
 	m_flInheritedVelocity = 0.0f;
-	m_vecGravity = Vector(0, -10, 0);
+	m_vecGravity = Vector(0, 0, -10);
 	m_flDrag = 1.0f;
 	m_bRandomBillboardYaw = false;
 	m_bRandomModelYaw = true;
@@ -536,8 +536,8 @@ void CSystemInstance::Render(CGameRenderingContext* c)
 
 	CGameRenderer* pRenderer = GameWindow()->GetGameRenderer();
 
-	Vector vecForward, vecRight, vecUp;
-	pRenderer->GetCameraVectors(&vecForward, &vecRight, &vecUp);
+	Vector vecForward, vecLeft, vecUp;
+	pRenderer->GetCameraVectors(&vecForward, &vecLeft, &vecUp);
 
 	if (m_pSystem->GetMaterial())
 		c->UseMaterial(m_pSystem->GetMaterial());
@@ -561,8 +561,8 @@ void CSystemInstance::Render(CGameRenderingContext* c)
 				c->SetColor(m_pSystem->GetColor());
 
 			c->Translate(pParticle->m_vecOrigin);
-			c->Rotate(-pParticle->m_angAngles.y, Vector(0, 1, 0));
-			c->Rotate(pParticle->m_angAngles.p, Vector(0, 0, 1));
+			c->Rotate(-pParticle->m_angAngles.y, Vector(0, 0, 1));
+			c->Rotate(pParticle->m_angAngles.p, Vector(0, 1, 0));
 			c->Rotate(pParticle->m_angAngles.r, Vector(1, 0, 0));
 			c->Scale(pParticle->m_flRadius, pParticle->m_flRadius, pParticle->m_flRadius);
 			c->RenderModel(m_pSystem->GetModel());
@@ -581,13 +581,13 @@ void CSystemInstance::Render(CGameRenderingContext* c)
 				float flSin = sin(flYaw);
 				float flCos = cos(flYaw);
 
-				vecParticleUp = (flCos*vecUp + flSin*vecRight)*flRadius;
-				vecParticleRight = (flCos*vecRight - flSin*vecUp)*flRadius;
+				vecParticleUp = (flCos*vecUp + flSin*vecLeft)*flRadius;
+				vecParticleRight = (flCos*vecLeft - flSin*vecUp)*flRadius;
 			}
 			else
 			{
 				vecParticleUp = vecUp*flRadius;
-				vecParticleRight = vecRight*flRadius;
+				vecParticleRight = vecLeft*flRadius;
 			}
 
 			Vector vecTL = vecOrigin - vecParticleRight + vecParticleUp;

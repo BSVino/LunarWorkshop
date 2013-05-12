@@ -54,7 +54,9 @@ void CGeppetto::LoadSceneNodeIntoToyPhysics(CConversionScene* pScene, CConversio
 
 void CGeppetto::LoadSceneIntoToyPhysics(CConversionScene* pScene, CToyUtil* pToy)
 {
+	Matrix4x4 mUpLeftSwap(Vector(1, 0, 0), Vector(0, 0, 1), Vector(0, -1, 0));
+
 	for (size_t i = 0; i < pScene->GetNumScenes(); i++)
-		LoadSceneNodeIntoToyPhysics(pScene, pScene->GetScene(i), Matrix4x4(), pToy);
+		LoadSceneNodeIntoToyPhysics(pScene, pScene->GetScene(i), mUpLeftSwap, pToy);
 }
 

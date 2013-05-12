@@ -30,7 +30,7 @@ void CTackCharacter::Spawn()
 {
 	BaseClass::Spawn();
 
-	SetGlobalGravity(Vector(0, -9.8f, 0));
+	SetGlobalGravity(Vector(0, 0, -9.8f));
 	m_flMaxStepSize = 0.1f;
 
 	m_flGoalYaw = m_flRenderYaw = 0;
@@ -155,7 +155,7 @@ void CTackCharacter::OnTakeDamage(CBaseEntity* pAttacker, CBaseEntity* pInflicto
 	vecAttackDirection.y = 0;
 	vecAttackDirection.Normalize();
 
-	SetGlobalVelocity(vecAttackDirection * game_damagepushback.GetFloat() + Vector(0, 1, 0) * game_damagepushup.GetFloat());
+	SetGlobalVelocity(vecAttackDirection * game_damagepushback.GetFloat() + Vector(0, 0, 1) * game_damagepushup.GetFloat());
 }
 
 void CTackCharacter::CreateCorpse()

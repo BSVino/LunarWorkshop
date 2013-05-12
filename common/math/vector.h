@@ -354,7 +354,7 @@ inline unit_t TemplateVector<unit_t>::operator[](size_t i) const
 
 // Euler angles
 // Positive pitch looks up, negative looks down.
-// Positive yaw rotates like a top to the right, negative to the left.
+// Positive yaw rotates like a top to the left, negative to the right.
 // Positive roll banks to the right (right wing down, left wing up) negative roll to the left.
 class EAngle
 {
@@ -440,20 +440,20 @@ inline const Vector AngleVector(const EAngle& a)
 	float cy = cos(y);
 
 	vecResult.x = cp*cy;
-	vecResult.y = sp;
-	vecResult.z = cp*sy;
+	vecResult.y = cp*sy;
+	vecResult.z = sp;
 
 	return vecResult;
 }
 
-void AngleVectors(const EAngle& a, Vector* pvecF, Vector* pvecU, Vector* pvecR);
+void AngleVectors(const EAngle& a, Vector* pvecF, Vector* pvecL, Vector* pvecU);
 
 inline const EAngle VectorAngles( const Vector& vecForward )
 {
 	EAngle angReturn(0, 0, 0);
 
-	angReturn.p = atan2(vecForward.y, sqrt(vecForward.x*vecForward.x + vecForward.z*vecForward.z)) * 180/M_PI;
-	angReturn.y = atan2(vecForward.z, vecForward.x) * 180/M_PI;
+	angReturn.p = atan2(vecForward.z, sqrt(vecForward.x*vecForward.x + vecForward.y*vecForward.y)) * 180/M_PI;
+	angReturn.y = atan2(vecForward.y, vecForward.x) * 180/M_PI;
 
 	return angReturn;
 }

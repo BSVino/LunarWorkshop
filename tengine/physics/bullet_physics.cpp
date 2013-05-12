@@ -23,7 +23,7 @@ CBulletPhysics::CBulletPhysics()
 	m_pBroadphase->getOverlappingPairCache()->setInternalGhostPairCallback(m_pGhostPairCallback = new btGhostPairCallback());
 
 	m_pDynamicsWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, NULL, m_pCollisionConfiguration);
-	m_pDynamicsWorld->setGravity(btVector3(0, -9.8f, 0));
+	m_pDynamicsWorld->setGravity(btVector3(0, 0, -9.8f));
 	m_pDynamicsWorld->setForceUpdateAllAabbs(false);
 
 	m_pDebugDrawer = NULL;
@@ -71,11 +71,11 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 
 		AABB r = pEntity->GetPhysBoundingBox();
 		float flRadiusX = r.m_vecMaxs.x - r.Center().x;
-		float flRadiusZ = r.m_vecMaxs.z - r.Center().z;
+		float flRadiusY = r.m_vecMaxs.y - r.Center().y;
 		float flRadius = flRadiusX;
-		if (flRadiusZ > flRadiusX)
-			flRadius = flRadiusZ;
-		float flHeight = r.m_vecMaxs.y - r.m_vecMins.y;
+		if (flRadiusY > flRadiusX)
+			flRadius = flRadiusY;
+		float flHeight = r.m_vecMaxs.z - r.m_vecMins.z;
 
 		CCharacter* pCharacter = dynamic_cast<CCharacter*>(pEntity);
 
@@ -99,7 +99,7 @@ void CBulletPhysics::AddEntity(CBaseEntity* pEntity, collision_type_t eCollision
 			{
 				TAssert(flHeight >= flRadius*2); // Couldn't very well make a capsule this way could we?
 
-				m_apCharacterShapes[sIdentifier] = new btCapsuleShape(flRadius, flHeight - flRadius*2);
+				m_apCharacterShapes[sIdentifier] = new btCapsuleShapeZ(flRadius, flHeight - flRadius*2);
 			}
 		}
 

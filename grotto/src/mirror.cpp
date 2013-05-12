@@ -157,7 +157,7 @@ bool CMirror::GetSide(const Vector& vecPoint) const
 		return (vecPoint - GetGlobalOrigin()).Normalized().Dot(GetGlobalTransform().GetForwardVector()) > 0;
 
 	case MIRROR_HORIZONTAL:
-		return (vecPoint - GetGlobalOrigin()).Normalized().Dot(Vector(0, 1, 0)) > 0;
+		return (vecPoint - GetGlobalOrigin()).Normalized().Dot(Vector(0, 0, 1)) > 0;
 	}
 
 	return false;
@@ -168,7 +168,7 @@ Matrix4x4 CMirror::GetReflection() const
 	if (m_eMirrorType == REFLECTION_LATERAL)
 		return Matrix4x4().AddReflection(GetGlobalTransform().GetForwardVector());
 	else if (m_eMirrorType == REFLECTION_VERTICAL)
-		return Matrix4x4().AddReflection(Vector(0, 1, 0));
+		return Matrix4x4().AddReflection(Vector(0, 0, 1));
 
 	return Matrix4x4();
 }

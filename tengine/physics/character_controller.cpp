@@ -109,8 +109,8 @@ CCharacterController::CCharacterController(CCharacter* pEntity, btPairCachingGho
 	m_pGhostObject = ghostObject;
 	m_flStepHeight = stepHeight;
 	m_pConvexShape = convexShape;	
-	m_vecGravity = btVector3(0, -9.8f, 0);
-	m_vecUpVector = btVector3(0, 1, 0);
+	m_vecGravity = btVector3(0, 0, -9.8f);
+	m_vecUpVector = btVector3(0, 0, 1);
 	m_vecLinearFactor = btVector3(1, 1, 1);
 	m_flMaxSpeed = 55.0; // Terminal velocity of a sky diver in m/s.
 	m_flJumpSpeed = 6.0;

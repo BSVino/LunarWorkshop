@@ -1439,10 +1439,10 @@ void CLevelEditor::RenderScene()
 
 		int i;
 
-		Vector vecStartX(-10, 0, -10);
-		Vector vecEndX(-10, 0, 10);
-		Vector vecStartZ(-10, 0, -10);
-		Vector vecEndZ(10, 0, -10);
+		Vector vecStartX(-10, -10, 0);
+		Vector vecEndX(-10, 10, 0);
+		Vector vecStartZ(-10, -10, 0);
+		Vector vecEndZ(10, -10, 0);
 
 		c.BeginRenderLines();
 		for (i = 0; i <= 20; i++)
@@ -1457,8 +1457,8 @@ void CLevelEditor::RenderScene()
 
 			vecStartX.x += 1;
 			vecEndX.x += 1;
-			vecStartZ.z += 1;
-			vecEndZ.z += 1;
+			vecStartZ.y += 1;
+			vecEndZ.y += 1;
 		}
 		c.EndRender();
 

@@ -343,14 +343,14 @@ void CRenderingContext::RenderWireBox(const AABB& aabbBounds)
 	EndRender();
 }
 
-void CRenderingContext::RenderBillboard(const CMaterialHandle& hMaterial, float flRadius, Vector vecUp, Vector vecRight)
+void CRenderingContext::RenderBillboard(const CMaterialHandle& hMaterial, float flRadius, Vector vecLeft, Vector vecUp)
 {
 	TAssert(hMaterial.IsValid());
 	if (!hMaterial.IsValid())
 		return;
 
 	vecUp *= flRadius;
-	vecRight *= flRadius;
+	vecLeft *= flRadius;
 
 	// Clear out any existing rotation so that they don't interfere with the billboarding below.
 	GetContext().m_mTransformations.SetAngles(EAngle(0, 0, 0));
@@ -361,13 +361,13 @@ void CRenderingContext::RenderBillboard(const CMaterialHandle& hMaterial, float 
 
 	BeginRenderTriFan();
 		TexCoord(0.0f, 1.0f);
-		Vertex(-vecRight + vecUp);
+		Vertex(-vecLeft + vecUp);
 		TexCoord(0.0f, 0.0f);
-		Vertex(-vecRight - vecUp);
+		Vertex(-vecLeft - vecUp);
 		TexCoord(1.0f, 0.0f);
-		Vertex(vecRight - vecUp);
+		Vertex(vecLeft - vecUp);
 		TexCoord(1.0f, 1.0f);
-		Vertex(vecRight + vecUp);
+		Vertex(vecLeft + vecUp);
 	EndRender();
 }
 

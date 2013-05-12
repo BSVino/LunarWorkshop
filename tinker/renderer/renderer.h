@@ -139,7 +139,7 @@ public:
 	const Frustum&	GetFrustum() const { return m_oFrustum; }
 
 	Vector			GetCameraVector();
-	void			GetCameraVectors(Vector* pvecForward, Vector* pvecRight, Vector* pvecUp);
+	void			GetCameraVectors(Vector* pvecForward, Vector* pvecLeft, Vector* pvecUp);
 
 	bool			IsSphereInFrustum(const Vector& vecCenter, float flRadius);
 

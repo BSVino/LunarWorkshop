@@ -60,9 +60,9 @@ Quaternion::Quaternion(const Matrix4x4& m)
 		w = flRoot/2;
 
 		flRoot = 0.5f/flRoot;  // 1/(4w)
-		x = (m.m[1][2]-m.m[2][1])*flRoot;
-		y = (m.m[2][0]-m.m[0][2])*flRoot;
-		z = (m.m[0][1]-m.m[1][0])*flRoot;
+		x = (m.m[2][1]-m.m[1][2])*flRoot;
+		y = (m.m[1][0]-m.m[0][1])*flRoot;
+		z = (m.m[0][2]-m.m[2][0])*flRoot;
 	}
 	else
 	{
@@ -70,9 +70,9 @@ Quaternion::Quaternion(const Matrix4x4& m)
 
 		// |w| <= 1/2
 		int i = 0;
-		if ( m.m[1][1] > m.m[0][0] )
+		if ( m.m[2][2] > m.m[0][0] )
 			i = 1;
-		if ( m.m[2][2] > m.m[i][i] )
+		if ( m.m[1][1] > m.m[i][i] )
 			i = 2;
 		int j = NEXT[i];
 		int k = NEXT[j];
