@@ -9,10 +9,47 @@
 #include <trs.h>
 
 #include <textures/materialhandle.h>
+#include <physics/physics.h>
 
 // A description of an entity for use in the level editor
-class CLevelEntity
+class CLevelEntity : public IPhysicsEntity
 {
+	friend class CLevel;
+
+public:
+	// Don't use these if it's going to go into a CLevel list.
+	CLevelEntity()
+	{
+		m_iHandle = ~0;
+
+		InitializeCallbacks();
+	}
+
+	CLevelEntity(CLevelEntity&& o)
+	{
+		(*this) = o;
+
+		o = CLevelEntity();
+
+		InitializeCallbacks();
+	}
+
+private:
+	CLevelEntity(size_t iHandle, const tstring& sClassName)
+	{
+		m_iHandle = iHandle;
+		m_sClass = sClassName;
+
+		InitializeCallbacks();
+	}
+
+	CLevelEntity(const CLevelEntity& o)
+	{
+		(*this) = o;
+
+		InitializeCallbacks();
+	}
+
 public:
 	class CLevelEntityOutput
 	{
@@ -29,25 +66,6 @@ public:
 		tstring					m_sArgs;
 		bool					m_bKill;
 	};
-
-public:
-	CLevelEntity(const tstring& sClass)
-	{
-		InitializeCallbacks();
-		m_sClass = sClass;
-	}
-
-	CLevelEntity(const CLevelEntity& o)
-	{
-		(*this) = o;
-
-		InitializeCallbacks();
-	}
-
-	CLevelEntity()
-	{
-		InitializeCallbacks();
-	}
 
 public:
 	void								InitializeCallbacks()
@@ -76,29 +94,49 @@ public:
 		m_sName.Dirtify();
 	}
 
-	tstring								GetClass() { return m_sClass; }
+	tstring								GetClass() const { return m_sClass; }
 	void								SetClass(const tstring& sClass) { m_sClass = sClass; }
 
-	const CMaterialHandle&				GetMaterialModel() { return m_hMaterialModel; }
+	const CMaterialHandle&				GetMaterialModel() const { return m_hMaterialModel; }
 
 	tvector<CLevelEntityOutput>&		GetOutputs() { return m_aOutputs; }
+	const tvector<CLevelEntityOutput>&  GetOutputs() const { return m_aOutputs; }
 
 	const tstring&						GetParameterValue(const tstring& sKey) const;
 	void								SetParameterValue(const tstring& sKey, const tstring& sValue);
 	void								RemoveParameter(const tstring& sKey);
 	bool								HasParameterValue(const tstring& sKey) const;
 	tmap<tstring, tstring>&				GetParameters() { return m_asParameters; }
+	const tmap<tstring, tstring>&       GetParameters() const { return m_asParameters; }
 
-	Matrix4x4							GetGlobalTransform() { return m_mGlobalTransform; }
+	Matrix4x4							GetGlobalTransform() const { return m_mGlobalTransform; }
 	void								SetGlobalTransform(const Matrix4x4& m) { m_mGlobalTransform = m; }
 	TRS									GetGlobalTRS() { return m_trsGlobalTRS; }
 	bool								IsVisible() { return m_bVisible; }
 	bool								ShouldRenderInverted() { return m_bRenderInverted; }
 	bool								ShouldDisableBackCulling() { return m_bDisableBackCulling; }
-	size_t								GetModelID() { return m_iModel; }
-	Vector								GetScale() { return m_vecScale; }
-	AABB								GetBoundingBox() { return m_aabbBounds; }
-	tstring								GetName() { return m_sName; }
+	size_t                              GetModelID() const { return m_iModel; }
+	const Vector                        GetScale() const { return m_vecScale; }
+	AABB                                GetBoundingBox() const { return m_aabbBounds; }
+	const tstring&                      GetName() const { return m_sName; }
+
+	// IPhysicsEntity
+	size_t            GetHandle() const { return m_iHandle; }
+	class CModel*     GetModel() const;
+	const char*       GetClassName() const { return GetClass().c_str(); }
+	collision_group_t GetCollisionGroup() const { return CG_DEFAULT; }
+
+	const AABB        GetPhysBoundingBox() const { return GetBoundingBox(); }
+	const AABB        GetVisBoundingBox() const { return GetBoundingBox(); }
+	const TVector     GetGlobalOrigin() const { return GetGlobalTransform().GetTranslation(); }
+	const Matrix4x4   GetPhysicsTransform() const { return GetGlobalTransform(); }
+	void              SetPhysicsTransform(const Matrix4x4& m) { SetGlobalTransform(m); }
+
+	// Triggers
+	void              Touching(size_t iOtherHandle) { TUnimplemented(); };
+	void              BeginTouchingList() { TUnimplemented(); };
+	void              EndTouchingList() { TUnimplemented(); };
+	bool              ShouldCollideWith(size_t iOtherHandle, const TVector& vecPoint) const { TUnimplemented(); return true; }
 
 public:
 	static Matrix4x4					CalculateGlobalTransform(CLevelEntity* pThis);
@@ -112,6 +150,7 @@ public:
 	static tstring						CalculateName(CLevelEntity* pThis);
 
 private:
+	size_t                              m_iHandle;
 	tstring								m_sClass;
 	tmap<tstring, tstring>				m_asParameters;
 	CMaterialHandle						m_hMaterialModel;
@@ -132,6 +171,11 @@ private:
 class CLevel
 {
 public:
+	CLevel()
+	{
+		m_iNextHandle = 0;
+	}
+
 	virtual					~CLevel() {};
 
 public:
@@ -151,6 +195,9 @@ public:
 	tvector<CLevelEntity>&	GetEntityData() { return m_aLevelEntities; }
 	const tvector<CLevelEntity>& GetEntityData() const { return m_aLevelEntities; }
 
+	size_t                  CreateEntity(const tstring& sClassName);
+	size_t                  CopyEntity(const CLevelEntity& oOther);
+
 protected:
 	tstring					m_sName;
 	tstring					m_sFile;
@@ -158,6 +205,8 @@ protected:
 	tstring					m_sGameMode;
 
 	tvector<CLevelEntity>	m_aLevelEntities;
+
+	size_t                  m_iNextHandle;
 };
 
 #endif

@@ -229,6 +229,18 @@ void CWorkbench::Deactivate()
 	glgui::CRootPanel::Get()->GetMenuBar()->SetVisible(false);
 }
 
+void CWorkbench::LoadLevel(const CHandle<CLevel>& pLevel)
+{
+	if (!Workbench())
+		return;
+
+	for (size_t i = 0; i < Workbench()->m_apTools.size(); i++)
+	{
+		if (Workbench()->m_apTools[i])
+			Workbench()->m_apTools[i]->LoadLevel(pLevel);
+	}
+}
+
 void CWorkbench::RenderScene()
 {
 	if (!Workbench())

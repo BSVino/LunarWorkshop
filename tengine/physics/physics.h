@@ -41,16 +41,16 @@ public:
 	virtual const Vector      GetScale() const { return Vector(); }
 
 	virtual const AABB        GetPhysBoundingBox() const { return AABB(); }
-	virtual const AABB&       GetVisBoundingBox() const { static AABB r; return r; }
+	virtual const AABB        GetVisBoundingBox() const { static AABB r; return r; }
 	virtual const TVector     GetGlobalOrigin() const { return TVector(); }
 	virtual const Matrix4x4   GetPhysicsTransform() const { return Matrix4x4(); }
 	virtual void              SetPhysicsTransform(const Matrix4x4& m) { }
 
 	// Triggers
-	virtual void              Touching(IPhysicsEntity* pOther) {};
+	virtual void              Touching(size_t iOtherHandle) {};
 	virtual void              BeginTouchingList() {};
 	virtual void              EndTouchingList() {};
-	virtual bool              ShouldCollideWith(IPhysicsEntity* pOther, const TVector& vecPoint) const { return true; }
+	virtual bool              ShouldCollideWith(size_t iOtherHandle, const TVector& vecPoint) const { return true; }
 };
 
 class CTraceResult
@@ -59,7 +59,7 @@ public:
 	CTraceResult()
 	{
 		m_flFraction = 1.0f;
-		m_pHit = nullptr;
+		m_iHit = ~0;
 		m_iHitExtra = ~0;
 	}
 
@@ -70,14 +70,14 @@ public:
 		CTraceHit()
 		{
 			m_flFraction = 1.0f;
-			m_pHit = nullptr;
+			m_iHit = ~0;
 			m_iHitExtra = ~0;
 		}
 
 	public:
 		float              m_flFraction;
 		Vector             m_vecHit;
-		IPhysicsEntity*    m_pHit;
+		size_t             m_iHit;
 		size_t             m_iHitExtra;
 	};
 
@@ -88,7 +88,7 @@ public:
 	float                  m_flFraction;
 	Vector                 m_vecHit;
 	Vector                 m_vecNormal;
-	IPhysicsEntity*        m_pHit;
+	size_t                 m_iHit;
 	size_t                 m_iHitExtra;
 };
 

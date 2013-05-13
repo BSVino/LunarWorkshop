@@ -82,13 +82,13 @@ public:
 		CTraceResult::CTraceHit& th = m_tr.m_aHits.push_back();
 
 		th.m_flFraction = cp.getDistance();
-		th.m_pHit = (IPhysicsEntity*)colObj1->getUserPointer();
+		th.m_iHit = (size_t)colObj1->getUserPointer();
 		th.m_vecHit = ToTVector(cp.getPositionWorldOnB());
 
 		if (th.m_flFraction < m_tr.m_flFraction)
 		{
 			m_tr.m_flFraction = th.m_flFraction;
-			m_tr.m_pHit = th.m_pHit;
+			m_tr.m_iHit = th.m_iHit;
 			m_tr.m_vecHit = th.m_vecHit;
 		}
 
@@ -200,7 +200,6 @@ public:
 	virtual void			CharacterJump(IPhysicsEntity* pEnt);
 
 	virtual CPhysicsEntity* GetPhysicsEntity(IPhysicsEntity* pEnt);
-	virtual IPhysicsEntity* GetGameEntity(class btCollisionObject* pObject);
 
 	short                   GetMaskForGroup(collision_group_t eGroup);
 

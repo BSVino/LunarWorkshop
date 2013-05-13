@@ -22,6 +22,7 @@
 #include <game/level.h>
 #include <game/gameserver.h>
 #include <models/models.h>
+#include <toys/toy.h>
 #include <tools/manipulator/manipulator.h>
 
 #include "workbench.h"
@@ -961,6 +962,25 @@ CLevelEditor::~CLevelEditor()
 	glgui::CRootPanel::Get()->RemoveControl(m_hCreateEntityButton);
 }
 
+void CLevelEditor::LoadLevel(const CHandle<CLevel>& pLevel)
+{
+	if (pLevel == m_pLevel)
+		return;
+
+	m_pLevel = pLevel;
+
+	if (!m_pLevel.Get())
+		return;
+
+	EditorPhysics()->RemoveAllEntities();
+
+	for (size_t i = 0; i < m_pLevel->GetEntityData().size(); i++)
+	{
+		CLevelEntity* pEntity = &m_pLevel->GetEntityData()[i];
+		EditorPhysics()->AddEntity(pEntity, CT_STATIC_MESH);
+	}
+}
+
 void CLevelEditor::Think()
 {
 	BaseClass::Think();
@@ -989,16 +1009,17 @@ void CLevelEditor::RenderEntity(size_t i)
 	CLevelEntity* pEntity = &m_pLevel->GetEntityData()[i];
 
 	if (m_hEditorPanel->m_hEntities->GetSelectedNodeId() == i)
-	{
-		CLevelEntity oCopy = *pEntity;
-		oCopy.SetGlobalTransform(Manipulator()->GetTransform(true, false));	// Scaling is already done in RenderEntity()
-		RenderEntity(&oCopy, true);
-	}
+		RenderEntity(pEntity, true, false, Manipulator()->GetTransform(true, false));
 	else
 		RenderEntity(pEntity, m_hEditorPanel->m_hEntities->GetSelectedNodeId() == i, i == m_iHoverEntity);
 }
 
 void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHover)
+{
+	RenderEntity(pEntity, bSelected, bHover, pEntity->GetGlobalTransform());
+}
+
+void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHover, const Matrix4x4& mGlobal)
 {
 	CGameRenderingContext r(GameServer()->GetRenderer(), true);
 
@@ -1006,7 +1027,7 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 	if (!r.GetActiveFrameBuffer())
 		r.UseFrameBuffer(GameServer()->GetRenderer()->GetSceneBuffer());
 
-	r.Transform(pEntity->GetGlobalTransform());
+	r.Transform(mGlobal);
 
 	if (pEntity->ShouldRenderInverted())
 		r.SetWinding(!r.GetWinding());
@@ -1042,12 +1063,12 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 		{
 			if (pEntity->ShouldRenderInverted())
 			{
-				if ((pEntity->GetGlobalTransform().GetTranslation() - GetCameraPosition()).Dot(pEntity->GetGlobalTransform().GetForwardVector()) > 0)
+				if ((mGlobal.GetTranslation() - GetCameraPosition()).Dot(mGlobal.GetForwardVector()) > 0)
 					bRenderMaterial = false;
 			}
 			else
 			{
-				if ((pEntity->GetGlobalTransform().GetTranslation() - GetCameraPosition()).Dot(pEntity->GetGlobalTransform().GetForwardVector()) < 0)
+				if ((mGlobal.GetTranslation() - GetCameraPosition()).Dot(mGlobal.GetForwardVector()) < 0)
 					bRenderMaterial = false;
 			}
 		}
@@ -1160,7 +1181,25 @@ size_t CLevelEditor::TraceLine(const Ray& vecTrace)
 		return ~0;
 
 	size_t iNearest = ~0;
-	float flNearest;
+	float flNearestSqr;
+
+	float flTraceDistance = 100;
+	CTraceResult tr;
+	EditorPhysics()->TraceLine(tr, vecTrace.m_vecPos, vecTrace.m_vecPos + vecTrace.m_vecDir*flTraceDistance);
+
+	if (tr.m_flFraction < 1)
+	{
+		for (size_t i = 0; i < pLevel->GetEntityData().size(); i++)
+		{
+			if (pLevel->GetEntityData()[i].GetHandle() == tr.m_iHit)
+			{
+				iNearest = i;
+				float flDistance = tr.m_flFraction * flTraceDistance;
+				flNearestSqr = flDistance*flDistance;
+				break;
+			}
+		}
+	}
 
 	for (size_t i = 0; i < pLevel->GetEntityData().size(); i++)
 	{
@@ -1196,6 +1235,9 @@ size_t CLevelEditor::TraceLine(const Ray& vecTrace)
 
 		Ray vecLocalTrace = mInverseRotation * vecTrace;
 
+		if (EditorPhysics()->IsEntityAdded(pEnt))
+			continue;
+
 		Vector vecIntersection;
 		if (!RayIntersectsAABB(vecLocalTrace, aabbLocalBounds, vecIntersection))
 			continue;
@@ -1205,15 +1247,15 @@ size_t CLevelEditor::TraceLine(const Ray& vecTrace)
 		if (iNearest == ~0)
 		{
 			iNearest = i;
-			flNearest = flDistanceSqr;
+			flNearestSqr = flDistanceSqr;
 			continue;
 		}
 
-		if (flDistanceSqr >= flNearest)
+		if (flDistanceSqr >= flNearestSqr)
 			continue;
 
 		iNearest = i;
-		flNearest = flDistanceSqr;
+		flNearestSqr = flDistanceSqr;
 	}
 
 	return iNearest;
@@ -1237,17 +1279,19 @@ void CLevelEditor::EntitySelected()
 void CLevelEditor::CreateEntityFromPanel(const Vector& vecPosition)
 {
 	auto& aEntityData = m_pLevel->GetEntityData();
-	auto& oNewEntity = aEntityData.push_back();
-	oNewEntity.SetClass(m_hCreateEntityPanel->m_hClass->GetText());
-	oNewEntity.SetParameterValue("Name", m_hCreateEntityPanel->m_hNameText->GetText());
 
-	oNewEntity.SetParameterValue("Model", m_hCreateEntityPanel->m_hModelText->GetText());
-	oNewEntity.SetParameterValue("Origin", sprintf("%f %f %f", vecPosition.x, vecPosition.y, vecPosition.z));
+	size_t iNewEntity = m_pLevel->CreateEntity(m_hCreateEntityPanel->m_hClass->GetText());
+	CLevelEntity* pNewEntity = &m_pLevel->GetEntityData()[iNewEntity];
 
-	PopulateLevelEntityFromPanel(&oNewEntity, m_hCreateEntityPanel->m_hPropertiesPanel);
+	pNewEntity->SetParameterValue("Name", m_hCreateEntityPanel->m_hNameText->GetText());
+
+	pNewEntity->SetParameterValue("Model", m_hCreateEntityPanel->m_hModelText->GetText());
+	pNewEntity->SetParameterValue("Origin", sprintf("%f %f %f", vecPosition.x, vecPosition.y, vecPosition.z));
+
+	PopulateLevelEntityFromPanel(pNewEntity, m_hCreateEntityPanel->m_hPropertiesPanel);
 
 	m_hEditorPanel->Layout();
-	m_hEditorPanel->m_hEntities->SetSelectedNode(aEntityData.size()-1);
+	m_hEditorPanel->m_hEntities->SetSelectedNode(iNewEntity);
 }
 
 void CLevelEditor::PopulateLevelEntityFromPanel(class CLevelEntity* pEntity, CEntityPropertiesPanel* pPanel)
@@ -1284,12 +1328,10 @@ void CLevelEditor::DuplicateSelectedEntity()
 	if (!m_hEditorPanel->m_hEntities->GetSelectedNode())
 		return;
 
-	auto& aEntityData = m_pLevel->GetEntityData();
-	auto& oNewEntity = aEntityData.push_back();
-	oNewEntity = aEntityData[m_hEditorPanel->m_hEntities->GetSelectedNodeId()];
+	size_t iNewHandle = m_pLevel->CopyEntity(m_pLevel->GetEntityData()[m_hEditorPanel->m_hEntities->GetSelectedNodeId()]);
 
 	m_hEditorPanel->Layout();
-	m_hEditorPanel->m_hEntities->SetSelectedNode(aEntityData.size()-1);
+	m_hEditorPanel->m_hEntities->SetSelectedNode(iNewHandle);
 }
 
 void CLevelEditor::CreateEntityCallback(const tstring& sArgs)
@@ -1380,7 +1422,7 @@ void CLevelEditor::Activate()
 {
 	SetCameraOrientation(GameServer()->GetCameraManager()->GetCameraPosition(), GameServer()->GetCameraManager()->GetCameraDirection());
 
-	m_pLevel = GameServer()->GetLevel(CVar::GetCVarValue("game_level"));
+	LoadLevel(GameServer()->GetLevel(CVar::GetCVarValue("game_level")));
 
 	m_hEditorPanel->SetVisible(true);
 	m_hCreateEntityButton->SetVisible(true);
@@ -1523,12 +1565,9 @@ void CLevelEditor::DuplicateMove(const tstring& sArguments)
 	EAngle angRotation = Manipulator()->GetNewTRS().m_angRotation;
 	Vector vecScaling = Manipulator()->GetNewTRS().m_vecScaling;
 
-	aEntityData.push_back(aEntityData[iSelected]);
-	auto& oNewEntity = aEntityData.back();
+	size_t iNewObject = m_pLevel->CopyEntity(aEntityData[iSelected]);
 
 	m_hEditorPanel->Layout();
-
-	size_t iNewObject = aEntityData.size()-1;
 
 	CLevelEntity* pEntity = &GetLevel()->GetEntityData()[iNewObject];
 

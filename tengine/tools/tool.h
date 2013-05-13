@@ -29,6 +29,8 @@ public:
 	virtual void			Activate();
 	virtual void			Deactivate();
 
+	virtual void            LoadLevel(const CHandle<class CLevel>& pLevel) {};
+
 	virtual void			RenderScene() {};
 
 	virtual void			CameraThink();

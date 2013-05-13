@@ -279,7 +279,7 @@ void CCharacter::MeleeAttack()
 
 	for (size_t j = 0; j < tr.m_aHits.size(); j++)
 	{
-		CBaseEntity* pEntity = dynamic_cast<CBaseEntity*>(tr.m_aHits[j].m_pHit);
+		CBaseEntity* pEntity = CEntityHandle<CBaseEntity>(tr.m_aHits[j].m_iHit);
 
 		if (!pEntity)
 			continue;

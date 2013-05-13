@@ -53,6 +53,8 @@ public:
 	static void				Activate();
 	static void				Deactivate();
 
+	static void             LoadLevel(const CHandle<class CLevel>& pLevel);
+
 	static void				RenderScene();
 
 	static CCameraManager*	GetCameraManager();

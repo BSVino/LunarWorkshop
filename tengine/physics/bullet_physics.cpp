@@ -560,6 +560,18 @@ bool CBulletPhysics::IsEntityAdded(IPhysicsEntity* pEntity)
 
 	CPhysicsEntity* pPhysicsEntity = &m_aEntityList[iHandle];
 
+	for (size_t i = 0; i < pPhysicsEntity->m_apAreaBodies.size(); i++)
+	{
+		if (pPhysicsEntity->m_apAreaBodies[i])
+			return true;
+	}
+
+	for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+	{
+		if (pPhysicsEntity->m_apPhysicsShapes[i])
+			return true;
+	}
+
 	return (pPhysicsEntity->m_pCharacterController || pPhysicsEntity->m_pExtraShape || pPhysicsEntity->m_pGhostObject || pPhysicsEntity->m_pRigidBody || pPhysicsEntity->m_pTriggerController);
 }
 
@@ -608,13 +620,14 @@ void CBulletPhysics::UnloadCollisionMesh(const tstring& sModel)
 		TAssert(pObject->getCollisionShape() != it->second.m_pCollisionShape);
 		if (pObject->getCollisionShape() == it->second.m_pCollisionShape)
 		{
-			IPhysicsEntity* pEntity = GetGameEntity(pObject);
+			TUnimplemented();	// Removed GetGameEntity(), don't know how to implement this safeguard anymore.
+/*			IPhysicsEntity* pEntity = GetGameEntity(pObject);
 			if (pEntity)
 				TError("Entity found with collision shape '" + sModel + "' which is being unloaded: " + tstring(pEntity->GetClassName()) + ":" + pEntity->GetName() + "\n");
 			else
 				TError("Entity found with 'extra' collision shape which is being unloaded\n");
 
-			RemoveEntity(pEntity);
+			RemoveEntity(pEntity);*/
 		}
 	}
 
@@ -932,7 +945,7 @@ void CBulletPhysics::TraceLine(CTraceResult& tr, const Vector& v1, const Vector&
 		tr.m_flFraction = callback.m_closestHitFraction;
 		tr.m_vecHit = ToTVector(callback.m_hitPointWorld);
 		tr.m_vecNormal = ToTVector(callback.m_hitNormalWorld);
-		tr.m_pHit = (IPhysicsEntity*)callback.m_collisionObject->getUserPointer();
+		tr.m_iHit = (size_t)callback.m_collisionObject->getUserPointer();
 		if ((size_t)callback.m_collisionObject->getUserPointer() >= GameServer()->GetMaxEntities())
 			tr.m_iHitExtra = (size_t)callback.m_collisionObject->getUserPointer() - GameServer()->GetMaxEntities();
 	}
@@ -979,7 +992,7 @@ void CBulletPhysics::TraceEntity(CTraceResult& tr, IPhysicsEntity* pEntity, cons
 		tr.m_flFraction = callback.m_closestHitFraction;
 		tr.m_vecHit = ToTVector(callback.m_hitPointWorld);
 		tr.m_vecNormal = ToTVector(callback.m_hitNormalWorld);
-		tr.m_pHit = (IPhysicsEntity*)callback.m_hitCollisionObject->getUserPointer();
+		tr.m_iHit = (size_t)callback.m_hitCollisionObject->getUserPointer();
 		if ((size_t)callback.m_hitCollisionObject->getUserPointer() >= GameServer()->GetMaxEntities())
 			tr.m_iHitExtra = (size_t)callback.m_hitCollisionObject->getUserPointer() - GameServer()->GetMaxEntities();
 	}
@@ -1038,11 +1051,6 @@ CPhysicsEntity* CBulletPhysics::GetPhysicsEntity(IPhysicsEntity* pEnt)
 	TAssert(pPhysicsEntity);
 
 	return pPhysicsEntity;
-}
-
-IPhysicsEntity* CBulletPhysics::GetGameEntity(btCollisionObject* pObject)
-{
-	return (IPhysicsEntity*)pObject->getUserPointer();
 }
 
 short CBulletPhysics::GetMaskForGroup(collision_group_t eGroup)

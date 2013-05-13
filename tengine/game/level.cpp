@@ -112,6 +112,7 @@ void CLevel::SaveToFile()
 void CLevel::CreateEntitiesFromData(const CData* pData)
 {
 	m_aLevelEntities.clear();
+	m_iNextHandle = 0;
 
 	for (size_t i = 0; i < pData->GetNumChildren(); i++)
 	{
@@ -120,9 +121,11 @@ void CLevel::CreateEntitiesFromData(const CData* pData)
 		if (pChildData->GetKey() != "Entity")
 			continue;
 
-		m_aLevelEntities.push_back(CLevelEntity(pChildData->GetValueString()));
+		m_aLevelEntities.push_back(CLevelEntity(m_iNextHandle++, pChildData->GetValueString()));
 
 		CLevelEntity* pEntity = &m_aLevelEntities.back();
+
+		pEntity->m_iHandle = m_aLevelEntities.size()-1;
 
 		for (size_t k = 0; k < pChildData->GetNumChildren(); k++)
 		{
@@ -165,6 +168,22 @@ void CLevel::CreateEntitiesFromData(const CData* pData)
 			}
 		}
 	}
+}
+
+size_t CLevel::CreateEntity(const tstring& sClassName)
+{
+	m_aLevelEntities.push_back(CLevelEntity(m_iNextHandle++, sClassName));
+
+	return m_aLevelEntities.size()-1;
+}
+
+size_t CLevel::CopyEntity(const CLevelEntity& oOther)
+{
+	m_aLevelEntities.push_back(CLevelEntity(oOther));   // Force it to use the move constructor.
+
+	m_aLevelEntities.back().m_iHandle = m_iNextHandle++;
+
+	return m_aLevelEntities.size()-1;
 }
 
 const tstring& CLevelEntity::GetParameterValue(const tstring& sKey) const
@@ -210,7 +229,10 @@ void CLevelEntity::SetParameterValue(const tstring& sKey, const tstring& sValue)
 	CSaveData oSaveData;
 	CSaveData* pSaveData = CBaseEntity::FindSaveDataValuesByHandle(("C" + GetClass()).c_str(), sKey.c_str(), &oSaveData);
 
-	if (pSaveData->m_pszHandle && pSaveData->m_bDefault)
+	if (!pSaveData)
+		TMsg("Level entity " + GetClass() + ":" + GetName() + " has unregistered savedata value: " + sKey + "\n");
+
+	if (pSaveData && pSaveData->m_pszHandle && pSaveData->m_bDefault)
 	{
 		// Special case.
 		if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
@@ -300,6 +322,11 @@ void CLevelEntity::RemoveParameter(const tstring& sKey)
 bool CLevelEntity::HasParameterValue(const tstring& sKey) const
 {
 	return m_asParameters.find(sKey) != m_asParameters.end();
+}
+
+CModel* CLevelEntity::GetModel() const
+{
+	return CModelLibrary::GetModel(GetModelID());
 }
 
 Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)

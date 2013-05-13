@@ -1368,6 +1368,16 @@ const TFloat CBaseEntity::Distance(const TVector& vecSpot) const
 	return flDistance - GetBoundingRadius();
 }
 
+bool CBaseEntity::ShouldCollideWith(size_t iOtherHandle, const TVector& vecPoint) const
+{
+	CEntityHandle<CBaseEntity> hOther(iOtherHandle);
+	TAssert(hOther);
+	if (!hOther)
+		return false;
+
+	return ShouldCollideWith(hOther, vecPoint);
+}
+
 void CBaseEntity::SetSpawnSeed(size_t iSpawnSeed)
 {
 	m_iSpawnSeed = iSpawnSeed;

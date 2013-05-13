@@ -41,16 +41,16 @@ void CTriggerController::updateAction(btCollisionWorld* pCollisionWorld, btScala
 			btCollisionObject* obB = static_cast<btCollisionObject*>(pManifold->getBody1());
 
 			btScalar directionSign;
-			IPhysicsEntity* pOther;
+			size_t iOther;
 			if (obA == m_pGhostObject)
 			{
 				directionSign = btScalar(-1.0);
-				pOther = (IPhysicsEntity*)obB->getUserPointer();
+				iOther = (size_t)obB->getUserPointer();
 			}
 			else
 			{
 				directionSign = btScalar(1.0);
-				pOther = (IPhysicsEntity*)obA->getUserPointer();
+				iOther = (size_t)obA->getUserPointer();
 			}
 
 			bool bTouching = false;
@@ -61,12 +61,12 @@ void CTriggerController::updateAction(btCollisionWorld* pCollisionWorld, btScala
 
 				if (obA == m_pGhostObject)
 				{
-					if (!m_pEntity->ShouldCollideWith(pOther, Vector(pt.getPositionWorldOnB())))
+					if (!m_pEntity->ShouldCollideWith(iOther, Vector(pt.getPositionWorldOnB())))
 						continue;
 				}
 				else
 				{
-					if (!m_pEntity->ShouldCollideWith(pOther, Vector(pt.getPositionWorldOnA())))
+					if (!m_pEntity->ShouldCollideWith(iOther, Vector(pt.getPositionWorldOnA())))
 						continue;
 				}
 
@@ -78,7 +78,7 @@ void CTriggerController::updateAction(btCollisionWorld* pCollisionWorld, btScala
 			}
 
 			if (bTouching)
-				m_pEntity->Touching(pOther);
+				m_pEntity->Touching(iOther);
 
 			//pManifold->clearManifold();
 		}

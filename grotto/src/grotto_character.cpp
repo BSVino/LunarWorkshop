@@ -257,7 +257,7 @@ bool CGrottoCharacter::IsNearMirror(class CMirror* pMirror, const Vector& vecPoi
 	return pMirror->IsPointInside(vecPoint);
 }
 
-bool CGrottoCharacter::ShouldCollideWith(IPhysicsEntity* pOther, const TVector& vecPoint) const
+bool CGrottoCharacter::ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const
 {
 	if (tstring(pOther->GetClassName()) == "CWorld")
 	{

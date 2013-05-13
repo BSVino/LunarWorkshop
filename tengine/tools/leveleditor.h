@@ -132,10 +132,13 @@ public:
 	virtual					~CLevelEditor();
 
 public:
+	virtual void            LoadLevel(const CHandle<class CLevel>& pLevel);
+
 	virtual void            Think();
 
 	void					RenderEntity(size_t i);
 	void					RenderEntity(class CLevelEntity* pEntity, bool bSelected=false, bool bHover=false);
+	void					RenderEntity(class CLevelEntity* pEntity, bool bSelected, bool bHover, const Matrix4x4& mGlobal);
 	void					RenderCreateEntityPreview();
 
 	Vector					PositionFromMouse();

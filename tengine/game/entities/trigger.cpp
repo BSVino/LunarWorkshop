@@ -66,9 +66,9 @@ void CTrigger::Think()
 		EndVisible();
 }
 
-void CTrigger::Touching(IPhysicsEntity* pOther)
+void CTrigger::Touching(size_t iOtherHandle)
 {
-	CBaseEntity* pBaseOther = static_cast<CBaseEntity*>(pOther);
+	CBaseEntity* pBaseOther = CEntityHandle<CBaseEntity>(iOtherHandle);
 
 	if (!IsActive())
 		return;

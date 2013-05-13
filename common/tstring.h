@@ -46,8 +46,9 @@ public:
 	{}
 
 	tstring(TSTRING_BASE&& s)
-		: TSTRING_BASE(s)
-	{}
+	{
+		swap(s);
+	}
 
 	tstring(size_type n, value_type c)
 		: TSTRING_BASE(n, c)

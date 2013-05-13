@@ -15,7 +15,7 @@ public:
 
 	virtual void		Think();
 
-	virtual void		Touching(IPhysicsEntity* pOther);
+	virtual void		Touching(size_t iOtherHandle);
 	virtual void		BeginTouchingList();
 	virtual void		EndTouchingList();
 

@@ -491,7 +491,7 @@ public:
 	void									SetMass(float flMass) { m_flMass = flMass; };
 	float									GetMass() const { return m_flMass; };
 
-	virtual const AABB&						GetVisBoundingBox() const { return m_aabbVisBoundingBox; }
+	virtual const AABB                      GetVisBoundingBox() const { return m_aabbVisBoundingBox; }
 	virtual const AABB                      GetPhysBoundingBox() const { return m_aabbPhysBoundingBox; }
 	virtual const TVector					GetLocalCenter() const;
 	virtual const TVector					GetGlobalCenter() const;
@@ -649,7 +649,7 @@ public:
 	void									BaseThink() { m_oGameData.Think(); };
 	virtual void							Think() {};
 
-	virtual void							Touching(IPhysicsEntity* pOther) {};
+	virtual void							Touching(size_t iOtherHandle) {};
 	virtual void							BeginTouchingList() {};
 	virtual void							EndTouchingList() {};
 
@@ -671,7 +671,8 @@ public:
 	// At this point the expensive collision checks have passed and the two objects will
 	// definitely collide if true is returned here. If two objects should never collide,
 	// use collision groups instead to avoid the expensive collision checks.
-	virtual bool							ShouldCollideWith(IPhysicsEntity* pOther, const TVector& vecPoint) const { return true; }
+	virtual bool							ShouldCollideWith(size_t iOtherHandle, const TVector& vecPoint) const;
+	virtual bool							ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const { return true; }
 	virtual bool							ShouldCollideWithExtra(size_t, const TVector& vecPoint) const { return true; }
 
 	size_t									GetSpawnSeed() const { return m_iSpawnSeed; }

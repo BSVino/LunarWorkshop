@@ -53,7 +53,7 @@ public:
 		m_bDirty = true;
 	}
 
-	void		Calculate()
+	void		Calculate() const
 	{
 		if (!m_bDirty)
 			return;
@@ -65,7 +65,7 @@ public:
 		m_bDirty = false;
 	}
 
-	const C&	Get()
+	const C&	Get() const
 	{
 		Calculate();
 
@@ -220,7 +220,7 @@ public:
 		return m_oData;
 	}
 
-	inline operator const C&()
+	inline operator const C&() const
 	{
 		Calculate();
 
@@ -235,8 +235,8 @@ public:
 	}
 
 private:
-	bool				m_bDirty;
-	C					m_oData;
+	mutable bool        m_bDirty;
+	mutable C           m_oData;
 	CalculateCallback	m_pfnCalculate;
 	E*					m_pCalculateEntity;
 };

@@ -304,10 +304,10 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 	// one entity needs to connect to another entity which has not yet been created.
 	tmap<size_t, CBaseEntity*> apEntities;
 
-	auto aEntities = pLevel->GetEntityData();
+	const auto& aEntities = pLevel->GetEntityData();
 	for (size_t i = 0; i < aEntities.size(); i++)
 	{
-		CLevelEntity* pLevelEntity = &aEntities[i];
+		const CLevelEntity* pLevelEntity = &aEntities[i];
 
 		tstring sClass = "C" + pLevelEntity->GetClass();
 
@@ -370,11 +370,13 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 		CBaseEntity* pEntity = it->second;
 
 		// Force physics related stuff first so it's available if there's a physics model.
-		if (pLevelEntity->GetParameters().find("Scale") != pLevelEntity->GetParameters().end())
-			UnserializeParameter("Scale", pLevelEntity->GetParameters()["Scale"], pEntity);
+		auto itScale = pLevelEntity->GetParameters().find("Scale");
+		if (itScale != pLevelEntity->GetParameters().end())
+			UnserializeParameter("Scale", itScale->second, pEntity);
 
-		if (pLevelEntity->GetParameters().find("Origin") != pLevelEntity->GetParameters().end())
-			UnserializeParameter("Origin", pLevelEntity->GetParameters()["Origin"], pEntity);
+		auto itOrigin = pLevelEntity->GetParameters().find("Origin");
+		if (itOrigin != pLevelEntity->GetParameters().end())
+			UnserializeParameter("Origin", itOrigin->second, pEntity);
 
 		for (auto it = pLevelEntity->GetParameters().begin(); it != pLevelEntity->GetParameters().end(); it++)
 		{
@@ -394,9 +396,13 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 		}
 
 		// Force MoveParent last so that global -> local conversion is performed.
-		if (pLevelEntity->GetParameters().find("MoveParent") != pLevelEntity->GetParameters().end())
-			UnserializeParameter("MoveParent", pLevelEntity->GetParameters()["MoveParent"], pEntity);
+		auto itMoveParent = pLevelEntity->GetParameters().find("MoveParent");
+		if (itMoveParent != pLevelEntity->GetParameters().end())
+			UnserializeParameter("MoveParent", itMoveParent->second, pEntity);
 	}
+
+	if (CWorkbench::IsActive())
+		CWorkbench::LoadLevel(pLevel);
 }
 
 void CGameServer::RestartLevel()
