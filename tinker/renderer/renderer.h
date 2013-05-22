@@ -143,6 +143,8 @@ public:
 
 	bool			IsSphereInFrustum(const Vector& vecCenter, float flRadius);
 
+	bool            IsDrawingBackground() const { return m_bDrawBackground; }
+
 	void			SetSize(int w, int h);
 
 	Vector			ScreenPosition(Vector vecWorld);

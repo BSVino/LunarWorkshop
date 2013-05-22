@@ -1454,6 +1454,9 @@ void CLevelEditor::RenderScene()
 	{
 		CRenderingContext c(GameServer()->GetRenderer(), true);
 
+		if (!GameServer()->GetRenderer()->IsDrawingBackground())
+			GameServer()->GetRenderer()->DrawBackground(&c);
+
 		c.UseProgram("model");
 
 		c.SetUniform("bDiffuse", false);
