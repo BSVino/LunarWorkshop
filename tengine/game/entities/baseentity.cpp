@@ -1238,13 +1238,7 @@ CVar debug_entity_outputs("debug_entity_outputs", "off");
 
 void CEntityOutput::Call()
 {
-	if (m_aTargets.size() == 0)
-	{
-		if (debug_entity_outputs.GetBool())
-			TMsg(tstring(m_pEnt->GetClassName()) + "(\"" + m_pEnt->GetName() + "\")." + m_sOutputName + "() -> none\n");
-
-		return;
-	}
+	bool bTargetCalled = false;
 
 	for (size_t j = 0; j < m_aTargets.size(); j++)
 	{
@@ -1268,10 +1262,20 @@ void CEntityOutput::Call()
 				TMsg(tstring(m_pEnt->GetClassName()) + "(\"" + m_pEnt->GetName() + "\")." + m_sOutputName + "() -> " + pTargetEntity->GetClassName() + "(\"" + pTargetEntity->GetName() + "\")." + pTarget->m_sInput + "(\"" + sFormattedArgs + "\")\n");
 
 			pTargetEntity->CallInput(pTarget->m_sInput, sFormattedArgs);
+
+			bTargetCalled = true;
 		}
 
 		if (!apEntities.size())
 			TError("Couldn't find any entity with name '" + pTarget->m_sTargetName + "'\n");
+	}
+
+	if (!bTargetCalled)
+	{
+		if (debug_entity_outputs.GetInt() > 1)
+			TMsg(tstring(m_pEnt->GetClassName()) + "(\"" + m_pEnt->GetName() + "\")." + m_sOutputName + "() -> none\n");
+
+		return;
 	}
 
 	for (size_t i = 0; i < m_aTargets.size(); i++)
