@@ -13,6 +13,9 @@
 #include <renderer/renderer.h>
 #include <toys/toy.h>
 #include <textures/materiallibrary.h>
+#include <tools/workbench.h>
+#include <game/entities/game.h>
+#include <game/entities/character.h>
 
 #include "game_renderer.h"
 
@@ -76,7 +79,11 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 	{
 		size_t iSceneArea = m_pRenderer->GetSceneAreaPosition(pModel);
 
-		if (iSceneArea >= pModel->m_pToy->GetNumSceneAreas())
+		auto pLocalPlayer = Game()?Game()->GetLocalPlayer():nullptr;
+		CCharacter* pCharacter = pLocalPlayer?pLocalPlayer->GetCharacter():nullptr;
+		bool bNoClip = pCharacter?pCharacter->GetNoClip():false;
+
+		if (CWorkbench::IsActive() || bNoClip || iSceneArea >= pModel->m_pToy->GetNumSceneAreas())
 		{
 			for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
 			{
