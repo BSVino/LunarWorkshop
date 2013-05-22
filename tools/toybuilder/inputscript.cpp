@@ -283,7 +283,7 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 
 			if (!pData)
 			{
-				TError("Input image  '" + pMesh->GetValueString() + "' does not exist.\n");
+				TError("Couldn't load '" + pMesh->GetValueString() + "', reason: " + stbi_failure_reason() + "\n");
 				return false;
 			}
 

@@ -818,11 +818,17 @@ size_t CRenderer::LoadTextureIntoGL(tstring sFilename, int iClamp)
 	if (!sFilename.length())
 		return 0;
 
+	if (!IsFile(sFilename))
+		return 0;
+
 	int x, y, n;
     unsigned char *pData = stbi_load(sFilename.c_str(), &x, &y, &n, 4);
 
 	if (!pData)
+	{
+		TError("Couldn't load '" + sFilename + "', reason: " + stbi_failure_reason() + "\n");
 		return 0;
+	}
 
 	if (!s_bNPO2TextureLoads)
 	{
@@ -919,11 +925,17 @@ Color* CRenderer::LoadTextureData(tstring sFilename, int& x, int& y)
 	if (!sFilename.length())
 		return nullptr;
 
+	if (!IsFile(sFilename))
+		return nullptr;
+
 	int n;
     unsigned char *pData = stbi_load(sFilename.c_str(), &x, &y, &n, 4);
 
 	if (!pData)
-		return 0;
+	{
+		TError("Couldn't load '" + sFilename + "', reason: " + stbi_failure_reason() + "\n");
+		return nullptr;
+	}
 
 	if (!s_bNPO2TextureLoads)
 	{
@@ -931,14 +943,14 @@ Color* CRenderer::LoadTextureData(tstring sFilename, int& x, int& y)
 		{
 			TError("Image width is not power of 2.");
 			stbi_image_free(pData);
-			return 0;
+			return nullptr;
 		}
 
 		if (y & (y-1))
 		{
 			TError("Image height is not power of 2.");
 			stbi_image_free(pData);
-			return 0;
+			return nullptr;
 		}
 	}
 
