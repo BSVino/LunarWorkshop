@@ -2183,7 +2183,16 @@ const AABB UnserializeString_AABB(const tstring& sData, const tstring& sName, co
 		return AABB();
 	}
 
-	return AABB(Vector((float)stof(asTokens[0]), (float)stof(asTokens[1]), (float)stof(asTokens[2])), Vector((float)stof(asTokens[3]), (float)stof(asTokens[4]), (float)stof(asTokens[5])));
+	AABB aabbReturn(Vector((float)stof(asTokens[0]), (float)stof(asTokens[1]), (float)stof(asTokens[2])), Vector((float)stof(asTokens[3]), (float)stof(asTokens[4]), (float)stof(asTokens[5])));
+
+	if (aabbReturn.m_vecMins.x > aabbReturn.m_vecMaxs.x)
+		std::swap(aabbReturn.m_vecMins.x, aabbReturn.m_vecMaxs.x);
+	if (aabbReturn.m_vecMins.y > aabbReturn.m_vecMaxs.y)
+		std::swap(aabbReturn.m_vecMins.y, aabbReturn.m_vecMaxs.y);
+	if (aabbReturn.m_vecMins.z > aabbReturn.m_vecMaxs.z)
+		std::swap(aabbReturn.m_vecMins.z, aabbReturn.m_vecMaxs.z);
+
+	return aabbReturn;
 }
 
 bool CanUnserializeString_Matrix4x4(const tstring& sData)
@@ -2462,6 +2471,13 @@ void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 	}
 
 	AABB aabbData(Vector((float)stof(asTokens[0]), (float)stof(asTokens[1]), (float)stof(asTokens[2])), Vector((float)stof(asTokens[3]), (float)stof(asTokens[4]), (float)stof(asTokens[5])));
+
+	if (aabbData.m_vecMins.x > aabbData.m_vecMaxs.x)
+		std::swap(aabbData.m_vecMins.x, aabbData.m_vecMaxs.x);
+	if (aabbData.m_vecMins.y > aabbData.m_vecMaxs.y)
+		std::swap(aabbData.m_vecMins.y, aabbData.m_vecMaxs.y);
+	if (aabbData.m_vecMins.z > aabbData.m_vecMaxs.z)
+		std::swap(aabbData.m_vecMins.z, aabbData.m_vecMaxs.z);
 
 	AABB* pData = (AABB*)((char*)pEntity + pSaveData->m_iOffset);
 	switch(pSaveData->m_eType)

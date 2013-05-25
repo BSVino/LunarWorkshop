@@ -151,6 +151,10 @@ void CBulletPhysics::AddEntity(IPhysicsEntity* pEntity, collision_type_t eCollis
 		aabbBoundingBox.m_vecMins += pEntity->GetGlobalOrigin();
 		aabbBoundingBox.m_vecMaxs += pEntity->GetGlobalOrigin();
 
+		TAssert(aabbBoundingBox.m_vecMins.x < aabbBoundingBox.m_vecMaxs.x);
+		TAssert(aabbBoundingBox.m_vecMins.y < aabbBoundingBox.m_vecMaxs.y);
+		TAssert(aabbBoundingBox.m_vecMins.z < aabbBoundingBox.m_vecMaxs.z);
+
 		Vector vecHalf = (aabbBoundingBox.m_vecMaxs - aabbBoundingBox.Center()) * pEntity->GetScale();
 		pCollisionShape = new btBoxShape(ToBTVector(vecHalf));
 
