@@ -1162,6 +1162,8 @@ void CLevelEditor::RenderCreateEntityPreview()
 
 Vector CLevelEditor::PositionFromMouse()
 {
+	TAssert(m_hCreateEntityPanel->IsVisible() && m_hCreateEntityPanel->m_bReadyToCreate);
+
 	int x, y;
 	Application()->GetMousePosition(x, y);
 	Vector vecPosition = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 1));
@@ -1171,7 +1173,53 @@ Vector CLevelEditor::PositionFromMouse()
 	if (vecCameraDirection.Dot(vecPosition-vecCamera) < 0)
 		vecPosition = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, -1));
 
-	return vecCamera + (vecPosition - vecCamera).Normalized() * m_flCreateObjectDistance;
+	tstring sEntity = m_hCreateEntityPanel->m_hClass->GetText();
+
+	CTraceResult tr;
+	EditorPhysics()->TraceLine(tr, vecCamera, vecCamera + (vecPosition-vecCamera)*100);
+
+	if (tr.m_flFraction < 1)
+	{
+		AABB aabbBoxSize;
+		CSaveData* pData = CBaseEntity::FindSaveDataByHandle(("C" + sEntity).c_str(), "BoundingBox");
+		if (pData && pData->m_bDefault)
+			aabbBoxSize = *(AABB*)pData->m_oDefault;
+
+		Vector vecHit = tr.m_vecHit;
+
+		for (size_t i = 0; i < 3; i++)
+		{
+			Vector vecPushout;
+
+			vecPushout[i] = aabbBoxSize.m_vecMins[i];
+			float flDot = vecPushout.Dot(tr.m_vecNormal);
+			if (flDot < 0)
+				vecHit -= vecPushout;
+
+			vecPushout[i] = aabbBoxSize.m_vecMaxs[i];
+			flDot = vecPushout.Dot(tr.m_vecNormal);
+			if (flDot < 0)
+				vecHit -= vecPushout;
+		}
+
+		return vecHit;
+	}
+	else
+		return vecCamera + (vecPosition - vecCamera).Normalized() * m_flCreateObjectDistance;
+}
+
+Vector CLevelEditor::DirectionFromMouse()
+{
+	int x, y;
+	Application()->GetMousePosition(x, y);
+	Vector vecPosition = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, 1));
+	Vector vecCamera = GameServer()->GetRenderer()->GetCameraPosition();
+
+	Vector vecCameraDirection = GameServer()->GetRenderer()->GetCameraDirection();
+	if (vecCameraDirection.Dot(vecPosition-vecCamera) < 0)
+		vecPosition = GameServer()->GetRenderer()->WorldPosition(Vector((float)x, (float)y, -1));
+
+	return (vecPosition - vecCamera).Normalized();
 }
 
 size_t CLevelEditor::TraceLine(const Ray& vecTrace)
@@ -1409,10 +1457,9 @@ bool CLevelEditor::MouseInput(int iButton, tinker_mouse_state_t iState)
 		}
 		else
 		{
-			Vector vecPosition = PositionFromMouse();
 			Vector vecCamera = GameServer()->GetRenderer()->GetCameraPosition();
 
-			iSelected = TraceLine(Ray(vecCamera, (vecPosition-vecCamera).Normalized()));
+			iSelected = TraceLine(Ray(vecCamera, DirectionFromMouse()));
 		}
 
 		m_hEditorPanel->m_hEntities->SetSelectedNode(iSelected);
