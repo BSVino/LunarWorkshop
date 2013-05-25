@@ -729,8 +729,10 @@ void CBulletPhysics::DebugDraw(int iLevel)
 	if (iLevel == 0)
 		m_pDebugDrawer->setDebugMode(CPhysicsDebugDrawer::DBG_NoDebug);
 	else if (iLevel == 1)
-		m_pDebugDrawer->setDebugMode(CPhysicsDebugDrawer::DBG_DrawWireframe);
-	else if (iLevel >= 2)
+		m_pDebugDrawer->setDebugMode(CPhysicsDebugDrawer::DBG_DrawAabb);
+	else if (iLevel == 2)
+		m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+	else if (iLevel >= 3)
 		m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe|btIDebugDraw::DBG_DrawContactPoints);
 
 	m_pDebugDrawer->SetDrawing(true);
