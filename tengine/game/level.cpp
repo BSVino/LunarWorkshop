@@ -360,6 +360,9 @@ Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)
 		Vector vecGlobalOrigin = aabbBounds.Center();
 		mLocal.SetTranslation(mLocal.GetTranslation() + vecGlobalOrigin);
 
+		Vector vecNewOrigin = mLocal.GetTranslation();
+		pThis->SetParameterValue("Origin", pretty_float(vecNewOrigin.x) + " " + pretty_float(vecNewOrigin.y) + " " + pretty_float(vecNewOrigin.z));
+
 		aabbBounds.m_vecMins -= vecGlobalOrigin;
 		aabbBounds.m_vecMaxs -= vecGlobalOrigin;
 		pThis->SetParameterValue("BoundingBox",
