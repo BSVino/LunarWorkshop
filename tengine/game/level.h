@@ -129,8 +129,8 @@ public:
 	const AABB        GetPhysBoundingBox() const { return GetBoundingBox(); }
 	const AABB        GetVisBoundingBox() const { return GetBoundingBox(); }
 	const TVector     GetGlobalOrigin() const { return GetGlobalTransform().GetTranslation(); }
-	const Matrix4x4   GetPhysicsTransform() const { return GetGlobalTransform(); }
-	void              SetPhysicsTransform(const Matrix4x4& m) { SetGlobalTransform(m); }
+	const Matrix4x4   GetPhysicsTransform() const;
+	void              SetPhysicsTransform(const Matrix4x4& m);
 
 	// Triggers
 	void              Touching(size_t iOtherHandle) { TUnimplemented(); };

@@ -329,6 +329,24 @@ CModel* CLevelEntity::GetModel() const
 	return CModelLibrary::GetModel(GetModelID());
 }
 
+const Matrix4x4 CLevelEntity::GetPhysicsTransform() const
+{
+	Matrix4x4 mPhysics = GetGlobalTransform();
+
+	mPhysics.SetTranslation(mPhysics.GetTranslation() + GetPhysBoundingBox().Center());
+
+	return mPhysics;
+}
+
+void CLevelEntity::SetPhysicsTransform(const Matrix4x4& m)
+{
+	Matrix4x4 mGlobal = m;
+
+	mGlobal.SetTranslation(mGlobal.GetTranslation() - GetPhysBoundingBox().Center());
+
+	SetGlobalTransform(mGlobal);
+}
+
 Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)
 {
 	Matrix4x4 mLocal;
@@ -340,6 +358,16 @@ Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)
 	tstring sLocalAngles = pThis->GetParameterValue("Angles");
 	if (sLocalAngles.length() && CanUnserializeString_EAngle(sLocalAngles))
 		mLocal.SetAngles(UnserializeString_EAngle(sLocalAngles));
+
+	tstring sAABB = pThis->GetParameterValue("BoundingBox");
+	if (CanUnserializeString_AABB(sAABB))
+	{
+		AABB aabbBounds = UnserializeString_AABB(sAABB, pThis->GetName(), pThis->m_sClass, "BoundingBox");
+
+		// Center the entity around this bounding box.
+		Vector vecGlobalOrigin = aabbBounds.Center();
+		mLocal.SetTranslation(mLocal.GetTranslation() + vecGlobalOrigin);
+	}
 
 	return mLocal;
 }
@@ -359,6 +387,15 @@ TRS CLevelEntity::CalculateGlobalTRS(CLevelEntity* pThis)
 	tstring sScale = pThis->GetParameterValue("Scale");
 	if (sScale.length() && CanUnserializeString_TVector(sScale))
 		trsLocal.m_vecScaling = UnserializeString_TVector(sScale);
+
+	tstring sAABB = pThis->GetParameterValue("BoundingBox");
+	if (CanUnserializeString_AABB(sAABB))
+	{
+		AABB aabbBounds = UnserializeString_AABB(sAABB, pThis->GetName(), pThis->m_sClass, "BoundingBox");
+
+		// Center the entity around this bounding box.
+		trsLocal.m_vecTranslation += aabbBounds.Center();
+	}
 
 	return trsLocal;
 }
@@ -421,7 +458,14 @@ AABB CLevelEntity::CalculateBoundingBox(CLevelEntity* pThis)
 	AABB aabbBounds = AABB(Vector(-0.5f, -0.5f, -0.5f), Vector(0.5f, 0.5f, 0.5f));
 
 	if (CanUnserializeString_AABB(sAABB))
+	{
 		aabbBounds = UnserializeString_AABB(sAABB, pThis->GetName(), pThis->m_sClass, "BoundingBox");
+
+		// Center the entity around this bounding box.
+		Vector vecGlobalOrigin = aabbBounds.Center();
+		aabbBounds.m_vecMins -= vecGlobalOrigin;
+		aabbBounds.m_vecMaxs -= vecGlobalOrigin;
+	}
 	else
 	{
 		CSaveData* pSaveData = CBaseEntity::FindSaveDataByHandle(tstring("C"+pThis->m_sClass).c_str(), "BoundingBox");

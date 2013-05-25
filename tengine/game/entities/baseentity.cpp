@@ -2479,6 +2479,12 @@ void UnserializeString_AABB(const tstring& sData, CSaveData* pSaveData, CBaseEnt
 	if (aabbData.m_vecMins.z > aabbData.m_vecMaxs.z)
 		std::swap(aabbData.m_vecMins.z, aabbData.m_vecMaxs.z);
 
+	// Center the entity around this bounding box.
+	Vector vecGlobalOrigin = aabbData.Center();
+	aabbData.m_vecMins -= vecGlobalOrigin;
+	aabbData.m_vecMaxs -= vecGlobalOrigin;
+	pEntity->SetGlobalOrigin(pEntity->GetGlobalOrigin() + vecGlobalOrigin);
+
 	AABB* pData = (AABB*)((char*)pEntity + pSaveData->m_iOffset);
 	switch(pSaveData->m_eType)
 	{
