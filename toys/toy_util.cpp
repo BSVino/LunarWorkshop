@@ -119,6 +119,14 @@ void CToyUtil::AddPhysTriangle(size_t v1, size_t v2, size_t v3)
 void CToyUtil::AddPhysVertex(Vector vecPosition)
 {
 	m_avecPhysVerts.push_back(vecPosition);
+
+	for (int i = 0; i < 3; i++)
+	{
+		if (vecPosition[i] < m_aabbPhysBounds.m_vecMins[i])
+			m_aabbPhysBounds.m_vecMins[i] = vecPosition[i];
+		if (vecPosition[i] > m_aabbPhysBounds.m_vecMaxs[i])
+			m_aabbPhysBounds.m_vecMaxs[i] = vecPosition[i];
+	}
 }
 
 void CToyUtil::AddPhysBox(const TRS& trsBox)
