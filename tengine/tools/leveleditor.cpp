@@ -1290,6 +1290,8 @@ void CLevelEditor::CreateEntityFromPanel(const Vector& vecPosition)
 
 	PopulateLevelEntityFromPanel(pNewEntity, m_hCreateEntityPanel->m_hPropertiesPanel);
 
+	EditorPhysics()->AddEntity(pNewEntity, CT_STATIC_MESH);
+
 	m_hEditorPanel->Layout();
 	m_hEditorPanel->m_hEntities->SetSelectedNode(iNewEntity);
 }
@@ -1330,6 +1332,8 @@ void CLevelEditor::DuplicateSelectedEntity()
 
 	size_t iNewHandle = m_pLevel->CopyEntity(m_pLevel->GetEntityData()[m_hEditorPanel->m_hEntities->GetSelectedNodeId()]);
 
+	EditorPhysics()->AddEntity(&m_pLevel->GetEntityData()[iNewHandle], CT_STATIC_MESH);
+
 	m_hEditorPanel->Layout();
 	m_hEditorPanel->m_hEntities->SetSelectedNode(iNewHandle);
 }
@@ -1357,6 +1361,7 @@ bool CLevelEditor::KeyPress(int c)
 		m_hEditorPanel->m_hEntities->Unselect();
 		if (iSelected < aEntities.size())
 		{
+			EditorPhysics()->RemoveEntity(&aEntities[iSelected]);
 			aEntities.erase(aEntities.begin()+iSelected);
 			m_hEditorPanel->Layout();
 			return true;
@@ -1552,6 +1557,8 @@ void CLevelEditor::ManipulatorUpdated(const tstring& sArguments)
 	pEntity->SetParameterValue("Angles", pretty_float(angRotation.p) + " " + pretty_float(angRotation.y) + " " + pretty_float(angRotation.r));
 	pEntity->SetParameterValue("Scale", pretty_float(vecScaling.x) + " " + pretty_float(vecScaling.y) + " " + pretty_float(vecScaling.z));
 
+	EditorPhysics()->SetEntityTransform(pEntity, pEntity->GetPhysicsTransform());
+
 	m_hEditorPanel->LayoutEntity();
 }
 
@@ -1577,6 +1584,9 @@ void CLevelEditor::DuplicateMove(const tstring& sArguments)
 	pEntity->SetParameterValue("Origin", pretty_float(vecTranslation.x) + " " + pretty_float(vecTranslation.y) + " " + pretty_float(vecTranslation.z));
 	pEntity->SetParameterValue("Angles", pretty_float(angRotation.p) + " " + pretty_float(angRotation.y) + " " + pretty_float(angRotation.r));
 	pEntity->SetParameterValue("Scale", pretty_float(vecScaling.x) + " " + pretty_float(vecScaling.y) + " " + pretty_float(vecScaling.z));
+
+	EditorPhysics()->AddEntity(pEntity, CT_STATIC_MESH);
+	EditorPhysics()->SetEntityTransform(pEntity, pEntity->GetPhysicsTransform());
 
 	m_hEditorPanel->m_hEntities->SetSelectedNode(aEntityData.size()-1);
 

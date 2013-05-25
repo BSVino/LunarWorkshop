@@ -331,20 +331,12 @@ CModel* CLevelEntity::GetModel() const
 
 const Matrix4x4 CLevelEntity::GetPhysicsTransform() const
 {
-	Matrix4x4 mPhysics = GetGlobalTransform();
-
-	mPhysics.SetTranslation(mPhysics.GetTranslation() + GetPhysBoundingBox().Center());
-
-	return mPhysics;
+	return GetGlobalTransform();
 }
 
 void CLevelEntity::SetPhysicsTransform(const Matrix4x4& m)
 {
-	Matrix4x4 mGlobal = m;
-
-	mGlobal.SetTranslation(mGlobal.GetTranslation() - GetPhysBoundingBox().Center());
-
-	SetGlobalTransform(mGlobal);
+	SetGlobalTransform(m);
 }
 
 Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)
@@ -367,6 +359,12 @@ Matrix4x4 CLevelEntity::CalculateGlobalTransform(CLevelEntity* pThis)
 		// Center the entity around this bounding box.
 		Vector vecGlobalOrigin = aabbBounds.Center();
 		mLocal.SetTranslation(mLocal.GetTranslation() + vecGlobalOrigin);
+
+		aabbBounds.m_vecMins -= vecGlobalOrigin;
+		aabbBounds.m_vecMaxs -= vecGlobalOrigin;
+		pThis->SetParameterValue("BoundingBox",
+			pretty_float(aabbBounds.m_vecMins.x) + " " + pretty_float(aabbBounds.m_vecMins.y) + " " + pretty_float(aabbBounds.m_vecMins.z) + " "
+			+ pretty_float(aabbBounds.m_vecMaxs.x) + " " + pretty_float(aabbBounds.m_vecMaxs.y) + " " + pretty_float(aabbBounds.m_vecMaxs.z));
 	}
 
 	return mLocal;

@@ -829,6 +829,11 @@ void CBulletPhysics::SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& m
 				pPhysicsEntity->m_apPhysicsShapes[i]->setCenterOfMassTransform(m);
 			}
 		}
+		else if (pPhysicsEntity->m_apPhysicsShapes.size())
+		{
+			for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+				pPhysicsEntity->m_apPhysicsShapes[i]->setCenterOfMassTransform(m);
+		}
 	}
 	else
 	{
