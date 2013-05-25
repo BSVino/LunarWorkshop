@@ -216,17 +216,12 @@ void CBulletPhysics::AddShape(IPhysicsEntity* pEntity, collision_type_t eCollisi
 	Vector vecHalf = (pEntity->GetPhysBoundingBox().m_vecMaxs - pEntity->GetPhysBoundingBox().Center()) * pEntity->GetScale();
 	pCollisionShape = new btBoxShape(ToBTVector(vecHalf));
 
-	btTransform mTransform;
-	mTransform.setIdentity();
-	mTransform.setFromOpenGLMatrix((Matrix4x4)pEntity->GetPhysicsTransform());
-
 	btVector3 vecLocalInertia(0, 0, 0);
 
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(0, &pPhysicsEntity->m_oMotionState, pCollisionShape, vecLocalInertia);
 
 	pPhysicsEntity->m_apPhysicsShapes.push_back(new btRigidBody(rbInfo));
 	pPhysicsEntity->m_apPhysicsShapes.back()->setUserPointer((void*)pEntity->GetHandle());
-	pPhysicsEntity->m_apPhysicsShapes.back()->setWorldTransform(mTransform);
 
 	if (eCollisionType == CT_KINEMATIC)
 	{
@@ -235,6 +230,9 @@ void CBulletPhysics::AddShape(IPhysicsEntity* pEntity, collision_type_t eCollisi
 	}
 	else if (eCollisionType == CT_STATIC_MESH)
 		pPhysicsEntity->m_apPhysicsShapes.back()->setActivationState(DISABLE_SIMULATION);
+
+	// Don't update the AABB's because the object's not in the world yet, that would be a crash.
+	SetEntityTransform(pEntity, pEntity->GetPhysicsTransform(), false);
 
 	m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_apPhysicsShapes.back(), pEntity->GetCollisionGroup(), GetMaskForGroup(pEntity->GetCollisionGroup()));
 }
@@ -799,6 +797,11 @@ void CBulletPhysics::SetEntityCollisionDisabled(IPhysicsEntity* pEnt, bool bDisa
 
 void CBulletPhysics::SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& mTransform)
 {
+	SetEntityTransform(pEnt, mTransform, true);
+}
+
+void CBulletPhysics::SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& mTransform, bool bUpdateAABB)
+{
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
 		return;
@@ -852,13 +855,17 @@ void CBulletPhysics::SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& m
 		}
 	}
 
-	if (pPhysicsEntity->m_pRigidBody && pPhysicsEntity->m_pRigidBody->getActivationState() == DISABLE_SIMULATION)
-		m_pDynamicsWorld->updateSingleAabb(pPhysicsEntity->m_pRigidBody);
-
-	for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+	// If the entity isn't in the world yet, maybe because it's still being added, you can turn this off to avoid a crash.
+	if (bUpdateAABB)
 	{
-		if (pPhysicsEntity->m_apPhysicsShapes[i]->getActivationState() == DISABLE_SIMULATION)
-			m_pDynamicsWorld->updateSingleAabb(pPhysicsEntity->m_apPhysicsShapes[i]);
+		if (pPhysicsEntity->m_pRigidBody && pPhysicsEntity->m_pRigidBody->getActivationState() == DISABLE_SIMULATION)
+			m_pDynamicsWorld->updateSingleAabb(pPhysicsEntity->m_pRigidBody);
+
+		for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+		{
+			if (pPhysicsEntity->m_apPhysicsShapes[i]->getActivationState() == DISABLE_SIMULATION)
+				m_pDynamicsWorld->updateSingleAabb(pPhysicsEntity->m_apPhysicsShapes[i]);
+		}
 	}
 }
 

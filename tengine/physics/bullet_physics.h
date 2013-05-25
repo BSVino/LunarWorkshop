@@ -185,6 +185,7 @@ public:
 	virtual bool            IsEntityCollisionDisabled(IPhysicsEntity* pEnt);
 	virtual void            SetEntityCollisionDisabled(IPhysicsEntity* pEnt, bool bDisabled);
 	virtual void			SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& mTransform);
+	virtual void			SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& mTransform, bool bUpdateAABB);
 	virtual void			SetEntityVelocity(IPhysicsEntity* pEnt, const Vector& vecVelocity);
 	virtual Vector			GetEntityVelocity(IPhysicsEntity* pEnt);
 	virtual void			SetControllerMoveVelocity(IPhysicsEntity* pEnt, const Vector& vecVelocity);
