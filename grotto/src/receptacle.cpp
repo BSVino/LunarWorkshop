@@ -22,6 +22,8 @@ SAVEDATA_TABLE_BEGIN(CReceptacle);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bDesiredReflection, "DesiredReflection");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sDesiredType, "DesiredTokenType");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mTokenOffset, "TokenOffset");
+	SAVEDATA_EDITOR_VARIABLE("Model");
+	SAVEDATA_EDITOR_VARIABLE("Visible");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CReceptacle);
