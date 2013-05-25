@@ -454,15 +454,18 @@ void CRenderingContext::SetupMaterial()
 	if (!m_pShader)
 		return;
 
-	const tstring& sMaterialBlend = oContext.m_hMaterial->m_sBlend;
-	if (sMaterialBlend == "alpha")
-		SetBlend(BLEND_ALPHA);
-	else if (sMaterialBlend == "additive")
-		SetBlend(BLEND_ADDITIVE);
-	else
+	if (oContext.m_eBlend == BLEND_NONE)
 	{
-		TAssert(sMaterialBlend == "none" || !sMaterialBlend.length());
-		SetBlend(BLEND_NONE);
+		const tstring& sMaterialBlend = oContext.m_hMaterial->m_sBlend;
+		if (sMaterialBlend == "alpha")
+			SetBlend(BLEND_ALPHA);
+		else if (sMaterialBlend == "additive")
+			SetBlend(BLEND_ADDITIVE);
+		else
+		{
+			TAssert(sMaterialBlend == "none" || !sMaterialBlend.length());
+			SetBlend(BLEND_NONE);
+		}
 	}
 
 	for (auto it = m_pShader->m_asUniforms.begin(); it != m_pShader->m_asUniforms.end(); it++)

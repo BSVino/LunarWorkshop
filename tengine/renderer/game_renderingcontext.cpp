@@ -48,6 +48,8 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 	{
 		m_pRenderer->m_pRendering = pEntity;
 
+		CRenderContext& oContext = GetContext();
+
 		for (size_t m = 0; m < pModel->m_aiVertexBuffers.size(); m++)
 		{
 			if (!pModel->m_aiVertexBufferSizes[m])
@@ -58,13 +60,10 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 			if (!hMaterial)
 				continue;
 
-			if (m_pRenderer->IsRenderingTransparent() && hMaterial->m_sBlend == "")
-				continue;
-
-			if (!m_pRenderer->IsRenderingTransparent() && hMaterial->m_sBlend != "")
-				continue;
-
 			UseMaterial(hMaterial);
+
+			if ((!m_pRenderer->IsRenderingTransparent()) ^ (oContext.m_eBlend == BLEND_NONE))
+				continue;
 
 			if (pEntity)
 				pEntity->ModifyShader(this);

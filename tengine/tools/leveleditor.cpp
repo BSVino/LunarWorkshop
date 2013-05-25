@@ -1048,10 +1048,13 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 
 	if (pEntity->GetModelID() != ~0)
 	{
+		if (!!(flAlpha < 1) ^ GameServer()->GetRenderer()->IsRenderingTransparent())
+			return;
+
 		if (bSelected)
-			r.SetColor(Color(255, 0, 0));
+			r.SetColor(Color(255, 0, 0, (char)(255*flAlpha)));
 		else
-			r.SetColor(Color(255, 255, 255));
+			r.SetColor(Color(255, 255, 255, (char)(255*flAlpha)));
 
 		TPROF("CLevelEditor::RenderEntity()");
 		r.RenderModel(pEntity->GetModelID(), nullptr);
@@ -1120,6 +1123,9 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 	}
 	else
 	{
+		if (!!(flAlpha < 1) ^ GameServer()->GetRenderer()->IsRenderingTransparent())
+			return;
+
 		r.UseProgram("model");
 		if (bSelected)
 			r.SetUniform("vecColor", Color(255, 0, 0, (char)(255*flAlpha)));
