@@ -482,6 +482,8 @@ public:
 	virtual void							Spawn();
 	DECLARE_ENTITY_OUTPUT(OnSpawn);
 
+	virtual void                            PostLoad();
+
 	void									SetName(const tstring& sName) { m_sName = sName; };
 	const tstring&                          GetName() const { return m_sName; };
 
@@ -579,7 +581,8 @@ public:
 	virtual bool							TransformsChildView() const { return false; };
 
 	bool									IsVisible() const { return m_bVisible; }
-	void									SetVisible(bool bVisible) { m_bVisible = bVisible; }
+	void									SetVisible(bool bVisible);
+	virtual void                            OnSetVisible(bool bVisible);
 
 	DECLARE_ENTITY_INPUT(SetVisible);
 

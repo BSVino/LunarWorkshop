@@ -117,6 +117,8 @@ public:
 
 	virtual collision_type_t	GetEntityCollisionType(IPhysicsEntity* pEnt) { return CT_NONE; };
 
+	virtual bool            IsEntityCollisionDisabled(IPhysicsEntity* pEnt) { return true; };
+	virtual void            SetEntityCollisionDisabled(IPhysicsEntity* pEnt, bool bDisabled) {};
 	virtual void			SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& mTransform) {};
 	virtual void			SetEntityVelocity(IPhysicsEntity* pEnt, const Vector& vecVelocity) {};
 	virtual Vector			GetEntityVelocity(IPhysicsEntity* pEnt) { return Vector(0, 0, 0); };

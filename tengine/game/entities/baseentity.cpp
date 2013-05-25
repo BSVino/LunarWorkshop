@@ -288,6 +288,12 @@ void CBaseEntity::Spawn()
 {
 }
 
+void CBaseEntity::PostLoad()
+{
+	if (m_bInPhysics)
+		GamePhysics()->SetEntityCollisionDisabled(this, !m_bVisible);
+}
+
 const TVector CBaseEntity::GetLocalCenter() const
 {
 	return GetLocalTransform() * m_aabbVisBoundingBox.Center();
@@ -775,6 +781,22 @@ size_t CBaseEntity::GetNumEntities()
 	return s_iEntities;
 }
 
+void CBaseEntity::SetVisible(bool bVisible)
+{
+	if (bVisible == m_bVisible)
+		return;
+
+	m_bVisible = bVisible;
+
+	OnSetVisible(bVisible);
+}
+
+void CBaseEntity::OnSetVisible(bool bVisible)
+{
+	if (m_bInPhysics)
+		GamePhysics()->SetEntityCollisionDisabled(this, !bVisible);
+}
+
 void CBaseEntity::SetVisible(const tvector<tstring>& sArgs)
 {
 	TAssert(sArgs.size());
@@ -797,6 +819,8 @@ void CBaseEntity::AddToPhysics(collision_type_t eCollisionType)
 
 	GamePhysics()->AddEntity(this, eCollisionType);
 	m_bInPhysics = true;
+
+	GamePhysics()->SetEntityCollisionDisabled(this, !IsVisible());
 }
 
 void CBaseEntity::RemoveFromPhysics()

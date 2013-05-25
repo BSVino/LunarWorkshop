@@ -131,6 +131,7 @@ public:
 		m_pTriggerController = NULL;
 		m_bCenterMassOffset = true;
 		m_eCollisionType = CT_NONE;
+		m_bCollisionDisabled = true;
 	};
 
 	~CPhysicsEntity()
@@ -147,6 +148,7 @@ public:
 	CTriggerController*					m_pTriggerController;
 	CMotionState						m_oMotionState;
 	bool								m_bCenterMassOffset;
+	bool                                m_bCollisionDisabled;
 	collision_type_t					m_eCollisionType;
 };
 
@@ -180,6 +182,8 @@ public:
 
 	virtual collision_type_t	GetEntityCollisionType(IPhysicsEntity* pEnt);
 
+	virtual bool            IsEntityCollisionDisabled(IPhysicsEntity* pEnt);
+	virtual void            SetEntityCollisionDisabled(IPhysicsEntity* pEnt, bool bDisabled);
 	virtual void			SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& mTransform);
 	virtual void			SetEntityVelocity(IPhysicsEntity* pEnt, const Vector& vecVelocity);
 	virtual Vector			GetEntityVelocity(IPhysicsEntity* pEnt);

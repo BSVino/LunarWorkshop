@@ -60,6 +60,7 @@ void CBulletPhysics::AddEntity(IPhysicsEntity* pEntity, collision_type_t eCollis
 		m_aEntityList.resize(iHandle+1);
 
 	CPhysicsEntity* pPhysicsEntity = &m_aEntityList[iHandle];
+	pPhysicsEntity->m_bCollisionDisabled = false;
 	pPhysicsEntity->m_eCollisionType = eCollisionType;
 	pPhysicsEntity->m_oMotionState.m_pEntity = pEntity;
 	pPhysicsEntity->m_oMotionState.m_pPhysics = this;
@@ -206,6 +207,7 @@ void CBulletPhysics::AddShape(IPhysicsEntity* pEntity, collision_type_t eCollisi
 	btCollisionShape* pCollisionShape;
 
 	pPhysicsEntity->m_bCenterMassOffset = true;
+	pPhysicsEntity->m_bCollisionDisabled = false;
 
 	Vector vecHalf = (pEntity->GetPhysBoundingBox().m_vecMaxs - pEntity->GetPhysBoundingBox().Center()) * pEntity->GetScale();
 	pCollisionShape = new btBoxShape(ToBTVector(vecHalf));
@@ -248,6 +250,8 @@ void CBulletPhysics::AddModel(IPhysicsEntity* pEntity, collision_type_t eCollisi
 	AddModelTris(pEntity, eCollisionType, iModel);
 
 	CPhysicsEntity* pPhysicsEntity = &m_aEntityList[pEntity->GetHandle()];
+
+	pPhysicsEntity->m_bCollisionDisabled = false;
 
 	for (size_t i = 0; i < pModel->m_pToy->GetPhysicsNumBoxes(); i++)
 	{
@@ -292,6 +296,8 @@ void CBulletPhysics::AddModelTris(IPhysicsEntity* pEntity, collision_type_t eCol
 		return;
 
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEntity);
+
+	pPhysicsEntity->m_bCollisionDisabled = false;
 
 	btCollisionShape* pCollisionShape;
 	float flMass;
@@ -739,6 +745,50 @@ collision_type_t CBulletPhysics::GetEntityCollisionType(IPhysicsEntity* pEnt)
 		return CT_NONE;
 
 	return pPhysicsEntity->m_eCollisionType;
+}
+
+bool CBulletPhysics::IsEntityCollisionDisabled(IPhysicsEntity* pEnt)
+{
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
+	if (!pPhysicsEntity)
+		return true;
+
+	return pPhysicsEntity->m_bCollisionDisabled;
+}
+
+void CBulletPhysics::SetEntityCollisionDisabled(IPhysicsEntity* pEnt, bool bDisabled)
+{
+	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
+	if (!pPhysicsEntity)
+		return;
+
+	if (pPhysicsEntity->m_bCollisionDisabled == bDisabled)
+		return;
+
+	pPhysicsEntity->m_bCollisionDisabled = bDisabled;
+
+	if (bDisabled)
+	{
+		if (pPhysicsEntity->m_pRigidBody)
+			m_pDynamicsWorld->removeRigidBody(pPhysicsEntity->m_pRigidBody);
+
+		for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+		{
+			if (pPhysicsEntity->m_apPhysicsShapes[i])
+				m_pDynamicsWorld->removeRigidBody(pPhysicsEntity->m_apPhysicsShapes[i]);
+		}
+	}
+	else
+	{
+		if (pPhysicsEntity->m_pRigidBody)
+			m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_pRigidBody);
+
+		for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+		{
+			if (pPhysicsEntity->m_apPhysicsShapes[i])
+				m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_apPhysicsShapes[i]);
+		}
+	}
 }
 
 void CBulletPhysics::SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& mTransform)

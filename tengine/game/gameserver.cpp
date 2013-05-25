@@ -401,6 +401,9 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 			UnserializeParameter("MoveParent", itMoveParent->second, pEntity);
 	}
 
+	for (size_t i = 0; i < apEntities.size(); i++)
+		apEntities[i]->PostLoad();
+
 	if (CWorkbench::IsActive())
 		CWorkbench::LoadLevel(pLevel);
 }
