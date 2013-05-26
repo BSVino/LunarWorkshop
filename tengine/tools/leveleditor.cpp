@@ -1443,14 +1443,22 @@ bool CLevelEditor::KeyPress(int c)
 
 bool CLevelEditor::MouseInput(int iButton, tinker_mouse_state_t iState)
 {
-	if (iState == TINKER_MOUSE_PRESSED && m_hCreateEntityPanel->IsVisible() && m_hCreateEntityPanel->m_bReadyToCreate)
+	if (iButton == TINKER_KEY_MOUSE_RIGHT)
 	{
-		CreateEntityFromPanel(PositionFromMouse());
-		return true;
+		if (iState == TINKER_MOUSE_PRESSED)
+			CVar::SetCVar("cam_free", "on");
+		else
+			CVar::SetCVar("cam_free", "off");
 	}
 
 	if (iState == TINKER_MOUSE_PRESSED && iButton == TINKER_KEY_MOUSE_LEFT)
 	{
+		if (m_hCreateEntityPanel->IsVisible() && m_hCreateEntityPanel->m_bReadyToCreate)
+		{
+			CreateEntityFromPanel(PositionFromMouse());
+			return true;
+		}
+
 		size_t iSelected;
 		if (ShouldRenderOrthographic())
 		{
