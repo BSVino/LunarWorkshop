@@ -2,6 +2,7 @@
 
 #include <glgui/menu.h>
 #include <game/gameserver.h>
+#include <cvar.h>
 
 #include "workbench.h"
 
@@ -35,6 +36,8 @@ void CWorkbenchTool::Activate()
 
 void CWorkbenchTool::Deactivate()
 {
+	CVar::SetCVar("cam_free", "off");
+
 	Workbench()->GetCameraManager()->SetPermaFreeMode(false);
 }
 
