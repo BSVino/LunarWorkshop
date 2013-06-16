@@ -833,7 +833,7 @@ void CToyEditor::MouseMotion(int x, int y)
 		int lx, ly;
 		if (GameWindow()->GetLastMouse(lx, ly))
 		{
-			m_angPreview.y += (float)(x-lx);
+			m_angPreview.y -= (float)(x-lx);
 			m_angPreview.p -= (float)(y-ly);
 		}
 	}
