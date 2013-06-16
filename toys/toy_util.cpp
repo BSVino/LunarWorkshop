@@ -610,17 +610,23 @@ bool CToyUtil::Read(const tstring& sFilename, CToy* pToy)
 	{
 		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".area.toy", "r");
 
-		fseek(fp, 0L, SEEK_END);
-		iToySize = ftell(fp);
-		fseek(fp, 0L, SEEK_SET);
+		TAssert(fp);
+		if (fp)
+		{
+			fseek(fp, 0L, SEEK_END);
+			iToySize = ftell(fp);
+			fseek(fp, 0L, SEEK_SET);
 
-		char* pBuffer = pToy->AllocateArea(iToySize);
+			char* pBuffer = pToy->AllocateArea(iToySize);
 
-		fread(pBuffer, iToySize, 1, fp);
+			fread(pBuffer, iToySize, 1, fp);
 
-		TAssert(memcmp(pBuffer, g_szAreaHeader, sizeof(g_szAreaHeader)) == 0);
+			TAssert(memcmp(pBuffer, g_szAreaHeader, sizeof(g_szAreaHeader)) == 0);
 
-		fclose(fp);
+			fclose(fp);
+		}
+		else
+			TError("Couldn't find scene area file: " + sFilename.substr(0, sFilename.length()-4) + ".area.toy\n");
 	}
 
 	return true;
