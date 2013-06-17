@@ -36,7 +36,7 @@ namespace glgui
 		virtual void	Paint(float x, float y) { Paint(x, y, m_flW, m_flH); };
 		virtual void	Paint(float x, float y, float w, float h);
 		virtual void	PostPaint();
-		virtual void	DrawLine(const tchar* pszText, unsigned iLength, float x, float y, float w, float h);
+		virtual void	DrawLine(const tchar* pszText, unsigned iLength, float x, float y, float w, float h, const Color& clrLine);
 
 		virtual bool	IsCursorListener() {return true;};
 
@@ -54,7 +54,7 @@ namespace glgui
 		virtual void	FindRenderOffset();
 
 		virtual bool	IsEnabled() {return m_bEnabled;};
-		virtual void	SetEnabled(bool bEnabled) {m_bEnabled = bEnabled;};
+		virtual void	SetEnabled(bool bEnabled);
 
 		virtual void	SetText(const tstring& pszText);
 		virtual void	AppendText(const tchar* pszText);

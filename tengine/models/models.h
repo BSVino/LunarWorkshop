@@ -10,6 +10,10 @@
 
 class CToy;
 
+// Vertex size for 
+#define FIXED_FLOATS_PER_VERTEX 5
+#define FIXED_UV_OFFSET 3
+
 class CModel
 {
 public:
@@ -20,6 +24,7 @@ public:
 	bool					Load();
 	bool					LoadSourceFile();
 	size_t					LoadBufferIntoGL(size_t iMaterial);
+	bool                    Load(class CConversionScene* pScene, size_t iMesh);
 
 	void					Unload();
 	void					UnloadBufferFromGL(size_t iBuffer);
@@ -50,6 +55,7 @@ public:
 	static size_t			GetNumModelsLoaded() { return Get()->m_iModelsLoaded; }
 
 	static size_t			AddModel(const tstring& sModel);
+	static size_t           AddModel(class CConversionScene* pScene, size_t iMesh);
 	static size_t			FindModel(const tstring& sModel);
 	static CModel*			GetModel(size_t i);
 	static void				ReleaseModel(const tstring& sModel);

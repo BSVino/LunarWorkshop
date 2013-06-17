@@ -140,7 +140,7 @@ bool CModel::LoadSourceFile()
 			continue;
 
 		m_aiVertexBuffers[i] = CRenderer::LoadVertexDataIntoGL(g_aaflData[i].size()*4, &g_aaflData[i][0]);
-		m_aiVertexBufferSizes[i] = g_aaflData[i].size()/5;
+		m_aiVertexBufferSizes[i] = g_aaflData[i].size()/FIXED_FLOATS_PER_VERTEX;
 
 		CData oMaterialData;
 		CData* pShader = oMaterialData.AddChild("Shader", "model");
@@ -156,6 +156,108 @@ bool CModel::LoadSourceFile()
 	m_aabbPhysBoundingBox = g_aabbPhysBounds;
 
 	delete pScene;
+
+	return true;
+}
+
+void LoadMesh(CConversionScene* pScene, size_t iMesh)
+{
+	TAssert(iMesh < pScene->GetNumMeshes());
+	if (iMesh >= pScene->GetNumMeshes())
+		return;
+
+	// Reserve space for n+1, the last one represents the default material.
+	g_aaflData.resize(pScene->GetNumMaterials()+1);
+
+	tvector<Vector> avecPoints;
+	tvector<size_t> aiPoints;
+
+	CConversionMesh* pMesh = pScene->GetMesh(iMesh);
+
+	for (size_t j = 0; j < pMesh->GetNumFaces(); j++)
+	{
+		CConversionFace* pFace = pMesh->GetFace(j);
+
+		size_t iMaterial = pFace->m;
+		if (iMaterial == ~0)
+			iMaterial = pScene->GetNumMaterials();
+
+		CConversionVertex* pVertex0 = pFace->GetVertex(0);
+		CConversionVertex* pVertex1 = pFace->GetVertex(1);
+
+		CConversionVertex* pLastVertex = pFace->GetVertex(pFace->GetNumVertices()-1);
+
+		avecPoints.clear();
+		aiPoints.clear();
+
+		for (size_t t = 0; t < pFace->GetNumVertices(); t++)
+		{
+			avecPoints.push_back(pMesh->GetVertex(pFace->GetVertex(t)->v));
+			aiPoints.push_back(t);
+		}
+
+		CConversionVertex* pVertex2;
+
+		while (avecPoints.size() > 3)
+		{
+			size_t iEar = FindEar(avecPoints);
+			size_t iLast = iEar==0?avecPoints.size()-1:iEar-1;
+			size_t iNext = iEar==avecPoints.size()-1?0:iEar+1;
+
+			pVertex0 = pFace->GetVertex(aiPoints[iLast]);
+			pVertex1 = pFace->GetVertex(aiPoints[iEar]);
+			pVertex2 = pFace->GetVertex(aiPoints[iNext]);
+
+			AddVertex(iMaterial, pMesh->GetVertex(pVertex0->v), pMesh->GetUV(pVertex0->vu));
+			AddVertex(iMaterial, pMesh->GetVertex(pVertex1->v), pMesh->GetUV(pVertex1->vu));
+			AddVertex(iMaterial, pMesh->GetVertex(pVertex2->v), pMesh->GetUV(pVertex2->vu));
+
+			avecPoints.erase(avecPoints.begin()+iEar);
+			aiPoints.erase(aiPoints.begin()+iEar);
+		}
+
+		TAssert(aiPoints.size() == 3);
+		if (aiPoints.size() != 3)
+			continue;
+
+		pVertex0 = pFace->GetVertex(aiPoints[0]);
+		pVertex1 = pFace->GetVertex(aiPoints[1]);
+		pVertex2 = pFace->GetVertex(aiPoints[2]);
+
+		AddVertex(iMaterial, pMesh->GetVertex(pVertex0->v), pMesh->GetUV(pVertex0->vu));
+		AddVertex(iMaterial, pMesh->GetVertex(pVertex1->v), pMesh->GetUV(pVertex1->vu));
+		AddVertex(iMaterial, pMesh->GetVertex(pVertex2->v), pMesh->GetUV(pVertex2->vu));
+	}
+}
+
+bool CModel::Load(class CConversionScene* pScene, size_t iMesh)
+{
+	g_aaflData.clear();
+
+	LoadMesh(pScene, iMesh);
+
+	size_t iMaterials = g_aaflData.size();
+
+	for (size_t i = 0; i < iMaterials; i++)
+	{
+		if (g_aaflData[i].size() == 0)
+			continue;
+
+		m_aiVertexBuffers.push_back(CRenderer::LoadVertexDataIntoGL(g_aaflData[i].size()*4, &g_aaflData[i][0]));
+		m_aiVertexBufferSizes.push_back(g_aaflData[i].size()/FIXED_FLOATS_PER_VERTEX);
+
+		/*CData oMaterialData;
+		CData* pShader = oMaterialData.AddChild("Shader", "model");
+		pShader->AddChild("Diffuse", g_asTextures[i]);
+		m_ahMaterials[i] = CMaterialLibrary::AddMaterial(&oMaterialData);
+
+		//TAssert(m_aiMaterials[i]);
+		if (!m_ahMaterials[i].IsValid())
+			TError(tstring("Couldn't create fake material for texture \"") + g_asTextures[i] + "\"\n");*/
+	}
+
+	m_aabbVisBoundingBox = g_aabbVisBounds;
+	m_aabbPhysBoundingBox = g_aabbPhysBounds;
 
 	return true;
 }

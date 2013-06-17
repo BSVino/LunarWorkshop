@@ -65,7 +65,13 @@ void CTextField::Paint(float x, float y, float w, float h)
 	if (m_iAlpha == 0)
 		return;
 
-	glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 50), 3);
+	if (IsEnabled())
+		glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 50), 3);
+	else
+	{
+		glgui::CRootPanel::PaintRect(x, y, w, h, Color(0, 0, 0, 50), 3);
+		glgui::CRootPanel::PaintRect(x, y, w, h, Color(100, 100, 100, 50), 0);
+	}
 
 	if (HasFocus())
 	{
@@ -83,15 +89,13 @@ void CTextField::Paint(float x, float y, float w, float h)
 			glgui::CRootPanel::PaintRect(x + 4 + flCursor + m_flRenderOffset, y+3, 1, h-6, Color(200, 200, 200, 255), 1);
 	}
 
-	Color FGColor = m_FGColor;
-	if (!m_bEnabled)
-		FGColor.SetColor(m_FGColor.r()/2, m_FGColor.g()/2, m_FGColor.b()/2, m_iAlpha);
+	Color clrFG = GetFGColor();
 
-	CRootPanel::GetContext()->SetUniform("vecColor", m_FGColor);
+	CRootPanel::GetContext()->SetUniform("vecColor", clrFG);
 
 	FTFont* pFont = CLabel::GetFont("sans-serif", m_iFontFaceSize);
 
-	DrawLine(m_sText.c_str(), (unsigned int)m_sText.length(), x+4, y, w-8, h);
+	DrawLine(m_sText.c_str(), (unsigned int)m_sText.length(), x+4, y, w-8, h, clrFG);
 
 	if (m_sText.length() && m_iAutoComplete >= 0 && m_asAutoCompleteCommands.size() && HasFocus())
 	{
@@ -105,13 +109,8 @@ void CTextField::Paint(float x, float y, float w, float h)
 
 		sCommand = sCommand.substr(m_sText.length());
 
-		Color clrOld = m_FGColor;
-		m_FGColor /= 2;
-
 		float flOriginalTextWidth = CLabel::GetTextWidth(m_sText, m_sText.length(), "sans-serif", m_iFontFaceSize);
-		DrawLine(sCommand.c_str(), sCommand.length(), x+4+flOriginalTextWidth, y, w-8-flOriginalTextWidth, h);
-
-		m_FGColor = clrOld;
+		DrawLine(sCommand.c_str(), sCommand.length(), x+4+flOriginalTextWidth, y, w-8-flOriginalTextWidth, h, clrFG/2);
 	}
 }
 
@@ -166,7 +165,7 @@ void CTextField::PostPaint()
 	}
 }
 
-void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float y, float w, float h)
+void CTextField::DrawLine(const tchar* pszText, unsigned iLength, float x, float y, float w, float h, const Color& clrLine)
 {
 	if (!iLength)
 		return;
@@ -262,6 +261,9 @@ bool CTextField::SetFocus(bool bFocus)
 bool CTextField::MousePressed(int iButton, int mx, int my)
 {
 	if (!TakesFocus())
+		return false;
+
+	if (!m_bEnabled)
 		return false;
 
 	CRootPanel::Get()->SetFocus(m_hThis);
@@ -542,6 +544,14 @@ void CTextField::FindRenderOffset()
 		m_flRenderOffset -= flRightOverrun;
 }
 
+void CTextField::SetEnabled(bool bEnabled)
+{
+	m_bEnabled = bEnabled;
+
+	if (!bEnabled && CRootPanel::Get()->GetFocus() == this)
+		RootPanel()->SetFocus(CControlHandle());
+}
+
 void CTextField::SetText(const tstring& sText)
 {
 	m_sText = sText;
@@ -720,6 +730,13 @@ tstring CTextField::GetText()
 
 Color CTextField::GetFGColor()
 {
+	if (!m_bEnabled)
+	{
+		Color clrDisabled = m_FGColor;
+		clrDisabled /= 2;
+		return clrDisabled;
+	}
+
 	return m_FGColor;
 }
 

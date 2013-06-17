@@ -41,9 +41,14 @@ public:
 class CToySource
 {
 public:
-	void					Save() const;
-	void					Build() const;
-	void					Open(const tstring& sFile);
+	CToySource();
+
+public:
+	void    Clear();
+
+	void    Save() const;
+	void    Build() const;
+	void    Open(const tstring& sFile);
 
 public:
 	tstring					m_sFilename;
@@ -59,6 +64,20 @@ public:
 	};
 
 	tvector<CPhysicsShape>	m_aShapes;
+
+	bool                    m_bUseLocalTransforms;
+	float                   m_flNeighborDistance;
+
+	class CSceneArea
+	{
+	public:
+		tstring             m_sName;
+		tstring             m_sFilename;
+		tstring             m_sMesh;
+		tstring             m_sPhys;
+	};
+
+	tvector<CSceneArea>     m_aAreas;
 };
 
 class CSourcePanel : public glgui::CPanel, public glgui::IEventListener
@@ -77,37 +96,65 @@ public:
 
 	void					SetModelSourcesAutoComplete(glgui::CTextField* pField);
 
+	CToySource::CSceneArea* GetCurrentSceneArea() const;
+
 	EVENT_CALLBACK(CSourcePanel, ToyFileChanged);
+	EVENT_CALLBACK(CSourcePanel, MeshSource);
+	EVENT_CALLBACK(CSourcePanel, MaterialSource);
 	EVENT_CALLBACK(CSourcePanel, ModelChanged);
 	EVENT_CALLBACK(CSourcePanel, PhysicsChanged);
 	EVENT_CALLBACK(CSourcePanel, PhysicsAreaSelected);
 	EVENT_CALLBACK(CSourcePanel, NewPhysicsShape);
 	EVENT_CALLBACK(CSourcePanel, DeletePhysicsShape);
+	EVENT_CALLBACK(CSourcePanel, SceneAreaNameChanged);
+	EVENT_CALLBACK(CSourcePanel, SceneAreaMeshSourceChanged);
+	EVENT_CALLBACK(CSourcePanel, SceneAreaModelChanged);
+	EVENT_CALLBACK(CSourcePanel, SceneAreaPhysicsChanged);
+	EVENT_CALLBACK(CSourcePanel, SceneAreaSelected);
+	EVENT_CALLBACK(CSourcePanel, NewSceneArea);
+	EVENT_CALLBACK(CSourcePanel, DeleteSceneArea);
 	EVENT_CALLBACK(CSourcePanel, Save);
 	EVENT_CALLBACK(CSourcePanel, Build);
-	EVENT_CALLBACK(CSourcePanel, MeshSource);
-	EVENT_CALLBACK(CSourcePanel, MaterialSource);
 
 public:
-	glgui::CLabel*			m_pFilename;
+	glgui::CControl<glgui::CLabel>     m_hFilename;
 
-	glgui::CLabel*			m_pToyFileLabel;
-	glgui::CTextField*		m_pToyFileText;
+	glgui::CControl<glgui::CLabel>     m_hToyFileLabel;
+	glgui::CControl<glgui::CTextField> m_hToyFileText;
 
-	glgui::CMenu*			m_pMeshMenu;
-	bool					m_bMesh;
-	glgui::CTextField*		m_pMeshText;
+	glgui::CControl<glgui::CMenu>      m_hMeshMenu;
+	bool                               m_bMesh;
+	glgui::CControl<glgui::CTextField> m_hMeshText;
 
-	glgui::CLabel*			m_pPhysLabel;
-	glgui::CTextField*		m_pPhysText;
+	glgui::CControl<glgui::CLabel>     m_hPhysLabel;
+	glgui::CControl<glgui::CTextField> m_hPhysText;
 
-	glgui::CLabel*			m_pPhysShapesLabel;
-	glgui::CTree*			m_pPhysicsShapes;
-	glgui::CButton*			m_pNewPhysicsShape;
-	glgui::CButton*			m_pDeletePhysicsShape;
+	glgui::CControl<glgui::CSlidingContainer> m_hSlider;
+	glgui::CControl<glgui::CSlidingPanel>     m_hPhysicsSlider;
+	glgui::CControl<glgui::CSlidingPanel>     m_hAreasSlider;
 
-	glgui::CButton*			m_pSave;
-	glgui::CButton*			m_pBuild;
+	glgui::CControl<glgui::CTree>   m_hPhysicsShapes;
+	glgui::CControl<glgui::CButton> m_hNewPhysicsShape;
+	glgui::CControl<glgui::CButton> m_hDeletePhysicsShape;
+
+	glgui::CControl<glgui::CTree>   m_hAreas;
+	glgui::CControl<glgui::CButton> m_hNewArea;
+	glgui::CControl<glgui::CButton> m_hDeleteArea;
+
+	glgui::CControl<glgui::CLabel>     m_hAreaNameLabel;
+	glgui::CControl<glgui::CTextField> m_hAreaNameText;
+
+	glgui::CControl<glgui::CLabel>     m_hAreaSourceFileLabel;
+	glgui::CControl<glgui::CTextField> m_hAreaSourceFileText;
+
+	glgui::CControl<glgui::CLabel>     m_hAreaMeshLabel;
+	glgui::CControl<glgui::CTextField> m_hAreaMeshText;
+
+	glgui::CControl<glgui::CLabel>     m_hAreaPhysLabel;
+	glgui::CControl<glgui::CTextField> m_hAreaPhysText;
+
+	glgui::CControl<glgui::CButton> m_hSave;
+	glgui::CControl<glgui::CButton> m_hBuild;
 };
 
 class CToyEditor : public CWorkbenchTool, public IManipulatorListener
@@ -123,6 +170,7 @@ public:
 	virtual void			Deactivate();
 
 	void					Layout();
+	void                    ReloadModels();
 	void					SetupMenu();
 
 	virtual void			RenderScene();
@@ -166,6 +214,17 @@ protected:
 	size_t					m_iMeshPreview;
 	size_t					m_iPhysPreview;
 	CMaterialHandle			m_hMaterialPreview;
+
+	// Holds the scene and GL indexes for all of the scene areas.
+	class CSceneAreaModelData
+	{
+	public:
+		std::shared_ptr<class CConversionScene> pScene;
+		tvector<size_t>                         aiModels;
+		bool                                    bMark;
+	};
+
+	tmap<tstring, CSceneAreaModelData> m_aFileScenes;
 
 	bool					m_bRotatingPreview;
 	EAngle					m_angPreview;

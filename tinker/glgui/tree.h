@@ -146,7 +146,7 @@ namespace glgui
 		CControl<CTreeNode>					GetNode(size_t i);
 
 		virtual CControl<CTreeNode>			GetSelectedNode() const { if (m_iSelected == ~0) return CControl<CTreeNode>(); return m_ahAllNodes[m_iSelected]; };
-		virtual size_t						GetSelectedNodeId() { return m_iSelected; };
+		virtual size_t						GetSelectedNodeId() const { return m_iSelected; };
 		virtual void						Unselect() { m_iSelected = ~0; }
 		virtual void						SetSelectedNode(size_t iNode);
 		virtual void						SetSelectedListener(IEventListener* pListener, IEventListener::Callback pfnCallback);

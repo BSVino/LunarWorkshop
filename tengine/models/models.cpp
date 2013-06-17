@@ -97,6 +97,42 @@ size_t CModelLibrary::AddModel(const tstring& sModelFile)
 	return iLocation;
 }
 
+size_t CModelLibrary::AddModel(class CConversionScene* pScene, size_t iMesh)
+{
+	CModel* pModel = new CModel(sprintf("Scene %x", pScene));
+
+	size_t iLocation = ~0;
+	for (size_t i = 0; i < Get()->m_apModels.size(); i++)
+	{
+		if (!Get()->m_apModels[i])
+		{
+			iLocation = i;
+			break;
+		}
+	}
+
+	if (iLocation == ~0)
+	{
+		iLocation = Get()->m_apModels.size();
+		Get()->m_apModels.push_back();
+	}
+
+	Get()->m_apModels[iLocation] = pModel;
+
+	if (!pModel->Load(pScene, iMesh))
+	{
+		Get()->m_apModels[iMesh] = nullptr;
+		delete pModel;
+		return ~0;
+	}
+
+	pModel->m_iReferences++;
+
+	Get()->m_iModelsLoaded++;
+
+	return iLocation;
+}
+
 CModel* CModelLibrary::GetModel(size_t i)
 {
 	if (i >= Get()->m_apModels.size())

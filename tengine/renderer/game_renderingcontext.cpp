@@ -128,8 +128,8 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	else
 	{
 		// If there's no toy then we are using fixed size source models.
-		SetPositionBuffer(0u, 4*5);
-		SetTexCoordBuffer(BUFFER_OFFSET(4*3), 4*5);
+		SetPositionBuffer(0u, 4*FIXED_FLOATS_PER_VERTEX);
+		SetTexCoordBuffer(BUFFER_OFFSET(4*FIXED_UV_OFFSET), 4*FIXED_FLOATS_PER_VERTEX);
 	}
 	EndRenderVertexArray(pModel->m_aiVertexBufferSizes[iMaterial]);
 }

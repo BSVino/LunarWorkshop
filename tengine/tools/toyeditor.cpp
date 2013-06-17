@@ -14,6 +14,7 @@
 #include <glgui/menu.h>
 #include <glgui/filedialog.h>
 #include <glgui/tree.h>
+#include <glgui/slidingpanel.h>
 #include <tinker/application.h>
 #include <models/models.h>
 #include <renderer/game_renderingcontext.h>
@@ -189,61 +190,84 @@ CSourcePanel::CSourcePanel()
 	SetBackgroundColor(Color(0, 0, 0, 150));
 	SetBorder(glgui::CPanel::BT_SOME);
 
-	m_pFilename = new glgui::CLabel("", "sans-serif", 16);
-	AddControl(m_pFilename);
+	m_hFilename = AddControl(new glgui::CLabel("", "sans-serif", 16));
 
-	m_pToyFileLabel = new glgui::CLabel("Output Toy File: ", "sans-serif", 10);
-	m_pToyFileLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
-	AddControl(m_pToyFileLabel);
+	m_hToyFileLabel = AddControl(new glgui::CLabel("Output Toy File: ", "sans-serif", 10));
+	m_hToyFileLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
 
-	m_pToyFileText = new glgui::CTextField();
-	m_pToyFileText->SetContentsChangedListener(this, ToyFileChanged);
-	AddControl(m_pToyFileText, true);
+	m_hToyFileText = AddControl(new glgui::CTextField());
+	m_hToyFileText->SetContentsChangedListener(this, ToyFileChanged);
 
-	m_pMeshMenu = new glgui::CMenu("Mesh: ");
+	m_hMeshMenu = AddControl(new glgui::CMenu("Mesh: "));
 	m_bMesh = true;
-	m_pMeshMenu->AddSubmenu("Mesh", this, MeshSource);
-	m_pMeshMenu->AddSubmenu("Material", this, MaterialSource);
-	m_pMeshMenu->SetFont("sans-serif", 10);
-	m_pMeshMenu->SetAlign(glgui::CLabel::TA_MIDDLECENTER);
-	AddControl(m_pMeshMenu);
+	m_hMeshMenu->AddSubmenu("Mesh", this, MeshSource);
+	m_hMeshMenu->AddSubmenu("Material", this, MaterialSource);
+	m_hMeshMenu->SetFont("sans-serif", 10);
+	m_hMeshMenu->SetAlign(glgui::CLabel::TA_MIDDLECENTER);
 
-	m_pMeshText = new glgui::CTextField();
-	m_pMeshText->SetContentsChangedListener(this, ModelChanged, "mesh");
-	AddControl(m_pMeshText, true);
+	m_hMeshText = AddControl(new glgui::CTextField());
+	m_hMeshText->SetContentsChangedListener(this, ModelChanged, "mesh");
 
-	m_pPhysLabel = new glgui::CLabel("Physics: ", "sans-serif", 10);
-	m_pPhysLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
-	AddControl(m_pPhysLabel);
+	m_hPhysLabel = AddControl(new glgui::CLabel("Physics: ", "sans-serif", 10));
+	m_hPhysLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
 
-	m_pPhysText = new glgui::CTextField();
-	m_pPhysText->SetContentsChangedListener(this, PhysicsChanged, "phys");
-	AddControl(m_pPhysText, true);
+	m_hPhysText = AddControl(new glgui::CTextField());
+	m_hPhysText->SetContentsChangedListener(this, PhysicsChanged, "phys");
 
-	m_pPhysShapesLabel = new glgui::CLabel("Physics Shapes: ", "sans-serif", 10);
-	m_pPhysShapesLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
-	AddControl(m_pPhysShapesLabel);
+	m_hSlider = AddControl(new glgui::CSlidingContainer());
 
-	m_pPhysicsShapes = new glgui::CTree();
-	m_pPhysicsShapes->SetBackgroundColor(Color(0, 0, 0, 100));
-	m_pPhysicsShapes->SetSelectedListener(this, PhysicsAreaSelected);
-	AddControl(m_pPhysicsShapes);
+	m_hPhysicsSlider = new glgui::CSlidingPanel(m_hSlider, "Physics Shapes");
+	m_hAreasSlider = new glgui::CSlidingPanel(m_hSlider, "Areas");
 
-	m_pNewPhysicsShape = new glgui::CButton("New Shape", false, "sans-serif", 10);
-	m_pNewPhysicsShape->SetClickedListener(this, NewPhysicsShape);
-	AddControl(m_pNewPhysicsShape);
+	m_hPhysicsShapes = m_hPhysicsSlider->AddControl(new glgui::CTree());
+	m_hPhysicsShapes->SetBackgroundColor(Color(0, 0, 0, 100));
+	m_hPhysicsShapes->SetSelectedListener(this, PhysicsAreaSelected);
 
-	m_pDeletePhysicsShape = new glgui::CButton("Delete Shape", false, "sans-serif", 10);
-	m_pDeletePhysicsShape->SetClickedListener(this, DeletePhysicsShape);
-	AddControl(m_pDeletePhysicsShape);
+	m_hNewPhysicsShape = m_hPhysicsSlider->AddControl(new glgui::CButton("New Shape", false, "sans-serif", 10));
+	m_hNewPhysicsShape->SetClickedListener(this, NewPhysicsShape);
 
-	m_pSave = new glgui::CButton("Save");
-	m_pSave->SetClickedListener(this, Save);
-	AddControl(m_pSave);
+	m_hDeletePhysicsShape = m_hPhysicsSlider->AddControl(new glgui::CButton("Delete Shape", false, "sans-serif", 10));
+	m_hDeletePhysicsShape->SetClickedListener(this, DeletePhysicsShape);
 
-	m_pBuild = new glgui::CButton("Build");
-	m_pBuild->SetClickedListener(this, Build);
-	AddControl(m_pBuild);
+	m_hAreas = m_hAreasSlider->AddControl(new glgui::CTree());
+	m_hAreas->SetBackgroundColor(Color(0, 0, 0, 100));
+	m_hAreas->SetSelectedListener(this, SceneAreaSelected);
+
+	m_hNewArea = m_hAreasSlider->AddControl(new glgui::CButton("New Area", false, "sans-serif", 10));
+	m_hNewArea->SetClickedListener(this, NewSceneArea);
+
+	m_hDeleteArea = m_hAreasSlider->AddControl(new glgui::CButton("Delete Area", false, "sans-serif", 10));
+	m_hDeleteArea->SetClickedListener(this, DeleteSceneArea);
+
+	m_hAreaNameLabel = m_hAreasSlider->AddControl(new glgui::CLabel("Name: ", "sans-serif", 10));
+	m_hAreaNameLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
+
+	m_hAreaNameText = m_hAreasSlider->AddControl(new glgui::CTextField());
+	m_hAreaNameText->SetContentsChangedListener(this, SceneAreaNameChanged);
+
+	m_hAreaSourceFileLabel = m_hAreasSlider->AddControl(new glgui::CLabel("Source File: ", "sans-serif", 10));
+	m_hAreaSourceFileLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
+
+	m_hAreaSourceFileText = m_hAreasSlider->AddControl(new glgui::CTextField());
+	m_hAreaSourceFileText->SetContentsChangedListener(this, SceneAreaMeshSourceChanged);
+
+	m_hAreaMeshLabel = m_hAreasSlider->AddControl(new glgui::CLabel("Mesh: ", "sans-serif", 10));
+	m_hAreaMeshLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
+
+	m_hAreaMeshText = m_hAreasSlider->AddControl(new glgui::CTextField());
+	m_hAreaMeshText->SetContentsChangedListener(this, SceneAreaModelChanged, "mesh");
+
+	m_hAreaPhysLabel = m_hAreasSlider->AddControl(new glgui::CLabel("Physics: ", "sans-serif", 10));
+	m_hAreaPhysLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
+
+	m_hAreaPhysText = m_hAreasSlider->AddControl(new glgui::CTextField());
+	m_hAreaPhysText->SetContentsChangedListener(this, SceneAreaPhysicsChanged, "phys");
+
+	m_hSave = AddControl(new glgui::CButton("Save"));
+	m_hSave->SetClickedListener(this, Save);
+
+	m_hBuild = AddControl(new glgui::CButton("Build"));
+	m_hBuild->SetClickedListener(this, Build);
 }
 
 void CSourcePanel::SetVisible(bool bVis)
@@ -266,8 +290,8 @@ void CSourcePanel::Layout()
 
 	SetDimensions(flCurrLeft, flCurrTop, 200, flHeight-30-flMenuBarBottom);
 
-	m_pFilename->Layout_AlignTop();
-	m_pFilename->Layout_FullWidth(0);
+	m_hFilename->Layout_AlignTop();
+	m_hFilename->Layout_FullWidth(0);
 
 	BaseClass::Layout();
 
@@ -278,62 +302,119 @@ void CSourcePanel::Layout()
 
 	LayoutFilename();
 
-	m_pToyFileLabel->Layout_AlignTop(m_pFilename);
-	m_pToyFileLabel->SetWidth(10);
-	m_pToyFileLabel->SetHeight(1);
-	m_pToyFileLabel->EnsureTextFits();
-	m_pToyFileLabel->Layout_FullWidth();
+	m_hToyFileLabel->Layout_AlignTop(m_hFilename);
+	m_hToyFileLabel->SetWidth(10);
+	m_hToyFileLabel->SetHeight(1);
+	m_hToyFileLabel->EnsureTextFits();
+	m_hToyFileLabel->Layout_FullWidth();
 
-	m_pToyFileText->Layout_FullWidth();
-	m_pToyFileText->SetTop(m_pToyFileLabel->GetTop()+12);
+	m_hToyFileText->Layout_FullWidth();
+	m_hToyFileText->SetTop(m_hToyFileLabel->GetTop()+12);
 
 	float flControlMargin = 12;
 
-	m_pMeshMenu->Layout_AlignTop(m_pToyFileText, flControlMargin);
-	m_pMeshMenu->SetWidth(10);
-	m_pMeshMenu->SetHeight(1);
-	m_pMeshMenu->EnsureTextFits();
-	m_pMeshMenu->SetLeft(m_pToyFileText->GetLeft());
+	m_hMeshMenu->Layout_AlignTop(m_hToyFileText, flControlMargin);
+	m_hMeshMenu->SetWidth(10);
+	m_hMeshMenu->SetHeight(1);
+	m_hMeshMenu->EnsureTextFits();
+	m_hMeshMenu->SetLeft(m_hToyFileText->GetLeft());
 
-	m_pMeshText->Layout_FullWidth();
-	m_pMeshText->SetTop(m_pMeshMenu->GetBottom());
+	m_hMeshText->Layout_FullWidth();
+	m_hMeshText->SetTop(m_hMeshMenu->GetBottom());
 
-	m_pPhysLabel->Layout_AlignTop(m_pMeshText, flControlMargin);
-	m_pPhysLabel->SetWidth(10);
-	m_pPhysLabel->SetHeight(1);
-	m_pPhysLabel->EnsureTextFits();
-	m_pPhysLabel->Layout_FullWidth();
+	m_hPhysLabel->Layout_AlignTop(m_hMeshText, flControlMargin);
+	m_hPhysLabel->SetWidth(10);
+	m_hPhysLabel->SetHeight(1);
+	m_hPhysLabel->EnsureTextFits();
+	m_hPhysLabel->Layout_FullWidth();
 
-	m_pPhysText->Layout_FullWidth();
-	m_pPhysText->SetTop(m_pPhysLabel->GetTop()+12);
+	m_hPhysText->Layout_FullWidth();
+	m_hPhysText->SetTop(m_hPhysLabel->GetTop()+12);
 
-	m_pPhysShapesLabel->Layout_AlignTop(m_pPhysText, flControlMargin);
-	m_pPhysShapesLabel->SetWidth(10);
-	m_pPhysShapesLabel->SetHeight(1);
-	m_pPhysShapesLabel->EnsureTextFits();
-	m_pPhysShapesLabel->Layout_FullWidth();
+	float flTempMargin = 5;
+	m_hSlider->Layout_AlignTop(m_hPhysText, flTempMargin);
+	m_hSlider->Layout_FullWidth(flTempMargin);
 
-	m_pPhysicsShapes->Layout_FullWidth();
-	m_pPhysicsShapes->SetTop(m_pPhysShapesLabel->GetTop()+12);
-	m_pPhysicsShapes->SetHeight(100);
+	m_hPhysicsShapes->Layout_FullWidth();
+	m_hPhysicsShapes->SetTop(12);
+	m_hPhysicsShapes->SetHeight(100);
 
-	m_pPhysicsShapes->ClearTree();
+	m_hPhysicsShapes->ClearTree();
 
 	for (size_t i = 0; i < pToySource->m_aShapes.size(); i++)
-		m_pPhysicsShapes->AddNode("Box");
+		m_hPhysicsShapes->AddNode("Box");
 
-	m_pNewPhysicsShape->SetHeight(20);
-	m_pNewPhysicsShape->Layout_Column(2, 0);
-	m_pNewPhysicsShape->Layout_AlignTop(m_pPhysicsShapes, 5);
-	m_pDeletePhysicsShape->SetHeight(20);
-	m_pDeletePhysicsShape->Layout_Column(2, 1);
-	m_pDeletePhysicsShape->Layout_AlignTop(m_pPhysicsShapes, 5);
-	m_pDeletePhysicsShape->SetEnabled(false);
+	m_hNewPhysicsShape->SetHeight(20);
+	m_hNewPhysicsShape->Layout_Column(2, 0);
+	m_hNewPhysicsShape->Layout_AlignTop(m_hPhysicsShapes, 5);
+	m_hDeletePhysicsShape->SetHeight(20);
+	m_hDeletePhysicsShape->Layout_Column(2, 1);
+	m_hDeletePhysicsShape->Layout_AlignTop(m_hPhysicsShapes, 5);
+	m_hDeletePhysicsShape->SetEnabled(false);
 
-	m_pSave->Layout_Column(2, 0);
-	m_pSave->Layout_AlignBottom();
-	m_pBuild->Layout_Column(2, 1);
-	m_pBuild->Layout_AlignBottom();
+	m_hAreas->Layout_FullWidth();
+	m_hAreas->SetTop(12);
+	m_hAreas->SetHeight(100);
+
+	m_hAreas->ClearTree();
+
+	for (size_t i = 0; i < pToySource->m_aAreas.size(); i++)
+		m_hAreas->AddNode(pToySource->m_aAreas[i].m_sName);
+
+	m_hNewArea->SetHeight(20);
+	m_hNewArea->Layout_Column(2, 0);
+	m_hNewArea->Layout_AlignTop(m_hAreas, 5);
+	m_hDeleteArea->SetHeight(20);
+	m_hDeleteArea->Layout_Column(2, 1);
+	m_hDeleteArea->Layout_AlignTop(m_hAreas, 5);
+	m_hDeleteArea->SetEnabled(false);
+
+	m_hAreaNameLabel->Layout_AlignTop(m_hNewArea, flControlMargin);
+	m_hAreaNameLabel->SetWidth(10);
+	m_hAreaNameLabel->SetHeight(1);
+	m_hAreaNameLabel->EnsureTextFits();
+	m_hAreaNameLabel->Layout_FullWidth();
+
+	m_hAreaNameText->Layout_FullWidth();
+	m_hAreaNameText->SetTop(m_hAreaNameLabel->GetTop()+12);
+	m_hAreaNameText->SetEnabled(!!GetCurrentSceneArea());
+
+	m_hAreaSourceFileLabel->Layout_AlignTop(m_hAreaNameText, flControlMargin);
+	m_hAreaSourceFileLabel->SetWidth(10);
+	m_hAreaSourceFileLabel->SetHeight(1);
+	m_hAreaSourceFileLabel->EnsureTextFits();
+	m_hAreaSourceFileLabel->Layout_FullWidth();
+
+	m_hAreaSourceFileText->Layout_FullWidth();
+	m_hAreaSourceFileText->SetTop(m_hAreaSourceFileLabel->GetTop()+12);
+	m_hAreaSourceFileText->SetEnabled(!!GetCurrentSceneArea());
+
+	m_hAreaMeshLabel->Layout_AlignTop(m_hAreaSourceFileText, flControlMargin);
+	m_hAreaMeshLabel->SetWidth(10);
+	m_hAreaMeshLabel->SetHeight(1);
+	m_hAreaMeshLabel->EnsureTextFits();
+	m_hAreaPhysLabel->Layout_FullWidth();
+
+	m_hAreaMeshText->Layout_FullWidth();
+	m_hAreaMeshText->SetTop(m_hAreaMeshLabel->GetTop()+12);
+	m_hAreaMeshText->SetEnabled(!!GetCurrentSceneArea());
+
+	m_hAreaPhysLabel->Layout_AlignTop(m_hAreaMeshText, flControlMargin);
+	m_hAreaPhysLabel->SetWidth(10);
+	m_hAreaPhysLabel->SetHeight(1);
+	m_hAreaPhysLabel->EnsureTextFits();
+	m_hAreaPhysLabel->Layout_FullWidth();
+
+	m_hAreaPhysText->Layout_FullWidth();
+	m_hAreaPhysText->SetTop(m_hAreaPhysLabel->GetTop()+12);
+	m_hAreaPhysText->SetEnabled(!!GetCurrentSceneArea());
+
+	m_hSave->Layout_Column(2, 0);
+	m_hSave->Layout_AlignBottom();
+	m_hBuild->Layout_Column(2, 1);
+	m_hBuild->Layout_AlignBottom();
+
+	m_hSlider->SetBottom(m_hSave->GetTop() - flTempMargin);
 
 	BaseClass::Layout();
 
@@ -352,16 +433,16 @@ void CSourcePanel::LayoutFilename()
 	tstring sAbsoluteFilename = FindAbsolutePath(sFilename);
 	if (sAbsoluteFilename.find(sAbsoluteSourcePath) == 0)
 		sFilename = ToForwardSlashes(sAbsoluteFilename.substr(sAbsoluteSourcePath.length()));
-	m_pFilename->SetText(sFilename);
+	m_hFilename->SetText(sFilename);
 	if (!ToyEditor()->IsSaved())
-		m_pFilename->AppendText(" *");
+		m_hFilename->AppendText(" *");
 }
 
 void CSourcePanel::UpdateFields()
 {
-	m_pToyFileText->SetText(ToyEditor()->GetToy().m_sToyFile);
-	m_pMeshText->SetText(ToyEditor()->GetToy().m_sMesh);
-	m_pPhysText->SetText(ToyEditor()->GetToy().m_sPhys);
+	m_hToyFileText->SetText(ToyEditor()->GetToy().m_sToyFile);
+	m_hMeshText->SetText(ToyEditor()->GetToy().m_sMesh);
+	m_hPhysText->SetText(ToyEditor()->GetToy().m_sPhys);
 
 	tstring sMesh = ToyEditor()->GetToy().m_sMesh;
 	if (sMesh.length() >= 4)
@@ -370,13 +451,36 @@ void CSourcePanel::UpdateFields()
 		if (sExtension == ".mat")
 		{
 			m_bMesh = false;
-			m_pMeshMenu->SetText("Material: ");
+			m_hMeshMenu->SetText("Material: ");
 		}
 		else
 		{
 			m_bMesh = true;
-			m_pMeshMenu->SetText("Mesh: ");
+			m_hMeshMenu->SetText("Mesh: ");
 		}
+	}
+
+	auto pSceneArea = GetCurrentSceneArea();
+
+	m_hDeleteArea->SetEnabled(!!pSceneArea);
+	m_hAreaNameText->SetEnabled(!!pSceneArea);
+	m_hAreaSourceFileText->SetEnabled(!!pSceneArea);
+	m_hAreaMeshText->SetEnabled(!!pSceneArea);
+	m_hAreaPhysText->SetEnabled(!!pSceneArea);
+
+	if (pSceneArea)
+	{
+		m_hAreaNameText->SetText(pSceneArea->m_sName);
+		m_hAreaSourceFileText->SetText(pSceneArea->m_sFilename);
+		m_hAreaMeshText->SetText(pSceneArea->m_sMesh);
+		m_hAreaPhysText->SetText(pSceneArea->m_sPhys);
+	}
+	else
+	{
+		m_hAreaNameText->SetText("");
+		m_hAreaSourceFileText->SetText("");
+		m_hAreaMeshText->SetText("");
+		m_hAreaPhysText->SetText("");
 	}
 }
 
@@ -388,11 +492,21 @@ void CSourcePanel::SetModelSourcesAutoComplete(glgui::CTextField* pField)
 	pField->SetAutoCompleteFiles(GetDirectory(ToyEditor()->GetToy().m_sFilename), asExtensions);
 }
 
+CToySource::CSceneArea* CSourcePanel::GetCurrentSceneArea() const
+{
+	size_t iArea = m_hAreas->GetSelectedNodeId();
+
+	if (iArea >= ToyEditor()->GetToyToModify().m_aAreas.size())
+		return nullptr;
+
+	return &ToyEditor()->GetToyToModify().m_aAreas[iArea];
+}
+
 void CSourcePanel::ToyFileChangedCallback(const tstring& sArgs)
 {
-	ToyEditor()->GetToyToModify().m_sToyFile = m_pToyFileText->GetText();
+	ToyEditor()->GetToyToModify().m_sToyFile = m_hToyFileText->GetText();
 
-	if (!m_pToyFileText->GetText().length())
+	if (!m_hToyFileText->GetText().length())
 		return;
 
 	tvector<tstring> asExtensions;
@@ -403,21 +517,37 @@ void CSourcePanel::ToyFileChangedCallback(const tstring& sArgs)
 	asExtensionsExclude.push_back(".phys.toy");
 	asExtensionsExclude.push_back(".area.toy");
 
-	m_pToyFileText->SetAutoCompleteFiles(".", asExtensions, asExtensionsExclude);
+	m_hToyFileText->SetAutoCompleteFiles(".", asExtensions, asExtensionsExclude);
+}
+
+void CSourcePanel::MeshSourceCallback(const tstring& sArgs)
+{
+	m_hMeshMenu->SetText("Mesh:");
+	m_bMesh = true;
+	m_hMeshMenu->CloseMenu();
+	Layout();
+}
+
+void CSourcePanel::MaterialSourceCallback(const tstring& sArgs)
+{
+	m_hMeshMenu->SetText("Material:");
+	m_bMesh = false;
+	m_hMeshMenu->CloseMenu();
+	Layout();
 }
 
 void CSourcePanel::ModelChangedCallback(const tstring& sArgs)
 {
-	ToyEditor()->GetToyToModify().m_sMesh = m_pMeshText->GetText();
+	ToyEditor()->GetToyToModify().m_sMesh = m_hMeshText->GetText();
 
 	if (m_bMesh)
-		SetModelSourcesAutoComplete(m_pMeshText);
+		SetModelSourcesAutoComplete(m_hMeshText);
 	else
 	{
 		tvector<tstring> asExtensions;
 		asExtensions.push_back(".mat");
 
-		m_pMeshText->SetAutoCompleteFiles(FindAbsolutePath("."), asExtensions);
+		m_hMeshText->SetAutoCompleteFiles(FindAbsolutePath("."), asExtensions);
 	}
 
 	ToyEditor()->Layout();
@@ -425,23 +555,23 @@ void CSourcePanel::ModelChangedCallback(const tstring& sArgs)
 
 void CSourcePanel::PhysicsChangedCallback(const tstring& sArgs)
 {
-	ToyEditor()->GetToyToModify().m_sPhys = m_pPhysText->GetText();
-	SetModelSourcesAutoComplete(m_pPhysText);
+	ToyEditor()->GetToyToModify().m_sPhys = m_hPhysText->GetText();
+	SetModelSourcesAutoComplete(m_hPhysText);
 
 	ToyEditor()->Layout();
 }
 
 void CSourcePanel::PhysicsAreaSelectedCallback(const tstring& sArgs)
 {
-	if (m_pPhysicsShapes->GetSelectedNodeId() < ToyEditor()->GetToy().m_aShapes.size())
+	if (m_hPhysicsShapes->GetSelectedNodeId() < ToyEditor()->GetToy().m_aShapes.size())
 	{
-		Manipulator()->Activate(ToyEditor(), ToyEditor()->GetToy().m_aShapes[m_pPhysicsShapes->GetSelectedNodeId()].m_trsTransform, "PhysicsShape " + sprintf("%d", m_pPhysicsShapes->GetSelectedNodeId()));
-		m_pDeletePhysicsShape->SetEnabled(true);
+		Manipulator()->Activate(ToyEditor(), ToyEditor()->GetToy().m_aShapes[m_hPhysicsShapes->GetSelectedNodeId()].m_trsTransform, "PhysicsShape " + sprintf("%d", m_hPhysicsShapes->GetSelectedNodeId()));
+		m_hDeletePhysicsShape->SetEnabled(true);
 	}
 	else
 	{
 		Manipulator()->Deactivate();
-		m_pDeletePhysicsShape->SetEnabled(false);
+		m_hDeletePhysicsShape->SetEnabled(false);
 	}
 }
 
@@ -454,14 +584,105 @@ void CSourcePanel::NewPhysicsShapeCallback(const tstring& sArgs)
 
 void CSourcePanel::DeletePhysicsShapeCallback(const tstring& sArgs)
 {
-	if (m_pPhysicsShapes->GetSelectedNodeId() >= ToyEditor()->GetToy().m_aShapes.size())
+	if (m_hPhysicsShapes->GetSelectedNodeId() >= ToyEditor()->GetToy().m_aShapes.size())
 		return;
 
-	size_t iSelected = m_pPhysicsShapes->GetSelectedNodeId();	// Grab before GetToyToModify() since a Layout() is called which resecs the shapes list.
+	size_t iSelected = m_hPhysicsShapes->GetSelectedNodeId();	// Grab before GetToyToModify() since a Layout() is called which resecs the shapes list.
 	auto pToy = &ToyEditor()->GetToyToModify();
 	pToy->m_aShapes.erase(pToy->m_aShapes.begin()+iSelected);
 
 	Layout();
+}
+
+void CSourcePanel::SceneAreaSelectedCallback(const tstring& sArgs)
+{
+	UpdateFields();
+}
+
+void CSourcePanel::NewSceneAreaCallback(const tstring& sArgs)
+{
+	auto& oSceneArea = ToyEditor()->GetToyToModify().m_aAreas.push_back();
+
+	oSceneArea.m_sName = "New Area";
+
+	if (m_hMeshText->GetText().length())
+		oSceneArea.m_sFilename = m_hMeshText->GetText();
+	else
+	{
+		// Look for a scene area that has a file already, copy it to this one for convenience.
+		for (size_t i = 0; i < ToyEditor()->GetToyToModify().m_aAreas.size(); i++)
+		{
+			if (ToyEditor()->GetToyToModify().m_aAreas[i].m_sMesh.length())
+			{
+				oSceneArea.m_sFilename = ToyEditor()->GetToyToModify().m_aAreas[i].m_sFilename;
+				break;
+			}
+		}
+	}
+
+	Layout();
+
+	m_hAreas->SetSelectedNode(ToyEditor()->GetToyToModify().m_aAreas.size()-1);
+}
+
+void CSourcePanel::DeleteSceneAreaCallback(const tstring& sArgs)
+{
+	if (m_hAreas->GetSelectedNodeId() >= ToyEditor()->GetToy().m_aAreas.size())
+		return;
+
+	size_t iSelected = m_hAreas->GetSelectedNodeId(); // Grab before GetToyToModify() since a Layout() is called which resets the shapes list.
+	auto pToy = &ToyEditor()->GetToyToModify();
+	pToy->m_aAreas.erase(pToy->m_aAreas.begin()+iSelected);
+
+	Layout();
+}
+
+void CSourcePanel::SceneAreaNameChangedCallback(const tstring& sArgs)
+{
+	CToySource::CSceneArea* pSceneArea = GetCurrentSceneArea();
+
+	TAssert(pSceneArea);
+	if (!pSceneArea)
+		return;
+
+	pSceneArea->m_sName = m_hAreaNameText->GetText();
+}
+
+void CSourcePanel::SceneAreaMeshSourceChangedCallback(const tstring& sArgs)
+{
+	CToySource::CSceneArea* pSceneArea = GetCurrentSceneArea();
+
+	TAssert(pSceneArea);
+	if (!pSceneArea)
+		return;
+
+	pSceneArea->m_sFilename = m_hAreaSourceFileText->GetText();
+
+	SetModelSourcesAutoComplete(m_hAreaSourceFileText);
+
+	ToyEditor()->ReloadModels();
+}
+
+void CSourcePanel::SceneAreaModelChangedCallback(const tstring& sArgs)
+{
+	CToySource::CSceneArea* pSceneArea = GetCurrentSceneArea();
+
+	TAssert(pSceneArea);
+	if (!pSceneArea)
+		return;
+
+	pSceneArea->m_sMesh = m_hMeshText->GetText();
+}
+
+void CSourcePanel::SceneAreaPhysicsChangedCallback(const tstring& sArgs)
+{
+	CToySource::CSceneArea* pSceneArea = GetCurrentSceneArea();
+
+	TAssert(pSceneArea);
+	if (!pSceneArea)
+		return;
+
+	pSceneArea->m_sPhys = m_hPhysText->GetText();
 }
 
 void CSourcePanel::SaveCallback(const tstring& sArgs)
@@ -472,22 +693,6 @@ void CSourcePanel::SaveCallback(const tstring& sArgs)
 void CSourcePanel::BuildCallback(const tstring& sArgs)
 {
 	ToyEditor()->GetToy().Build();
-}
-
-void CSourcePanel::MeshSourceCallback(const tstring& sArgs)
-{
-	m_pMeshMenu->SetText("Mesh:");
-	m_bMesh = true;
-	m_pMeshMenu->CloseMenu();
-	Layout();
-}
-
-void CSourcePanel::MaterialSourceCallback(const tstring& sArgs)
-{
-	m_pMeshMenu->SetText("Material:");
-	m_bMesh = false;
-	m_pMeshMenu->CloseMenu();
-	Layout();
 }
 
 CToyEditor* CToyEditor::s_pToyEditor = nullptr;
@@ -547,6 +752,11 @@ void CToyEditor::Layout()
 
 	SetupMenu();
 
+	ReloadModels();
+}
+
+void CToyEditor::ReloadModels()
+{
 	bool bGenPreviewDistance = false;
 
 	if (!CModelLibrary::GetModel(m_iMeshPreview))
@@ -580,6 +790,54 @@ void CToyEditor::Layout()
 			CModelLibrary::ClearUnreferenced();
 			m_iMeshPreview = ~0;
 		}
+	}
+
+	// Mark all scenes as not necessary.
+	for (auto it = m_aFileScenes.begin(); it != m_aFileScenes.end(); it++)
+		it->second.bMark = false;
+
+	for (size_t i = 0; i < GetToy().m_aAreas.size(); i++)
+	{
+		const auto& oArea = GetToy().m_aAreas[i];
+		auto it = m_aFileScenes.find(oArea.m_sFilename);
+
+		if (it == m_aFileScenes.end())
+		{
+			// Couldn't find it. We make one!
+			CSceneAreaModelData oModelData;
+
+			oModelData.pScene = std::shared_ptr<CConversionScene>(new CConversionScene());
+			CModelConverter c(oModelData.pScene.get());
+			if (!c.ReadModel(GetDirectory(GetToy().m_sFilename) + "/" + oArea.m_sFilename))
+				continue;
+
+			for (size_t j = 0; j < oModelData.pScene->GetNumMeshes(); j++)
+				oModelData.aiModels.push_back(CModelLibrary::AddModel(oModelData.pScene.get(), j));
+
+			oModelData.bMark = true;
+
+			m_aFileScenes[oArea.m_sFilename] = oModelData;
+		}
+		else
+		{
+			it->second.bMark = true;
+		}
+	}
+
+	auto it = m_aFileScenes.begin();
+
+	// Any scene still marked as not necessary gets del taco'd.
+	while (it != m_aFileScenes.end())
+	{
+		if (!it->second.bMark)
+		{
+			for (size_t i = 0; i < it->second.aiModels.size(); i++)
+				CModelLibrary::ReleaseModel(it->second.aiModels[i]);
+
+			m_aFileScenes.erase(it++);
+		}
+		else
+			++it;
 	}
 
 	if (m_iMeshPreview != ~0 && bGenPreviewDistance)
@@ -700,6 +958,129 @@ void CToyEditor::RenderScene()
 		c.RenderModel(m_iPhysPreview);
 	}
 
+	for (size_t i = 0; i < GetToy().m_aAreas.size(); i++)
+	{
+		const auto& oSceneArea = GetToy().m_aAreas[i];
+
+		const tstring& sFilename = oSceneArea.m_sFilename;
+		const auto& it = m_aFileScenes.find(sFilename);
+
+		if (it == m_aFileScenes.end())
+			continue;
+
+		const auto& oAreaData = it->second;
+
+		CConversionSceneNode* pMeshNode = oAreaData.pScene->FindSceneNode(oSceneArea.m_sMesh);
+
+		if (pMeshNode)
+		{
+			class CDrawStack
+			{
+			public:
+				CConversionSceneNode* pMeshNode;
+				Matrix4x4             mTransform;
+			};
+
+			tvector<CDrawStack> aDrawStack;
+			aDrawStack.push_back();
+			aDrawStack.back().mTransform = Matrix4x4(Vector(1, 0, 0), Vector(0, 0, 1), Vector(0, -1, 0));  // Make Z up.
+			aDrawStack.back().pMeshNode = pMeshNode;
+
+			CDrawStack oCurrent;
+			while (aDrawStack.size())
+			{
+				oCurrent = aDrawStack.back();
+				aDrawStack.pop_back();
+
+				Matrix4x4 mTransformations = oCurrent.mTransform;
+
+				if (!GetToy().m_bUseLocalTransforms)
+					mTransformations = oCurrent.mTransform * oCurrent.pMeshNode->m_mTransformations;
+
+				for (size_t j = 0; j < oCurrent.pMeshNode->GetNumChildren(); j++)
+				{
+					aDrawStack.push_back();
+					aDrawStack.back().mTransform = mTransformations;
+					aDrawStack.back().pMeshNode = oCurrent.pMeshNode->GetChild(j);
+				}
+
+				for (size_t m = 0; m < oCurrent.pMeshNode->GetNumMeshInstances(); m++)
+				{
+					const auto pMeshInstance = oCurrent.pMeshNode->GetMeshInstance(m);
+					size_t iModel = oAreaData.aiModels[pMeshInstance->m_iMesh];
+					CModel* pModel = CModelLibrary::GetModel(iModel);
+
+					if (!pModel)
+						continue;
+
+					CGameRenderingContext c(GameServer()->GetRenderer(), true);
+
+					c.UseProgram("model");
+
+					if (!c.GetActiveFrameBuffer())
+						c.UseFrameBuffer(GameServer()->GetRenderer()->GetSceneBuffer());
+
+					c.LoadTransform(mTransformations);
+
+					c.SetColor(Color(255, 255, 255));
+
+					c.SetUniform("vecColor", Vector4D(0.8f, 0.8f, 0.8f, 1));
+					c.SetUniform("bDiffuse", false);
+
+					for (size_t k = 0; k < pModel->m_aiVertexBuffers.size(); k++)
+						c.RenderModel(pModel, k);
+				}
+			}
+		}
+
+		if (pMeshNode && CModelLibrary::GetModel(m_iMeshPreview))
+		{
+			CGameRenderingContext c(GameServer()->GetRenderer(), true);
+
+			if (!c.GetActiveFrameBuffer())
+				c.UseFrameBuffer(GameServer()->GetRenderer()->GetSceneBuffer());
+
+			c.SetColor(Color(255, 255, 255));
+
+			c.RenderModel(m_iMeshPreview);
+		}
+
+		if (m_hMaterialPreview.IsValid())
+		{
+			CGameRenderingContext c(GameServer()->GetRenderer(), true);
+
+			if (!c.GetActiveFrameBuffer())
+				c.UseFrameBuffer(GameServer()->GetRenderer()->GetSceneBuffer());
+
+			c.SetColor(Color(255, 255, 255));
+
+			c.RenderMaterialModel(m_hMaterialPreview);
+		}
+
+		GameServer()->GetRenderer()->SetRenderingTransparent(true);
+
+		if (m_iPhysPreview != ~0 && CModelLibrary::GetModel(m_iPhysPreview))
+		{
+			CGameRenderingContext c(GameServer()->GetRenderer(), true);
+
+			if (!c.GetActiveFrameBuffer())
+				c.UseFrameBuffer(GameServer()->GetRenderer()->GetSceneBuffer());
+
+			c.ClearDepth();
+
+			float flAlpha = 0.3f;
+			if (m_iMeshPreview == ~0 && m_hMaterialPreview.IsValid() == 0)
+				flAlpha = 1.0f;
+
+			c.SetColor(Color(0, 100, 155, (int)(255*flAlpha)));
+			c.SetAlpha(flAlpha);
+			if (flAlpha < 1)
+				c.SetBlend(BLEND_ALPHA);
+
+			c.RenderModel(m_iPhysPreview);
+		}
+	}
+
 	for (size_t i = 0; i < GetToy().m_aShapes.size(); i++)
 	{
 		CGameRenderingContext c(GameServer()->GetRenderer(), true);
@@ -713,19 +1094,19 @@ void CToyEditor::RenderScene()
 		c.SetUniform("bDiffuse", false);
 
 		float flAlpha = 0.2f;
-		if (m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId() == i)
+		if (m_pSourcePanel->m_hPhysicsShapes->GetSelectedNodeId() == i)
 			flAlpha = 0.8f;
 		if (m_iMeshPreview == ~0 && m_hMaterialPreview.IsValid() == 0)
 			flAlpha = 1.0f;
 		if (flAlpha < 1)
 			c.SetBlend(BLEND_ALPHA);
 
-		if (m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId() == i)
+		if (m_pSourcePanel->m_hPhysicsShapes->GetSelectedNodeId() == i)
 			c.SetUniform("vecColor", Color(255, 50, 100, (char)(255*flAlpha)));
 		else
 			c.SetUniform("vecColor", Color(0, 100, 200, (char)(255*flAlpha)));
 
-		if (m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId() == i)
+		if (m_pSourcePanel->m_hPhysicsShapes->GetSelectedNodeId() == i)
 			c.Transform(Manipulator()->GetTransform());
 		else
 			c.Transform(GetToy().m_aShapes[i].m_trsTransform.GetMatrix4x4());
@@ -885,7 +1266,7 @@ Vector CToyEditor::GetCameraDirection()
 void CToyEditor::ManipulatorUpdated(const tstring& sArguments)
 {
 	// Grab this before GetToyToModify since that does a layout and clobbers the list.
-	size_t iSelected = m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId();
+	size_t iSelected = m_pSourcePanel->m_hPhysicsShapes->GetSelectedNodeId();
 
 	tvector<tstring> asTokens;
 	strtok(sArguments, asTokens);
@@ -901,7 +1282,7 @@ void CToyEditor::ManipulatorUpdated(const tstring& sArguments)
 
 void CToyEditor::DuplicateMove(const tstring& sArguments)
 {
-	size_t iSelected = m_pSourcePanel->m_pPhysicsShapes->GetSelectedNodeId();
+	size_t iSelected = m_pSourcePanel->m_hPhysicsShapes->GetSelectedNodeId();
 
 	if (iSelected <= ToyEditor()->GetToy().m_aShapes.size())
 		return;
@@ -910,7 +1291,27 @@ void CToyEditor::DuplicateMove(const tstring& sArguments)
 
 	Layout();
 
-	m_pSourcePanel->m_pPhysicsShapes->SetSelectedNode(ToyEditor()->GetToy().m_aShapes.size()-1);
+	m_pSourcePanel->m_hPhysicsShapes->SetSelectedNode(ToyEditor()->GetToy().m_aShapes.size()-1);
+}
+
+CToySource::CToySource()
+{
+	Clear();
+}
+
+void CToySource::Clear()
+{
+	m_sFilename = "";
+	m_sToyFile = "";
+	m_sMesh = "";
+	m_sPhys = "";
+
+	m_aShapes.clear();
+
+	m_bUseLocalTransforms = true; // Local by default.
+	m_flNeighborDistance = 1;
+
+	m_aAreas.clear();
 }
 
 void CToySource::Save() const
@@ -976,6 +1377,41 @@ void CToySource::Save() const
 		f.write(sShapes.data(), sShapes.length());
 	}
 
+	if (m_aAreas.size())
+	{
+		tstring sSceneAreas = "SceneAreas:\n{\n";
+		f.write(sSceneAreas.data(), sSceneAreas.length());
+
+		tstring sNeighborDistance = tstring("\tNeighborDistance: ") + pretty_float(m_flNeighborDistance) + "\n";
+		f.write(sNeighborDistance.data(), sNeighborDistance.length());
+
+		tstring sTransforms = "\tUseGlobalTransforms\n";
+		if (m_bUseLocalTransforms)
+			sTransforms = "\tUseLocalTransforms\n";
+		f.write(sTransforms.data(), sTransforms.length());
+
+		for (size_t i = 0; i < m_aAreas.size(); i++)
+		{
+			tstring sArea = tstring("\n\tArea: ") + m_aAreas[i].m_sName + "\n\t{\n";
+			f.write(sArea.data(), sArea.length());
+
+			tstring sFile = tstring("\t\tFile: ") + m_aAreas[i].m_sFilename + "\n";
+			f.write(sFile.data(), sFile.length());
+
+			tstring sMesh = tstring("\t\tMesh: ") + m_aAreas[i].m_sMesh + "\n";
+			f.write(sMesh.data(), sMesh.length());
+
+			tstring sPhysics = tstring("\t\tPhysics: ") + m_aAreas[i].m_sPhys + "\n";
+			f.write(sPhysics.data(), sPhysics.length());
+
+			tstring sCurly = "\t}\n";
+			f.write(sCurly.data(), sCurly.length());
+		}
+
+		tstring sCurly = "}\n";
+		f.write(sCurly.data(), sCurly.length());
+	}
+
 	ToyEditor()->MarkSaved();
 }
 
@@ -1003,6 +1439,8 @@ void CToySource::Build() const
 
 void CToySource::Open(const tstring& sFile)
 {
+	Clear();
+
 	std::basic_ifstream<tchar> f((sFile).c_str());
 	if (!f.is_open())
 	{
@@ -1020,8 +1458,6 @@ void CToySource::Open(const tstring& sFile)
 	CData* pMesh = pData->FindChild("Mesh");
 	CData* pPhysics = pData->FindChild("Physics");
 	CData* pPhysicsShapes = pData->FindChild("PhysicsShapes");
-
-	TAssert(!pSceneAreas);	// This is unimplemented.
 
 	if (pOutput)
 		m_sToyFile = pOutput->GetValueString();
@@ -1057,6 +1493,59 @@ void CToySource::Open(const tstring& sFile)
 			CPhysicsShape& oShape = m_aShapes.push_back();
 
 			oShape.m_trsTransform = pChild->GetValueTRS();
+		}
+	}
+
+	if (pSceneAreas)
+	{
+		for (size_t i = 0; i < pSceneAreas->GetNumChildren(); i++)
+		{
+			CData* pChild = pSceneAreas->GetChild(i);
+
+			if (pChild->GetKey() == "NeighborDistance")
+			{
+				m_flNeighborDistance = pChild->GetValueFloat();
+				continue;
+			}
+
+			if (pChild->GetKey() == "UseGlobalTransforms")
+			{
+				m_bUseLocalTransforms = false;
+				continue;
+			}
+
+			if (pChild->GetKey() == "UseLocalTransforms")
+			{
+				m_bUseLocalTransforms = true;
+				continue;
+			}
+
+			TAssert(pChild->GetKey() == "Area");
+			if (pChild->GetKey() != "Area")
+				continue;
+
+			auto& oArea = m_aAreas.push_back();
+
+			oArea.m_sName = pChild->GetValueString();
+
+			CData* pFile = pChild->FindChild("File");
+			CData* pMesh = pChild->FindChild("Mesh");
+			CData* pPhysics = pChild->FindChild("Physics");
+
+			if (pFile)
+				oArea.m_sFilename = pFile->GetValueString();
+			else
+				oArea.m_sFilename = "";
+
+			if (pMesh)
+				oArea.m_sMesh = pMesh->GetValueString();
+			else
+				oArea.m_sMesh = "";
+
+			if (pPhysics)
+				oArea.m_sPhys = pPhysics->GetValueString();
+			else
+				oArea.m_sPhys = "";
 		}
 	}
 

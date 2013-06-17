@@ -54,6 +54,7 @@ namespace glgui
 		virtual IDroppable*			GetCurrentDroppable() { return m_pDragging; };
 
 		bool						SetFocus(CControlHandle hControl);
+		CControlHandle              GetFocus() const { return m_hFocus; }
 
 		void						SetButtonDown(CControl<CButton> pButton);
 		CControl<CButton>			GetButtonDown() const;
