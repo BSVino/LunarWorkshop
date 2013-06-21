@@ -140,10 +140,22 @@ void CCharacter::StopMove(movetype_t eMoveType)
 
 const TVector CCharacter::GetGoalVelocity()
 {
-	if (m_vecGoalVelocity.LengthSqr())
-		m_vecGoalVelocity.Normalize();
+	TVector vecGoalVelocity = m_vecGoalVelocity;
 
-	return m_vecGoalVelocity;
+	if (vecGoalVelocity.LengthSqr() > 1)
+		vecGoalVelocity.Normalize();
+
+	return vecGoalVelocity;
+}
+
+void CCharacter::SetGoalVelocityForward(float flForward)
+{
+	m_vecGoalVelocity.x = flForward;
+}
+
+void CCharacter::SetGoalVelocityLeft(float flLeft)
+{
+	m_vecGoalVelocity.y = flLeft;
 }
 
 void CCharacter::MoveThink()

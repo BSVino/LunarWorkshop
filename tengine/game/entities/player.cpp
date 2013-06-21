@@ -29,6 +29,8 @@ CPlayer::CPlayer()
 	m_iClient = NETWORK_LOCAL;
 
 	m_flLastLesson = -1;
+
+	m_vecJoystickViewVelocity = Vector2D();
 }
 
 void NoClip(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
@@ -125,39 +127,92 @@ void CPlayer::JoystickButtonPress(int iJoystick, int c)
 		m_hCharacter->Jump();
 }
 
+CVar joy_move_deadmin("joy_move_deadmin", "0.3");
+CVar joy_move_deadmax("joy_move_deadmax", "0.8");
+
+CVar joy_view_deadmin("joy_view_deadmin", "0.2");
+CVar joy_view_deadmax("joy_view_deadmax", "0.9");
+
+CVar joy_view_turbo("joy_view_turbo", "4");
+
 void CPlayer::JoystickAxis(int iJoystick, int iAxis, float flValue, float flChange)
 {
+	//TMsg(sprintf("%d %d %f %f\n", iJoystick, iAxis, flValue, flChange));
+
+	float flDeadMoveMin = joy_move_deadmin.GetFloat();
+	float flDeadMoveMax = joy_move_deadmax.GetFloat();
+
+	float flDeadViewMin = joy_view_deadmin.GetFloat();
+	float flDeadViewMax = joy_view_deadmax.GetFloat();
+
 	if (iAxis == 0)
 	{
-		if (flValue < -0.1f)
-			m_hCharacter->Move(MOVE_LEFT);
-		else if (flValue > 0.1f)
-			m_hCharacter->Move(MOVE_RIGHT);
+		if (flValue > flDeadMoveMin)
+			m_hCharacter->SetGoalVelocityLeft(-RemapValClamped(flValue, flDeadMoveMin, flDeadMoveMax, flDeadMoveMin, 1.0f));
+		else if (flValue < -flDeadMoveMin)
+			m_hCharacter->SetGoalVelocityLeft(-RemapValClamped(flValue, -flDeadMoveMin, -flDeadMoveMax, -flDeadMoveMin, -1.0f));
 		else
-		{
-			m_hCharacter->StopMove(MOVE_LEFT);
-			m_hCharacter->StopMove(MOVE_RIGHT);
-		}
+			m_hCharacter->SetGoalVelocityLeft(0);
 	}
 	else if (iAxis == 1)
 	{
-		if (flValue < -0.1f)
-			m_hCharacter->Move(MOVE_BACKWARD);
-		else if (flValue > 0.1f)
-			m_hCharacter->Move(MOVE_FORWARD);
+		if (flValue > flDeadMoveMin)
+			m_hCharacter->SetGoalVelocityForward(RemapValClamped(flValue, flDeadMoveMin, flDeadMoveMax, flDeadMoveMin, 1.0f));
+		else if (flValue < -flDeadMoveMin)
+			m_hCharacter->SetGoalVelocityForward(RemapValClamped(flValue, -flDeadMoveMin, -flDeadMoveMax, -flDeadMoveMin, -1.0f));
 		else
+			m_hCharacter->SetGoalVelocityForward(0);
+	}
+	else if (iAxis == 3)
+	{
+		if (flValue > flDeadViewMin)
 		{
-			m_hCharacter->StopMove(MOVE_BACKWARD);
-			m_hCharacter->StopMove(MOVE_FORWARD);
+			if (flValue > flDeadViewMax)
+				m_vecJoystickViewVelocity.y = RemapValClamped(flValue, flDeadViewMax, 1.0f, 1.0f, joy_view_turbo.GetFloat());
+			else
+				m_vecJoystickViewVelocity.y = RemapValClamped(flValue, flDeadViewMin, flDeadViewMax, flDeadViewMin, 1.0f);
 		}
+		else if (flValue < -flDeadViewMin)
+		{
+			if (flValue < -flDeadViewMax)
+				m_vecJoystickViewVelocity.y = RemapValClamped(flValue, -flDeadViewMax, -1.0f, -1.0f, -joy_view_turbo.GetFloat());
+			else
+				m_vecJoystickViewVelocity.y = RemapValClamped(flValue, -flDeadViewMin, -flDeadViewMax, -flDeadViewMin, -1.0f);
+		}
+		else
+			m_vecJoystickViewVelocity.y = 0;
+	}
+	else if (iAxis == 4)
+	{
+		if (flValue > flDeadViewMin)
+		{
+			if (flValue > flDeadViewMax)
+				m_vecJoystickViewVelocity.x = RemapValClamped(flValue, flDeadViewMax, 1.0f, 1.0f, joy_view_turbo.GetFloat());
+			else
+				m_vecJoystickViewVelocity.x = RemapValClamped(flValue, flDeadViewMin, flDeadMoveMax, flDeadViewMin, 1.0f);
+		}
+		else if (flValue < -flDeadViewMin)
+		{
+			if (flValue < -flDeadViewMax)
+				m_vecJoystickViewVelocity.x = RemapValClamped(flValue, -flDeadViewMax, -1.0f, -1.0f, -joy_view_turbo.GetFloat());
+			else
+				m_vecJoystickViewVelocity.x = RemapValClamped(flValue, -flDeadViewMin, -flDeadViewMax, -flDeadViewMin, -1.0f);
+		}
+		else
+			m_vecJoystickViewVelocity.x = 0;
 	}
 }
+
+CVar joy_sensitivity("joy_sensitivity", "8");
 
 void CPlayer::Think()
 {
 	BaseClass::Think();
 
 	Instructor_Think();
+
+	if (m_vecJoystickViewVelocity.LengthSqr() > 0)
+		MouseMotion((int)(m_vecJoystickViewVelocity.x*joy_sensitivity.GetFloat()), (int)(m_vecJoystickViewVelocity.y*joy_sensitivity.GetFloat()));
 }
 
 void CPlayer::SetCharacter(CCharacter* pCharacter)

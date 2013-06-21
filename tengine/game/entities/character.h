@@ -29,6 +29,8 @@ public:
 	void							Move(movetype_t);
 	void							StopMove(movetype_t);
 	virtual const TVector			GetGoalVelocity();
+	virtual void                    SetGoalVelocityForward(float flForward);
+	virtual void                    SetGoalVelocityLeft(float flLeft);
 	virtual void					MoveThink();
 	virtual void					MoveThink_NoClip();
 	virtual void					Jump();

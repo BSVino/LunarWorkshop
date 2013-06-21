@@ -87,35 +87,56 @@ inline T RemapVal(T flInput, T flInLo, T flInHi, T flOutLo, T flOutHi)
 	return (((flInput-flInLo) / (flInHi-flInLo)) * (flOutHi-flOutLo)) + flOutLo;
 }
 
+template <class T>
+inline void TSwap(T& l, T& r)
+{
+	T temp = l;
+	l = r;
+	r = temp;
+}
+
 inline float RemapValClamped(float flInput, float flInLo, float flInHi, float flOutLo, float flOutHi)
 {
-	if (flInput < flInLo)
+	float flReturn = RemapVal(flInput, flInLo, flInHi, flOutLo, flOutHi);
+
+	if (flOutHi < flOutLo)
+		TSwap(flOutHi, flOutLo);
+
+	if (flReturn < flOutLo)
 		return flOutLo;
 
-	if (flInput > flInHi)
+	if (flReturn > flOutHi)
 		return flOutHi;
 
-	return RemapVal(flInput, flInLo, flInHi, flOutLo, flOutHi);
+	return flReturn;
 }
 
 inline double RemapValClamped(double flInput, double flInLo, double flInHi, double flOutLo, double flOutHi)
 {
-	if (flInput < flInLo)
+	double flReturn = RemapVal(flInput, flInLo, flInHi, flOutLo, flOutHi);
+
+	if (flOutHi < flOutLo)
+		TSwap(flOutHi, flOutLo);
+
+	if (flReturn < flOutLo)
 		return flOutLo;
 
-	if (flInput > flInHi)
+	if (flReturn > flOutHi)
 		return flOutHi;
 
-	return RemapVal(flInput, flInLo, flInHi, flOutLo, flOutHi);
+	return flReturn;
 }
 
 template <class T>
 inline T RemapValClamped(float flInput, float flInLo, float flInHi, const T& flOutLo, const T& flOutHi)
 {
-	if (flInput < flInLo)
+	float flLower = std::min(flInLo, flInHi);
+	float flHigher = std::max(flInLo, flInHi);
+
+	if (flInput < flLower)
 		return flOutLo;
 
-	if (flInput > flInHi)
+	if (flInput > flHigher)
 		return flOutHi;
 
 	return ((flOutHi-flOutLo) * ((flInput-flInLo) / (flInHi-flInLo))) + flOutLo;

@@ -73,6 +73,8 @@ protected:
 	tmap<tstring, CLessonProgress>  m_apLessonProgress;
 	tvector<CLessonProgress*>       m_apLessonPriorities;
 	double                          m_flLastLesson;
+
+	Vector2D                        m_vecJoystickViewVelocity;
 };
 
 #endif
