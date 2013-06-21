@@ -143,6 +143,12 @@ bool CModelConverter::ReadDAE(const tstring& sFilename)
 								FCDImage* pImage = pSurface->GetImage(0);
 
 								pMaterial->m_sDiffuseTexture = convert_from_fstring(pImage->GetFilename());
+
+								// Fix up a bug in the Max Collada exporter
+								if (pMaterial->m_sDiffuseTexture.startswith("\\\\C\\"))
+									pMaterial->m_sDiffuseTexture = "C:\\" + pMaterial->m_sDiffuseTexture.substr(4);
+								else if (pMaterial->m_sDiffuseTexture.startswith("\\\\D\\"))
+									pMaterial->m_sDiffuseTexture = "D:\\" + pMaterial->m_sDiffuseTexture.substr(4);
 							}
 						}
 					}

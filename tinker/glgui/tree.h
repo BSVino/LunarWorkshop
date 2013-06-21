@@ -71,6 +71,9 @@ namespace glgui
 		virtual float						GetWidth() { return BaseClass::GetWidth(); };
 		virtual float						GetHeight() { return BaseClass::GetHeight(); };
 
+		virtual const tstring               GetText() const { return m_hLabel->GetText(); }
+		virtual void                        SetText(const tstring& sText) { return m_hLabel->SetText(sText); }
+
 		virtual DragClass_t					GetClass() { return DC_UNSPECIFIED; };
 		virtual IDraggable*					MakeCopy() { return new CTreeNode(*this); };
 		virtual bool						IsDraggable() { return m_bDraggable; };
@@ -144,6 +147,7 @@ namespace glgui
 		size_t								AddNode(CBaseControl* pNode, size_t iPosition = ~0);
 		void								RemoveNode(CTreeNode* pNode);
 		CControl<CTreeNode>					GetNode(size_t i);
+		CControl<CTreeNode>                 GetNodeFromAllNodes(size_t i);
 
 		virtual CControl<CTreeNode>			GetSelectedNode() const { if (m_iSelected == ~0) return CControl<CTreeNode>(); return m_ahAllNodes[m_iSelected]; };
 		virtual size_t						GetSelectedNodeId() const { return m_iSelected; };

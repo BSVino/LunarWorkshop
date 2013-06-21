@@ -338,6 +338,11 @@ CControl<CTreeNode> CTree::GetNode(size_t i)
 	return m_ahNodes[i];
 }
 
+CControl<CTreeNode> CTree::GetNodeFromAllNodes(size_t i)
+{
+	return m_ahAllNodes[i];
+}
+
 void CTree::SetSelectedNode(size_t iNode)
 {
 	TAssert(iNode < m_apControls.size() || iNode == ~0);

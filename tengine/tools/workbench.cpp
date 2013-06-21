@@ -65,8 +65,14 @@ bool CWorkbenchCamera::ShouldRenderOrthographic()
 	return Workbench()->GetActiveTool()->ShouldRenderOrthographic();
 }
 
+CWorkbench* CWorkbench::s_pWorkbench = nullptr;
+
 CWorkbench::CWorkbench()
 {
+	s_pWorkbench = this;
+
+	m_hArrow = CMaterialLibrary::AddMaterial("editor/arrow.mat");
+
 	for (auto it = GetToolRegistration().begin(); it != GetToolRegistration().end(); it++)
 		m_apTools.push_back(it->second.m_pfnToolCreator());
 

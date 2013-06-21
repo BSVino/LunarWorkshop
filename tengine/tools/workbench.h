@@ -46,6 +46,8 @@ public:
 
 	EVENT_CALLBACK(CWorkbench, MenuSelected);
 
+	CMaterialHandle&        GetArrowTexture() { return m_hArrow; }
+
 public:
 	static void				Toggle();
 	static bool				IsActive();
@@ -60,6 +62,8 @@ public:
 	static CCameraManager*	GetCameraManager();
 
 	static void				RegisterTool(const char* pszTool, ToolCreator pfnToolCreator);
+
+	static CWorkbench*      Get() { return s_pWorkbench; }
 
 protected:
 	class CToolRegistration
@@ -82,6 +86,11 @@ protected:
 	size_t					m_iActiveTool;
 
 	glgui::CMenu*			m_pFileMenu;
+
+	CMaterialHandle         m_hArrow;
+
+private:
+	static CWorkbench*      s_pWorkbench;
 };
 
 CWorkbench* Workbench(bool bCreate=true);

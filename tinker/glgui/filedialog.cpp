@@ -164,6 +164,9 @@ void CFileDialog::Layout()
 
 void CFileDialog::NewDirectoryCallback(const tstring& sArgs)
 {
+	if (m_hDirectory->GetText() == m_sDirectory)
+		return;
+
 	m_sDirectory = m_hDirectory->GetText();
 	Layout();
 

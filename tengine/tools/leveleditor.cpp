@@ -778,6 +778,9 @@ CLevelEntity::CLevelEntityOutput* CEditorPanel::GetCurrentOutput()
 {
 	CLevelEntity* pEntity = GetCurrentEntity();
 
+	if (!pEntity)
+		return nullptr;
+
 	auto& aEntityOutputs = pEntity->GetOutputs();
 
 	if (m_hOutputs->GetSelectedNodeId() >= aEntityOutputs.size())

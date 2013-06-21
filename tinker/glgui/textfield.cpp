@@ -554,6 +554,8 @@ void CTextField::SetEnabled(bool bEnabled)
 
 void CTextField::SetText(const tstring& sText)
 {
+	bool bContentsChanged = (m_sText != sText);
+
 	m_sText = sText;
 
 	if (m_iCursor > m_sText.length())
@@ -561,6 +563,9 @@ void CTextField::SetText(const tstring& sText)
 
 	if (m_iSelection > m_sText.length())
 		m_iSelection = m_sText.length();
+
+	if (bContentsChanged)
+		UpdateContentsChangedListener();
 }
 
 void CTextField::AppendText(const tchar* pszText)

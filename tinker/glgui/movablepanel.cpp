@@ -200,6 +200,9 @@ void CMovablePanel::Minimize()
 		SetSize(GetWidth(), m_flNonMinimizedHeight);
 	}
 
+	for (size_t i = 0; i < m_apControls.size(); i++)
+		m_apControls[i]->DirtyVisible();
+
 	if (!m_bMinimized)
 		Layout();
 }

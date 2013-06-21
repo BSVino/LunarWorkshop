@@ -32,6 +32,8 @@
 
 #include "workbench.h"
 
+using namespace glgui;
+
 REGISTER_WORKBENCH_TOOL(ToyEditor);
 
 CCreateToySourcePanel::CCreateToySourcePanel()
@@ -185,6 +187,57 @@ void CCreateToySourcePanel::CreateCallback(const tstring& sArgs)
 	ToyEditor()->Layout();
 }
 
+CChooseScenePanel::CChooseScenePanel(CSourcePanel* pSourcePanel)
+	: glgui::CMovablePanel("Choose a Scene")
+{
+	SetBackgroundColor(Color(0, 0, 0, 255));
+	SetHeaderColor(Color(100, 100, 100, 255));
+	SetBorder(glgui::CPanel::BT_SOME);
+
+	m_hSceneTree = AddControl(new glgui::CTree(CWorkbench::Get()->GetArrowTexture()));
+	m_hSceneTree->SetBackgroundColor(Color(0, 0, 0, 100));
+	m_hSceneTree->SetConfirmedListener(pSourcePanel, CSourcePanel::SceneAreaConfirmed);
+}
+
+void CChooseScenePanel::Layout()
+{
+	m_hSceneTree->Layout_AlignTop();
+	m_hSceneTree->Layout_FullWidth();
+	m_hSceneTree->SetHeight(GetHeight()-20);
+
+	m_hSceneTree->ClearTree();
+
+	auto pSceneArea = ToyEditor()->GetSourcePanel()->GetCurrentSceneArea();
+
+	if (!pSceneArea)
+		return;
+
+	auto pConversionScene = ToyEditor()->FindLoadedSceneFromFile(pSceneArea->m_sFilename);
+
+	for (size_t i = 0; i < pConversionScene->GetNumScenes(); i++)
+		AddSceneToTree(nullptr, pConversionScene->GetScene(i));
+
+	BaseClass::Layout();
+}
+
+void CChooseScenePanel::AddSceneToTree(CTreeNode* pParentTreeNode, CConversionSceneNode* pSceneNode)
+{
+	CTreeNode* pNode;
+	if (pParentTreeNode)
+	{
+		size_t iNode = pParentTreeNode->AddNode(pSceneNode->GetName());
+		pNode = pParentTreeNode->GetNode(iNode);
+	}
+	else
+	{
+		size_t iNode = m_hSceneTree->AddNode(pSceneNode->GetName());
+		pNode = m_hSceneTree->GetNode(iNode);
+	}
+
+	for (size_t i = 0; i < pSceneNode->GetNumChildren(); i++)
+		AddSceneToTree(pNode, pSceneNode->GetChild(i));
+}
+
 CSourcePanel::CSourcePanel()
 {
 	SetBackgroundColor(Color(0, 0, 0, 150));
@@ -257,17 +310,26 @@ CSourcePanel::CSourcePanel()
 	m_hAreaMeshText = m_hAreasSlider->AddControl(new glgui::CTextField());
 	m_hAreaMeshText->SetContentsChangedListener(this, SceneAreaModelChanged, "mesh");
 
+	m_hAreaMeshChoose = m_hAreasSlider->AddControl(new glgui::CButton("..."));
+	m_hAreaMeshChoose->SetClickedListener(this, SceneAreaMeshChoose);
+
 	m_hAreaPhysLabel = m_hAreasSlider->AddControl(new glgui::CLabel("Physics: ", "sans-serif", 10));
 	m_hAreaPhysLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
 
 	m_hAreaPhysText = m_hAreasSlider->AddControl(new glgui::CTextField());
 	m_hAreaPhysText->SetContentsChangedListener(this, SceneAreaPhysicsChanged, "phys");
 
+	m_hAreaPhysChoose = m_hAreasSlider->AddControl(new glgui::CButton("..."));
+	m_hAreaPhysChoose->SetClickedListener(this, SceneAreaPhysChoose);
+
 	m_hSave = AddControl(new glgui::CButton("Save"));
 	m_hSave->SetClickedListener(this, Save);
 
 	m_hBuild = AddControl(new glgui::CButton("Build"));
 	m_hBuild->SetClickedListener(this, Build);
+
+	m_hSceneChooser = new CChooseScenePanel(this);
+	m_hSceneChooser->SetVisible(false);
 }
 
 void CSourcePanel::SetVisible(bool bVis)
@@ -340,7 +402,6 @@ void CSourcePanel::Layout()
 	m_hPhysicsShapes->SetHeight(100);
 
 	m_hPhysicsShapes->ClearTree();
-
 	for (size_t i = 0; i < pToySource->m_aShapes.size(); i++)
 		m_hPhysicsShapes->AddNode("Box");
 
@@ -357,7 +418,6 @@ void CSourcePanel::Layout()
 	m_hAreas->SetHeight(100);
 
 	m_hAreas->ClearTree();
-
 	for (size_t i = 0; i < pToySource->m_aAreas.size(); i++)
 		m_hAreas->AddNode(pToySource->m_aAreas[i].m_sName);
 
@@ -395,9 +455,17 @@ void CSourcePanel::Layout()
 	m_hAreaMeshLabel->EnsureTextFits();
 	m_hAreaPhysLabel->Layout_FullWidth();
 
+	m_hAreaMeshChoose->SetTop(m_hAreaMeshLabel->GetTop()+12);
+	m_hAreaMeshChoose->SetWidth(10);
+	m_hAreaMeshChoose->EnsureTextFits();
+	m_hAreaMeshChoose->SetHeight(m_hAreaMeshText->GetHeight());
+	m_hAreaMeshChoose->Layout_AlignRight();
+	m_hAreaMeshChoose->SetEnabled(!!GetCurrentSceneArea());
+
 	m_hAreaMeshText->Layout_FullWidth();
 	m_hAreaMeshText->SetTop(m_hAreaMeshLabel->GetTop()+12);
 	m_hAreaMeshText->SetEnabled(!!GetCurrentSceneArea());
+	m_hAreaMeshText->SetRight(m_hAreaMeshChoose->GetLeft() - flControlMargin);
 
 	m_hAreaPhysLabel->Layout_AlignTop(m_hAreaMeshText, flControlMargin);
 	m_hAreaPhysLabel->SetWidth(10);
@@ -405,9 +473,17 @@ void CSourcePanel::Layout()
 	m_hAreaPhysLabel->EnsureTextFits();
 	m_hAreaPhysLabel->Layout_FullWidth();
 
+	m_hAreaPhysChoose->SetTop(m_hAreaPhysLabel->GetTop()+12);
+	m_hAreaPhysChoose->SetWidth(10);
+	m_hAreaPhysChoose->EnsureTextFits();
+	m_hAreaPhysChoose->SetHeight(m_hAreaPhysText->GetHeight());
+	m_hAreaPhysChoose->Layout_AlignRight();
+	m_hAreaPhysChoose->SetEnabled(!!GetCurrentSceneArea());
+
 	m_hAreaPhysText->Layout_FullWidth();
 	m_hAreaPhysText->SetTop(m_hAreaPhysLabel->GetTop()+12);
 	m_hAreaPhysText->SetEnabled(!!GetCurrentSceneArea());
+	m_hAreaPhysText->SetRight(m_hAreaPhysChoose->GetLeft() - flControlMargin);
 
 	m_hSave->Layout_Column(2, 0);
 	m_hSave->Layout_AlignBottom();
@@ -472,6 +548,8 @@ void CSourcePanel::UpdateFields()
 	m_hAreaSourceFileText->SetEnabled(!!pSceneArea);
 	m_hAreaMeshText->SetEnabled(!!pSceneArea);
 	m_hAreaPhysText->SetEnabled(!!pSceneArea);
+	m_hAreaMeshChoose->SetEnabled(!!pSceneArea);
+	m_hAreaPhysChoose->SetEnabled(!!pSceneArea);
 
 	if (pSceneArea)
 	{
@@ -487,6 +565,18 @@ void CSourcePanel::UpdateFields()
 		m_hAreaMeshText->SetText("");
 		m_hAreaPhysText->SetText("");
 	}
+}
+
+void CSourcePanel::SetupChooser(CControl<CTextField> hControl)
+{
+	m_hChoosingTextField = hControl;
+	m_hSceneChooser->SetVisible(true);
+
+	FRect rChooseButton = m_hChoosingTextField->GetAbsDimensions();
+	m_hSceneChooser->SetPos(rChooseButton.x + rChooseButton.w + 10, rChooseButton.y);
+
+	if (m_hSceneChooser->GetBottom() > glgui::RootPanel()->GetHeight())
+		m_hSceneChooser->SetTop(glgui::RootPanel()->GetHeight() - m_hSceneChooser->GetHeight());
 }
 
 void CSourcePanel::SetModelSourcesAutoComplete(glgui::CTextField* pField)
@@ -604,6 +694,16 @@ void CSourcePanel::SceneAreaSelectedCallback(const tstring& sArgs)
 	UpdateFields();
 }
 
+void CSourcePanel::SceneAreaMeshChooseCallback(const tstring& sArgs)
+{
+	SetupChooser(m_hAreaMeshText);
+}
+
+void CSourcePanel::SceneAreaPhysChooseCallback(const tstring& sArgs)
+{
+	SetupChooser(m_hAreaPhysText);
+}
+
 void CSourcePanel::NewSceneAreaCallback(const tstring& sArgs)
 {
 	auto& oSceneArea = ToyEditor()->GetToyToModify().m_aAreas.push_back();
@@ -646,18 +746,24 @@ void CSourcePanel::SceneAreaNameChangedCallback(const tstring& sArgs)
 {
 	CToySource::CSceneArea* pSceneArea = GetCurrentSceneArea();
 
-	TAssert(pSceneArea);
+	if (m_hAreaNameText->GetText().length())
+		TAssert(pSceneArea);
+
 	if (!pSceneArea)
 		return;
 
 	pSceneArea->m_sName = m_hAreaNameText->GetText();
+
+	m_hAreas->GetNodeFromAllNodes(m_hAreas->GetSelectedNodeId())->SetText(pSceneArea->m_sName);
 }
 
 void CSourcePanel::SceneAreaMeshSourceChangedCallback(const tstring& sArgs)
 {
 	CToySource::CSceneArea* pSceneArea = GetCurrentSceneArea();
 
-	TAssert(pSceneArea);
+	if (m_hAreaSourceFileText->GetText().length())
+		TAssert(pSceneArea);
+
 	if (!pSceneArea)
 		return;
 
@@ -672,22 +778,26 @@ void CSourcePanel::SceneAreaModelChangedCallback(const tstring& sArgs)
 {
 	CToySource::CSceneArea* pSceneArea = GetCurrentSceneArea();
 
-	TAssert(pSceneArea);
+	if (m_hAreaMeshText->GetText().length())
+		TAssert(pSceneArea);
+
 	if (!pSceneArea)
 		return;
 
-	pSceneArea->m_sMesh = m_hMeshText->GetText();
+	pSceneArea->m_sMesh = m_hAreaMeshText->GetText();
 }
 
 void CSourcePanel::SceneAreaPhysicsChangedCallback(const tstring& sArgs)
 {
 	CToySource::CSceneArea* pSceneArea = GetCurrentSceneArea();
 
-	TAssert(pSceneArea);
+	if (m_hAreaPhysText->GetText().length())
+		TAssert(pSceneArea);
+
 	if (!pSceneArea)
 		return;
 
-	pSceneArea->m_sPhys = m_hPhysText->GetText();
+	pSceneArea->m_sPhys = m_hAreaPhysText->GetText();
 }
 
 void CSourcePanel::SaveCallback(const tstring& sArgs)
@@ -698,6 +808,15 @@ void CSourcePanel::SaveCallback(const tstring& sArgs)
 void CSourcePanel::BuildCallback(const tstring& sArgs)
 {
 	ToyEditor()->GetToy().Build();
+}
+
+void CSourcePanel::SceneAreaConfirmedCallback(const tstring& sArgs)
+{
+	auto pTreeNode = m_hSceneChooser->m_hSceneTree->GetNodeFromAllNodes(stoi(sArgs));
+	if (pTreeNode)
+		m_hChoosingTextField->SetText(pTreeNode->GetText());
+
+	m_hSceneChooser->SetVisible(false);
 }
 
 CToyEditor* CToyEditor::s_pToyEditor = nullptr;
@@ -1062,6 +1181,9 @@ void CToyEditor::RenderScene()
 	{
 		const auto& oSceneArea = GetToy().m_aAreas[i];
 
+		if (!oSceneArea.m_sMesh.length())
+			continue;
+
 		const tstring& sFilename = oSceneArea.m_sFilename;
 		const auto& it = m_aFileScenes.find(sFilename);
 
@@ -1423,6 +1545,15 @@ void CToyEditor::DuplicateMove(const tstring& sArguments)
 	Layout();
 
 	m_pSourcePanel->m_hPhysicsShapes->SetSelectedNode(ToyEditor()->GetToy().m_aShapes.size()-1);
+}
+
+CConversionScene* CToyEditor::FindLoadedSceneFromFile(const tstring& sFile)
+{
+	auto it = m_aFileScenes.find(sFile);
+	if (it == m_aFileScenes.end())
+		return nullptr;
+
+	return it->second.pScene.get();
 }
 
 CToySource::CToySource()

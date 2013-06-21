@@ -255,6 +255,14 @@ void CBaseControl::Layout_AlignBottom(CBaseControl* pOther, float flMargin)
 	}
 }
 
+void CBaseControl::Layout_AlignRight(float flMargin)
+{
+	float flParentMargin = Layout_GetMargin(flMargin);
+
+	if (GetParent())
+		SetLeft(GetParent()->GetWidth() - GetWidth() - flParentMargin);
+}
+
 void CBaseControl::Layout_Column(int iTotalColumns, int iColumn, float flMargin)
 {
 	float flParentMargin = Layout_GetMargin(flMargin);

@@ -80,6 +80,22 @@ public:
 	tvector<CSceneArea>     m_aAreas;
 };
 
+class CChooseScenePanel : public glgui::CMovablePanel
+{
+	DECLARE_CLASS(CChooseScenePanel, glgui::CMovablePanel);
+
+public:
+	CChooseScenePanel(class CSourcePanel* pSourcePanel);
+
+public:
+	void Layout();
+
+	void AddSceneToTree(glgui::CTreeNode* pParentTreeNode, class CConversionSceneNode* pSceneNode);
+
+public:
+	glgui::CControl<glgui::CTree>   m_hSceneTree;
+};
+
 class CSourcePanel : public glgui::CPanel, public glgui::IEventListener
 {
 	DECLARE_CLASS(CSourcePanel, glgui::CPanel);
@@ -93,6 +109,8 @@ public:
 	void					Layout();
 	void					LayoutFilename();
 	void					UpdateFields();
+
+	void                    SetupChooser(glgui::CControl<glgui::CTextField> hControl);
 
 	void					SetModelSourcesAutoComplete(glgui::CTextField* pField);
 
@@ -111,10 +129,13 @@ public:
 	EVENT_CALLBACK(CSourcePanel, SceneAreaModelChanged);
 	EVENT_CALLBACK(CSourcePanel, SceneAreaPhysicsChanged);
 	EVENT_CALLBACK(CSourcePanel, SceneAreaSelected);
+	EVENT_CALLBACK(CSourcePanel, SceneAreaMeshChoose);
+	EVENT_CALLBACK(CSourcePanel, SceneAreaPhysChoose);
 	EVENT_CALLBACK(CSourcePanel, NewSceneArea);
 	EVENT_CALLBACK(CSourcePanel, DeleteSceneArea);
 	EVENT_CALLBACK(CSourcePanel, Save);
 	EVENT_CALLBACK(CSourcePanel, Build);
+	EVENT_CALLBACK(CSourcePanel, SceneAreaConfirmed);
 
 public:
 	glgui::CControl<glgui::CLabel>     m_hFilename;
@@ -149,12 +170,17 @@ public:
 
 	glgui::CControl<glgui::CLabel>     m_hAreaMeshLabel;
 	glgui::CControl<glgui::CTextField> m_hAreaMeshText;
+	glgui::CControl<glgui::CButton>    m_hAreaMeshChoose;
 
 	glgui::CControl<glgui::CLabel>     m_hAreaPhysLabel;
 	glgui::CControl<glgui::CTextField> m_hAreaPhysText;
+	glgui::CControl<glgui::CButton>    m_hAreaPhysChoose;
 
 	glgui::CControl<glgui::CButton> m_hSave;
 	glgui::CControl<glgui::CButton> m_hBuild;
+
+	glgui::CControl<CChooseScenePanel> m_hSceneChooser;
+	glgui::CControl<glgui::CTextField> m_hChoosingTextField;
 };
 
 class CToyEditor : public CWorkbenchTool, public IManipulatorListener
@@ -198,6 +224,11 @@ public:
 
 	virtual void			ManipulatorUpdated(const tstring& sArguments);
 	virtual void            DuplicateMove(const tstring& sArguments);
+
+	virtual CSourcePanel*   GetSourcePanel() const { return m_pSourcePanel; }
+
+	// Don't store the result.
+	class CConversionScene* FindLoadedSceneFromFile(const tstring& sFile);
 
 	virtual tstring			GetToolName() { return "Toy Editor"; }
 

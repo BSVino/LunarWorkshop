@@ -47,7 +47,6 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 			continue;
 
 		tstring sMesh = pArea->FindChildValueString("Mesh");
-		TAssert(sMesh.length());
 		if (!sMesh.length())
 			continue;
 
