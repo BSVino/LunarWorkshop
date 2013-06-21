@@ -245,15 +245,6 @@ bool CModel::Load(class CConversionScene* pScene, size_t iMesh)
 
 		m_aiVertexBuffers.push_back(CRenderer::LoadVertexDataIntoGL(g_aaflData[i].size()*4, &g_aaflData[i][0]));
 		m_aiVertexBufferSizes.push_back(g_aaflData[i].size()/FIXED_FLOATS_PER_VERTEX);
-
-		/*CData oMaterialData;
-		CData* pShader = oMaterialData.AddChild("Shader", "model");
-		pShader->AddChild("Diffuse", g_asTextures[i]);
-		m_ahMaterials[i] = CMaterialLibrary::AddMaterial(&oMaterialData);
-
-		//TAssert(m_aiMaterials[i]);
-		if (!m_ahMaterials[i].IsValid())
-			TError(tstring("Couldn't create fake material for texture \"") + g_asTextures[i] + "\"\n");*/
 	}
 
 	m_aabbVisBoundingBox = g_aabbVisBounds;

@@ -51,6 +51,9 @@ public:
 	void			Save() const;
 	void			Reload();
 
+	void            SetShader(class CShader* pShader);
+	bool            SetShader(const tstring& sShader);
+
 	size_t			FindParameter(const tstring& sParameterName, bool bCreate = false);
 	void			SetParameter(const tstring& sParameterName, const CTextureHandle& hTexture);
 	void			SetParameter(const tstring& sParameterName, const tstring& sValue);
@@ -119,6 +122,7 @@ public:
 	static CMaterialHandle	AddMaterial(const class CData* pData, const tstring& sMaterial="");
 	static CMaterial*		AddAsset(const tstring& sMaterial, int iClamp = 0);
 	static CMaterial*		CreateMaterial(const class CData* pData, const tstring& sMaterial="");
+	static CMaterialHandle  CreateBlankMaterial(const tstring& sName);
 	static CMaterialHandle	FindAsset(const tstring& sMaterial);
 
 	static size_t			GetNumMaterialsLoaded() { return Get()->m_aMaterials.size(); };

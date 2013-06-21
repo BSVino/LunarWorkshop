@@ -103,9 +103,7 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 	oMat.m_sFile = sMaterial;
 	oMat.m_sTextureDirectory = pShaderData->FindChildValueString("_TextureDirectory");
 
-	oMat.m_sShader = pShaderData->GetValueString();
-	oMat.m_pShader = pShader;
-	oMat.m_ahTextures.resize(pShader->m_asTextures.size());
+	oMat.SetShader(pShader);
 
 	for (size_t i = 0; i < pShaderData->GetNumChildren(); i++)
 	{
@@ -150,6 +148,16 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 	}
 
 	return &oMat;
+}
+
+CMaterialHandle CMaterialLibrary::CreateBlankMaterial(const tstring& sName)
+{
+	CMaterial& oMat = Get()->m_aMaterials[sName];
+	oMat.Clear();
+
+	oMat.m_sFile = sName;
+
+	return CMaterialHandle(sName, &oMat);
 }
 
 CMaterialHandle CMaterialLibrary::FindAsset(const tstring& sMaterial)
@@ -231,6 +239,29 @@ void CMaterial::Reload()
 	CDataSerializer::Read(f, pData.get());
 
 	CMaterialLibrary::CreateMaterial(pData.get(), m_sFile);
+}
+
+void CMaterial::SetShader(class CShader* pShader)
+{
+	TAssert(pShader);
+	if (!pShader)
+		return;
+
+	m_sShader = pShader->m_sName;
+	m_pShader = pShader;
+	m_ahTextures.resize(pShader->m_asTextures.size());
+}
+
+bool CMaterial::SetShader(const tstring& sShader)
+{
+	CShader* pShader = CShaderLibrary::GetShader(sShader);
+
+	if (!pShader)
+		return false;
+
+	SetShader(pShader);
+
+	return true;
 }
 
 size_t CMaterial::FindParameter(const tstring& sParameterName, bool bCreate)

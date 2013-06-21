@@ -416,6 +416,11 @@ void CSourcePanel::Layout()
 
 	m_hSlider->SetBottom(m_hSave->GetTop() - flTempMargin);
 
+	if (pToySource->m_aShapes.size() == 0 && pToySource->m_aAreas.size() > 0)
+		m_hSlider->SetCurrent(1);
+	else if (pToySource->m_aShapes.size() > 0 && pToySource->m_aAreas.size() == 0)
+		m_hSlider->SetCurrent(0);
+
 	BaseClass::Layout();
 
 	Manipulator()->Deactivate();
@@ -792,9 +797,12 @@ void CToyEditor::ReloadModels()
 		}
 	}
 
-	// Mark all scenes as not necessary.
-	for (auto it = m_aFileScenes.begin(); it != m_aFileScenes.end(); it++)
-		it->second.bMark = false;
+	// Enclose this next code section in a scope so that the it variable here doesn't affect later code.
+	{
+		// Mark all scenes as not necessary.
+		for (auto it = m_aFileScenes.begin(); it != m_aFileScenes.end(); it++)
+			it->second.bMark = false;
+	}
 
 	for (size_t i = 0; i < GetToy().m_aAreas.size(); i++)
 	{
@@ -814,9 +822,27 @@ void CToyEditor::ReloadModels()
 			for (size_t j = 0; j < oModelData.pScene->GetNumMeshes(); j++)
 				oModelData.aiModels.push_back(CModelLibrary::AddModel(oModelData.pScene.get(), j));
 
+			for (size_t j = 0; j < oModelData.pScene->GetNumMaterials(); j++)
+			{
+				auto pMaterial = oModelData.pScene->GetMaterial(j);
+
+				CTextureHandle hDiffuse = CTextureLibrary::AddTexture(pMaterial->GetDiffuseTexture());
+
+				CMaterialHandle hMaterial = CMaterialLibrary::CreateBlankMaterial(oArea.m_sFilename + " : " + pMaterial->GetName());
+
+				hMaterial->SetShader("model");
+
+				hMaterial->SetParameter("Diffuse", hDiffuse);
+				hMaterial->SetParameter("Color", pMaterial->m_vecDiffuse);
+
+				// Hold a handle to the materials so they don't get removed next time the list is cleared.
+				oModelData.ahMaterials.push_back(hMaterial);
+			}
+
 			oModelData.bMark = true;
 
 			m_aFileScenes[oArea.m_sFilename] = oModelData;
+			bGenPreviewDistance = true;
 		}
 		else
 		{
@@ -840,8 +866,23 @@ void CToyEditor::ReloadModels()
 			++it;
 	}
 
-	if (m_iMeshPreview != ~0 && bGenPreviewDistance)
-		m_flPreviewDistance = CModelLibrary::GetModel(m_iMeshPreview)->m_aabbVisBoundingBox.Size().Length()*2;
+	if (bGenPreviewDistance)
+	{
+		m_flPreviewDistance = 0;
+
+		if (m_iMeshPreview != ~0)
+			m_flPreviewDistance = std::max(CModelLibrary::GetModel(m_iMeshPreview)->m_aabbVisBoundingBox.Size().Length()*2, m_flPreviewDistance);
+
+		for (auto it = m_aFileScenes.begin(); it != m_aFileScenes.end(); it++)
+		{
+			for (size_t i = 0; i < it->second.aiModels.size(); i++)
+			{
+				CModel* pModel = CModelLibrary::GetModel(it->second.aiModels[i]);
+				if (pModel)
+					m_flPreviewDistance = std::max(pModel->m_aabbVisBoundingBox.Size().Length()*2, m_flPreviewDistance);
+			}
+		}
+	}
 
 	m_hMaterialPreview.Reset();
 	tstring sMaterial = GetToy().m_sMesh;
@@ -906,6 +947,65 @@ void CToyEditor::SetupMenu()
 
 void CToyEditor::RenderScene()
 {
+	{
+		CRenderingContext c(GameServer()->GetRenderer(), true);
+
+		if (!GameServer()->GetRenderer()->IsDrawingBackground())
+			GameServer()->GetRenderer()->DrawBackground(&c);
+
+		c.UseProgram("model");
+
+		c.SetUniform("bDiffuse", false);
+		c.SetBlend(BLEND_ALPHA);
+
+		c.SetUniform("vecColor", Vector4D(0.7f, 0.2f, 0.2f, 0.7f));
+		c.BeginRenderLines();
+			c.Vertex(Vector(-10000, 0, 0));
+			c.Vertex(Vector(10000, 0, 0));
+		c.EndRender();
+
+		c.SetUniform("vecColor", Vector4D(0.2f, 0.7f, 0.2f, 0.7f));
+		c.BeginRenderLines();
+			c.Vertex(Vector(0, -10000, 0));
+			c.Vertex(Vector(0, 10000, 0));
+		c.EndRender();
+
+		c.SetUniform("vecColor", Vector4D(0.2f, 0.2f, 0.7f, 0.7f));
+		c.BeginRenderLines();
+			c.Vertex(Vector(0, 0, -10000));
+			c.Vertex(Vector(0, 0, 10000));
+		c.EndRender();
+
+		c.SetUniform("vecColor", Vector4D(1.0f, 1.0f, 1.0f, 0.2f));
+
+		int i;
+
+		Vector vecStartX(-10, -10, 0);
+		Vector vecEndX(-10, 10, 0);
+		Vector vecStartZ(-10, -10, 0);
+		Vector vecEndZ(10, -10, 0);
+
+		c.BeginRenderLines();
+		for (i = 0; i <= 20; i++)
+		{
+			if (i != 10)
+			{
+				c.Vertex(vecStartX);
+				c.Vertex(vecEndX);
+				c.Vertex(vecStartZ);
+				c.Vertex(vecEndZ);
+			}
+
+			vecStartX.x += 1;
+			vecEndX.x += 1;
+			vecStartZ.y += 1;
+			vecEndZ.y += 1;
+		}
+		c.EndRender();
+
+		c.SetUniform("vecColor", Vector4D(1.0f, 1.0f, 1.0f, 1.0f));
+	}
+
 	GameServer()->GetRenderer()->SetRenderingTransparent(false);
 
 	if (m_iMeshPreview != ~0)
@@ -970,6 +1070,14 @@ void CToyEditor::RenderScene()
 
 		const auto& oAreaData = it->second;
 
+		bool bSelected = false;
+		auto pSceneArea = m_pSourcePanel->GetCurrentSceneArea();
+		if (pSceneArea)
+		{
+			if (pSceneArea->m_sFilename == sFilename && pSceneArea->m_sMesh == oSceneArea.m_sMesh)
+				bSelected = true;
+		}
+
 		CConversionSceneNode* pMeshNode = oAreaData.pScene->FindSceneNode(oSceneArea.m_sMesh);
 
 		if (pMeshNode)
@@ -1022,13 +1130,29 @@ void CToyEditor::RenderScene()
 
 					c.LoadTransform(mTransformations);
 
-					c.SetColor(Color(255, 255, 255));
-
-					c.SetUniform("vecColor", Vector4D(0.8f, 0.8f, 0.8f, 1));
-					c.SetUniform("bDiffuse", false);
-
 					for (size_t k = 0; k < pModel->m_aiVertexBuffers.size(); k++)
+					{
+						auto pMaterial = oAreaData.pScene->GetMaterial(pMeshInstance->GetMappedMaterial(k)->m_iMaterial);
+						tstring sMaterialName = pMaterial->GetName();
+
+						CMaterialHandle hMaterial = CMaterialLibrary::FindAsset(sFilename + " : " + sMaterialName);
+
+						if (hMaterial.IsValid())
+						{
+							c.UseMaterial(hMaterial);
+						}
+						else
+						{
+							c.SetColor(Color(150, 150, 150));
+							c.SetUniform("vecColor", Vector4D(0.6f, 0.6f, 0.6f, 1));
+							c.SetUniform("bDiffuse", false);
+						}
+
+						if (bSelected)
+							c.SetColor(Color(255, 0, 0));
+
 						c.RenderModel(pModel, k);
+					}
 				}
 			}
 		}
@@ -1216,6 +1340,11 @@ void CToyEditor::MouseMotion(int x, int y)
 		{
 			m_angPreview.y -= (float)(x-lx);
 			m_angPreview.p -= (float)(y-ly);
+
+			if (m_angPreview.p > 89)
+				m_angPreview.p = 89;
+			else if (m_angPreview.p < -89)
+				m_angPreview.p = -89;
 		}
 	}
 
@@ -1224,6 +1353,8 @@ void CToyEditor::MouseMotion(int x, int y)
 		int lx, ly;
 		if (GameWindow()->GetLastMouse(lx, ly))
 			m_flPreviewDistance += (float)(y-ly);
+
+		m_flPreviewDistance = std::max(m_flPreviewDistance, 1.0f);
 	}
 }
 

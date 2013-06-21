@@ -221,6 +221,7 @@ protected:
 	public:
 		std::shared_ptr<class CConversionScene> pScene;
 		tvector<size_t>                         aiModels;
+		tvector<CMaterialHandle>                ahMaterials;
 		bool                                    bMark;
 	};
 
