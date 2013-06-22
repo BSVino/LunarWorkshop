@@ -21,6 +21,7 @@ void CPhysicsDebugDrawer::drawLine(const btVector3& from,const btVector3& to,con
 	CRenderingContext c(GameServer()->GetRenderer(), true);
 	c.UseProgram("model");
 	c.SetUniform("bDiffuse", false);
+	c.SetUniform("vecDiffuse", Vector4D(1, 1, 1, 1));
 	c.SetUniform("vecColor", Color(Vector((const float*)fromColor)));
 	c.BeginRenderDebugLines();
 		c.Color(Color(Vector((const float*)fromColor)));

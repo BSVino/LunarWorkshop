@@ -346,7 +346,7 @@ void CMaterial::SetParameter(const tstring& sParameterName, const tstring& sValu
 
 void CMaterial::SetParameter(const tstring& sParameterName, const Vector& vecValue)
 {
-	SetParameter(sParameterName, sprintf("%f %f %f", vecValue.x, vecValue.y, vecValue.z));
+	SetParameter(sParameterName, sprintf("%f %f %f 1", vecValue.x, vecValue.y, vecValue.z));
 }
 
 void CMaterial::SetParameter(const tstring& sParameterName, float flValue)

@@ -443,6 +443,7 @@ void CMaterialEditor::RenderScene()
 	c.UseProgram("model");
 	c.SetUniform("bDiffuse", false);
 	c.SetBlend(BLEND_ALPHA);
+	c.SetUniform("vecDiffuse", Vector4D(1, 1, 1, 1));
 	c.SetUniform("vecColor", Color(155, 40, 20, (char)(255*flAlpha)));
 	c.RenderWireBox(AABB(-vecUp-vecLeft, vecUp+vecLeft));
 }

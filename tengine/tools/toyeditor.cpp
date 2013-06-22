@@ -951,8 +951,10 @@ void CToyEditor::ReloadModels()
 
 				hMaterial->SetShader("model");
 
-				hMaterial->SetParameter("Diffuse", hDiffuse);
-				hMaterial->SetParameter("Color", pMaterial->m_vecDiffuse);
+				if (hDiffuse.IsValid())
+					hMaterial->SetParameter("DiffuseTexture", hDiffuse);
+
+				hMaterial->SetParameter("Diffuse", pMaterial->m_vecDiffuse);
 
 				// Hold a handle to the materials so they don't get removed next time the list is cleared.
 				oModelData.ahMaterials.push_back(hMaterial);
@@ -1076,6 +1078,8 @@ void CToyEditor::RenderScene()
 
 		c.SetUniform("bDiffuse", false);
 		c.SetBlend(BLEND_ALPHA);
+
+		c.SetUniform("vecDiffuse", Vector4D(1, 1, 1, 1));
 
 		c.SetUniform("vecColor", Vector4D(0.7f, 0.2f, 0.2f, 0.7f));
 		c.BeginRenderLines();
@@ -1268,6 +1272,7 @@ void CToyEditor::RenderScene()
 							c.SetColor(Color(150, 150, 150));
 							c.SetUniform("vecColor", Vector4D(0.6f, 0.6f, 0.6f, 1));
 							c.SetUniform("bDiffuse", false);
+							c.SetUniform("vecDiffuse", Vector4D(1, 1, 1, 1));
 						}
 
 						if (bSelected)
@@ -1338,6 +1343,7 @@ void CToyEditor::RenderScene()
 
 		c.UseProgram("model");
 		c.SetUniform("bDiffuse", false);
+		c.SetUniform("vecDiffuse", Vector4D(1, 1, 1, 1));
 
 		float flAlpha = 0.2f;
 		if (m_pSourcePanel->m_hPhysicsShapes->GetSelectedNodeId() == i)

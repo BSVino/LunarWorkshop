@@ -47,13 +47,11 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 			continue;
 
 		tstring sMesh = pArea->FindChildValueString("Mesh");
+		TAssert(sMesh.length());
 		if (!sMesh.length())
 			continue;
 
 		tstring sPhysics = pArea->FindChildValueString("Physics");
-		TAssert(sPhysics.length());
-		if (!sPhysics.length())
-			continue;
 
 		auto it = asScenes.find(sFile);
 		if (it == asScenes.end())
@@ -80,10 +78,16 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 		ts.UseLocalTransformations(t.IsUsingLocalTransformations());
 
 		CConversionSceneNode* pMeshNode = asScenes[sFile]->FindSceneNode(sMesh);
-		CConversionSceneNode* pPhysicsNode = asScenes[sFile]->FindSceneNode(sPhysics);
+		CConversionSceneNode* pPhysicsNode = nullptr;
+		if (sPhysics.length())
+		{
+			pPhysicsNode = asScenes[sFile]->FindSceneNode(sPhysics);
+		
+			if (!pPhysicsNode)
+				TError("Couldn't find a scene node in '" + sFile + "' named '" + sMesh + "'\n");
+		}
 
 		TAssert(pMeshNode);
-		TAssert(pPhysicsNode);
 
 		TMsg("Building scene area toy ...");
 
@@ -96,8 +100,6 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 
 		if (pPhysicsNode)
 			LoadSceneNodeIntoToyPhysics(asScenes[sFile].get(), pPhysicsNode, mUpLeftSwap, &ts);
-		else
-			TError("Couldn't find a scene node in '" + sFile + "' named '" + sMesh + "'\n");
 
 		TMsg(" Done.\n");
 

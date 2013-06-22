@@ -1099,6 +1099,7 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 
 			r.SetBlend(BLEND_ALPHA);
 			r.SetColor(clrEntHover);
+			r.SetUniform("vecDiffuse", Vector4D(1, 1, 1, 1));
 			r.SetUniform("vecColor", clrEntHover);
 			r.SetUniform("bDiffuse", false);
 
@@ -1130,6 +1131,7 @@ void CLevelEditor::RenderEntity(CLevelEntity* pEntity, bool bSelected, bool bHov
 			return;
 
 		r.UseProgram("model");
+		r.SetUniform("vecDiffuse", Vector4D(1, 1, 1, 1));
 		if (bSelected)
 			r.SetUniform("vecColor", Color(255, 0, 0, (char)(255*flAlpha)));
 		else if (bHover)
@@ -1531,6 +1533,7 @@ void CLevelEditor::RenderScene()
 		c.SetUniform("bDiffuse", false);
 		c.SetBlend(BLEND_ALPHA);
 
+		c.SetUniform("vecDiffuse", Vector4D(1, 1, 1, 1));
 		c.SetUniform("vecColor", Vector4D(0.7f, 0.2f, 0.2f, 0.7f));
 		c.BeginRenderLines();
 			c.Vertex(Vector(-10000, 0, 0));
