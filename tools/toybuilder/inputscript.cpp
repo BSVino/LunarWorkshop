@@ -273,6 +273,12 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 		}
 	}
 
+	CData* pGlobalTransforms = pData->FindChild("UseGlobalTransforms");
+	if (pGlobalTransforms)
+		t.UseGlobalTransformations();
+	else
+		t.UseLocalTransformations();
+
 	if (pMesh)
 	{
 		tstring sExtension = pMesh->GetValueString().substr(pMesh->GetValueString().length()-4);

@@ -93,7 +93,9 @@ void LoadSceneNodeIntoToy(CConversionScene* pScene, CConversionSceneNode* pNode,
 	if (!pNode->IsVisible())
 		return;
 
-	Matrix4x4 mTransformations = mParentTransformations * pNode->m_mTransformations;
+	Matrix4x4 mTransformations = mParentTransformations;
+	if (!CModelLibrary::LoadThisSceneWithLocalTransforms())
+		mTransformations = mTransformations * pNode->m_mTransformations;
 
 	for (size_t i = 0; i < pNode->GetNumChildren(); i++)
 		LoadSceneNodeIntoToy(pScene, pNode->GetChild(i), mTransformations);

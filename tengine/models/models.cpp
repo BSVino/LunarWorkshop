@@ -16,6 +16,8 @@ CModelLibrary::CModelLibrary()
 {
 	m_iModelsLoaded = 0;
 	s_pModelLibrary = this;
+
+	m_bLoadNextSceneWithLocalTransforms = false;
 }
 
 CModelLibrary::~CModelLibrary()
@@ -76,10 +78,14 @@ size_t CModelLibrary::AddModel(const tstring& sModelFile)
 
 	if (!pModel->Load())
 	{
+		Get()->m_bLoadNextSceneWithLocalTransforms = false;
+
 		Get()->m_apModels[iLocation] = nullptr;
 		delete pModel;
 		return ~0;
 	}
+
+	Get()->m_bLoadNextSceneWithLocalTransforms = false;
 
 	pModel->m_iReferences++;
 
@@ -121,10 +127,14 @@ size_t CModelLibrary::AddModel(class CConversionScene* pScene, size_t iMesh)
 
 	if (!pModel->Load(pScene, iMesh))
 	{
+		Get()->m_bLoadNextSceneWithLocalTransforms = false;
+
 		Get()->m_apModels[iMesh] = nullptr;
 		delete pModel;
 		return ~0;
 	}
+
+	Get()->m_bLoadNextSceneWithLocalTransforms = false;
 
 	pModel->m_iReferences++;
 

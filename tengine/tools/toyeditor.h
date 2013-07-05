@@ -121,6 +121,7 @@ public:
 	EVENT_CALLBACK(CSourcePanel, MaterialSource);
 	EVENT_CALLBACK(CSourcePanel, ModelChanged);
 	EVENT_CALLBACK(CSourcePanel, PhysicsChanged);
+	EVENT_CALLBACK(CSourcePanel, LocalTransformsChanged);
 	EVENT_CALLBACK(CSourcePanel, PhysicsAreaSelected);
 	EVENT_CALLBACK(CSourcePanel, NewPhysicsShape);
 	EVENT_CALLBACK(CSourcePanel, DeletePhysicsShape);
@@ -149,6 +150,9 @@ public:
 
 	glgui::CControl<glgui::CLabel>     m_hPhysLabel;
 	glgui::CControl<glgui::CTextField> m_hPhysText;
+
+	glgui::CControl<glgui::CCheckBox>  m_hUseLocalTransformsCheck;
+	glgui::CControl<glgui::CLabel>     m_hUseLocalTransformsLabel;
 
 	glgui::CControl<glgui::CSlidingContainer> m_hSlider;
 	glgui::CControl<glgui::CSlidingPanel>     m_hPhysicsSlider;
@@ -230,6 +234,8 @@ public:
 	// Don't store the result.
 	class CConversionScene* FindLoadedSceneFromFile(const tstring& sFile);
 
+	void                    ReloadPreview() { m_bReloadPreview = true; }
+
 	virtual tstring			GetToolName() { return "Toy Editor"; }
 
 public:
@@ -245,6 +251,7 @@ protected:
 	size_t					m_iMeshPreview;
 	size_t					m_iPhysPreview;
 	CMaterialHandle			m_hMaterialPreview;
+	bool                    m_bReloadPreview;
 
 	// Holds the scene and GL indexes for all of the scene areas.
 	class CSceneAreaModelData

@@ -67,11 +67,16 @@ public:
 
 	static void				LoadAllIntoPhysics();
 
+	static void             LoadNextSceneWithLocalTransforms() { Get()->m_bLoadNextSceneWithLocalTransforms = true; }
+	static bool             LoadThisSceneWithLocalTransforms() { return Get()->m_bLoadNextSceneWithLocalTransforms; }
+
 	static CModelLibrary*	Get() { return s_pModelLibrary; };
 
 protected:
 	tvector<CModel*>		m_apModels;
 	size_t					m_iModelsLoaded;
+
+	bool                    m_bLoadNextSceneWithLocalTransforms;
 
 private:
 	static CModelLibrary*	s_pModelLibrary;

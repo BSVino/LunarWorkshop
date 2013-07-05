@@ -15,6 +15,7 @@
 #include <glgui/filedialog.h>
 #include <glgui/tree.h>
 #include <glgui/slidingpanel.h>
+#include <glgui/checkbox.h>
 #include <tinker/application.h>
 #include <models/models.h>
 #include <renderer/game_renderingcontext.h>
@@ -267,6 +268,13 @@ CSourcePanel::CSourcePanel()
 	m_hPhysText = AddControl(new glgui::CTextField());
 	m_hPhysText->SetContentsChangedListener(this, PhysicsChanged, "phys");
 
+	m_hUseLocalTransformsCheck = AddControl(new glgui::CCheckBox());
+	m_hUseLocalTransformsCheck->SetClickedListener(this, LocalTransformsChanged);
+	m_hUseLocalTransformsCheck->SetUnclickedListener(this, LocalTransformsChanged);
+
+	m_hUseLocalTransformsLabel = AddControl(new glgui::CLabel("Use local transforms?", "sans-serif", 10));
+	m_hUseLocalTransformsLabel->SetAlign(glgui::CLabel::TA_TOPLEFT);
+
 	m_hSlider = AddControl(new glgui::CSlidingContainer());
 
 	m_hPhysicsSlider = new glgui::CSlidingPanel(m_hSlider, "Physics Shapes");
@@ -393,8 +401,14 @@ void CSourcePanel::Layout()
 	m_hPhysText->Layout_FullWidth();
 	m_hPhysText->SetTop(m_hPhysLabel->GetTop()+12);
 
+	m_hUseLocalTransformsCheck->Layout_AlignTop(m_hPhysText, flControlMargin);
+	m_hUseLocalTransformsCheck->SetLeft(m_hPhysText->GetLeft());
+
+	m_hUseLocalTransformsLabel->Layout_AlignTop(m_hPhysText, flControlMargin);
+	m_hUseLocalTransformsLabel->SetLeft(m_hUseLocalTransformsCheck->GetRight());
+
 	float flTempMargin = 5;
-	m_hSlider->Layout_AlignTop(m_hPhysText, flTempMargin);
+	m_hSlider->Layout_AlignTop(m_hUseLocalTransformsLabel, flTempMargin);
 	m_hSlider->Layout_FullWidth(flTempMargin);
 
 	m_hPhysicsShapes->Layout_FullWidth();
@@ -525,6 +539,8 @@ void CSourcePanel::UpdateFields()
 	m_hMeshText->SetText(ToyEditor()->GetToy().m_sMesh);
 	m_hPhysText->SetText(ToyEditor()->GetToy().m_sPhys);
 
+	m_hUseLocalTransformsCheck->SetState(ToyEditor()->GetToy().m_bUseLocalTransforms, false);
+
 	tstring sMesh = ToyEditor()->GetToy().m_sMesh;
 	if (sMesh.length() >= 4)
 	{
@@ -652,6 +668,15 @@ void CSourcePanel::PhysicsChangedCallback(const tstring& sArgs)
 {
 	ToyEditor()->GetToyToModify().m_sPhys = m_hPhysText->GetText();
 	SetModelSourcesAutoComplete(m_hPhysText);
+
+	ToyEditor()->Layout();
+}
+
+void CSourcePanel::LocalTransformsChangedCallback(const tstring& sArgs)
+{
+	ToyEditor()->GetToyToModify().m_bUseLocalTransforms = m_hUseLocalTransformsCheck->GetState();
+
+	ToyEditor()->ReloadPreview();
 
 	ToyEditor()->Layout();
 }
@@ -892,18 +917,29 @@ void CToyEditor::ReloadModels()
 		if (m_iMeshPreview != ~0)
 		{
 			CModel* pMesh = CModelLibrary::GetModel(m_iMeshPreview);
-			if (sMesh != FindAbsolutePath(pMesh->m_sFilename))
+			if (m_bReloadPreview || sMesh != FindAbsolutePath(pMesh->m_sFilename))
 			{
 				CModelLibrary::ReleaseModel(m_iMeshPreview);
 				CModelLibrary::ClearUnreferenced();
+
+				if (GetToy().m_bUseLocalTransforms)
+					CModelLibrary::LoadNextSceneWithLocalTransforms();
+
 				m_iMeshPreview = CModelLibrary::AddModel(sMesh);
+
 				bGenPreviewDistance = true;
+				m_bReloadPreview = false;
 			}
 		}
 		else
 		{
+			if (GetToy().m_bUseLocalTransforms)
+				CModelLibrary::LoadNextSceneWithLocalTransforms();
+
 			m_iMeshPreview = CModelLibrary::AddModel(sMesh);
+
 			bGenPreviewDistance = true;
+			m_bReloadPreview = false;
 		}
 	}
 	else
@@ -1416,6 +1452,8 @@ void CToyEditor::OpenToyCallback(const tstring& sArgs)
 {
 	tstring sGamePath = GetRelativePath(sArgs, ".");
 
+	m_bReloadPreview = true;
+
 	m_oToySource = CToySource();
 	m_oToySource.Open(sGamePath);
 
@@ -1616,6 +1654,17 @@ void CToySource::Save() const
 		f.write(sGame.data(), sGame.length());
 	}
 
+	if (m_bUseLocalTransforms)
+	{
+		tstring sData = "UseLocalTransforms\n";
+		f.write(sData.data(), sData.length());
+	}
+	else
+	{
+		tstring sData = "UseGlobalTransforms\n";
+		f.write(sData.data(), sData.length());
+	}
+
 	if (m_aShapes.size())
 	{
 		tstring sShapes = "PhysicsShapes:\n{\n";
@@ -1741,6 +1790,9 @@ void CToySource::Open(const tstring& sFile)
 		m_sPhys = pPhysics->GetValueString();
 	else
 		m_sPhys = "";
+
+	CData* pGlobalTransforms = pData->FindChild("UseGlobalTransforms");
+	m_bUseLocalTransforms = !pGlobalTransforms;
 
 	if (pPhysicsShapes)
 	{
