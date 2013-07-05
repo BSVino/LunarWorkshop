@@ -428,6 +428,7 @@ bool CTextField::KeyPressed(int iKey, bool bCtrlDown)
 			size_t iEnd = std::max(m_iCursor, m_iSelection);
 			m_sText.erase(iStart, iEnd-iStart);
 			m_iCursor = m_iSelection = iStart;
+			UpdateContentsChangedListener();
 		}
 		else if (m_iCursor > 0)
 		{
