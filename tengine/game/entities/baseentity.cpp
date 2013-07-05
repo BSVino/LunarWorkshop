@@ -737,6 +737,20 @@ void CBaseEntity::SetLocalAngles(const EAngle& angAngles)
 
 void CBaseEntity::SetLocalOrigin(const tvector<tstring>& asArgs)
 {
+	if (asArgs.size() == 1)
+	{
+		CBaseEntity* pEntity = GetEntityByName(asArgs[0]);
+		if (!pEntity)
+		{
+			TError("CBaseEntity::SetLocalOrigin could not find entity '" + asArgs[0] + "' to teleport to.\n");
+			return;
+		}
+
+		Vector vecGlobal = pEntity->GetGlobalOrigin();
+		SetLocalOrigin(vecGlobal);
+		return;
+	}
+
 	if (asArgs.size() != 3)
 	{
 		TError("CBaseEntity::SetLocalOrigin with != 3 arguments. Was expecting \"x y z\"\n");
