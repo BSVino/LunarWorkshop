@@ -645,12 +645,14 @@ void CTextField::SetAutoCompleteFiles(const tstring& sBaseDirectory, const tvect
 	{
 		if (!IsDirectory(sSearchDirectory + '/' + asFiles[i]))
 		{
+			tstring sFileName = asFiles[i].tolower();
+
 			if (asExtensions.size())
 			{
 				bool bFound = false;
 				for (size_t j = 0; j < asExtensions.size(); j++)
 				{
-					if (!asFiles[i].endswith(asExtensions[j]))
+					if (!sFileName.endswith(asExtensions[j]))
 						continue;
 
 					bFound = true;
@@ -666,10 +668,10 @@ void CTextField::SetAutoCompleteFiles(const tstring& sBaseDirectory, const tvect
 				bool bFound = false;
 				for (size_t j = 0; j < asExtensionsExclude.size(); j++)
 				{
-					if (asFiles[i].length() <= asExtensionsExclude[j].length())
+					if (sFileName.length() <= asExtensionsExclude[j].length())
 						continue;
 
-					if (asFiles[i].substr(asFiles[i].length()-asExtensionsExclude[j].length()) != asExtensionsExclude[j])
+					if (sFileName.substr(sFileName.length()-asExtensionsExclude[j].length()) != asExtensionsExclude[j])
 						continue;
 
 					bFound = true;
