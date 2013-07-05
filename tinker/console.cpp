@@ -134,7 +134,11 @@ void CConsole::Paint(float x, float y, float w, float h)
 
 void CConsole::PrintConsole(const tstring& sText)
 {
-	DebugPrint(sText.c_str());
+	if (sText.startswith("[color=FF0000]") && sText.endswith("[/color]\n"))
+		DebugPrint(sText.substr(14, sText.length()-14-9).c_str());
+	else
+		DebugPrint(sText.c_str());
+
 	m_hOutput->AppendText(sText);
 
 	if (m_hOutput->GetText().length() > 2500)
