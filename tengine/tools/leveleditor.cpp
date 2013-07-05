@@ -137,12 +137,7 @@ void CEntityPropertiesPanel::Layout()
 				hTextField->SetWidth(hTextField->GetWidth()-15);
 				hTextField->SetTop(flTop+12);
 
-				if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
-					hTextField->SetContentsChangedListener(this, ModelChanged, sprintf("%d", m_ahPropertyOptions.size()-1));
-				else if (tstring(pSaveData->m_pszType).startswith("CEntityHandle"))
-					hTextField->SetContentsChangedListener(this, TargetChanged, sprintf("%d ", m_ahPropertyOptions.size()-1) + pSaveData->m_pszType);
-				else
-					hTextField->SetContentsChangedListener(this, PropertyChanged);
+				hTextField->SetContentsChangedListener(nullptr, nullptr);
 
 				if (m_pEntity && m_pEntity->HasParameterValue(pSaveData->m_pszHandle))
 				{
@@ -205,6 +200,13 @@ void CEntityPropertiesPanel::Layout()
 						TUnimplemented();
 					}
 				}
+
+				if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
+					hTextField->SetContentsChangedListener(this, ModelChanged, sprintf("%d", m_ahPropertyOptions.size()-1));
+				else if (tstring(pSaveData->m_pszType).startswith("CEntityHandle"))
+					hTextField->SetContentsChangedListener(this, TargetChanged, sprintf("%d ", m_ahPropertyOptions.size()-1) + pSaveData->m_pszType);
+				else
+					hTextField->SetContentsChangedListener(this, PropertyChanged);
 
 				flTop += 43;
 			}
@@ -571,6 +573,7 @@ void CEditorPanel::LayoutOutput()
 	m_hOutput->SetText("Choose Output");
 
 	m_hOutputEntityNameLabel->Layout_AlignTop(m_hOutput);
+	m_hOutputEntityNameText->SetContentsChangedListener(nullptr, nullptr);
 	m_hOutputEntityNameText->SetTop(m_hOutputEntityNameLabel->GetTop()+12);
 	m_hOutputEntityNameText->SetText("");
 	m_hOutputEntityNameText->Layout_FullWidth();
@@ -582,6 +585,7 @@ void CEditorPanel::LayoutOutput()
 	m_hInput->SetText("Choose Input");
 
 	m_hOutputArgsLabel->Layout_AlignTop(m_hInput);
+	m_hOutputArgsText->SetContentsChangedListener(nullptr, nullptr);
 	m_hOutputArgsText->SetTop(m_hOutputArgsLabel->GetTop()+12);
 	m_hOutputArgsText->SetText("");
 	m_hOutputArgsText->Layout_FullWidth();
@@ -618,6 +622,9 @@ void CEditorPanel::LayoutOutput()
 	m_hOutputEntityNameText->SetEnabled(true);
 	m_hInput->SetEnabled(true);
 	m_hOutputArgsText->SetEnabled(true);
+
+	m_hOutputEntityNameText->SetContentsChangedListener(this, TargetEntityChanged);
+	m_hOutputArgsText->SetContentsChangedListener(this, ArgumentsChanged);
 
 	m_hOutput->ClearSubmenus();
 
