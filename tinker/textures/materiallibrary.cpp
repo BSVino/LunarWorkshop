@@ -141,6 +141,9 @@ CMaterial* CMaterialLibrary::CreateMaterial(const CData* pData, const tstring& s
 			continue;
 		}
 
+		if (!pParameter->GetValueString().length())
+			continue;
+
 		CMaterial::CParameter& oPar = oMat.m_aParameters.push_back();
 		oPar.m_sName = sParameter;
 
