@@ -1747,7 +1747,19 @@ void CToySource::Build() const
 			CModel* pModel = CModelLibrary::GetModel(CModelLibrary::FindModel(m_sToyFile));
 			TAssert(pModel);
 			if (pModel)
+			{
+				for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
+				{
+					CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
+					if (!pEntity)
+						continue;
+
+					if (pEntity->GetModel() == pModel)
+						pEntity->RemoveFromPhysics();
+				}
+
 				pModel->Reload();
+			}
 		}
 		else
 			CModelLibrary::AddModel(m_sToyFile);

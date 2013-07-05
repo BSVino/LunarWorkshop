@@ -333,6 +333,42 @@ void CModel::UnloadBufferFromGL(size_t iBuffer)
 
 void CModel::Reload()
 {
+	if (m_pToy)
+	{
+		for (size_t i = 0; i < m_pToy->GetNumSceneAreas(); i++)
+		{
+			size_t iModel = CModelLibrary::FindModel(m_pToy->GetSceneAreaFileName(i));
+			if (iModel == ~0)
+				continue;
+
+			CModel* pSceneArea = CModelLibrary::GetModel(iModel);
+
+			TAssert(pSceneArea);
+			if (!pSceneArea)
+				continue;
+
+			pSceneArea->Unload();
+		}
+	}
+
 	Unload();
 	Load();
+
+	if (m_pToy)
+	{
+		for (size_t i = 0; i < m_pToy->GetNumSceneAreas(); i++)
+		{
+			size_t iModel = CModelLibrary::FindModel(m_pToy->GetSceneAreaFileName(i));
+			if (iModel == ~0)
+				continue;
+
+			CModel* pSceneArea = CModelLibrary::GetModel(iModel);
+
+			TAssert(pSceneArea);
+			if (!pSceneArea)
+				continue;
+
+			pSceneArea->Load();
+		}
+	}
 }
