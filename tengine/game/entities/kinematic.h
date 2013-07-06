@@ -21,6 +21,8 @@ public:
 	DECLARE_ENTITY_INPUT(LerpTo);
 	DECLARE_ENTITY_INPUT(LerpAnglesTo);
 
+	collision_group_t   GetCollisionGroup() const { return CG_STATIC; }
+
 protected:
 	double				m_flLerpTime;
 	double				m_flLerpStart;

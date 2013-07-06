@@ -44,8 +44,11 @@ public:
 		if (convexResult.m_hitCollisionObject == m_me)
 			return btScalar(1.0);
 
-		if (convexResult.m_hitCollisionObject->getBroadphaseHandle()->m_collisionFilterGroup & btBroadphaseProxy::SensorTrigger)
+		if (convexResult.m_hitCollisionObject->getBroadphaseHandle()->m_collisionFilterGroup & CG_TRIGGER)
 			return 1;
+
+		if (!convexResult.m_hitCollisionObject->hasContactResponse())
+			return btScalar(1.0);
 
 		if ((size_t)convexResult.m_hitCollisionObject->getUserPointer() >= GameServer()->GetMaxEntities())
 		{
@@ -419,6 +422,15 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 		m_aManifolds.resize(0);
 
 		btBroadphasePair* pCollisionPair = &m_pGhostObject->getOverlappingPairCache()->getOverlappingPairArray()[i];
+
+		btCollisionObject* pObject0 = static_cast<btCollisionObject*>(pCollisionPair->m_pProxy0->m_clientObject);
+		btCollisionObject* pObject1 = static_cast<btCollisionObject*>(pCollisionPair->m_pProxy1->m_clientObject);
+
+		if (!pObject0->hasContactResponse() || !pObject1->hasContactResponse())
+			continue;
+
+		if (pObject0->getBroadphaseHandle()->m_collisionFilterGroup == CG_TRIGGER || pObject1->getBroadphaseHandle()->m_collisionFilterGroup == CG_TRIGGER)
+			continue;
 
 		if (pCollisionPair->m_algorithm)
 			pCollisionPair->m_algorithm->getAllContactManifolds(m_aManifolds);

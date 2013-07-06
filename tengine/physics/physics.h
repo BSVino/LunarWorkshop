@@ -21,9 +21,8 @@ typedef enum
 	CG_NONE = 0,
 	CG_DEFAULT = (1<<0),
 	CG_STATIC = (1<<1),
-	CG_CHARACTER_PASS = (1<<2),
-	CG_CHARACTER_CLIP = (1<<3),
-	CG_TRIGGER = (1<<4),
+	CG_CHARACTER = (1<<2),
+	CG_TRIGGER = (1<<3),
 } collision_group_t;
 
 class IPhysicsEntity

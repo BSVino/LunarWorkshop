@@ -173,10 +173,9 @@ void CBulletPhysics::AddEntity(IPhysicsEntity* pEntity, collision_type_t eCollis
 		pPhysicsEntity->m_pGhostObject = new btPairCachingGhostObject();
 		pPhysicsEntity->m_pGhostObject->setWorldTransform(mTransform);
 		pPhysicsEntity->m_pGhostObject->setCollisionShape(pCollisionShape);
-		pPhysicsEntity->m_pGhostObject->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
 		pPhysicsEntity->m_pGhostObject->setUserPointer((void*)iHandle);
 
-		pPhysicsEntity->m_pGhostObject->setCollisionFlags(pPhysicsEntity->m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+		pPhysicsEntity->m_pGhostObject->setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);
 		pPhysicsEntity->m_pGhostObject->setActivationState(DISABLE_DEACTIVATION);
 
 		pPhysicsEntity->m_pTriggerController = new CTriggerController(pEntity, pPhysicsEntity->m_pGhostObject);
@@ -1128,19 +1127,16 @@ short CBulletPhysics::GetMaskForGroup(collision_group_t eGroup)
 	case CG_NONE:
 	case CG_DEFAULT:
 	default:
-		return btBroadphaseProxy::AllFilter;
+		return 0;
 
 	case CG_STATIC:
-		return CG_DEFAULT|CG_CHARACTER_CLIP|CG_CHARACTER_PASS;
+		return CG_CHARACTER;
 
 	case CG_TRIGGER:
-		return CG_DEFAULT|CG_CHARACTER_CLIP|CG_CHARACTER_PASS;
+		return CG_CHARACTER;
 
-	case CG_CHARACTER_PASS:
-		return CG_DEFAULT|CG_STATIC|CG_TRIGGER|CG_CHARACTER_CLIP;
-
-	case CG_CHARACTER_CLIP:
-		return CG_DEFAULT|CG_STATIC|CG_TRIGGER|CG_CHARACTER_CLIP|CG_CHARACTER_PASS;
+	case CG_CHARACTER:
+		return CG_STATIC|CG_CHARACTER|CG_TRIGGER;
 	}
 }
 
