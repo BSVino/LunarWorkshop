@@ -56,20 +56,20 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 	switch(m_eMirrorType)
 	{
 	case MIRROR_VERTICAL:
-		if (GetGlobalTransform().GetUpVector().y > 0)
+		if (GetGlobalTransform().GetUpVector().z > 0)
 		{
-			if (vecPoint.y < GetGlobalOrigin().y + 0.05f)
+			if (vecPoint.z < GetGlobalOrigin().z + 0.05f)
 				return false;
 
-			if (vecPoint.y > GetGlobalOrigin().y + aabbBox.Size().y)
+			if (vecPoint.z > GetGlobalOrigin().z + aabbBox.Size().z)
 				return false;
 		}
 		else
 		{
-			if (vecPoint.y > GetGlobalOrigin().y - 0.05f)
+			if (vecPoint.z > GetGlobalOrigin().z - 0.05f)
 				return false;
 
-			if (vecPoint.y < GetGlobalOrigin().y - aabbBox.Size().y)
+			if (vecPoint.z < GetGlobalOrigin().z - aabbBox.Size().z)
 				return false;
 		}
 
@@ -80,20 +80,20 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 		{
 			Vector vecUp = Matrix4x4(GetGlobalAngles(), Vector()).GetUpVector();
 
-			if (vecUp.y > 0)
+			if (vecUp.z > 0)
 			{
-				if (vecPoint.y < GetGlobalOrigin().y - vecUp.y * 2.0f)
+				if (vecPoint.z < GetGlobalOrigin().z - vecUp.z * 2.0f)
 					return false;
 
-				if (vecPoint.y > GetGlobalOrigin().y + vecUp.y * 0.15f)
+				if (vecPoint.z > GetGlobalOrigin().z + vecUp.z * 0.15f)
 					return false;
 			}
 			else
 			{
-				if (vecPoint.y > GetGlobalOrigin().y - vecUp.y * 2.0f)
+				if (vecPoint.z > GetGlobalOrigin().z - vecUp.z * 2.0f)
 					return false;
 
-				if (vecPoint.y < GetGlobalOrigin().y + vecUp.y * 0.15f)
+				if (vecPoint.z < GetGlobalOrigin().z + vecUp.z * 0.15f)
 					return false;
 			}
 		}

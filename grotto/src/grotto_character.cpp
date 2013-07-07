@@ -259,7 +259,7 @@ bool CGrottoCharacter::IsNearMirror(class CMirror* pMirror, const Vector& vecPoi
 
 bool CGrottoCharacter::ShouldCollideWith(CBaseEntity* pOther, const TVector& vecPoint) const
 {
-	if (tstring(pOther->GetClassName()) == "CWorld")
+	if (tstring(pOther->GetClassName()) == "CStatic")
 	{
 		for (size_t i = 0; i < CMirror::GetNumMirrors(); i++)
 		{
