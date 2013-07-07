@@ -2,6 +2,8 @@
 
 #include <time.h>
 
+#include <google/protobuf/stubs/common.h>
+
 #include <tinker_platform.h>
 #include <mtrand.h>
 
@@ -24,6 +26,8 @@
 CGameWindow::CGameWindow(int argc, char** argv)
 	: CApplication(argc, argv)
 {
+	GOOGLE_PROTOBUF_VERIFY_VERSION;
+
 	TPortal_Startup();
 
 	m_bHaveLastMouse = false;

@@ -7,6 +7,7 @@ include_directories (
 	${PROJECT_SOURCE_DIR}/../ext-deps/EASTL/include
 	${PROJECT_SOURCE_DIR}/../ext-deps/enet-1.3.0/include
 	${PROJECT_SOURCE_DIR}/../ext-deps/enet-1.3.3/include
+	${PROJECT_SOURCE_DIR}/../ext-deps/protobuf-2.5.0/vsprojects/include
 	${CMAKE_SOURCE_DIR}/
 	${CMAKE_SOURCE_DIR}/common
 	${CMAKE_SOURCE_DIR}/common/math
@@ -159,6 +160,7 @@ if (WIN32)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/farchivexml-2010.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/libxml-2010.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/assimp/code/Debug/assimp.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/protobuf-2.5.0/vsprojects/Debug/libprotobuf.lib)
 
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/pthreads-w32-2-8-0-release/Release/pthread.lib)
 	if (WITH_NETWORKING)
@@ -171,6 +173,7 @@ if (WIN32)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/farchivexml-2010.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/libxml-2010.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/assimp/code/RelWithDebInfo/assimp.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/protobuf-2.5.0/vsprojects/Release/libprotobuf.lib)
 
 	target_link_libraries(tengine iphlpapi ws2_32 Winmm)
 

@@ -759,7 +759,7 @@ bool CRenderer::HardwareSupported()
 	return iVertexCompiled == GL_TRUE && iFragmentCompiled == GL_TRUE && iProgramLinked == GL_TRUE;
 }
 
-size_t CRenderer::LoadVertexDataIntoGL(size_t iSizeInBytes, float* aflVertices)
+size_t CRenderer::LoadVertexDataIntoGL(size_t iSizeInBytes, const float* aflVertices)
 {
 	// If it's only floats doubles and the occasional int then it should always be a multiple of four bytes.
 	TAssert(iSizeInBytes%4 == 0);
@@ -785,7 +785,7 @@ size_t CRenderer::LoadVertexDataIntoGL(size_t iSizeInBytes, float* aflVertices)
 	return iVBO;
 }
 
-size_t CRenderer::LoadIndexDataIntoGL(size_t iSizeInBytes, unsigned int* aiIndices)
+size_t CRenderer::LoadIndexDataIntoGL(size_t iSizeInBytes, const unsigned int* aiIndices)
 {
 	GLuint iVBO;
 	glGenBuffers(1, &iVBO);

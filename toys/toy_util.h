@@ -40,8 +40,18 @@ public:
 
 	void			AddMaterial(const tstring& sMaterial, const tstring& sOriginalFile = "");
 	size_t			GetNumMaterials() { return m_asMaterials.size(); }
-	void			AddVertex(size_t iMaterial, Vector vecPosition, Vector2D vecUV);
-	size_t			GetNumVerts();
+	void            UseUV();
+	void            UseNormals();
+	void            AddVertex(size_t iMaterial, const Vector& vecPosition, const Vector2D& vecUV);
+	size_t          GetNumVerts() const;
+	bool            IsUsingUV() const { return m_bUseUV; }
+	bool            IsUsingNormals() const { return m_bUseNormals; }
+
+	size_t          GetVertexSizeInBytes() const;
+	int             GetVertexUVOffsetInBytes() const;
+	int             GetVertexNormalOffsetInBytes() const;
+	int             GetVertexTangentOffsetInBytes() const;
+	int             GetVertexBitangentOffsetInBytes() const;
 
 	void			AddPhysTriangle(size_t v1, size_t v2, size_t v3);
 	void			AddPhysVertex(Vector vecPosition);
@@ -77,6 +87,9 @@ protected:
 	tstring					m_sScriptDirectory;
 	tstring					m_sOutputDirectory;
 	tstring					m_sOutputFile;
+
+	bool m_bUseUV;
+	bool m_bUseNormals;
 
 	tvector<tstring>			m_asMaterials;
 	//tvector<tstring>			m_asCopyTextures;

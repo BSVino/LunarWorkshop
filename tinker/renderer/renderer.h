@@ -157,8 +157,8 @@ public:
 	int				ScreenSamples() { return m_iScreenSamples; }
 
 public:
-	static size_t	LoadVertexDataIntoGL(size_t iSizeInBytes, float* aflVertices);
-	static size_t	LoadIndexDataIntoGL(size_t iSizeInBytes, unsigned int* aiIndices);
+	static size_t	LoadVertexDataIntoGL(size_t iSizeInBytes, const float* aflVertices);
+	static size_t	LoadIndexDataIntoGL(size_t iSizeInBytes, const unsigned int* aiIndices);
 	static void		UnloadVertexDataFromGL(size_t iBuffer);
 	static size_t	LoadTextureIntoGL(tstring sFilename, int iClamp = 0);
 	static size_t	LoadTextureIntoGL(Color* pclrData, int w, int h, int iClamp = 0, bool bNearestFiltering = false);

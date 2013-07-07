@@ -1006,7 +1006,7 @@ void CRenderingContext::BeginRenderVertexArray(size_t iBuffer)
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-void CRenderingContext::SetPositionBuffer(float* pflBuffer, size_t iStride)
+void CRenderingContext::SetPositionBuffer(const float* pflBuffer, size_t iStride)
 {
 	TAssert(m_pShader->m_iPositionAttribute != ~0);
 	glEnableVertexAttribArray(m_pShader->m_iPositionAttribute);
@@ -1021,7 +1021,7 @@ void CRenderingContext::SetPositionBuffer(size_t iOffset, size_t iStride)
 	glVertexAttribPointer(m_pShader->m_iPositionAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
 }
 
-void CRenderingContext::SetNormalsBuffer(float* pflBuffer, size_t iStride)
+void CRenderingContext::SetNormalsBuffer(const float* pflBuffer, size_t iStride)
 {
 	if (m_pShader->m_iNormalAttribute == ~0)
 		return;
@@ -1040,7 +1040,7 @@ void CRenderingContext::SetNormalsBuffer(size_t iOffset, size_t iStride)
 	glVertexAttribPointer(m_pShader->m_iNormalAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
 }
 
-void CRenderingContext::SetTangentsBuffer(float* pflBuffer, size_t iStride)
+void CRenderingContext::SetTangentsBuffer(const float* pflBuffer, size_t iStride)
 {
 	if (m_pShader->m_iTangentAttribute == ~0)
 		return;
@@ -1059,7 +1059,7 @@ void CRenderingContext::SetTangentsBuffer(size_t iOffset, size_t iStride)
 	glVertexAttribPointer(m_pShader->m_iTangentAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
 }
 
-void CRenderingContext::SetBitangentsBuffer(float* pflBuffer, size_t iStride)
+void CRenderingContext::SetBitangentsBuffer(const float* pflBuffer, size_t iStride)
 {
 	if (m_pShader->m_iBitangentAttribute == ~0)
 		return;
@@ -1078,7 +1078,7 @@ void CRenderingContext::SetBitangentsBuffer(size_t iOffset, size_t iStride)
 	glVertexAttribPointer(m_pShader->m_iBitangentAttribute, 3, GL_FLOAT, false, iStride, BUFFER_OFFSET(iOffset));
 }
 
-void CRenderingContext::SetTexCoordBuffer(float* pflBuffer, size_t iStride, size_t iChannel)
+void CRenderingContext::SetTexCoordBuffer(const float* pflBuffer, size_t iStride, size_t iChannel)
 {
 	TAssert(iChannel >= 0 && iChannel < MAX_TEXTURE_CHANNELS);
 
@@ -1155,7 +1155,7 @@ void CRenderingContext::EndRenderVertexArray(size_t iVertices, bool bWireframe)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void CRenderingContext::EndRenderVertexArrayTriangles(size_t iTriangles, int* piIndices)
+void CRenderingContext::EndRenderVertexArrayTriangles(size_t iTriangles, const int* piIndices)
 {
 	CRenderContext& oContext = GetContext();
 

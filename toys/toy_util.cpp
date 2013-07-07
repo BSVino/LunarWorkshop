@@ -9,8 +9,7 @@
 #include <shell.h>
 
 #include "toy.h"
-
-#include "toy_offsets.h"
+#include "toy.pb.h"
 
 CToyUtil::CToyUtil()
 {
@@ -21,6 +20,9 @@ CToyUtil::CToyUtil()
 
 	m_flNeighborDistance = 1;
 	m_bUseLocalTransforms = true;	// Use local by default
+
+	m_bUseUV = false;
+	m_bUseNormals = false;
 }
 
 tstring CToyUtil::GetGameDirectoryFile(const tstring& sFile) const
@@ -82,13 +84,29 @@ void CToyUtil::AddMaterial(const tstring& sMaterial, const tstring& sOriginalFil
 	m_aaflData.push_back();
 }
 
-void CToyUtil::AddVertex(size_t iMaterial, Vector vecPosition, Vector2D vecUV)
+void CToyUtil::UseUV()
+{
+	TAssert(!m_aaflData.size());
+	m_bUseUV = true;
+}
+
+void CToyUtil::UseNormals()
+{
+	TAssert(!m_aaflData.size());
+	m_bUseNormals = true;
+}
+
+void CToyUtil::AddVertex(size_t iMaterial, const Vector& vecPosition, const Vector2D& vecUV)
 {
 	m_aaflData[iMaterial].push_back(vecPosition.x);
 	m_aaflData[iMaterial].push_back(vecPosition.y);
 	m_aaflData[iMaterial].push_back(vecPosition.z);
-	m_aaflData[iMaterial].push_back(vecUV.x);
-	m_aaflData[iMaterial].push_back(vecUV.y);
+
+	if (m_bUseUV)
+	{
+		m_aaflData[iMaterial].push_back(vecUV.x);
+		m_aaflData[iMaterial].push_back(vecUV.y);
+	}
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -99,14 +117,73 @@ void CToyUtil::AddVertex(size_t iMaterial, Vector vecPosition, Vector2D vecUV)
 	}
 }
 
-size_t CToyUtil::GetNumVerts()
+size_t CToyUtil::GetNumVerts() const
 {
 	size_t iVerts = 0;
 
 	for (size_t i = 0; i < m_aaflData.size(); i++)
 		iVerts += m_aaflData[i].size();
 
-	return iVerts/(MESH_MATERIAL_VERTEX_SIZE/sizeof(float));
+	size_t iVertSize = GetVertexSizeInBytes()/sizeof(float);
+
+	TAssert(iVerts%iVertSize == 0);
+
+	return iVerts/iVertSize;
+}
+
+size_t CToyUtil::GetVertexSizeInBytes() const
+{
+	size_t iVertSize = 3; // For position
+	if (m_bUseNormals)
+		iVertSize += 3*3; // For normal, tangent, bitangent
+	if (m_bUseUV)
+		iVertSize += 2;   // For UV
+
+	return iVertSize*sizeof(float);
+}
+
+int CToyUtil::GetVertexUVOffsetInBytes() const
+{
+	if (!m_bUseUV)
+		return -1;
+
+	return 3*sizeof(float);
+}
+
+int CToyUtil::GetVertexNormalOffsetInBytes() const
+{
+	if (!m_bUseNormals)
+		return -1;
+
+	size_t iOffset = 3*sizeof(float);
+	if (m_bUseUV)
+		iOffset += 2*sizeof(float);
+
+	return iOffset;
+}
+
+int CToyUtil::GetVertexTangentOffsetInBytes() const
+{
+	if (!m_bUseNormals)
+		return -1;
+
+	size_t iOffset = 6*sizeof(float);
+	if (m_bUseUV)
+		iOffset += 2*sizeof(float);
+
+	return iOffset;
+}
+
+int CToyUtil::GetVertexBitangentOffsetInBytes() const
+{
+	if (!m_bUseNormals)
+		return -1;
+
+	size_t iOffset = 9*sizeof(float);
+	if (m_bUseUV)
+		iOffset += 2*sizeof(float);
+
+	return iOffset;
 }
 
 void CToyUtil::AddPhysTriangle(size_t v1, size_t v2, size_t v3)
@@ -328,69 +405,25 @@ void CToyUtil::AddVisibleNeighbors(size_t iArea, size_t iVisible)
 	}
 }
 
-const unsigned char g_szBaseHeader[] =
+void FillProtoBufEAngle(tinker::protobuf::EAngle* pEAngle, const EAngle& angFill)
 {
-	'\x89',
-	'T',
-	'O',
-	'Y',
-	'B',
-	'A',
-	'S',
-	'E',
-	'\x0D',
-	'\x0A',
-	'\x1A',
-	'\x0A',
-};
+	pEAngle->set_p(angFill.p);
+	pEAngle->set_y(angFill.y);
+	pEAngle->set_r(angFill.r);
+}
 
-const unsigned char g_szMeshHeader[] =
+void FillProtoBufVector(tinker::protobuf::Vector* pVector, const Vector& vecFill)
 {
-	'\x89',
-	'T',
-	'O',
-	'Y',
-	'M',
-	'E',
-	'S',
-	'H',
-	'\x0D',
-	'\x0A',
-	'\x1A',
-	'\x0A',
-};
+	pVector->set_x(vecFill.x);
+	pVector->set_y(vecFill.y);
+	pVector->set_z(vecFill.z);
+}
 
-const unsigned char g_szPhysHeader[] =
+void FillProtoBufAABB(tinker::protobuf::AABB* pAABB, const AABB& aabbFill)
 {
-	'\x89',
-	'T',
-	'O',
-	'Y',
-	'P',
-	'H',
-	'Y',
-	'S',
-	'\x0D',
-	'\x0A',
-	'\x1A',
-	'\x0A',
-};
-
-const unsigned char g_szAreaHeader[] =
-{
-	'\x89',
-	'T',
-	'O',
-	'Y',
-	'A',
-	'R',
-	'E',
-	'A',
-	'\x0D',
-	'\x0A',
-	'\x1A',
-	'\x0A',
-};
+	FillProtoBufVector(pAABB->mutable_min(), aabbFill.m_vecMins);
+	FillProtoBufVector(pAABB->mutable_max(), aabbFill.m_vecMaxs);
+}
 
 bool CToyUtil::Write(const tstring& sFilename)
 {
@@ -420,214 +453,116 @@ bool CToyUtil::Write(const tstring& sFilename)
 			TError("Couldn't copy texture '" + m_asCopyTextures[i] + "' to '" + m_asTextures[i] + "'.\n");
 	}*/
 
-	FILE* fp = tfopen(sFilename, "w");
+	tinker::protobuf::Toy pbToy;
 
-	TAssert(fp);
-	if (!fp)
-		return false;
+	tinker::protobuf::ToyBase* pToyBase = pbToy.mutable_base();
 
-	fwrite(g_szBaseHeader, sizeof(g_szBaseHeader), 1, fp);
+	FillProtoBufAABB(pToyBase->mutable_physics_bounds(), m_aabbPhysBounds);
+	FillProtoBufAABB(pToyBase->mutable_visual_bounds(), m_aabbVisBounds);
 
-	TAssert(sizeof(m_aabbVisBounds) == 4*6);
-	fwrite(&m_aabbVisBounds, sizeof(m_aabbVisBounds), 1, fp);
-
-	TAssert(sizeof(m_aabbPhysBounds) == 4*6);
-	fwrite(&m_aabbPhysBounds, sizeof(m_aabbPhysBounds), 1, fp);
-
-	uint8_t iMaterials = m_asMaterials.size();
-	fwrite(&iMaterials, sizeof(iMaterials), 1, fp);
-
-	uint32_t iFirstMaterial = TOY_HEADER_SIZE;
-	uint32_t iSizeSoFar = iFirstMaterial;
+	tinker::protobuf::ToyMesh* pToyMesh = m_asMaterials.size()?pbToy.mutable_mesh():nullptr;
 	for (size_t i = 0; i < m_asMaterials.size(); i++)
 	{
-		fwrite(&iSizeSoFar, sizeof(iSizeSoFar), 1, fp);
+		auto* pBaseMaterial = pToyBase->add_material();
+		auto* pMeshMaterial = pToyMesh->add_material();
 
-		uint32_t iVerts = (m_aaflData[i].size()/5);
-		fwrite(&iVerts, sizeof(iVerts), 1, fp);
+		pBaseMaterial->set_name(m_asMaterials[i].c_str());
+		pBaseMaterial->set_vertex_size_bytes(GetVertexSizeInBytes());
+		pBaseMaterial->set_vertex_count(m_aaflData[i].size()/(GetVertexSizeInBytes()/sizeof(float)));
+		pBaseMaterial->set_uv_offset(GetVertexUVOffsetInBytes());
+		pBaseMaterial->set_normal_offset(GetVertexNormalOffsetInBytes());
+		pBaseMaterial->set_tangent_offset(GetVertexTangentOffsetInBytes());
+		pBaseMaterial->set_bitangent_offset(GetVertexBitangentOffsetInBytes());
 
-		uint32_t iSize = 0;
-		iSize += MESH_MATERIAL_TEXNAME_LENGTH_SIZE;
-		iSize += m_asMaterials[i].length()+1;
-		iSize += (m_aaflData[i].size()/5)*MESH_MATERIAL_VERTEX_SIZE;
+		auto* pData = pMeshMaterial->mutable_data();
+		pMeshMaterial->mutable_data()->Reserve(m_aaflData[i].size());
 
-		iSizeSoFar += iSize;
+		auto* aflData = m_aaflData[i].data();
+		size_t iDataSize = m_aaflData[i].size();
+
+		for (size_t j = 0; j < iDataSize; j++)
+			pData->AddAlreadyReserved(aflData[j]);
 	}
 
-	uint32_t iSceneAreas = m_asSceneAreas.size();
-	fwrite(&iSceneAreas, sizeof(iSceneAreas), 1, fp);
+	tinker::protobuf::ToyPhys* pToyPhys = (m_aiPhysIndices.size()||m_atrsPhysBoxes.size())?pbToy.mutable_phys():nullptr;
+	if (m_aiPhysIndices.size())
+	{
+		auto* pIndices = pToyPhys->mutable_index();
+		auto* pVerts = pToyPhys->mutable_vert();
 
-	uint32_t iFirstScene = TOY_HEADER_SIZE;
-	iSizeSoFar = iFirstScene;
+		TAssert(m_aiPhysIndices.size()%3==0);
+
+		pIndices->Reserve(m_aiPhysIndices.size());
+
+		auto* aiData = m_aiPhysIndices.data();
+		size_t iDataSize = m_aiPhysIndices.size();
+
+		for (size_t i = 0; i < iDataSize; i++)
+			pIndices->AddAlreadyReserved(aiData[i]);
+
+		pVerts->Reserve(m_avecPhysVerts.size()*3);
+
+		auto* aflData = m_avecPhysVerts.data();
+		iDataSize = m_avecPhysVerts.size();
+
+		for (size_t i = 0; i < iDataSize; i++)
+		{
+			pVerts->AddAlreadyReserved(aflData[i].x);
+			pVerts->AddAlreadyReserved(aflData[i].y);
+			pVerts->AddAlreadyReserved(aflData[i].z);
+		}
+	}
+
+	if (m_atrsPhysBoxes.size())
+	{
+		auto* pBoxen = pToyPhys->mutable_box();
+
+		pBoxen->Reserve(m_atrsPhysBoxes.size());
+
+		for (size_t i = 0; i < m_atrsPhysBoxes.size(); i++)
+		{
+			auto* pBox = pBoxen->Add();
+			FillProtoBufVector(pBox->mutable_translation(), m_atrsPhysBoxes[i].m_vecTranslation);
+			FillProtoBufEAngle(pBox->mutable_rotation(), m_atrsPhysBoxes[i].m_angRotation);
+			FillProtoBufVector(pBox->mutable_scaling(), m_atrsPhysBoxes[i].m_vecScaling);
+		}
+	}
+
 	for (size_t i = 0; i < m_asSceneAreas.size(); i++)
 	{
-		fwrite(&iSizeSoFar, sizeof(iSizeSoFar), 1, fp);
+		auto* pArea = pbToy.add_area();
 
-		size_t iSize = 0;
-		iSize += AREA_AABB_SIZE;
-		iSize += AREA_VISIBLE_AREAS_SIZE;
-		iSize += m_asSceneAreas[i].m_aiVisibleAreas.size()*AREA_VISIBLE_AREAS_STRIDE;
-		iSize += AREA_VISIBLE_AREA_NAME_SIZE;
-		iSize += m_asSceneAreas[i].m_sFileName.length()+1;
+		FillProtoBufAABB(pArea->mutable_size(), m_asSceneAreas[i].m_aabbArea);
+		pArea->set_file(m_asSceneAreas[i].m_sFileName.c_str());
 
-		iSizeSoFar += iSize;
+		for (size_t j = 0; j < m_asSceneAreas[i].m_aiVisibleAreas.size(); j++)
+			pArea->add_neighbor(m_asSceneAreas[i].m_aiVisibleAreas[j]);
 	}
 
-	fclose(fp);
+	std::fstream output(sFilename.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 
-	if (m_aaflData.size())
-	{
-		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".mesh.toy", "w");
+	TAssert(!!output);
+	if (!output)
+		return false;
 
-		TAssert(fp);
-		if (!fp)
-			return false;
-
-		fwrite(g_szMeshHeader, sizeof(g_szMeshHeader), 1, fp);
-
-		iMaterials = m_asMaterials.size();
-
-		for (size_t i = 0; i < m_asMaterials.size(); i++)
-		{
-			uint16_t iLength = m_asMaterials[i].length()+1;
-			fwrite(&iLength, sizeof(iLength), 1, fp);
-			fwrite(m_asMaterials[i].c_str(), iLength, 1, fp);
-
-			fwrite(m_aaflData[i].data(), m_aaflData[i].size()*sizeof(float), 1, fp);
-		}
-
-		fclose(fp);
-	}
-
-	if (m_avecPhysVerts.size() || m_atrsPhysBoxes.size())
-	{
-		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".phys.toy", "w");
-
-		TAssert(fp);
-		if (!fp)
-			return false;
-
-		fwrite(g_szPhysHeader, sizeof(g_szPhysHeader), 1, fp);
-
-		uint32_t iVerts = m_avecPhysVerts.size();
-		fwrite(&iVerts, sizeof(iVerts), 1, fp);
-		uint32_t iTris = m_aiPhysIndices.size()/3;
-		fwrite(&iTris, sizeof(iTris), 1, fp);
-		uint32_t iBoxes = m_atrsPhysBoxes.size();
-		fwrite(&iBoxes, sizeof(iBoxes), 1, fp);
-
-		fwrite(m_avecPhysVerts.data(), m_avecPhysVerts.size()*sizeof(Vector), 1, fp);
-		fwrite(m_aiPhysIndices.data(), m_aiPhysIndices.size()*sizeof(uint32_t), 1, fp);
-		fwrite(m_atrsPhysBoxes.data(), m_atrsPhysBoxes.size()*sizeof(TRS), 1, fp);
-
-		fclose(fp);
-	}
-
-	if (m_asSceneAreas.size())
-	{
-		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".area.toy", "w");
-
-		TAssert(fp);
-		if (!fp)
-			return false;
-
-		fwrite(g_szAreaHeader, sizeof(g_szAreaHeader), 1, fp);
-
-		for (size_t i = 0; i < m_asSceneAreas.size(); i++)
-		{
-			fwrite(&m_asSceneAreas[i].m_aabbArea, sizeof(m_asSceneAreas[i].m_aabbArea), 1, fp);
-
-			uint32_t iAreasVisible = m_asSceneAreas[i].m_aiVisibleAreas.size();
-			fwrite(&iAreasVisible, sizeof(iAreasVisible), 1, fp);
-
-			fwrite(m_asSceneAreas[i].m_aiVisibleAreas.data(), m_asSceneAreas[i].m_aiVisibleAreas.size()*sizeof(uint32_t), 1, fp);
-
-			uint16_t iFileLength = m_asSceneAreas[i].m_sFileName.length()+1;
-			fwrite(&iFileLength, sizeof(iFileLength), 1, fp);
-			fwrite(m_asSceneAreas[i].m_sFileName.c_str(), iFileLength, 1, fp);
-		}
-
-		fclose(fp);
-	}
+	if (!pbToy.SerializeToOstream(&output))
+		return false;
 
 	return true;
 }
 
 bool CToyUtil::Read(const tstring& sFilename, CToy* pToy)
 {
-	FILE* fp = tfopen(sFilename, "r");
-
-	if (!fp)
+	if (!pToy)
 		return false;
 
-	fseek(fp, 0L, SEEK_END);
-	long iToySize = ftell(fp);
-	fseek(fp, 0L, SEEK_SET);
+	std::fstream input(sFilename.c_str(), std::ios::in | std::ios::binary);
 
-	char* pBuffer = pToy->AllocateBase(iToySize);
-
-	fread(pBuffer, iToySize, 1, fp);
-
-	if (memcmp(pBuffer, g_szBaseHeader, sizeof(g_szBaseHeader)) != 0)
+	if (!input)
 		return false;
 
-	fclose(fp);
-
-	if (pToy->GetNumMaterials())
-	{
-		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".mesh.toy", "r");
-
-		fseek(fp, 0L, SEEK_END);
-		iToySize = ftell(fp);
-		fseek(fp, 0L, SEEK_SET);
-
-		char* pBuffer = pToy->AllocateMesh(iToySize);
-
-		fread(pBuffer, iToySize, 1, fp);
-
-		TAssert(memcmp(pBuffer, g_szMeshHeader, sizeof(g_szMeshHeader)) == 0);
-
-		fclose(fp);
-	}
-
-	fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".phys.toy", "r");
-	if (fp)
-	{
-		fseek(fp, 0L, SEEK_END);
-		iToySize = ftell(fp);
-		fseek(fp, 0L, SEEK_SET);
-
-		char* pBuffer = pToy->AllocatePhys(iToySize);
-
-		fread(pBuffer, iToySize, 1, fp);
-
-		TAssert(memcmp(pBuffer, g_szPhysHeader, sizeof(g_szPhysHeader)) == 0);
-
-		fclose(fp);
-	}
-
-	if (pToy->GetNumSceneAreas())
-	{
-		fp = tfopen(sFilename.substr(0, sFilename.length()-4) + ".area.toy", "r");
-
-		TAssert(fp);
-		if (fp)
-		{
-			fseek(fp, 0L, SEEK_END);
-			iToySize = ftell(fp);
-			fseek(fp, 0L, SEEK_SET);
-
-			char* pBuffer = pToy->AllocateArea(iToySize);
-
-			fread(pBuffer, iToySize, 1, fp);
-
-			TAssert(memcmp(pBuffer, g_szAreaHeader, sizeof(g_szAreaHeader)) == 0);
-
-			fclose(fp);
-		}
-		else
-			TError("Couldn't find scene area file: " + sFilename.substr(0, sFilename.length()-4) + ".area.toy\n");
-	}
+	if (!pToy->ReadFromStream(input))
+		return false;
 
 	return true;
 }

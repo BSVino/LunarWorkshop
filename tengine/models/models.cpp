@@ -96,7 +96,7 @@ size_t CModelLibrary::AddModel(const tstring& sModelFile)
 		for (size_t i = 0; i < pModel->m_pToy->GetNumSceneAreas(); i++)
 		{
 			if (CModelLibrary::AddModel(pModel->m_pToy->GetSceneAreaFileName(i)) == ~0)
-				TError(tstring("Area \"") + pModel->m_pToy->GetSceneAreaFileName(i) + "\" for model \"" + sModel + "\" could not be loaded.");
+				TError(tstring("Area \"") + pModel->m_pToy->GetSceneAreaFileName(i).c_str() + "\" for model \"" + sModel + "\" could not be loaded.");
 		}
 	}
 
@@ -286,11 +286,11 @@ bool CModel::Load()
 		m_ahMaterials[i] = CMaterialLibrary::AddMaterial(m_pToy->GetMaterialName(i));
 
 		if (!m_ahMaterials[i].IsValid())
-			m_ahMaterials[i] = CMaterialLibrary::AddMaterial(GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialName(i));
+			m_ahMaterials[i] = CMaterialLibrary::AddMaterial(GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialName(i).c_str());
 
 		//TAssert(m_aiMaterials[i]);
 		if (!m_ahMaterials[i].IsValid())
-			TError(tstring("Couldn't find material \"") + m_pToy->GetMaterialName(i) + "\"\n");
+			TError(tstring("Couldn't find material \"") + m_pToy->GetMaterialName(i).c_str() + "\"\n");
 	}
 
 	if (m_pToy->GetPhysicsNumTris())
@@ -306,7 +306,7 @@ bool CModel::Load()
 
 size_t CModel::LoadBufferIntoGL(size_t iMaterial)
 {
-	return CRenderer::LoadVertexDataIntoGL(m_pToy->GetMaterialNumVerts(iMaterial)*m_pToy->GetVertexSize(), m_pToy->GetMaterialVerts(iMaterial));
+	return CRenderer::LoadVertexDataIntoGL(m_pToy->GetMaterialNumVerts(iMaterial)*m_pToy->GetVertexSizeInBytes(iMaterial), m_pToy->GetMaterialVerts(iMaterial));
 }
 
 void CModel::Unload()

@@ -15,6 +15,8 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 	tmap<tstring, std::shared_ptr<CConversionScene> > asScenes;
 	tmap<tstring, size_t> aiSceneIDs;
 
+	size_t iSceneArea = 0;
+
 	for (size_t i = 0; i < pData->GetNumChildren(); i++)
 	{
 		CData* pArea = pData->GetChild(i);
@@ -70,11 +72,18 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 			asScenes[sFile] = pScene;
 		}
 
+		iSceneArea++;
+
 		CToyUtil ts;
+
+		if (t.IsUsingUV())
+			ts.UseUV();
+		if (t.IsUsingNormals())
+			ts.UseNormals();
 
 		ts.SetGameDirectory(t.GetGameDirectory());
 		ts.SetOutputDirectory(t.GetOutputDirectory());
-		ts.SetOutputFile(sprintf(t.GetOutputFile() + "_sa%d_" + pArea->GetValueString().tolower(), i));
+		ts.SetOutputFile(sprintf(t.GetOutputFile() + "_sa%d_" + pArea->GetValueString().tolower(), iSceneArea));
 		ts.UseLocalTransformations(t.IsUsingLocalTransformations());
 
 		CConversionSceneNode* pMeshNode = asScenes[sFile]->FindSceneNode(sMesh);
@@ -112,6 +121,10 @@ bool CGeppetto::LoadSceneAreas(CData* pData)
 		TMsg(sprintf(" Mesh materials: %d\n", ts.GetNumMaterials()));
 		TMsg(sprintf(" Mesh tris: %d\n", ts.GetNumVerts()/3));
 		TMsg(sprintf(" Physics tris: %d\n", ts.GetNumPhysIndices()/3));
+		if (t.IsUsingUV())
+			TMsg(" Using UV's\n");
+		if (t.IsUsingNormals())
+			TMsg(" Using normals\n");
 
 		TMsg("Writing scene area toy '" + sFileOutput + "' ...");
 		if (ts.Write(sFileOutput))
@@ -278,6 +291,8 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 		t.UseGlobalTransformations();
 	else
 		t.UseLocalTransformations();
+
+	t.UseUV();
 
 	if (pMesh)
 	{

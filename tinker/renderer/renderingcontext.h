@@ -144,19 +144,19 @@ public:
 	void                    CreateVBO(size_t& iVBO, size_t& iVBOSize);
 
 	void					BeginRenderVertexArray(size_t iBuffer=0);
-	void					SetPositionBuffer(float* pflBuffer, size_t iStrideBytes=0);
+	void					SetPositionBuffer(const float* pflBuffer, size_t iStrideBytes=0);
 	void					SetPositionBuffer(size_t iOffsetBytes, size_t iStrideBytes);
-	void					SetNormalsBuffer(float* pflBuffer, size_t iStrideBytes=0);
+	void					SetNormalsBuffer(const float* pflBuffer, size_t iStrideBytes=0);
 	void					SetNormalsBuffer(size_t iOffsetBytes, size_t iStrideBytes);
-	void					SetTangentsBuffer(float* pflBuffer, size_t iStrideBytes=0);
+	void					SetTangentsBuffer(const float* pflBuffer, size_t iStrideBytes=0);
 	void					SetTangentsBuffer(size_t iOffsetBytes, size_t iStrideBytes);
-	void					SetBitangentsBuffer(float* pflBuffer, size_t iStrideBytes=0);
+	void					SetBitangentsBuffer(const float* pflBuffer, size_t iStrideBytes=0);
 	void					SetBitangentsBuffer(size_t iOffsetBytes, size_t iStrideBytes);
-	void					SetTexCoordBuffer(float* pflBuffer, size_t iStrideBytes=0, size_t iChannel=0);
+	void					SetTexCoordBuffer(const float* pflBuffer, size_t iStrideBytes=0, size_t iChannel=0);
 	void					SetTexCoordBuffer(size_t iOffsetBytes, size_t iStrideBytes, size_t iChannel=0);
 	void					SetCustomIntBuffer(const char* pszName, size_t iSize, size_t iOffset, size_t iStride);
 	void					EndRenderVertexArray(size_t iVertices, bool bWireframe = false);
-	void					EndRenderVertexArrayTriangles(size_t iTriangles, int* piIndices);
+	void					EndRenderVertexArrayTriangles(size_t iTriangles, const int* piIndices);
 	void					EndRenderVertexArrayIndexed(size_t iBuffer, size_t iVertices);
 
 	void					RenderText(const tstring& sText, unsigned iLength, const tstring& sFontName, int iFontFaceSize);

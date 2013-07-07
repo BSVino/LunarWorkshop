@@ -8,197 +8,165 @@
 
 #include <shell.h>
 
-#include "toy_offsets.h"
+#include "toy.pb.h"
 
 AABB CToy::s_aabbBoxDimensions = AABB(-Vector(0.5f, 0.5f, 0.5f), Vector(0.5f, 0.5f, 0.5f));
 
 CToy::CToy()
 {
-	m_pBase = nullptr;
-	m_pMesh = nullptr;
-	m_pPhys = nullptr;
-	m_pArea = nullptr;
+	m_pToy = nullptr;
 }
 
 CToy::~CToy()
 {
-	if (m_pBase)
-		free(m_pBase);
+	delete m_pToy;
+}
 
-	if (m_pMesh)
-		free(m_pMesh);
+EAngle ReadProtoBufEAngle(const tinker::protobuf::EAngle& pbEAngle)
+{
+	EAngle angRead;
+	angRead.p = pbEAngle.p();
+	angRead.y = pbEAngle.y();
+	angRead.r = pbEAngle.r();
+	return angRead;
+}
 
-	if (m_pPhys)
-		free(m_pPhys);
+Vector ReadProtoBufVector(const tinker::protobuf::Vector& pbVector)
+{
+	Vector vecRead;
+	vecRead.x = pbVector.x();
+	vecRead.y = pbVector.y();
+	vecRead.z = pbVector.z();
+	return vecRead;
+}
 
-	if (m_pArea)
-		free(m_pArea);
+AABB ReadProtoBufAABB(const tinker::protobuf::AABB& pbAABB)
+{
+	AABB aabbRead;
+	aabbRead.m_vecMins = ReadProtoBufVector(pbAABB.min());
+	aabbRead.m_vecMaxs = ReadProtoBufVector(pbAABB.max());
+	return aabbRead;
+}
+
+TRS ReadProtoBufTRS(const tinker::protobuf::TRS& pbTRS)
+{
+	TRS trsRead;
+	trsRead.m_vecTranslation = ReadProtoBufVector(pbTRS.translation());
+	trsRead.m_angRotation = ReadProtoBufEAngle(pbTRS.rotation());
+	trsRead.m_vecScaling = ReadProtoBufVector(pbTRS.scaling());
+	return trsRead;
+}
+
+bool CToy::ReadFromStream(std::fstream& stream)
+{
+	if (m_pToy)
+		delete m_pToy;
+
+	m_pToy = new tinker::protobuf::Toy();
+
+	if (!m_pToy->ParseFromIstream(&stream))
+		return false;
+
+	m_aabbVisualBounds = ReadProtoBufAABB(m_pToy->base().visual_bounds());
+	m_aabbPhysicsBounds = ReadProtoBufAABB(m_pToy->base().physics_bounds());
+
+	return true;
 }
 
 const AABB& CToy::GetVisBounds()
 {
-	if (!m_pBase)
-	{
-		static AABB aabb;
-		return aabb;
-	}
-
-	return *((AABB*)(m_pBase+TOY_HEADER_SIZE));
+	return m_aabbVisualBounds;
 }
 
 const AABB& CToy::GetPhysBounds()
 {
-	if (!m_pBase)
-	{
-		static AABB aabb;
-		return aabb;
-	}
-
-	return *((AABB*)(m_pBase+TOY_HEADER_SIZE+BASE_AABB_SIZE));
+	return m_aabbPhysicsBounds;
 }
 
 size_t CToy::GetNumMaterials()
 {
-	if (!m_pBase)
-		return 0;
-
-	return (int)*((uint8_t*)(m_pBase+TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_AABB_SIZE));
+	return m_pToy->base().material_size();
 }
 
-size_t CToy::GetMaterialNameLength(size_t i)
+std::string CToy::GetMaterialName(size_t i)
 {
-	return (int)*((uint16_t*)GetMaterial(i));
-}
-
-char* CToy::GetMaterialName(size_t i)
-{
-	return GetMaterial(i)+MESH_MATERIAL_TEXNAME_LENGTH_SIZE;
+	return m_pToy->base().material(i).name();
 }
 
 size_t CToy::GetMaterialNumVerts(size_t i)
 {
-	size_t iMaterialTableEntry = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+i*BASE_MATERIAL_TABLE_STRIDE;
-	size_t iMaterialVertCount = (size_t)*((size_t*)(m_pBase+iMaterialTableEntry+BASE_MATERIAL_TABLE_OFFSET_SIZE));
-	return iMaterialVertCount;
+	return m_pToy->base().material(i).vertex_count();
 }
 
-float* CToy::GetMaterialVerts(size_t iMaterial)
+const float* CToy::GetMaterialVerts(size_t iMaterial)
 {
-	char* pVerts = GetMaterial(iMaterial)+MESH_MATERIAL_TEXNAME_LENGTH_SIZE+GetMaterialNameLength(iMaterial);
-	return (float*)pVerts;
+	return m_pToy->mesh().material(iMaterial).data().data();
 }
 
-float* CToy::GetMaterialVert(size_t iMaterial, size_t iVert)
+const float* CToy::GetMaterialVert(size_t iMaterial, size_t iVert)
 {
-	char* pVerts = GetMaterial(iMaterial)+MESH_MATERIAL_TEXNAME_LENGTH_SIZE+GetMaterialNameLength(iMaterial);
-	return (float*)(pVerts + iVert*MESH_MATERIAL_VERTEX_SIZE);
+	return GetMaterialVerts(iMaterial) + iVert*(GetVertexSizeInBytes(iMaterial)/sizeof(float));
 }
 
-size_t CToy::GetNumSceneAreas()
+size_t CToy::GetVertexSizeInBytes(size_t iMaterial)
 {
-	if (!m_pBase)
-		return 0;
-
-	size_t iSceneTable = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+GetNumMaterials()*BASE_MATERIAL_TABLE_STRIDE;
-	return (int)*((uint32_t*)(m_pBase+iSceneTable));
+	return m_pToy->base().material(iMaterial).vertex_size_bytes();
 }
 
-size_t CToy::GetVertexSize()
-{
-	return MESH_MATERIAL_VERTEX_SIZE;
-}
-
-size_t CToy::GetVertexPosition()
+int CToy::GetVertexPositionOffsetInBytes(size_t iMaterial)
 {
 	return 0;
 }
 
-size_t CToy::GetVertexUV()
+int CToy::GetVertexUVOffsetInBytes(size_t iMaterial)
 {
-	return 3*4;
+	return m_pToy->base().material(iMaterial).uv_offset();
 }
 
 size_t CToy::GetPhysicsNumVerts()
 {
-	if (!m_pPhys)
-		return 0;
-
-	return (int)*((uint32_t*)(m_pPhys+TOY_HEADER_SIZE));
+	return m_pToy->phys().vert().size()/3; // Because 3 floats in a vector
 }
 
 size_t CToy::GetPhysicsNumTris()
 {
-	if (!m_pPhys)
-		return 0;
-
-	return (size_t)*((uint32_t*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE));
+	TAssert(m_pToy->phys().index().size()%3==0);
+	return m_pToy->phys().index().size()/3; // Because 3 points in a triangle
 }
 
 size_t CToy::GetPhysicsNumBoxes()
 {
-	if (!m_pPhys)
-		return 0;
-
-	return (size_t)*((uint32_t*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE+PHYS_TRIS_LENGTH_SIZE));
+	return m_pToy->phys().box().size();
 }
 
-float* CToy::GetPhysicsVerts()
+const float* CToy::GetPhysicsVerts()
 {
-	if (!m_pPhys)
-		return nullptr;
-
-	return (float*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE+PHYS_TRIS_LENGTH_SIZE+PHYS_BOXES_LENGTH_SIZE);
+	return m_pToy->phys().vert().data();
 }
 
-float* CToy::GetPhysicsVert(size_t iVert)
+const float* CToy::GetPhysicsVert(size_t iVert)
 {
-	if (!m_pPhys)
-		return nullptr;
-
 	return GetPhysicsVerts() + iVert*3;
 }
 
-int* CToy::GetPhysicsTris()
+const int* CToy::GetPhysicsTris()
 {
-	if (!m_pPhys)
-		return nullptr;
-
-	size_t iVertsSize = GetPhysicsNumVerts()*PHYS_VERT_SIZE;
-	return (int*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE+PHYS_TRIS_LENGTH_SIZE+PHYS_BOXES_LENGTH_SIZE+iVertsSize);
+	return m_pToy->phys().index().data();
 }
 
-int* CToy::GetPhysicsTri(size_t iTri)
+const int* CToy::GetPhysicsTri(size_t iTri)
 {
-	if (!m_pPhys)
-		return nullptr;
-
 	return GetPhysicsTris() + iTri*3;
 }
 
-TRS* CToy::GetPhysicsBoxes()
+TRS CToy::GetPhysicsBox(size_t iBox)
 {
-	if (!m_pPhys)
-		return nullptr;
-
-	size_t iVertsSize = GetPhysicsNumVerts()*PHYS_VERT_SIZE;
-	size_t iTrisSize = GetPhysicsNumTris()*PHYS_TRI_SIZE;
-	return (TRS*)(m_pPhys+TOY_HEADER_SIZE+PHYS_VERTS_LENGTH_SIZE+PHYS_TRIS_LENGTH_SIZE+PHYS_BOXES_LENGTH_SIZE+iVertsSize+iTrisSize);
-}
-
-TRS& CToy::GetPhysicsBox(size_t iBox)
-{
-	if (!m_pPhys)
-	{
-		static TRS d;
-		return d;
-	}
-
-	return *(GetPhysicsBoxes() + iBox);
+	return ReadProtoBufTRS(m_pToy->phys().box(iBox));
 }
 
 Vector CToy::GetPhysicsBoxHalfSize(size_t iBox)
 {
-	TRS& trs = GetPhysicsBox(iBox);
+	TRS trs = GetPhysicsBox(iBox);
 
 	TAssert(trs.m_angRotation.p == 0);
 	TAssert(trs.m_angRotation.y == 0);
@@ -213,111 +181,32 @@ Vector CToy::GetPhysicsBoxHalfSize(size_t iBox)
 	return aabbBox.m_vecMaxs - aabbBox.Center();
 }
 
-const AABB& CToy::GetSceneAreaAABB(size_t iSceneArea)
+size_t CToy::GetNumSceneAreas()
 {
-	if (!m_pArea)
-	{
-		static AABB aabb;
-		return aabb;
-	}
+	return m_pToy->area().size();
+}
 
-	return *((AABB*)(GetSceneArea(iSceneArea)));
+AABB CToy::GetSceneAreaAABB(size_t iSceneArea)
+{
+	return ReadProtoBufAABB(m_pToy->area(iSceneArea).size());
 }
 
 size_t CToy::GetSceneAreaNumVisible(size_t iSceneArea)
 {
-	if (!m_pArea)
-		return 0;
-
-	return (size_t)*((uint32_t*)(GetSceneArea(iSceneArea) + AREA_AABB_SIZE));
+	return m_pToy->area(iSceneArea).neighbor().size();
 }
 
 size_t CToy::GetSceneAreasVisible(size_t iSceneArea, size_t iArea)
 {
-	if (!m_pArea)
-		return 0;
-
-	return (size_t)*((uint32_t*)(GetSceneArea(iSceneArea) + AREA_AABB_SIZE + AREA_VISIBLE_AREAS_SIZE + iArea*AREA_VISIBLE_AREAS_STRIDE));
+	return m_pToy->area(iSceneArea).neighbor(iArea);
 }
 
-char* CToy::GetSceneAreaFileName(size_t iSceneArea)
+std::string CToy::GetSceneAreaFileName(size_t iSceneArea)
 {
-	if (!m_pArea)
-		return nullptr;
-
-	size_t iOffset = AREA_AABB_SIZE + AREA_VISIBLE_AREAS_SIZE + GetSceneAreaNumVisible(iSceneArea)*AREA_VISIBLE_AREAS_STRIDE + AREA_VISIBLE_AREA_NAME_SIZE;
-	return GetSceneArea(iSceneArea) + iOffset;
-}
-
-char* CToy::GetMaterial(size_t i)
-{
-	TAssert(m_pMesh);
-	if (!m_pMesh)
-		return nullptr;
-
-	size_t iMaterialTableEntry = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+i*BASE_MATERIAL_TABLE_STRIDE;
-	size_t iMaterialOffset = (size_t)*((uint32_t*)(m_pBase+iMaterialTableEntry));
-	return m_pMesh+iMaterialOffset;
-}
-
-char* CToy::GetSceneArea(size_t i)
-{
-	TAssert(m_pArea);
-	if (!m_pArea)
-		return nullptr;
-
-	size_t iSceneTable = TOY_HEADER_SIZE+BASE_AABB_SIZE+BASE_AABB_SIZE+BASE_MATERIAL_TABLE_SIZE+GetNumMaterials()*BASE_MATERIAL_TABLE_STRIDE+BASE_SCENE_TABLE_SIZE;
-	size_t iSceneTableEntry = iSceneTable+i*AREA_VISIBLE_AREAS_STRIDE;
-	size_t iSceneOffset = (size_t)*((uint32_t*)(m_pBase+iSceneTableEntry));
-	return m_pArea+iSceneOffset;
-}
-
-char* CToy::AllocateBase(size_t iSize)
-{
-	if (m_pBase)
-		free(m_pBase);
-
-	if (m_pMesh)
-	{
-		free(m_pMesh);
-		m_pMesh = nullptr;
-	}
-
-	m_pBase = (char*)malloc(iSize);
-	return m_pBase;
-}
-
-char* CToy::AllocateMesh(size_t iSize)
-{
-	if (m_pMesh)
-		free(m_pMesh);
-
-	m_pMesh = (char*)malloc(iSize);
-	return m_pMesh;
+	return m_pToy->area(iSceneArea).file();
 }
 
 void CToy::DeallocateMesh()
 {
-	if (m_pMesh)
-		free(m_pMesh);
-
-	m_pMesh = nullptr;
-}
-
-char* CToy::AllocatePhys(size_t iSize)
-{
-	if (m_pPhys)
-		free(m_pPhys);
-
-	m_pPhys = (char*)malloc(iSize);
-	return m_pPhys;
-}
-
-char* CToy::AllocateArea(size_t iSize)
-{
-	if (m_pArea)
-		free(m_pArea);
-
-	m_pArea = (char*)malloc(iSize);
-	return m_pArea;
+	delete m_pToy->release_mesh();
 }

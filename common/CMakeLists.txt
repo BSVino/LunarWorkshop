@@ -1,8 +1,10 @@
 include_directories (
 	${PROJECT_SOURCE_DIR}/../ext-deps/EASTL/include
+	${PROJECT_SOURCE_DIR}/../ext-deps/protobuf-2.5.0/vsprojects/include
 	../
 	../common
 	math
+	${CMAKE_SOURCE_DIR}/
 )
 
 if (WIN32)
@@ -28,6 +30,8 @@ set (LWBASE_SOURCES
 
 	../datamanager/data.cpp
 	../datamanager/dataserializer.cpp
+
+	protobuf/math.pb.cc
 )
 
 if (WITH_EASTL)

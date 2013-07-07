@@ -142,6 +142,10 @@ bool CGeppetto::Compile()
 	TMsg(sprintf(" Mesh tris: %d\n", t.GetNumVerts()/3));
 	TMsg(sprintf(" Physics tris: %d\n", t.GetNumPhysIndices()/3));
 	TMsg(sprintf(" Scene areas: %d\n", t.GetNumSceneAreas()));
+	if (t.IsUsingUV())
+		TMsg(" Using UV's\n");
+	if (t.IsUsingNormals())
+		TMsg(" Using normals\n");
 
 	TMsg(sprintf("Writing toy '" + m_sOutput + "' ..."));
 
@@ -166,6 +170,8 @@ void CGeppetto::LoadFromFiles(const tstring& sMesh, const tstring& sPhysics)
 
 	c.ReadModel(GetPath(sMesh));
 	TMsg(" Done.\n");
+
+	t.UseUV();
 
 	TMsg("Building toy mesh ...");
 	LoadSceneIntoToy(pScene.get(), &t);

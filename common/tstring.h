@@ -58,6 +58,13 @@ public:
 		: TSTRING_BASE(b, e)
 	{}
 
+#ifdef WITH_EASTL
+	tstring(const std::string& s)
+		: TSTRING_BASE(s.c_str())
+	{
+	}
+#endif
+
 public:
 	using TSTRING_BASE::replace;
 

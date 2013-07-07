@@ -582,7 +582,7 @@ bool CBulletPhysics::IsEntityAdded(IPhysicsEntity* pEntity)
 	return (pPhysicsEntity->m_pCharacterController || pPhysicsEntity->m_pExtraShape || pPhysicsEntity->m_pGhostObject || pPhysicsEntity->m_pRigidBody || pPhysicsEntity->m_pTriggerController);
 }
 
-void CBulletPhysics::LoadCollisionMesh(const tstring& sModel, size_t iTris, int* aiTris, size_t iVerts, float* aflVerts)
+void CBulletPhysics::LoadCollisionMesh(const tstring& sModel, size_t iTris, const int* aiTris, size_t iVerts, const float* aflVerts)
 {
 	size_t iModel = CModelLibrary::FindModel(sModel);
 

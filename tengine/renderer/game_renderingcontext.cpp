@@ -122,8 +122,9 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	BeginRenderVertexArray(pModel->m_aiVertexBuffers[iMaterial]);
 	if (pModel->m_pToy)
 	{
-		SetPositionBuffer(0u, pModel->m_pToy->GetVertexSize());
-		SetTexCoordBuffer(BUFFER_OFFSET(pModel->m_pToy->GetVertexUV()), pModel->m_pToy->GetVertexSize());
+		SetPositionBuffer(0u, pModel->m_pToy->GetVertexSizeInBytes(iMaterial));
+		if (pModel->m_pToy->GetVertexUVOffsetInBytes(iMaterial) > 0)
+			SetTexCoordBuffer(BUFFER_OFFSET(pModel->m_pToy->GetVertexUVOffsetInBytes(iMaterial)), pModel->m_pToy->GetVertexSizeInBytes(iMaterial));
 	}
 	else
 	{
