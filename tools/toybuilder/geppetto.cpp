@@ -49,9 +49,9 @@ void CGeppetto::LoadMeshInstanceIntoToy(CConversionScene* pScene, CConversionMes
 				CConversionVertex* pVertex1 = pFace->GetVertex(k-1);
 				CConversionVertex* pVertex2 = pFace->GetVertex(k);
 
-				pToy->AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex0->v), pMesh->GetUV(pVertex0->vu));
-				pToy->AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex1->v), pMesh->GetUV(pVertex1->vu));
-				pToy->AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex2->v), pMesh->GetUV(pVertex2->vu));
+				pToy->AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex0->v), pMesh->GetUV(pVertex0->vu), Matrix4x4(pMesh->GetNormal(pVertex0->vn), pMesh->GetTangent(pVertex0->vt), pMesh->GetBitangent(pVertex0->vb)));
+				pToy->AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex1->v), pMesh->GetUV(pVertex1->vu), Matrix4x4(pMesh->GetNormal(pVertex1->vn), pMesh->GetTangent(pVertex1->vt), pMesh->GetBitangent(pVertex1->vb)));
+				pToy->AddVertex(iMaterial, mParentTransformations * pMesh->GetVertex(pVertex2->v), pMesh->GetUV(pVertex2->vu), Matrix4x4(pMesh->GetNormal(pVertex2->vn), pMesh->GetTangent(pVertex2->vt), pMesh->GetBitangent(pVertex2->vb)));
 			}
 		}
 	}
@@ -172,6 +172,7 @@ void CGeppetto::LoadFromFiles(const tstring& sMesh, const tstring& sPhysics)
 	TMsg(" Done.\n");
 
 	t.UseUV();
+	t.UseNormals();
 
 	TMsg("Building toy mesh ...");
 	LoadSceneIntoToy(pScene.get(), &t);

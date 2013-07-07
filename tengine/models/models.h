@@ -10,7 +10,7 @@
 
 class CToy;
 
-// Vertex size for 
+// Vertex size for models loaded that didn't come from a .toy
 #define FIXED_FLOATS_PER_VERTEX 5
 #define FIXED_UV_OFFSET 3
 

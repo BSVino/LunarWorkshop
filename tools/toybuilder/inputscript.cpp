@@ -293,6 +293,7 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 		t.UseLocalTransformations();
 
 	t.UseUV();
+	t.UseNormals();
 
 	if (pMesh)
 	{
@@ -313,6 +314,8 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 
 			Vector vecUp = Vector(0, 0, 0.5f) * ((float)y/100);
 			Vector vecLeft = Vector(0, 0.5f, 0) * ((float)x/100);
+
+			t.UseNormals(false);
 
 			if (IsAbsolutePath(pMesh->GetValueString()))
 				t.AddMaterial(GetPath(pMesh->GetValueString()));
@@ -346,6 +349,8 @@ bool CGeppetto::BuildFromInputScript(const tstring& sScript)
 
 			Vector vecUp = Vector(0, 0.5f, 0) * (h/hMaterial->m_iTexelsPerMeter);
 			Vector vecRight = Vector(0, 0, 0.5f) * (w/hMaterial->m_iTexelsPerMeter);
+
+			t.UseNormals(false);
 
 			t.AddMaterial(pMesh->GetValueString());
 

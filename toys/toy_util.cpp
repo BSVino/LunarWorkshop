@@ -84,19 +84,19 @@ void CToyUtil::AddMaterial(const tstring& sMaterial, const tstring& sOriginalFil
 	m_aaflData.push_back();
 }
 
-void CToyUtil::UseUV()
+void CToyUtil::UseUV(bool bUse)
 {
 	TAssert(!m_aaflData.size());
-	m_bUseUV = true;
+	m_bUseUV = bUse;
 }
 
-void CToyUtil::UseNormals()
+void CToyUtil::UseNormals(bool bUse)
 {
 	TAssert(!m_aaflData.size());
-	m_bUseNormals = true;
+	m_bUseNormals = bUse;
 }
 
-void CToyUtil::AddVertex(size_t iMaterial, const Vector& vecPosition, const Vector2D& vecUV)
+void CToyUtil::AddVertex(size_t iMaterial, const Vector& vecPosition, const Vector2D& vecUV, const Matrix4x4& mNormals)
 {
 	m_aaflData[iMaterial].push_back(vecPosition.x);
 	m_aaflData[iMaterial].push_back(vecPosition.y);
@@ -106,6 +106,19 @@ void CToyUtil::AddVertex(size_t iMaterial, const Vector& vecPosition, const Vect
 	{
 		m_aaflData[iMaterial].push_back(vecUV.x);
 		m_aaflData[iMaterial].push_back(vecUV.y);
+	}
+
+	if (m_bUseNormals)
+	{
+		m_aaflData[iMaterial].push_back(mNormals.GetColumn(0).x);
+		m_aaflData[iMaterial].push_back(mNormals.GetColumn(0).y);
+		m_aaflData[iMaterial].push_back(mNormals.GetColumn(0).z);
+		m_aaflData[iMaterial].push_back(mNormals.GetColumn(1).x);
+		m_aaflData[iMaterial].push_back(mNormals.GetColumn(1).y);
+		m_aaflData[iMaterial].push_back(mNormals.GetColumn(1).z);
+		m_aaflData[iMaterial].push_back(mNormals.GetColumn(2).x);
+		m_aaflData[iMaterial].push_back(mNormals.GetColumn(2).y);
+		m_aaflData[iMaterial].push_back(mNormals.GetColumn(2).z);
 	}
 
 	for (int i = 0; i < 3; i++)

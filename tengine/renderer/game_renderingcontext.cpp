@@ -115,6 +115,8 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 {
 	SetUniform("vecColor", m_clrRender);
 
+	SetUniform("bNormalsAvailable", !!(pModel->m_pToy->GetVertexNormalOffsetInBytes(iMaterial) > 0));
+
 	TAssert(m_pShader);
 	if (!pModel || !m_pShader)
 		return;
@@ -125,6 +127,12 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 		SetPositionBuffer(0u, pModel->m_pToy->GetVertexSizeInBytes(iMaterial));
 		if (pModel->m_pToy->GetVertexUVOffsetInBytes(iMaterial) > 0)
 			SetTexCoordBuffer(BUFFER_OFFSET(pModel->m_pToy->GetVertexUVOffsetInBytes(iMaterial)), pModel->m_pToy->GetVertexSizeInBytes(iMaterial));
+		if (pModel->m_pToy->GetVertexNormalOffsetInBytes(iMaterial) > 0)
+			SetNormalsBuffer(BUFFER_OFFSET(pModel->m_pToy->GetVertexNormalOffsetInBytes(iMaterial)), pModel->m_pToy->GetVertexSizeInBytes(iMaterial));
+		if (pModel->m_pToy->GetVertexTangentOffsetInBytes(iMaterial) > 0)
+			SetTangentsBuffer(BUFFER_OFFSET(pModel->m_pToy->GetVertexTangentOffsetInBytes(iMaterial)), pModel->m_pToy->GetVertexSizeInBytes(iMaterial));
+		if (pModel->m_pToy->GetVertexBitangentOffsetInBytes(iMaterial) > 0)
+			SetBitangentsBuffer(BUFFER_OFFSET(pModel->m_pToy->GetVertexBitangentOffsetInBytes(iMaterial)), pModel->m_pToy->GetVertexSizeInBytes(iMaterial));
 	}
 	else
 	{

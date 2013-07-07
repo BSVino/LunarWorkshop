@@ -40,9 +40,9 @@ public:
 
 	void			AddMaterial(const tstring& sMaterial, const tstring& sOriginalFile = "");
 	size_t			GetNumMaterials() { return m_asMaterials.size(); }
-	void            UseUV();
-	void            UseNormals();
-	void            AddVertex(size_t iMaterial, const Vector& vecPosition, const Vector2D& vecUV);
+	void            UseUV(bool bUse = true);
+	void            UseNormals(bool bUse = true);
+	void            AddVertex(size_t iMaterial, const Vector& vecPosition, const Vector2D& vecUV, const Matrix4x4& mNormals = Matrix4x4());
 	size_t          GetNumVerts() const;
 	bool            IsUsingUV() const { return m_bUseUV; }
 	bool            IsUsingNormals() const { return m_bUseNormals; }

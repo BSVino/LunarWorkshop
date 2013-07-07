@@ -123,6 +123,21 @@ int CToy::GetVertexUVOffsetInBytes(size_t iMaterial)
 	return m_pToy->base().material(iMaterial).uv_offset();
 }
 
+int CToy::GetVertexNormalOffsetInBytes(size_t iMaterial)
+{
+	return m_pToy->base().material(iMaterial).normal_offset();
+}
+
+int CToy::GetVertexTangentOffsetInBytes(size_t iMaterial)
+{
+	return m_pToy->base().material(iMaterial).tangent_offset();
+}
+
+int CToy::GetVertexBitangentOffsetInBytes(size_t iMaterial)
+{
+	return m_pToy->base().material(iMaterial).bitangent_offset();
+}
+
 size_t CToy::GetPhysicsNumVerts()
 {
 	return m_pToy->phys().vert().size()/3; // Because 3 floats in a vector

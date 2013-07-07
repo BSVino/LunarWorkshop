@@ -33,6 +33,9 @@ public:
 	size_t      GetVertexSizeInBytes(size_t iMaterial);
 	int         GetVertexPositionOffsetInBytes(size_t iMaterial);
 	int         GetVertexUVOffsetInBytes(size_t iMaterial);
+	int         GetVertexNormalOffsetInBytes(size_t iMaterial);
+	int         GetVertexTangentOffsetInBytes(size_t iMaterial);
+	int         GetVertexBitangentOffsetInBytes(size_t iMaterial);
 
 	size_t      GetPhysicsNumVerts();
 	size_t      GetPhysicsNumTris();
