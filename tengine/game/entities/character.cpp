@@ -24,7 +24,6 @@ SAVEDATA_TABLE_BEGIN(CCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, CEntityHandle<CBaseEntity>, m_hGround);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bNoClip);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bTransformMoveByView);
-	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecGoalVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecMoveVelocity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, double, m_flMoveSimulationTime);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, double, m_flLastAttack);
@@ -55,7 +54,6 @@ void CCharacter::Spawn()
 	SetTotalHealth(100);
 
 	m_vecMoveVelocity = Vector(0,0,0);
-	m_vecGoalVelocity = Vector(0,0,0);
 
 	m_flMoveSimulationTime = 0;
 
@@ -117,30 +115,30 @@ void CCharacter::Simulate()
 void CCharacter::Move(movetype_t eMoveType)
 {
 	if (eMoveType == MOVE_FORWARD)
-		m_vecGoalVelocity.x = 1;
+		m_vecMoveVelocity.x = 1;
 	else if (eMoveType == MOVE_BACKWARD)
-		m_vecGoalVelocity.x = -1;
+		m_vecMoveVelocity.x = -1;
 	else if (eMoveType == MOVE_LEFT)
-		m_vecGoalVelocity.y = 1;
+		m_vecMoveVelocity.y = 1;
 	else if (eMoveType == MOVE_RIGHT)
-		m_vecGoalVelocity.y = -1;
+		m_vecMoveVelocity.y = -1;
 }
 
 void CCharacter::StopMove(movetype_t eMoveType)
 {
-	if (eMoveType == MOVE_FORWARD && m_vecGoalVelocity.x > 0.0f)
-		m_vecGoalVelocity.x = 0;
-	else if (eMoveType == MOVE_BACKWARD && m_vecGoalVelocity.x < 0.0f)
-		m_vecGoalVelocity.x = 0;
-	else if (eMoveType == MOVE_LEFT && m_vecGoalVelocity.y > 0.0f)
-		m_vecGoalVelocity.y = 0;
-	else if (eMoveType == MOVE_RIGHT && m_vecGoalVelocity.y < 0.0f)
-		m_vecGoalVelocity.y = 0;
+	if (eMoveType == MOVE_FORWARD && m_vecMoveVelocity.x > 0.0f)
+		m_vecMoveVelocity.x = 0;
+	else if (eMoveType == MOVE_BACKWARD && m_vecMoveVelocity.x < 0.0f)
+		m_vecMoveVelocity.x = 0;
+	else if (eMoveType == MOVE_LEFT && m_vecMoveVelocity.y > 0.0f)
+		m_vecMoveVelocity.y = 0;
+	else if (eMoveType == MOVE_RIGHT && m_vecMoveVelocity.y < 0.0f)
+		m_vecMoveVelocity.y = 0;
 }
 
 const TVector CCharacter::GetGoalVelocity()
 {
-	TVector vecGoalVelocity = m_vecGoalVelocity;
+	TVector vecGoalVelocity = m_vecMoveVelocity;
 
 	if (vecGoalVelocity.LengthSqr() > 1)
 		vecGoalVelocity.Normalize();
@@ -150,12 +148,12 @@ const TVector CCharacter::GetGoalVelocity()
 
 void CCharacter::SetGoalVelocityForward(float flForward)
 {
-	m_vecGoalVelocity.x = flForward;
+	m_vecMoveVelocity.x = flForward;
 }
 
 void CCharacter::SetGoalVelocityLeft(float flLeft)
 {
-	m_vecGoalVelocity.y = flLeft;
+	m_vecMoveVelocity.y = flLeft;
 }
 
 void CCharacter::MoveThink()
@@ -164,15 +162,11 @@ void CCharacter::MoveThink()
 
 	TVector vecGoalVelocity = GetGoalVelocity();
 
-	m_vecMoveVelocity.x = Approach((float)vecGoalVelocity.x, (float)m_vecMoveVelocity.x, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
-	m_vecMoveVelocity.y = Approach((float)vecGoalVelocity.y, (float)m_vecMoveVelocity.y, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
-	m_vecMoveVelocity.z = 0;
-
 	TVector vecLocalVelocity;
 
-	if (m_vecMoveVelocity.LengthSqr() > 0.0f)
+	if (vecGoalVelocity.LengthSqr() > 0.0f)
 	{
-		TVector vecMove = m_vecMoveVelocity * CharacterSpeed();
+		TVector vecMove = vecGoalVelocity * CharacterSpeed();
 
 		if (m_bTransformMoveByView)
 		{
@@ -206,13 +200,9 @@ void CCharacter::MoveThink_NoClip()
 
 	TVector vecGoalVelocity = GetGoalVelocity();
 
-	m_vecMoveVelocity.x = Approach((float)vecGoalVelocity.x, (float)m_vecMoveVelocity.x, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
-	m_vecMoveVelocity.y = Approach((float)vecGoalVelocity.y, (float)m_vecMoveVelocity.y, (float)GameServer()->GetFrameTime()*(float)CharacterAcceleration());
-	m_vecMoveVelocity.z = 0;
-
-	if (m_vecMoveVelocity.LengthSqr() > 0.0f)
+	if (vecGoalVelocity.LengthSqr() > 0.0f)
 	{
-		TVector vecMove = m_vecMoveVelocity * CharacterSpeed();
+		TVector vecMove = vecGoalVelocity * CharacterSpeed();
 		TVector vecLocalVelocity;
 
 		if (m_bTransformMoveByView)

@@ -99,7 +99,6 @@ protected:
 	bool							m_bNoClip;
 
 	bool							m_bTransformMoveByView;
-	TVector							m_vecGoalVelocity;
 	TVector							m_vecMoveVelocity;
 	double							m_flMoveSimulationTime;
 

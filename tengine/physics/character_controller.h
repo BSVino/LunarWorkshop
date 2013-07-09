@@ -120,8 +120,6 @@ protected:
 	btVector3       m_vecMoveVelocity;
 	btVector3       m_vecMoveVelocityNormalized;
 
-	btVector3       m_vecCurrentVelocity;
-
 	//some internal variables
 	btVector3		m_vecCurrentPosition;
 	btScalar		m_flCurrentStepOffset;

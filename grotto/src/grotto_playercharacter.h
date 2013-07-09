@@ -26,6 +26,8 @@ public:
 
 	virtual void				Reflected(reflection_t eReflectionType);
 
+	virtual TFloat              CharacterAcceleration() { return 20.0f; }
+
 protected:
 	CEntityHandle<CCharacterCamera> m_hCamera;
 

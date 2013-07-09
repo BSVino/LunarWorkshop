@@ -879,7 +879,7 @@ void CBulletPhysics::SetEntityVelocity(IPhysicsEntity* pEnt, const Vector& vecVe
 	if (pPhysicsEntity->m_pRigidBody)
 		pPhysicsEntity->m_pRigidBody->setLinearVelocity(v);
 	else if (pPhysicsEntity->m_pCharacterController)
-		TAssert(false);
+	{ /* No op. The game already set the CBaseEntity velocity. */ }
 }
 
 Vector CBulletPhysics::GetEntityVelocity(IPhysicsEntity* pEnt)

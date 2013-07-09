@@ -108,7 +108,6 @@ CCharacterController::CCharacterController(CCharacter* pEntity, btPairCachingGho
 	m_hEntity = pEntity;
 	m_flAddedMargin = 0.02f;
 	m_vecMoveVelocity.setValue(0,0,0);
-	m_vecCurrentVelocity.setValue(0,0,0);
 	m_pGhostObject = ghostObject;
 	m_flStepHeight = stepHeight;
 	m_pConvexShape = convexShape;	
@@ -158,8 +157,6 @@ void CCharacterController::CharacterMovement(btCollisionWorld* pCollisionWorld, 
 	else
 		bMovement |= PlayerWalk(pCollisionWorld, deltaTime);
 
-	m_vecCurrentVelocity = (m_pGhostObject->getWorldTransform().getOrigin() - mCharacter.getOrigin()) / deltaTime;
-
 	if (bMovement)
 		pPhysicsEntity->m_oMotionState.setWorldTransform(m_pGhostObject->getWorldTransform());
 }
@@ -199,23 +196,113 @@ void CCharacterController::playerStep(btCollisionWorld* pCollisionWorld, btScala
 	PlayerWalk(pCollisionWorld, dt);
 }
 
+CVar sv_friction("sv_friction", "8");
+
 bool CCharacterController::PlayerWalk(btCollisionWorld* pCollisionWorld, btScalar dt)
 {
-	if (m_vecMoveVelocity.length2() < 0.001f)
+	Vector vecCurrentVelocity = m_hEntity->GetLocalVelocity();
+	vecCurrentVelocity.z = 0;
+
+	// Calculate friction first, so that the player's movement commands can overwhelm it.
+	if (vecCurrentVelocity.LengthSqr() > 0.001f)
+	{
+		if (m_hEntity->GetGroundEntity())
+		{
+			float flSpeed2D = vecCurrentVelocity.Length2D();
+
+			float flFriction = sv_friction.GetFloat() * flSpeed2D * dt;
+
+			float flNewSpeed = flSpeed2D - flFriction;
+
+			if (flNewSpeed < 0)
+				flNewSpeed = 0;
+
+			float flScale = flNewSpeed / flSpeed2D;
+
+			vecCurrentVelocity *= flScale;
+		}
+	}
+
+	// Calculate a new velocity using the player's desired direction of travel.
+	btVector3 vecWishDirection = m_vecMoveVelocity;
+	vecWishDirection.setZ(0);
+	float flWishVelocity = m_vecMoveVelocity.length();
+	if (flWishVelocity)
+		vecWishDirection = vecWishDirection / flWishVelocity;
+	else
+		vecWishDirection = btVector3(0, 0, 0);
+
+	if (flWishVelocity > m_hEntity->CharacterSpeed())
+		flWishVelocity = m_hEntity->CharacterSpeed();
+
+	float flVelocityInWishDirection = GetVelocity().dot(vecWishDirection);
+
+	float flDirectionChange = flWishVelocity - flVelocityInWishDirection;
+
+	if (flDirectionChange > 0)
+	{
+		float flAccelerationAmount = flWishVelocity * m_hEntity->CharacterAcceleration() * dt;
+		if (flAccelerationAmount > flDirectionChange)
+			flAccelerationAmount = flDirectionChange;
+		vecCurrentVelocity = vecCurrentVelocity + ToTVector(vecWishDirection) * flAccelerationAmount;
+
+		TAssert(vecCurrentVelocity.z == 0);
+	}
+
+	float flCurrentVelocity = vecCurrentVelocity.Length();
+
+	if (flCurrentVelocity > m_hEntity->CharacterSpeed())
+		vecCurrentVelocity *= m_hEntity->CharacterSpeed()/flCurrentVelocity;
+
+	if (vecCurrentVelocity.LengthSqr() < 0.001f)
+	{
+		m_hEntity->SetLocalVelocity(Vector());
 		return false;
+	}
 
-	m_vecCurrentVelocity = PerpendicularComponent(m_vecMoveVelocity, GetUpVector()).normalized() * m_vecMoveVelocity.length();
+	btTransform mWorld = m_pGhostObject->getWorldTransform();
 
-	btTransform mWorld;
-	mWorld = m_pGhostObject->getWorldTransform();
+	// Try moving the player directly, if it's possible.
+	{
+		m_vecTargetPosition = mWorld.getOrigin() + ToBTVector(vecCurrentVelocity) * dt;
+
+		btTransform mStart, mEnd;
+		mStart.setOrigin(m_vecCurrentPosition);
+		mEnd.setOrigin(m_vecTargetPosition);
+		btVector3 sweepDirNegative(m_vecCurrentPosition - m_vecTargetPosition);
+
+		btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, sweepDirNegative, btScalar(0.0));
+		callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
+		callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
+
+		btScalar margin = m_pConvexShape->getMargin();
+		m_pConvexShape->setMargin(margin + m_flAddedMargin);
+
+		m_pGhostObject->convexSweepTest (m_pConvexShape, mStart, mEnd, callback, pCollisionWorld->getDispatchInfo().m_allowedCcdPenetration);
+
+		m_pConvexShape->setMargin(margin);
+
+		if (callback.m_closestHitFraction == 1)
+		{
+			mWorld.setOrigin(m_vecTargetPosition);
+			m_pGhostObject->setWorldTransform(mWorld);
+			m_hEntity->SetLocalVelocity(vecCurrentVelocity);
+			return true;
+		}
+	}
+
+	// There was something blocking the way. Try walking up a step or along walls.
 
 	btVector3 vecOriginalPosition = mWorld.getOrigin();
 
-	StepForwardAndStrafe(pCollisionWorld, m_vecCurrentVelocity * dt);
+	StepForwardAndStrafe(pCollisionWorld, ToBTVector(vecCurrentVelocity) * dt);
 
 	StepDown(pCollisionWorld, dt);
 
 	btVector3 vecTraveled = (m_vecCurrentPosition - vecOriginalPosition) * m_vecLinearFactor;
+
+	m_hEntity->SetLocalVelocity(ToTVector(vecTraveled)/dt);
+
 	if (vecTraveled.length2() < 0.001f)
 		return false;
 
@@ -229,21 +316,25 @@ CVar sv_air_movement("sv_air_movement", "0.2");
 
 bool CCharacterController::PlayerFall(btCollisionWorld* pCollisionWorld, btScalar dt)
 {
-	m_vecCurrentVelocity += GetGravity() * dt;
+	Vector vecCurrentVelocity = m_hEntity->GetLocalVelocity();
+	vecCurrentVelocity += ToTVector(GetGravity()) * dt;
+	m_hEntity->SetLocalVelocity(vecCurrentVelocity);
+
+	btVector3 vecVelocity = ToBTVector(vecCurrentVelocity);
 
 	if (m_vecMoveVelocity.length2())
 	{
 		btVector3 vecAllowedMoveVelocity = PerpendicularComponent(m_vecMoveVelocity, GetUpVector());
-		if (vecAllowedMoveVelocity.dot(m_vecCurrentVelocity) < 0)
-			m_vecCurrentVelocity = PerpendicularComponent(m_vecCurrentVelocity, vecAllowedMoveVelocity.normalized());
+		if (vecAllowedMoveVelocity.dot(vecVelocity) < 0)
+			vecVelocity = PerpendicularComponent(vecVelocity, vecAllowedMoveVelocity.normalized());
 
-		m_vecCurrentVelocity += vecAllowedMoveVelocity * dt;
+		vecVelocity += vecAllowedMoveVelocity * dt;
 	}
 
-	if (m_vecCurrentVelocity.length2() > m_flMaxSpeed*m_flMaxSpeed)
-		m_vecCurrentVelocity = m_vecCurrentVelocity.normalized() * m_flMaxSpeed;
+	if (vecVelocity.length2() > m_flMaxSpeed*m_flMaxSpeed)
+		vecVelocity = vecVelocity.normalized() * m_flMaxSpeed;
 
-	if (m_vecCurrentVelocity.length2() < 0.001f)
+	if (vecVelocity.length2() < 0.001f)
 		return false;
 
 	btTransform mWorld;
@@ -251,7 +342,7 @@ bool CCharacterController::PlayerFall(btCollisionWorld* pCollisionWorld, btScala
 
 	btVector3 vecOriginalPosition = mWorld.getOrigin();
 
-	StepForwardAndStrafe(pCollisionWorld, m_vecCurrentVelocity * dt);
+	StepForwardAndStrafe(pCollisionWorld, vecVelocity * dt);
 
 	btVector3 vecTraveled = (m_vecCurrentPosition - vecOriginalPosition) * m_vecLinearFactor;
 	if (vecTraveled.length2() < SIMD_EPSILON)
@@ -265,9 +356,9 @@ bool CCharacterController::PlayerFall(btCollisionWorld* pCollisionWorld, btScala
 
 bool CCharacterController::PlayerFly(btCollisionWorld* pCollisionWorld, btScalar dt)
 {
-	m_vecCurrentVelocity = m_vecMoveVelocity;
+	m_hEntity->SetLocalVelocity(ToTVector(m_vecMoveVelocity));
 
-	if (m_vecCurrentVelocity.length2() < 0.001f)
+	if (m_vecMoveVelocity.length2() < 0.001f)
 		return false;
 
 	btTransform mWorld;
@@ -275,7 +366,7 @@ bool CCharacterController::PlayerFly(btCollisionWorld* pCollisionWorld, btScalar
 
 	btVector3 vecOriginalPosition = mWorld.getOrigin();
 
-	StepForwardAndStrafe(pCollisionWorld, m_vecCurrentVelocity * dt);
+	StepForwardAndStrafe(pCollisionWorld, m_vecMoveVelocity * dt);
 
 	btVector3 vecTraveled = (m_vecCurrentPosition - vecOriginalPosition) * m_vecLinearFactor;
 	if (vecTraveled.length2() < SIMD_EPSILON)
@@ -317,7 +408,7 @@ void CCharacterController::jump()
 
 	SetJumpSpeed((float)m_hEntity->JumpStrength());
 
-	m_vecCurrentVelocity += GetUpVector() * m_flJumpSpeed;
+	m_hEntity->SetGlobalVelocity(ToTVector(GetUpVector()) * m_flJumpSpeed + m_hEntity->GetGlobalVelocity());
 
 	m_hEntity->SetGroundEntity(nullptr);
 }
@@ -360,7 +451,7 @@ btVector3 CCharacterController::GetGravity() const
 
 btVector3 CCharacterController::GetVelocity() const
 {
-	return m_vecCurrentVelocity;
+	return ToBTVector(m_hEntity->GetLocalVelocity());
 }
 
 void CCharacterController::SetMaxSlope(btScalar slopeRadians)
@@ -672,7 +763,7 @@ void CCharacterController::StepForwardAndStrafe(btCollisionWorld* pCollisionWorl
 			{
 				currentDir.normalize();
 				/* See Quake2: "If velocity is against original velocity, stop ead to avoid tiny oscilations in sloping corners." */
-				if (currentDir.dot(m_vecCurrentVelocity.normalized()) <= btScalar(0.0))
+				if (currentDir.dot(GetVelocity().normalized()) <= btScalar(0.0))
 					break;
 			} else
 			{
@@ -722,7 +813,7 @@ void CCharacterController::FindGround(btCollisionWorld* pCollisionWorld)
 		return;
 	}
 
-	if (m_vecCurrentVelocity.dot(GetUpVector()) > m_flJumpSpeed/2.0f)
+	if (GetVelocity().dot(GetUpVector()) > m_flJumpSpeed/2.0f)
 	{
 		m_hEntity->SetGroundEntity(nullptr);
 		return;

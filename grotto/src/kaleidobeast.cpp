@@ -115,7 +115,7 @@ void CKaleidobeast::Think()
 			{
 				// Tiny hack to avoid the transforming here.
 				m_bTransformMoveByView = false;
-				m_vecGoalVelocity = (m_vecInitialPosition - GetGlobalOrigin()).Normalized();
+				m_vecMoveVelocity = (m_vecInitialPosition - GetGlobalOrigin()).Normalized();
 			}
 
 			SetViewAngles(m_angInitialPosition);
