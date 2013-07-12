@@ -144,7 +144,7 @@ public:
 	tvector<btRigidBody*>				m_apAreaBodies;
 	tvector<btRigidBody*>				m_apPhysicsShapes;
 	class btPairCachingGhostObject*		m_pGhostObject;
-	CCharacterController*				m_pCharacterController;
+	class CCharacterController*         m_pCharacterController;
 	CTriggerController*					m_pTriggerController;
 	CMotionState						m_oMotionState;
 	bool								m_bCenterMassOffset;

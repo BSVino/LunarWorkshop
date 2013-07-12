@@ -30,8 +30,8 @@ static btVector3 getNormalizedVector(const btVector3& v)
 class btKinematicClosestNotMeConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback
 {
 public:
-	btKinematicClosestNotMeConvexResultCallback (CCharacterController* pController, btCollisionObject* me, const btVector3& up, btScalar minSlopeDot)
-		: btCollisionWorld::ClosestConvexResultCallback(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0)), m_me(me), m_up(up), m_minSlopeDot(minSlopeDot)
+	btKinematicClosestNotMeConvexResultCallback (CCharacterController* pController, btCollisionObject* me, const btVector3& up)
+		: btCollisionWorld::ClosestConvexResultCallback(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0)), m_me(me), m_up(up)
 	{
 		m_pController = pController;
 	}
@@ -90,7 +90,7 @@ public:
 		}
 
 		btScalar dotUp = m_up.dot(hitNormalWorld);
-		if (dotUp < m_minSlopeDot)
+		if (dotUp < 0)
 			return btScalar(1.0);
 
 		return ClosestConvexResultCallback::addSingleResult (convexResult, normalInWorldSpace);
@@ -100,7 +100,6 @@ protected:
 	CCharacterController*	m_pController;
 	btCollisionObject*		m_me;
 	const btVector3			m_up;
-	btScalar				m_minSlopeDot;
 };
 
 CCharacterController::CCharacterController(CCharacter* pEntity, btPairCachingGhostObject* ghostObject,btConvexShape* convexShape,btScalar stepHeight)
@@ -146,8 +145,6 @@ void CCharacterController::CharacterMovement(btCollisionWorld* pCollisionWorld, 
 
 	m_pGhostObject->setWorldTransform(mCharacter);
 
-	FindGround(pCollisionWorld);
-
 	bool bMovement = PreStep(pCollisionWorld);
 
 	if (m_hEntity->IsFlying())
@@ -156,6 +153,8 @@ void CCharacterController::CharacterMovement(btCollisionWorld* pCollisionWorld, 
 		bMovement |= PlayerFall(pCollisionWorld, deltaTime);
 	else
 		bMovement |= PlayerWalk(pCollisionWorld, deltaTime);
+
+	bMovement |= FindGround(pCollisionWorld);
 
 	if (bMovement)
 		pPhysicsEntity->m_oMotionState.setWorldTransform(m_pGhostObject->getWorldTransform());
@@ -204,7 +203,7 @@ bool CCharacterController::PlayerWalk(btCollisionWorld* pCollisionWorld, btScala
 	vecCurrentVelocity.z = 0;
 
 	// Calculate friction first, so that the player's movement commands can overwhelm it.
-	if (vecCurrentVelocity.LengthSqr() > 0.001f)
+	if (vecCurrentVelocity.Length2DSqr() > 0.00001f)
 	{
 		if (m_hEntity->GetGroundEntity())
 		{
@@ -266,23 +265,10 @@ bool CCharacterController::PlayerWalk(btCollisionWorld* pCollisionWorld, btScala
 	{
 		m_vecTargetPosition = mWorld.getOrigin() + ToBTVector(vecCurrentVelocity) * dt;
 
-		btTransform mStart, mEnd;
-		mStart.setOrigin(m_vecCurrentPosition);
-		mEnd.setOrigin(m_vecTargetPosition);
-		btVector3 sweepDirNegative(m_vecCurrentPosition - m_vecTargetPosition);
+		CTraceResult tr;
+		PlayerTrace(pCollisionWorld, m_vecCurrentPosition, m_vecTargetPosition, tr);
 
-		btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, sweepDirNegative, btScalar(0.0));
-		callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
-		callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
-
-		btScalar margin = m_pConvexShape->getMargin();
-		m_pConvexShape->setMargin(margin + m_flAddedMargin);
-
-		m_pGhostObject->convexSweepTest (m_pConvexShape, mStart, mEnd, callback, pCollisionWorld->getDispatchInfo().m_allowedCcdPenetration);
-
-		m_pConvexShape->setMargin(margin);
-
-		if (callback.m_closestHitFraction == 1)
+		if (tr.m_flFraction == 1)
 		{
 			mWorld.setOrigin(m_vecTargetPosition);
 			m_pGhostObject->setWorldTransform(mWorld);
@@ -376,6 +362,38 @@ bool CCharacterController::PlayerFly(btCollisionWorld* pCollisionWorld, btScalar
 	m_pGhostObject->setWorldTransform(mWorld);
 
 	return true;
+}
+
+bool CCharacterController::PlayerTrace(btCollisionWorld* pCollisionWorld, const btVector3& vecStart, const btVector3& vecEnd, CTraceResult& tr)
+{
+	btTransform mStart, mEnd;
+	mStart.setIdentity();
+	mEnd.setIdentity();
+	mStart.setOrigin(vecStart);
+	mEnd.setOrigin(vecEnd);
+
+	btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, vecStart - vecEnd);
+	callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
+	callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
+
+	btScalar margin = m_pConvexShape->getMargin();
+	m_pConvexShape->setMargin(margin + m_flAddedMargin);
+
+	m_pGhostObject->convexSweepTest (m_pConvexShape, mStart, mEnd, callback, pCollisionWorld->getDispatchInfo().m_allowedCcdPenetration);
+
+	m_pConvexShape->setMargin(margin);
+
+	if (callback.m_closestHitFraction < tr.m_flFraction)
+	{
+		tr.m_flFraction = callback.m_closestHitFraction;
+		tr.m_vecHit = ToTVector(callback.m_hitPointWorld);
+		tr.m_vecNormal = ToTVector(callback.m_hitNormalWorld);
+		tr.m_iHit = (size_t)callback.m_hitCollisionObject->getUserPointer();
+		if ((size_t)callback.m_hitCollisionObject->getUserPointer() >= GameServer()->GetMaxEntities())
+			tr.m_iHitExtra = (size_t)callback.m_hitCollisionObject->getUserPointer() - GameServer()->GetMaxEntities();
+	}
+
+	return callback.hasHit();
 }
 
 void CCharacterController::setWalkDirection(const btVector3& walkDirection)
@@ -651,7 +669,7 @@ void CCharacterController::StepUp(btCollisionWorld* pWorld)
 	start.setOrigin (m_vecCurrentPosition + GetUpVector() * (m_pConvexShape->getMargin() + m_flAddedMargin));
 	end.setOrigin (m_vecTargetPosition);
 
-	btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, -GetUpVector(), btScalar(0.7071));
+	btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, -GetUpVector());
 	callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
 	callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
 
@@ -735,7 +753,7 @@ void CCharacterController::StepForwardAndStrafe(btCollisionWorld* pCollisionWorl
 		mEnd.setOrigin(m_vecTargetPosition);
 		btVector3 sweepDirNegative(m_vecCurrentPosition - m_vecTargetPosition);
 
-		btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, sweepDirNegative, btScalar(0.0));
+		btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, sweepDirNegative);
 		callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
 		callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
 
@@ -791,7 +809,7 @@ void CCharacterController::StepDown(btCollisionWorld* pCollisionWorld, btScalar 
 	mStart.setOrigin(m_vecCurrentPosition);
 	mEnd.setOrigin(m_vecTargetPosition);
 
-	btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, GetUpVector(), m_flMaxSlopeCosine);
+	btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, GetUpVector());
 	callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
 	callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
 
@@ -805,51 +823,61 @@ void CCharacterController::StepDown(btCollisionWorld* pCollisionWorld, btScalar 
 	}
 }
 
-void CCharacterController::FindGround(btCollisionWorld* pCollisionWorld)
+bool CCharacterController::FindGround(btCollisionWorld* pCollisionWorld)
 {
 	if (m_hEntity->IsFlying())
 	{
 		m_hEntity->SetGroundEntity(nullptr);
-		return;
+		return false;
 	}
 
 	if (GetVelocity().dot(GetUpVector()) > m_flJumpSpeed/2.0f)
 	{
 		m_hEntity->SetGroundEntity(nullptr);
-		return;
+		return false;
 	}
 
-	btTransform mStart, mEnd;
+	bool bWalking = !m_hEntity->IsFlying() && m_hEntity->GetGroundEntity();
 
-	btVector3 vecStepDrop = GetUpVector() * m_flCurrentStepOffset;
+	float flDropHeight = bWalking?m_flCurrentStepOffset:m_pConvexShape->getMargin()*2;
+
+	btVector3 vecStepDrop = GetUpVector() * flDropHeight;
 	btVector3 vecGroundPosition = m_pGhostObject->getWorldTransform().getOrigin() - vecStepDrop;
 
-	mStart.setIdentity();
-	mEnd.setIdentity();
+	CTraceResult tr;
+	PlayerTrace(pCollisionWorld, m_pGhostObject->getWorldTransform().getOrigin(), vecGroundPosition, tr);
 
-	mStart.setOrigin(m_pGhostObject->getWorldTransform().getOrigin());
-	mEnd.setOrigin(vecGroundPosition);
-
-	btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, GetUpVector(), m_flMaxSlopeCosine);
-	callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
-	callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
-
-	m_pGhostObject->convexSweepTest (m_pConvexShape, mStart, mEnd, callback, pCollisionWorld->getDispatchInfo().m_allowedCcdPenetration);
-
-	if (callback.hasHit())
+	if (tr.m_flFraction < 1)
 	{
-		btScalar flDot = GetUpVector().dot(callback.m_hitNormalWorld);
+		btScalar flDot = GetUpVector().dot(ToBTVector(tr.m_vecNormal));
 		if (flDot < m_flMaxSlopeCosine)
 			m_hEntity->SetGroundEntity(nullptr);
 		else
 		{
-			CEntityHandle<CBaseEntity> hOther = CEntityHandle<CBaseEntity>((size_t)callback.m_hitCollisionObject->getUserPointer());
+			CEntityHandle<CBaseEntity> hOther = CEntityHandle<CBaseEntity>(tr.m_iHit);
 			if (hOther)
 				m_hEntity->SetGroundEntity(hOther);
 			else
-				m_hEntity->SetGroundEntityExtra((size_t)callback.m_hitCollisionObject->getUserPointer()-GameServer()->GetMaxEntities());
+			{
+				m_hEntity->SetGroundEntityExtra(tr.m_iHitExtra);
+			}
 		}
 	}
 	else
 		m_hEntity->SetGroundEntity(nullptr);
+
+	if (bWalking && m_hEntity->GetGroundEntity() && tr.m_flFraction > 0.0f && tr.m_flFraction < 1.0f)
+	{
+		btVector3 vecNewOrigin;
+		vecNewOrigin.setInterpolate3(m_pGhostObject->getWorldTransform().getOrigin(), vecGroundPosition, tr.m_flFraction);
+
+		float flMargin = m_pConvexShape->getMargin() + 0.001f;
+		if ((vecNewOrigin - m_pGhostObject->getWorldTransform().getOrigin()).length2() > flMargin*flMargin)
+		{
+			m_pGhostObject->getWorldTransform().setOrigin(vecNewOrigin);
+			return true;
+		}
+	}
+
+	return false;
 }

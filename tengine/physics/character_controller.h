@@ -9,6 +9,8 @@
 
 #include <game/entityhandle.h>
 
+#include "bullet_physics.h"
+
 class CBaseEntity;
 class CCharacter;
 class btCollisionShape;
@@ -51,6 +53,8 @@ public:
 	virtual bool    PlayerFall(btCollisionWorld* collisionWorld, btScalar dt);
 	virtual bool    PlayerFly(btCollisionWorld* collisionWorld, btScalar dt);
 
+	virtual bool    PlayerTrace(btCollisionWorld* pCollisionWorld, const btVector3& vecStart, const btVector3& vecEnd, CTraceResult& tr);
+
 	virtual void    SetMoveVelocity(const btVector3& velocity);
 	btVector3       GetMoveVelocity() const;
 
@@ -92,7 +96,7 @@ protected:
 	void        StepForwardAndStrafe(btCollisionWorld* collisionWorld, const btVector3& walkMove);
 	void        StepDown(btCollisionWorld* collisionWorld, btScalar dt);
 
-	void		FindGround(btCollisionWorld* pCollisionWorld);
+	bool        FindGround(btCollisionWorld* pCollisionWorld);
 
 protected:
 	CEntityHandle<CCharacter>	m_hEntity;
