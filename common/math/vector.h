@@ -23,6 +23,8 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 // for size_t
 #include <stdlib.h>
 
+#include "common.h"
+
 #ifndef M_PI
 #define M_PI 3.14159265f
 #endif
@@ -275,7 +277,10 @@ inline void TemplateVector<unit_t>::Normalize()
 {
 	unit_t flLength = Length();
 	if (!flLength)
+	{
+		TAssertNoMsg(false);
 		*this=TemplateVector(0,0,1);
+	}
 	else
 		*this/=flLength;
 }
@@ -285,7 +290,10 @@ inline const TemplateVector<unit_t> TemplateVector<unit_t>::Normalized() const
 {
 	unit_t flLength = Length();
 	if (!flLength)
+	{
+		TAssertNoMsg(false);
 		return TemplateVector(0,0,1);
+	}
 	else
 		return *this/flLength;
 }
