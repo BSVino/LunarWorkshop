@@ -48,10 +48,10 @@ public:
 	virtual bool	onGround() const;
 
 	virtual void	CharacterMovement(btCollisionWorld* collisionWorld, float flDelta);
-	virtual bool    PreStep(btCollisionWorld* collisionWorld);
-	virtual bool    PlayerWalk(btCollisionWorld* collisionWorld, btScalar dt);
-	virtual bool    PlayerFall(btCollisionWorld* collisionWorld, btScalar dt);
-	virtual bool    PlayerFly(btCollisionWorld* collisionWorld, btScalar dt);
+	virtual void    PreStep(btCollisionWorld* collisionWorld);
+	virtual void    PlayerWalk(btCollisionWorld* collisionWorld, btScalar dt);
+	virtual void    PlayerFall(btCollisionWorld* collisionWorld, btScalar dt);
+	virtual void    PlayerFly(btCollisionWorld* collisionWorld, btScalar dt);
 
 	virtual bool    PlayerTrace(btCollisionWorld* pCollisionWorld, const btVector3& vecStart, const btVector3& vecEnd, CTraceResult& tr);
 
@@ -90,13 +90,13 @@ protected:
 	btVector3	ParallelComponent(const btVector3& direction, const btVector3& normal);
 	btVector3	PerpendicularComponent(const btVector3& direction, const btVector3& normal);
 
-	bool		RecoverFromPenetration(btCollisionWorld* collisionWorld);
+	bool        RecoverFromPenetration(btCollisionWorld* collisionWorld);
 	void        StepUp(btCollisionWorld* collisionWorld);
-	void		UpdateTargetPositionBasedOnCollision(const btVector3& hit_normal, btScalar tangentMag = btScalar(0.0), btScalar normalMag = btScalar(1.0));
+	btVector3   UpdateTargetPositionBasedOnCollision(const btVector3& vecMovementDirection, const btVector3& vecHitNormal);
 	void        StepForwardAndStrafe(btCollisionWorld* collisionWorld, const btVector3& walkMove);
 	void        StepDown(btCollisionWorld* collisionWorld, btScalar dt);
 
-	bool        FindGround(btCollisionWorld* pCollisionWorld);
+	void        FindGround(btCollisionWorld* pCollisionWorld);
 
 protected:
 	CEntityHandle<CCharacter>	m_hEntity;
@@ -124,10 +124,7 @@ protected:
 	btVector3       m_vecMoveVelocity;
 	btVector3       m_vecMoveVelocityNormalized;
 
-	//some internal variables
-	btVector3		m_vecCurrentPosition;
 	btScalar		m_flCurrentStepOffset;
-	btVector3		m_vecTargetPosition;
 
 	///keep track of the contact manifolds
 	btManifoldArray	m_aManifolds;

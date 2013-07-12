@@ -145,18 +145,18 @@ void CCharacterController::CharacterMovement(btCollisionWorld* pCollisionWorld, 
 
 	m_pGhostObject->setWorldTransform(mCharacter);
 
-	bool bMovement = PreStep(pCollisionWorld);
+	PreStep(pCollisionWorld);
 
 	if (m_hEntity->IsFlying())
-		bMovement |= PlayerFly(pCollisionWorld, deltaTime);
+		PlayerFly(pCollisionWorld, deltaTime);
 	else if (!m_hEntity->GetGroundEntity())
-		bMovement |= PlayerFall(pCollisionWorld, deltaTime);
+		PlayerFall(pCollisionWorld, deltaTime);
 	else
-		bMovement |= PlayerWalk(pCollisionWorld, deltaTime);
+		PlayerWalk(pCollisionWorld, deltaTime);
 
-	bMovement |= FindGround(pCollisionWorld);
+	FindGround(pCollisionWorld);
 
-	if (bMovement)
+	if ((mCharacter.getOrigin() - m_pGhostObject->getWorldTransform().getOrigin()).length2() > 0.0001f)
 		pPhysicsEntity->m_oMotionState.setWorldTransform(m_pGhostObject->getWorldTransform());
 }
 
@@ -167,7 +167,7 @@ void CCharacterController::preStep(btCollisionWorld* pCollisionWorld)
 
 CVar phys_maxpenetrationrecover("phys_maxpenetrationrecover", "4");
 
-bool CCharacterController::PreStep(btCollisionWorld* pCollisionWorld)
+void CCharacterController::PreStep(btCollisionWorld* pCollisionWorld)
 {
 	m_bTouchingContact = false;
 	int i = 0;
@@ -178,15 +178,10 @@ bool CCharacterController::PreStep(btCollisionWorld* pCollisionWorld)
 
 		if (i > phys_maxpenetrationrecover.GetInt())
 		{
-			TMsg("Character controller couldn't recover from penetration.\n");
+			TMsg(sprintf("%f Character controller couldn't recover from penetration.\n", GameServer()->GetGameTime()));
 			break;
 		}
 	}
-
-	m_vecCurrentPosition = m_pGhostObject->getWorldTransform().getOrigin();
-	m_vecTargetPosition = m_vecCurrentPosition;
-
-	return m_bTouchingContact;
 }
 
 void CCharacterController::playerStep(btCollisionWorld* pCollisionWorld, btScalar dt)
@@ -197,7 +192,7 @@ void CCharacterController::playerStep(btCollisionWorld* pCollisionWorld, btScala
 
 CVar sv_friction("sv_friction", "8");
 
-bool CCharacterController::PlayerWalk(btCollisionWorld* pCollisionWorld, btScalar dt)
+void CCharacterController::PlayerWalk(btCollisionWorld* pCollisionWorld, btScalar dt)
 {
 	Vector vecCurrentVelocity = m_hEntity->GetLocalVelocity();
 	vecCurrentVelocity.z = 0;
@@ -256,24 +251,24 @@ bool CCharacterController::PlayerWalk(btCollisionWorld* pCollisionWorld, btScala
 	if (vecCurrentVelocity.LengthSqr() < 0.001f)
 	{
 		m_hEntity->SetLocalVelocity(Vector());
-		return false;
+		return;
 	}
 
 	btTransform mWorld = m_pGhostObject->getWorldTransform();
 
 	// Try moving the player directly, if it's possible.
 	{
-		m_vecTargetPosition = mWorld.getOrigin() + ToBTVector(vecCurrentVelocity) * dt;
+		btVector3 vecTargetPosition = mWorld.getOrigin() + ToBTVector(vecCurrentVelocity) * dt;
 
 		CTraceResult tr;
-		PlayerTrace(pCollisionWorld, m_vecCurrentPosition, m_vecTargetPosition, tr);
+		PlayerTrace(pCollisionWorld, mWorld.getOrigin(), vecTargetPosition, tr);
 
 		if (tr.m_flFraction == 1)
 		{
-			mWorld.setOrigin(m_vecTargetPosition);
+			mWorld.setOrigin(vecTargetPosition);
 			m_pGhostObject->setWorldTransform(mWorld);
 			m_hEntity->SetLocalVelocity(vecCurrentVelocity);
-			return true;
+			return;
 		}
 	}
 
@@ -285,22 +280,14 @@ bool CCharacterController::PlayerWalk(btCollisionWorld* pCollisionWorld, btScala
 
 	StepDown(pCollisionWorld, dt);
 
-	btVector3 vecTraveled = (m_vecCurrentPosition - vecOriginalPosition) * m_vecLinearFactor;
+	btVector3 vecTraveled = (m_pGhostObject->getWorldTransform().getOrigin() - vecOriginalPosition) * m_vecLinearFactor;
 
 	m_hEntity->SetLocalVelocity(ToTVector(vecTraveled)/dt);
-
-	if (vecTraveled.length2() < 0.001f)
-		return false;
-
-	mWorld.setOrigin(mWorld.getOrigin() + vecTraveled);
-	m_pGhostObject->setWorldTransform(mWorld);
-
-	return true;
 }
 
 CVar sv_air_movement("sv_air_movement", "0.2");
 
-bool CCharacterController::PlayerFall(btCollisionWorld* pCollisionWorld, btScalar dt)
+void CCharacterController::PlayerFall(btCollisionWorld* pCollisionWorld, btScalar dt)
 {
 	Vector vecCurrentVelocity = m_hEntity->GetLocalVelocity();
 	vecCurrentVelocity += ToTVector(GetGravity()) * dt;
@@ -321,7 +308,7 @@ bool CCharacterController::PlayerFall(btCollisionWorld* pCollisionWorld, btScala
 		vecVelocity = vecVelocity.normalized() * m_flMaxSpeed;
 
 	if (vecVelocity.length2() < 0.001f)
-		return false;
+		return;
 
 	btTransform mWorld;
 	mWorld = m_pGhostObject->getWorldTransform();
@@ -329,23 +316,14 @@ bool CCharacterController::PlayerFall(btCollisionWorld* pCollisionWorld, btScala
 	btVector3 vecOriginalPosition = mWorld.getOrigin();
 
 	StepForwardAndStrafe(pCollisionWorld, vecVelocity * dt);
-
-	btVector3 vecTraveled = (m_vecCurrentPosition - vecOriginalPosition) * m_vecLinearFactor;
-	if (vecTraveled.length2() < SIMD_EPSILON)
-		return false;
-
-	mWorld.setOrigin(mWorld.getOrigin() + vecTraveled);
-	m_pGhostObject->setWorldTransform(mWorld);
-
-	return true;
 }
 
-bool CCharacterController::PlayerFly(btCollisionWorld* pCollisionWorld, btScalar dt)
+void CCharacterController::PlayerFly(btCollisionWorld* pCollisionWorld, btScalar dt)
 {
 	m_hEntity->SetLocalVelocity(ToTVector(m_vecMoveVelocity));
 
 	if (m_vecMoveVelocity.length2() < 0.001f)
-		return false;
+		return;
 
 	btTransform mWorld;
 	mWorld = m_pGhostObject->getWorldTransform();
@@ -353,15 +331,6 @@ bool CCharacterController::PlayerFly(btCollisionWorld* pCollisionWorld, btScalar
 	btVector3 vecOriginalPosition = mWorld.getOrigin();
 
 	StepForwardAndStrafe(pCollisionWorld, m_vecMoveVelocity * dt);
-
-	btVector3 vecTraveled = (m_vecCurrentPosition - vecOriginalPosition) * m_vecLinearFactor;
-	if (vecTraveled.length2() < SIMD_EPSILON)
-		return false;
-
-	mWorld.setOrigin(mWorld.getOrigin() + vecTraveled);
-	m_pGhostObject->setWorldTransform(mWorld);
-
-	return true;
 }
 
 bool CCharacterController::PlayerTrace(btCollisionWorld* pCollisionWorld, const btVector3& vecStart, const btVector3& vecEnd, CTraceResult& tr)
@@ -522,8 +491,8 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 
 	pCollisionWorld->getDispatcher()->dispatchAllCollisionPairs(m_pGhostObject->getOverlappingPairCache(), pCollisionWorld->getDispatchInfo(), pCollisionWorld->getDispatcher());
 
-	m_vecCurrentPosition = m_pGhostObject->getWorldTransform().getOrigin();
-	btVector3 vecOriginalPosition = m_vecCurrentPosition;
+	btVector3 vecCurrentPosition = m_pGhostObject->getWorldTransform().getOrigin();
+	btVector3 vecOriginalPosition = vecCurrentPosition;
 
 	btScalar maxPen = btScalar(0.0);
 	for (int i = 0; i < m_pGhostObject->getOverlappingPairCache()->getNumOverlappingPairs(); i++)
@@ -633,9 +602,9 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 
 					btScalar flDot = pt.m_normalWorldOnB.dot(GetUpVector());
 					if (flDot > 0.707f)
-						m_vecCurrentPosition += GetUpVector() * (directionSign * flDistance * 1.001f);
+						vecCurrentPosition += GetUpVector() * (directionSign * flDistance * 1.001f);
 					else
-						m_vecCurrentPosition += pt.m_normalWorldOnB * (directionSign * flDistance * 1.001f);
+						vecCurrentPosition += pt.m_normalWorldOnB * (directionSign * flDistance * 1.001f);
 
 					bPenetration = true;
 				} else {
@@ -648,7 +617,7 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 	}
 
 	btTransform mNew = m_pGhostObject->getWorldTransform();
-	mNew.setOrigin(mNew.getOrigin() + (m_vecCurrentPosition - vecOriginalPosition) * m_vecLinearFactor);
+	mNew.setOrigin(mNew.getOrigin() + (vecCurrentPosition - vecOriginalPosition) * m_vecLinearFactor);
 	m_pGhostObject->setWorldTransform(mNew);
 
 	//printf("m_vecTouchingNormal = %f,%f,%f\n", m_vecTouchingNormal[0], m_vecTouchingNormal[1], m_vecTouchingNormal[2]);
@@ -660,14 +629,14 @@ void CCharacterController::StepUp(btCollisionWorld* pWorld)
 {
 	// phase 1: up
 	btTransform start, end;
-	m_vecTargetPosition = m_vecCurrentPosition + GetUpVector() * m_flStepHeight;
+	btVector3 vecTargetPosition = m_pGhostObject->getWorldTransform().getOrigin() + GetUpVector() * m_flStepHeight;
 
 	start.setIdentity ();
 	end.setIdentity ();
 
 	/* FIXME: Handle penetration properly */
-	start.setOrigin (m_vecCurrentPosition + GetUpVector() * (m_pConvexShape->getMargin() + m_flAddedMargin));
-	end.setOrigin (m_vecTargetPosition);
+	start.setOrigin (m_pGhostObject->getWorldTransform().getOrigin() + GetUpVector() * (m_pConvexShape->getMargin() + m_flAddedMargin));
+	end.setOrigin (vecTargetPosition);
 
 	btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, -GetUpVector());
 	callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
@@ -682,17 +651,22 @@ void CCharacterController::StepUp(btCollisionWorld* pWorld)
 		{
 			// we moved up only a fraction of the step height
 			m_flCurrentStepOffset = m_flStepHeight * callback.m_closestHitFraction;
-			m_vecCurrentPosition.setInterpolate3(m_vecCurrentPosition, m_vecTargetPosition, callback.m_closestHitFraction);
+			btVector3 vecInterpolated;
+			vecInterpolated.setInterpolate3(m_pGhostObject->getWorldTransform().getOrigin(), vecTargetPosition, callback.m_closestHitFraction);
+			m_pGhostObject->getWorldTransform().setOrigin(vecInterpolated);
 		}
 	} else {
 		m_flCurrentStepOffset = m_flStepHeight;
-		m_vecCurrentPosition = m_vecTargetPosition;
+		m_pGhostObject->getWorldTransform().setOrigin(vecTargetPosition);
 	}
 }
 
-void CCharacterController::UpdateTargetPositionBasedOnCollision(const btVector3& vecHitNormal, btScalar flTangentMag, btScalar flNormalMag)
+btVector3 CCharacterController::UpdateTargetPositionBasedOnCollision(const btVector3& vecMovementSpeed, const btVector3& vecHitNormal)
 {
-	btVector3 vecMovementDirection = m_vecTargetPosition - m_vecCurrentPosition;
+	btVector3 vecTargetPosition;
+
+	btVector3 vecMovementDirection = vecMovementSpeed.normalized();
+
 	btScalar flMovementLength = vecMovementDirection.length();
 
 	if (flMovementLength > SIMD_EPSILON)
@@ -710,18 +684,17 @@ void CCharacterController::UpdateTargetPositionBasedOnCollision(const btVector3&
 		if (m_hEntity->IsFlying() || !m_hEntity->GetGroundEntity())
 			vecPerpendicularDir.normalize();
 
-		m_vecTargetPosition = m_vecCurrentPosition;
+		vecTargetPosition = m_pGhostObject->getWorldTransform().getOrigin();
 
-		if (flNormalMag != 0.0)
-		{
-			btVector3 vecPerpComponent = vecPerpendicularDir * (flNormalMag*flMovementLength);
-			//printf("vecPerpComponent = %f %f %f\n", vecPerpComponent[0], vecPerpComponent[1], vecPerpComponent[2]);
-			m_vecTargetPosition += vecPerpComponent;
-		}
+		btVector3 vecPerpComponent = vecPerpendicularDir * flMovementLength;
+		vecTargetPosition += vecPerpComponent;
+
+		return vecTargetPosition;
 	}
 	else
 	{
-		//printf("flMovementLength don't normalize a zero vector\n");
+		TAssert(false); // Is this ever called?
+		return m_pGhostObject->getWorldTransform().getOrigin();
 	}
 }
 
@@ -731,27 +704,28 @@ void CCharacterController::StepForwardAndStrafe(btCollisionWorld* pCollisionWorl
 
 	// phase 2: forward and strafe
 	btTransform mStart, mEnd;
-	m_vecTargetPosition = m_vecCurrentPosition + vecWalkMove;
+	btVector3 vecStartPosition = m_pGhostObject->getWorldTransform().getOrigin();
+	btVector3 vecTargetPosition = vecStartPosition + vecWalkMove;
 
 	mStart.setIdentity ();
 	mEnd.setIdentity ();
 
 	btScalar flFraction = 1.0;
-	btScalar flDistance2 = (m_vecCurrentPosition-m_vecTargetPosition).length2();
+	btScalar flDistance2 = (vecStartPosition-vecTargetPosition).length2();
 
 	if (m_bTouchingContact)
 	{
 		if (m_vecMoveVelocityNormalized.dot(m_vecTouchingNormal) > btScalar(0.0))
-			UpdateTargetPositionBasedOnCollision(m_vecTouchingNormal);
+			UpdateTargetPositionBasedOnCollision(vecTargetPosition - vecStartPosition, m_vecTouchingNormal);
 	}
 
 	int iMaxIter = 4;
 
 	while (flFraction > btScalar(0.01) && iMaxIter-- > 0)
 	{
-		mStart.setOrigin(m_vecCurrentPosition);
-		mEnd.setOrigin(m_vecTargetPosition);
-		btVector3 sweepDirNegative(m_vecCurrentPosition - m_vecTargetPosition);
+		mStart.setOrigin(vecStartPosition);
+		mEnd.setOrigin(vecTargetPosition);
+		btVector3 sweepDirNegative(vecStartPosition - vecTargetPosition);
 
 		btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, sweepDirNegative);
 		callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
@@ -768,14 +742,14 @@ void CCharacterController::StepForwardAndStrafe(btCollisionWorld* pCollisionWorl
 
 		if (callback.hasHit())
 		{	
-			m_vecCurrentPosition.setInterpolate3 (m_vecCurrentPosition, m_vecTargetPosition, callback.m_closestHitFraction);
+			vecStartPosition.setInterpolate3 (vecStartPosition, vecTargetPosition, callback.m_closestHitFraction);
 
-			UpdateTargetPositionBasedOnCollision (callback.m_hitNormalWorld);
+			UpdateTargetPositionBasedOnCollision (vecTargetPosition - vecStartPosition, callback.m_hitNormalWorld);
 
-			m_vecTargetPosition += callback.m_hitNormalWorld * margin;
-			m_vecCurrentPosition += callback.m_hitNormalWorld * margin;
+			vecStartPosition += callback.m_hitNormalWorld * margin;
+			vecTargetPosition += callback.m_hitNormalWorld * margin;
 
-			btVector3 currentDir = m_vecTargetPosition - m_vecCurrentPosition;
+			btVector3 currentDir = vecTargetPosition - vecStartPosition;
 			flDistance2 = currentDir.length2();
 			if (flDistance2 > SIMD_EPSILON)
 			{
@@ -791,9 +765,11 @@ void CCharacterController::StepForwardAndStrafe(btCollisionWorld* pCollisionWorl
 
 		} else {
 			// we moved whole way
-			m_vecCurrentPosition = m_vecTargetPosition;
+			vecStartPosition = vecTargetPosition;
 		}
 	}
+
+	m_pGhostObject->getWorldTransform().setOrigin(vecStartPosition);
 }
 
 void CCharacterController::StepDown(btCollisionWorld* pCollisionWorld, btScalar dt)
@@ -801,13 +777,14 @@ void CCharacterController::StepDown(btCollisionWorld* pCollisionWorld, btScalar 
 	btTransform mStart, mEnd;
 
 	btVector3 vecStepDrop = GetUpVector() * m_flStepHeight;
-	m_vecTargetPosition -= vecStepDrop;
+	btVector3 vecStartPosition = m_pGhostObject->getWorldTransform().getOrigin();
+	btVector3 vecTargetPosition = vecStartPosition - vecStepDrop;
 
 	mStart.setIdentity();
 	mEnd.setIdentity();
 
-	mStart.setOrigin(m_vecCurrentPosition);
-	mEnd.setOrigin(m_vecTargetPosition);
+	mStart.setOrigin(m_pGhostObject->getWorldTransform().getOrigin());
+	mEnd.setOrigin(vecTargetPosition);
 
 	btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, GetUpVector());
 	callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
@@ -819,22 +796,22 @@ void CCharacterController::StepDown(btCollisionWorld* pCollisionWorld, btScalar 
 	{
 		// Don't move him all the way down, just enough to stay within step height of the ground.
 		float flFraction = callback.m_closestHitFraction - 0.5f;
-		m_vecCurrentPosition = m_vecCurrentPosition + flFraction * (m_vecTargetPosition - m_vecCurrentPosition);
+		m_pGhostObject->getWorldTransform().setOrigin( vecStartPosition + flFraction * (vecTargetPosition - vecStartPosition) );
 	}
 }
 
-bool CCharacterController::FindGround(btCollisionWorld* pCollisionWorld)
+void CCharacterController::FindGround(btCollisionWorld* pCollisionWorld)
 {
 	if (m_hEntity->IsFlying())
 	{
 		m_hEntity->SetGroundEntity(nullptr);
-		return false;
+		return;
 	}
 
 	if (GetVelocity().dot(GetUpVector()) > m_flJumpSpeed/2.0f)
 	{
 		m_hEntity->SetGroundEntity(nullptr);
-		return false;
+		return;
 	}
 
 	bool bWalking = !m_hEntity->IsFlying() && m_hEntity->GetGroundEntity();
@@ -875,9 +852,9 @@ bool CCharacterController::FindGround(btCollisionWorld* pCollisionWorld)
 		if ((vecNewOrigin - m_pGhostObject->getWorldTransform().getOrigin()).length2() > flMargin*flMargin)
 		{
 			m_pGhostObject->getWorldTransform().setOrigin(vecNewOrigin);
-			return true;
+			return;
 		}
 	}
 
-	return false;
+	return;
 }
