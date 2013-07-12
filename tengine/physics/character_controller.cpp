@@ -156,7 +156,16 @@ void CCharacterController::CharacterMovement(btCollisionWorld* pCollisionWorld, 
 
 	FindGround(pCollisionWorld);
 
-	if ((mCharacter.getOrigin() - m_pGhostObject->getWorldTransform().getOrigin()).length2() > 0.0001f)
+	btVector3 vecOrigin = m_pGhostObject->getWorldTransform().getOrigin();
+
+	TAssert(vecOrigin.x() < 999999);
+	TAssert(vecOrigin.x() > -999999);
+	TAssert(vecOrigin.y() < 999999);
+	TAssert(vecOrigin.y() > -999999);
+	TAssert(vecOrigin.z() < 999999);
+	TAssert(vecOrigin.z() > -999999);
+
+	if ((mCharacter.getOrigin() - vecOrigin).length2() > 0.0001f)
 		pPhysicsEntity->m_oMotionState.setWorldTransform(m_pGhostObject->getWorldTransform());
 }
 
@@ -601,10 +610,16 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 					}
 
 					btScalar flDot = pt.m_normalWorldOnB.dot(GetUpVector());
+					btVector3 vecAdjustment;
 					if (flDot > 0.707f)
-						vecCurrentPosition += GetUpVector() * (directionSign * flDistance * 1.001f);
+						vecAdjustment = GetUpVector() * (directionSign * flDistance * 1.001f);
 					else
-						vecCurrentPosition += pt.m_normalWorldOnB * (directionSign * flDistance * 1.001f);
+						vecAdjustment = pt.m_normalWorldOnB * (directionSign * flDistance * 1.001f);
+
+					if (vecAdjustment.length2() < 0.001*0.001)
+						continue;
+
+					vecCurrentPosition += vecAdjustment;
 
 					bPenetration = true;
 				} else {
