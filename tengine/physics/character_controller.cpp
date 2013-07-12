@@ -287,8 +287,6 @@ void CCharacterController::PlayerWalk(btCollisionWorld* pCollisionWorld, btScala
 
 	StepForwardAndStrafe(pCollisionWorld, ToBTVector(vecCurrentVelocity) * dt);
 
-	StepDown(pCollisionWorld, dt);
-
 	btVector3 vecTraveled = (m_pGhostObject->getWorldTransform().getOrigin() - vecOriginalPosition) * m_vecLinearFactor;
 
 	m_hEntity->SetLocalVelocity(ToTVector(vecTraveled)/dt);
@@ -643,31 +641,21 @@ bool CCharacterController::RecoverFromPenetration(btCollisionWorld* pCollisionWo
 void CCharacterController::StepUp(btCollisionWorld* pWorld)
 {
 	// phase 1: up
-	btTransform start, end;
+	btVector3 vecStartPosition = m_pGhostObject->getWorldTransform().getOrigin() + GetUpVector() * (m_pConvexShape->getMargin() + m_flAddedMargin);
 	btVector3 vecTargetPosition = m_pGhostObject->getWorldTransform().getOrigin() + GetUpVector() * m_flStepHeight;
 
-	start.setIdentity ();
-	end.setIdentity ();
+	CTraceResult tr;
+	PlayerTrace(pWorld, vecStartPosition, vecTargetPosition, tr);
 
-	/* FIXME: Handle penetration properly */
-	start.setOrigin (m_pGhostObject->getWorldTransform().getOrigin() + GetUpVector() * (m_pConvexShape->getMargin() + m_flAddedMargin));
-	end.setOrigin (vecTargetPosition);
-
-	btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, -GetUpVector());
-	callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
-	callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
-
-	m_pGhostObject->convexSweepTest (m_pConvexShape, start, end, callback, pWorld->getDispatchInfo().m_allowedCcdPenetration);
-
-	if (callback.hasHit())
+	if (tr.m_flFraction < 1)
 	{
 		// Only modify the position if the hit was a slope and not a wall or ceiling.
-		if(callback.m_hitNormalWorld.dot(GetUpVector()) > 0.0)
+		if(tr.m_vecNormal.Dot(ToTVector(GetUpVector())) > 0.0)
 		{
 			// we moved up only a fraction of the step height
-			m_flCurrentStepOffset = m_flStepHeight * callback.m_closestHitFraction;
+			m_flCurrentStepOffset = m_flStepHeight * tr.m_flFraction;
 			btVector3 vecInterpolated;
-			vecInterpolated.setInterpolate3(m_pGhostObject->getWorldTransform().getOrigin(), vecTargetPosition, callback.m_closestHitFraction);
+			vecInterpolated.setInterpolate3(m_pGhostObject->getWorldTransform().getOrigin(), vecTargetPosition, tr.m_flFraction);
 			m_pGhostObject->getWorldTransform().setOrigin(vecInterpolated);
 		}
 	} else {
@@ -718,12 +706,8 @@ void CCharacterController::StepForwardAndStrafe(btCollisionWorld* pCollisionWorl
 	//printf("m_vecNormalizedDirection=%f,%f,%f\n", m_vecNormalizedDirection[0],m_vecNormalizedDirection[1],m_vecNormalizedDirection[2]);
 
 	// phase 2: forward and strafe
-	btTransform mStart, mEnd;
 	btVector3 vecStartPosition = m_pGhostObject->getWorldTransform().getOrigin();
 	btVector3 vecTargetPosition = vecStartPosition + vecWalkMove;
-
-	mStart.setIdentity ();
-	mEnd.setIdentity ();
 
 	btScalar flFraction = 1.0;
 	btScalar flDistance2 = (vecStartPosition-vecTargetPosition).length2();
@@ -738,31 +722,21 @@ void CCharacterController::StepForwardAndStrafe(btCollisionWorld* pCollisionWorl
 
 	while (flFraction > btScalar(0.01) && iMaxIter-- > 0)
 	{
-		mStart.setOrigin(vecStartPosition);
-		mEnd.setOrigin(vecTargetPosition);
-		btVector3 sweepDirNegative(vecStartPosition - vecTargetPosition);
+		CTraceResult tr;
+		PlayerTrace(pCollisionWorld, vecStartPosition, vecTargetPosition, tr);
 
-		btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, sweepDirNegative);
-		callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
-		callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
+		flFraction -= tr.m_flFraction;
 
-		btScalar margin = m_pConvexShape->getMargin();
-		m_pConvexShape->setMargin(margin + m_flAddedMargin);
-
-		m_pGhostObject->convexSweepTest (m_pConvexShape, mStart, mEnd, callback, pCollisionWorld->getDispatchInfo().m_allowedCcdPenetration);
-
-		m_pConvexShape->setMargin(margin);
-
-		flFraction -= callback.m_closestHitFraction;
-
-		if (callback.hasHit())
+		if (tr.m_flFraction < 1)
 		{	
-			vecStartPosition.setInterpolate3 (vecStartPosition, vecTargetPosition, callback.m_closestHitFraction);
+			vecStartPosition.setInterpolate3 (vecStartPosition, vecTargetPosition, tr.m_flFraction);
 
-			UpdateTargetPositionBasedOnCollision (vecTargetPosition - vecStartPosition, callback.m_hitNormalWorld);
+			btVector3 vecNormal = ToBTVector(tr.m_vecNormal);
 
-			vecStartPosition += callback.m_hitNormalWorld * margin;
-			vecTargetPosition += callback.m_hitNormalWorld * margin;
+			UpdateTargetPositionBasedOnCollision (vecTargetPosition - vecStartPosition, vecNormal);
+
+			vecStartPosition += vecNormal * m_pConvexShape->getMargin();
+			vecTargetPosition += vecNormal * m_pConvexShape->getMargin();
 
 			btVector3 currentDir = vecTargetPosition - vecStartPosition;
 			flDistance2 = currentDir.length2();
@@ -785,34 +759,6 @@ void CCharacterController::StepForwardAndStrafe(btCollisionWorld* pCollisionWorl
 	}
 
 	m_pGhostObject->getWorldTransform().setOrigin(vecStartPosition);
-}
-
-void CCharacterController::StepDown(btCollisionWorld* pCollisionWorld, btScalar dt)
-{
-	btTransform mStart, mEnd;
-
-	btVector3 vecStepDrop = GetUpVector() * m_flStepHeight;
-	btVector3 vecStartPosition = m_pGhostObject->getWorldTransform().getOrigin();
-	btVector3 vecTargetPosition = vecStartPosition - vecStepDrop;
-
-	mStart.setIdentity();
-	mEnd.setIdentity();
-
-	mStart.setOrigin(m_pGhostObject->getWorldTransform().getOrigin());
-	mEnd.setOrigin(vecTargetPosition);
-
-	btKinematicClosestNotMeConvexResultCallback callback(this, m_pGhostObject, GetUpVector());
-	callback.m_collisionFilterGroup = getGhostObject()->getBroadphaseHandle()->m_collisionFilterGroup;
-	callback.m_collisionFilterMask = getGhostObject()->getBroadphaseHandle()->m_collisionFilterMask;
-
-	m_pGhostObject->convexSweepTest (m_pConvexShape, mStart, mEnd, callback, pCollisionWorld->getDispatchInfo().m_allowedCcdPenetration);
-
-	if (callback.m_closestHitFraction > 0.5f)
-	{
-		// Don't move him all the way down, just enough to stay within step height of the ground.
-		float flFraction = callback.m_closestHitFraction - 0.5f;
-		m_pGhostObject->getWorldTransform().setOrigin( vecStartPosition + flFraction * (vecTargetPosition - vecStartPosition) );
-	}
 }
 
 void CCharacterController::FindGround(btCollisionWorld* pCollisionWorld)

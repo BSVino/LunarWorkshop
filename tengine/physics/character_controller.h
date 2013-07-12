@@ -94,7 +94,6 @@ protected:
 	void        StepUp(btCollisionWorld* collisionWorld);
 	btVector3   UpdateTargetPositionBasedOnCollision(const btVector3& vecMovementDirection, const btVector3& vecHitNormal);
 	void        StepForwardAndStrafe(btCollisionWorld* collisionWorld, const btVector3& walkMove);
-	void        StepDown(btCollisionWorld* collisionWorld, btScalar dt);
 
 	void        FindGround(btCollisionWorld* pCollisionWorld);
 
