@@ -91,8 +91,6 @@ protected:
 	btVector3	PerpendicularComponent(const btVector3& direction, const btVector3& normal);
 
 	bool        RecoverFromPenetration(btCollisionWorld* collisionWorld);
-	void        StepUp(btCollisionWorld* collisionWorld);
-	btVector3   UpdateTargetPositionBasedOnCollision(const btVector3& vecMovementDirection, const btVector3& vecHitNormal);
 	void        StepForwardAndStrafe(btCollisionWorld* collisionWorld, const btVector3& walkMove);
 
 	void        FindGround(btCollisionWorld* pCollisionWorld);
@@ -121,15 +119,9 @@ protected:
 
 	///this is the desired walk direction, set by the user
 	btVector3       m_vecMoveVelocity;
-	btVector3       m_vecMoveVelocityNormalized;
-
-	btScalar		m_flCurrentStepOffset;
 
 	///keep track of the contact manifolds
 	btManifoldArray	m_aManifolds;
-
-	bool			m_bTouchingContact;
-	btVector3		m_vecTouchingNormal;
 
 	bool			m_bColliding;
 };
