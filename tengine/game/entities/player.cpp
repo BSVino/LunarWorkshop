@@ -31,6 +31,7 @@ CPlayer::CPlayer()
 	m_flLastLesson = -1;
 
 	m_vecJoystickViewVelocity = Vector2D();
+	m_flLastAcceleration = 0;
 }
 
 void NoClip(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
@@ -133,8 +134,6 @@ CVar joy_move_deadmax("joy_move_deadmax", "0.8");
 CVar joy_view_deadmin("joy_view_deadmin", "0.2");
 CVar joy_view_deadmax("joy_view_deadmax", "0.9");
 
-CVar joy_view_turbo("joy_view_turbo", "4");
-
 void CPlayer::JoystickAxis(int iJoystick, int iAxis, float flValue, float flChange)
 {
 	//TMsg(sprintf("%d %d %f %f\n", iJoystick, iAxis, flValue, flChange));
@@ -148,62 +147,44 @@ void CPlayer::JoystickAxis(int iJoystick, int iAxis, float flValue, float flChan
 	if (iAxis == 0)
 	{
 		if (flValue > flDeadMoveMin)
-			m_hCharacter->SetGoalVelocityLeft(-RemapValClamped(flValue, flDeadMoveMin, flDeadMoveMax, flDeadMoveMin, 1.0f));
+			m_hCharacter->SetGoalVelocityLeft(-RemapValClamped(flValue, flDeadMoveMin, flDeadMoveMax, 0, 1.0f));
 		else if (flValue < -flDeadMoveMin)
-			m_hCharacter->SetGoalVelocityLeft(-RemapValClamped(flValue, -flDeadMoveMin, -flDeadMoveMax, -flDeadMoveMin, -1.0f));
+			m_hCharacter->SetGoalVelocityLeft(-RemapValClamped(flValue, -flDeadMoveMin, -flDeadMoveMax, -0, -1.0f));
 		else
 			m_hCharacter->SetGoalVelocityLeft(0);
 	}
 	else if (iAxis == 1)
 	{
 		if (flValue > flDeadMoveMin)
-			m_hCharacter->SetGoalVelocityForward(RemapValClamped(flValue, flDeadMoveMin, flDeadMoveMax, flDeadMoveMin, 1.0f));
+			m_hCharacter->SetGoalVelocityForward(RemapValClamped(flValue, flDeadMoveMin, flDeadMoveMax, 0, 1.0f));
 		else if (flValue < -flDeadMoveMin)
-			m_hCharacter->SetGoalVelocityForward(RemapValClamped(flValue, -flDeadMoveMin, -flDeadMoveMax, -flDeadMoveMin, -1.0f));
+			m_hCharacter->SetGoalVelocityForward(RemapValClamped(flValue, -flDeadMoveMin, -flDeadMoveMax, -0, -1.0f));
 		else
 			m_hCharacter->SetGoalVelocityForward(0);
 	}
 	else if (iAxis == 3)
 	{
 		if (flValue > flDeadViewMin)
-		{
-			if (flValue > flDeadViewMax)
-				m_vecJoystickViewVelocity.y = RemapValClamped(flValue, flDeadViewMax, 1.0f, 1.0f, joy_view_turbo.GetFloat());
-			else
-				m_vecJoystickViewVelocity.y = RemapValClamped(flValue, flDeadViewMin, flDeadViewMax, flDeadViewMin, 1.0f);
-		}
+			m_vecJoystickViewVelocity.y = RemapValClamped(flValue, flDeadViewMin, flDeadViewMax, 0, 1.0f);
 		else if (flValue < -flDeadViewMin)
-		{
-			if (flValue < -flDeadViewMax)
-				m_vecJoystickViewVelocity.y = RemapValClamped(flValue, -flDeadViewMax, -1.0f, -1.0f, -joy_view_turbo.GetFloat());
-			else
-				m_vecJoystickViewVelocity.y = RemapValClamped(flValue, -flDeadViewMin, -flDeadViewMax, -flDeadViewMin, -1.0f);
-		}
+			m_vecJoystickViewVelocity.y = RemapValClamped(flValue, -flDeadViewMin, -flDeadViewMax, -0, -1.0f);
 		else
 			m_vecJoystickViewVelocity.y = 0;
 	}
 	else if (iAxis == 4)
 	{
 		if (flValue > flDeadViewMin)
-		{
-			if (flValue > flDeadViewMax)
-				m_vecJoystickViewVelocity.x = RemapValClamped(flValue, flDeadViewMax, 1.0f, 1.0f, joy_view_turbo.GetFloat());
-			else
-				m_vecJoystickViewVelocity.x = RemapValClamped(flValue, flDeadViewMin, flDeadMoveMax, flDeadViewMin, 1.0f);
-		}
+			m_vecJoystickViewVelocity.x = RemapValClamped(flValue, flDeadViewMin, flDeadViewMax, 0, 1.0f);
 		else if (flValue < -flDeadViewMin)
-		{
-			if (flValue < -flDeadViewMax)
-				m_vecJoystickViewVelocity.x = RemapValClamped(flValue, -flDeadViewMax, -1.0f, -1.0f, -joy_view_turbo.GetFloat());
-			else
-				m_vecJoystickViewVelocity.x = RemapValClamped(flValue, -flDeadViewMin, -flDeadViewMax, -flDeadViewMin, -1.0f);
-		}
+			m_vecJoystickViewVelocity.x = RemapValClamped(flValue, -flDeadViewMin, -flDeadViewMax, -0, -1.0f);
 		else
 			m_vecJoystickViewVelocity.x = 0;
 	}
 }
 
-CVar joy_sensitivity("joy_sensitivity", "8");
+CVar joy_sensitivity_x("joy_sensitivity_x", "210");
+CVar joy_sensitivity_y("joy_sensitivity_y", "70");
+CVar joy_acceleration_speed("joy_acceleration_speed", "4");
 
 void CPlayer::Think()
 {
@@ -212,7 +193,52 @@ void CPlayer::Think()
 	Instructor_Think();
 
 	if (m_vecJoystickViewVelocity.LengthSqr() > 0)
-		MouseMotion((int)(m_vecJoystickViewVelocity.x*joy_sensitivity.GetFloat()), (int)(m_vecJoystickViewVelocity.y*joy_sensitivity.GetFloat()));
+	{
+		float flXSpeed = Bias(fabs(m_vecJoystickViewVelocity.x), 0.4f);
+		float flYSpeed = Bias(fabs(m_vecJoystickViewVelocity.y), 0.4f);
+
+		// Some diagonal dampening code courtesy of Insomniac's GDC 2013 talk.
+		// A power is applied here so that it's outweighed by the Y when they're normalized.
+		float flAbsX = pow(flXSpeed, 4);
+		float flAbsY = flYSpeed;
+
+		// Normalize.
+		float flSpeed = (joy_sensitivity_x.GetFloat() * flAbsX + joy_sensitivity_y.GetFloat() * flAbsY) / (flAbsX + flAbsY);
+
+		float flXMotion = (float)(m_vecJoystickViewVelocity.x*flSpeed*flXSpeed*GameServer()->GetFrameTime());
+		float flYMotion = (float)(m_vecJoystickViewVelocity.y*flSpeed*GameServer()->GetFrameTime());
+
+		float flAccelerationMax = Bias(m_vecJoystickViewVelocity.Length(), 0.2f);
+		m_flLastAcceleration = Approach(flAccelerationMax, m_flLastAcceleration, (float)GameServer()->GetFrameTime() * joy_acceleration_speed.GetFloat());
+		if (flAccelerationMax < m_flLastAcceleration)
+			m_flLastAcceleration = flAccelerationMax;
+
+		float flAccelerationBias = Bias(RemapValClamped(m_flLastAcceleration, 0, 1, 0.3f, 1), 0.4f);
+
+		flXMotion *= flAccelerationBias;
+		flYMotion *= flAccelerationBias;
+
+		EAngle angDirection = m_hCharacter->GetViewAngles();
+
+		angDirection.y -= flXMotion;
+		angDirection.p -= flYMotion;
+
+		if (angDirection.p > 89)
+			angDirection.p = 89;
+
+		if (angDirection.p < -89)
+			angDirection.p = -89;
+
+		while (angDirection.y > 180)
+			angDirection.y -= 360;
+
+		while (angDirection.y < -180)
+			angDirection.y += 360;
+
+		m_hCharacter->SetViewAngles(angDirection);
+	}
+	else
+		m_flLastAcceleration = 0;
 }
 
 void CPlayer::SetCharacter(CCharacter* pCharacter)

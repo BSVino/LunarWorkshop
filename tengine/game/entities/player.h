@@ -75,6 +75,7 @@ protected:
 	double                          m_flLastLesson;
 
 	Vector2D                        m_vecJoystickViewVelocity;
+	float                           m_flLastAcceleration;
 };
 
 #endif
