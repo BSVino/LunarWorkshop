@@ -301,7 +301,7 @@ CVar cam_transitionlerp("cam_transitionlerp", "0.7");
 
 float CCameraManager::GetTransitionLerp()
 {
-	return Lerp(RemapVal((float)GameServer()->GetGameTime(), (float)m_flTransitionBegin, (float)m_flTransitionBegin+m_flTransitionTime, 0, 1), cam_transitionlerp.GetFloat());
+	return Bias(RemapVal((float)GameServer()->GetGameTime(), (float)m_flTransitionBegin, (float)m_flTransitionBegin+m_flTransitionTime, 0, 1), cam_transitionlerp.GetFloat());
 }
 
 void CCameraManager::SetPermaFreeMode(bool bPerma)

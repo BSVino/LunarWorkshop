@@ -62,7 +62,7 @@ void CKinematic::Think()
 	{
 		double flTime = GameServer()->GetGameTime() - m_flLerpStart;
 		float flLerp = RemapVal((float)flTime, 0, (float)(m_flLerpEnd - m_flLerpStart), 0, 1);
-		float flRamp = SLerp(flLerp, 0.2f);
+		float flRamp = Gain(flLerp, 0.2f);
 
 		m_bLerping = true;
 		SetGlobalOrigin(m_vecLerpStart * (1-flRamp) + m_vecLerpGoal * flRamp);
@@ -76,7 +76,7 @@ void CKinematic::Think()
 	{
 		double flTime = GameServer()->GetGameTime() - m_flAngleLerpStart;
 		float flLerp = RemapVal((float)flTime, 0, (float)(m_flAngleLerpEnd - m_flAngleLerpStart), 0, 1);
-		float flRamp = SLerp(flLerp, 0.2f);
+		float flRamp = Gain(flLerp, 0.2f);
 
 		m_bLerping = true;
 		SetGlobalAngles(LerpValue(m_angLerpStart, m_angLerpGoal, flRamp));

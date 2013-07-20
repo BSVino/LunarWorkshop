@@ -140,7 +140,7 @@ void CMovablePanel::PaintBackground(float x, float y, float w, float h)
 {
 	float flMinimizedHeight = HEADER_HEIGHT;
 	float flMaximumHeight = m_flNonMinimizedHeight;
-	float flHeight = RemapVal(Lerp(m_flMinimizeTransitionLerp, 0.7f), 0, 1, flMinimizedHeight, flMaximumHeight);
+	float flHeight = RemapVal(Bias(m_flMinimizeTransitionLerp, 0.7f), 0, 1, flMinimizedHeight, flMaximumHeight);
 
 	BaseClass::PaintBackground(x, y, w, flHeight);
 }

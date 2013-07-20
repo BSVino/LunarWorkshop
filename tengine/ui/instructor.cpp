@@ -617,9 +617,9 @@ void CLessonPanel::Paint(float x, float y, float w, float h)
 	if (m_pLesson->m_flSlideAmount > 0)
 	{
 		if (m_pLesson->m_bSlideX)
-			x += Lerp(RemapValClamped((float)(GameServer()->GetGameTime() - m_flStartTime), 0, 1, 1.0f, 0.0f), 0.2f) * m_pLesson->m_flSlideAmount;
+			x += Bias(RemapValClamped((float)(GameServer()->GetGameTime() - m_flStartTime), 0, 1, 1.0f, 0.0f), 0.2f) * m_pLesson->m_flSlideAmount;
 		else
-			y += Lerp(RemapValClamped((float)(GameServer()->GetGameTime() - m_flStartTime), 0, 1, 1.0f, 0.0f), 0.2f) * m_pLesson->m_flSlideAmount;
+			y += Bias(RemapValClamped((float)(GameServer()->GetGameTime() - m_flStartTime), 0, 1, 1.0f, 0.0f), 0.2f) * m_pLesson->m_flSlideAmount;
 	}
 
 	bool bScrolling = false;

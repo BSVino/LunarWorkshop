@@ -413,7 +413,7 @@ void CMenu::CSubmenuPanel::PostPaint()
 		float mx, my, mw, mh;
 		GetAbsDimensions(mx, my, mw, mh);
 
-		float flMenuHeight = Lerp(pMenuParent->m_flMenuHeight, 0.6f);
+		float flMenuHeight = Bias(pMenuParent->m_flMenuHeight, 0.6f);
 		if (flMenuHeight > 0.99f)
 			flMenuHeight = 0.99f;	// When it hits 1 it jerks.
 

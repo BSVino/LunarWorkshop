@@ -22,7 +22,7 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 #include <math.h>
 #include <string.h>
 
-inline float Lerp(float x, float flLerp)
+inline float Bias(float x, float flLerp)
 {
 	static float flLastLerp = -1;
 	static float flLastExp = -1;
@@ -39,12 +39,12 @@ inline float Lerp(float x, float flLerp)
 	return pow(x, flLastExp);
 }
 
-inline float SLerp(float x, float flLerp)
+inline float Gain(float x, float flLerp)
 {
 	if(x < 0.5f)
-		return Lerp(2*x, flLerp)/2;
+		return Bias(2*x, flLerp)/2;
 	else
-		return 1-Lerp(2-2*x, flLerp)/2;
+		return 1-Bias(2-2*x, flLerp)/2;
 }
 
 template <class T>
