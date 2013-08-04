@@ -9,6 +9,8 @@
 #include <tinker/profiler.h>
 #include <tinker/application.h>
 #include <tinker/cvar.h>
+#include <renderer/game_renderer.h>
+#include <renderer/renderingcontext.h>
 
 #include "physics_debugdraw.h"
 
@@ -735,6 +737,12 @@ void CBulletPhysics::DebugDraw(int iLevel)
 		m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	else if (iLevel >= 3)
 		m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe|btIDebugDraw::DBG_DrawContactPoints);
+
+	CRenderingContext c(GameServer()->GetRenderer(), true);
+	c.UseProgram("model");
+	c.SetUniform("bDiffuse", false);
+	c.SetUniform("vecDiffuse", Vector4D(1, 1, 1, 1));
+	m_pDebugDrawer->SetRenderingContext(&c);
 
 	m_pDebugDrawer->SetDrawing(true);
 	m_pDynamicsWorld->debugDrawWorld();

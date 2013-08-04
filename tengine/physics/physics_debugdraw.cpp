@@ -11,6 +11,7 @@ CPhysicsDebugDrawer::CPhysicsDebugDrawer()
 {
 	// This is so that some of the more special debug commands inside bullet can have access to the debug drawer.
 	debugDrawerPtr = this;
+	C = nullptr;
 }
 
 void CPhysicsDebugDrawer::drawLine(const btVector3& from,const btVector3& to,const btVector3& fromColor, const btVector3& toColor)
@@ -18,17 +19,17 @@ void CPhysicsDebugDrawer::drawLine(const btVector3& from,const btVector3& to,con
 	if (!m_bDrawing)
 		return;
 
-	CRenderingContext c(GameServer()->GetRenderer(), true);
-	c.UseProgram("model");
-	c.SetUniform("bDiffuse", false);
-	c.SetUniform("vecDiffuse", Vector4D(1, 1, 1, 1));
-	c.SetUniform("vecColor", Color(Vector((const float*)fromColor)));
-	c.BeginRenderDebugLines();
-		c.Color(Color(Vector((const float*)fromColor)));
-		c.Vertex(Vector((const float*)from));
-		c.Color(Color(Vector((const float*)fromColor)));
-		c.Vertex(Vector((const float*)to));
-	c.EndRender();
+	TAssert(C);
+	if (!C)
+		return;
+
+	C->SetUniform("vecColor", Color(Vector((const float*)fromColor)));
+	C->BeginRenderDebugLines();
+		C->Color(Color(Vector((const float*)fromColor)));
+		C->Vertex(Vector((const float*)from));
+		C->Color(Color(Vector((const float*)fromColor)));
+		C->Vertex(Vector((const float*)to));
+	C->EndRender();
 }
 
 void CPhysicsDebugDrawer::drawLine(const btVector3& from,const btVector3& to,const btVector3& color)
@@ -74,22 +75,23 @@ void CPhysicsDebugDrawer::drawTriangle(const btVector3& a,const btVector3& b,con
 	if (!m_bDrawing)
 		return;
 
-	CRenderingContext r(GameServer()->GetRenderer(), true);
-	r.UseProgram("model");
-	r.SetUniform("bDiffuse", false);
-	r.SetColor(Color(Vector((const float*)color)));
+	TAssert(C);
+	if (!C)
+		return;
+
+	C->SetColor(Color(Vector((const float*)color)));
 	if (alpha < 1)
-		r.SetBlend(BLEND_ALPHA);
-	r.SetAlpha(alpha);
+		C->SetBlend(BLEND_ALPHA);
+	C->SetAlpha(alpha);
 
 	const btVector3	n=btCross(b-a,c-a).normalized();
 
-	r.BeginRenderTris();
-	r.Normal(Vector((const float*)n));
-	r.Vertex(Vector((const float*)a));
-	r.Vertex(Vector((const float*)b));
-	r.Vertex(Vector((const float*)c));
-	r.EndRender();
+	C->BeginRenderTris();
+	C->Normal(Vector((const float*)n));
+	C->Vertex(Vector((const float*)a));
+	C->Vertex(Vector((const float*)b));
+	C->Vertex(Vector((const float*)c));
+	C->EndRender();
 }
 
 void CPhysicsDebugDrawer::draw3dText(const btVector3& location,const char* textString)
@@ -113,16 +115,17 @@ void CPhysicsDebugDrawer::drawContactPoint(const btVector3& pointOnB,const btVec
 	if (!m_bDrawing)
 		return;
 
+	TAssert(C);
+	if (!C)
+		return;
+
 	btVector3 to=pointOnB+normalOnB*1;//distance;
 	const btVector3& from = pointOnB;
 
-	CRenderingContext r(GameServer()->GetRenderer(), true);
-	r.UseProgram("model");
-	r.SetUniform("bDiffuse", false);
-	r.SetColor(Color(Vector((const float*)color)));
+	C->SetColor(Color(Vector((const float*)color)));
 
-	r.BeginRenderDebugLines();
-		r.Vertex(Vector((const float*)from));
-		r.Vertex(Vector((const float*)to));
-	r.EndRender();
+	C->BeginRenderDebugLines();
+		C->Vertex(Vector((const float*)from));
+		C->Vertex(Vector((const float*)to));
+	C->EndRender();
 }

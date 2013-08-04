@@ -239,18 +239,18 @@ void CGameRenderer::DrawSkybox(class CRenderingContext* pContext)
 	c.ClearDepth();
 }
 
-CVar show_physics("debug_show_physics", "no");
+CVar phys_show("phys_show", "no");
 
 void CGameRenderer::FinishRendering(class CRenderingContext* pContext)
 {
 	BaseClass::FinishRendering(pContext);
 
-	if (show_physics.GetBool() && ShouldRenderPhysicsDebug())
+	if (phys_show.GetBool() && ShouldRenderPhysicsDebug())
 	{
 		if (CWorkbench::IsActive())
-			EditorPhysics()->DebugDraw(show_physics.GetInt());
+			EditorPhysics()->DebugDraw(phys_show.GetInt());
 		else
-			GamePhysics()->DebugDraw(show_physics.GetInt());
+			GamePhysics()->DebugDraw(phys_show.GetInt());
 	}
 }
 
