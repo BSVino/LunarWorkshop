@@ -43,7 +43,7 @@ void CReceptacle::Spawn()
 	SetModel("models/pedestal.toy");
 	AddToPhysics(CT_KINEMATIC);
 
-	m_mTokenOffset = TMatrix(EAngle(40, 0, 0), Vector(0, 0.742105f, 0));
+	m_mTokenOffset = TMatrix(EAngle(40, 0, 0), Vector(0, 0, 0.742105f));
 }
 
 bool CReceptacle::IsTokenValid(const CToken* pToken) const
