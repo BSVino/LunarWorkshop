@@ -263,13 +263,13 @@ inline unit_t TemplateVector<unit_t>::LengthSqr() const
 template <class unit_t>
 inline unit_t TemplateVector<unit_t>::Length2D() const
 {
-	return sqrt(x*x + z*z);
+	return sqrt(x*x + y*y);
 }
 
 template <class unit_t>
 inline unit_t TemplateVector<unit_t>::Length2DSqr() const
 {
-	return x*x + z*z;
+	return x*x + y*y;
 }
 
 template <class unit_t>
