@@ -302,7 +302,7 @@ template <class unit_t>
 inline const TemplateVector<unit_t> TemplateVector<unit_t>::Flattened() const
 {
 	TemplateVector<unit_t> vecResult(*this);
-	vecResult.y = 0;
+	vecResult.z = 0;
 	return vecResult;
 }
 
