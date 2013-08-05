@@ -8,6 +8,7 @@
 #include <tinker/cvar.h>
 #include <tinker/profiler.h>
 #include <models/models.h>
+#include <tools/workbench.h>
 
 #include "grotto_game.h"
 #include "mirror.h"
@@ -34,6 +35,12 @@ void CGrottoRenderer::Initialize()
 void CGrottoRenderer::PreRender()
 {
 	TPROF("CGrottoRenderer::SetupFrame");
+
+	if (CWorkbench::IsActive())
+	{
+		BaseClass::PreRender();
+		return;
+	}
 
 	tvector<CEntityHandle<CMirror> > apMirrors;
 	apMirrors.reserve(CMirror::GetNumMirrors());
@@ -98,6 +105,12 @@ void CGrottoRenderer::ModifyContext(class CRenderingContext* pContext)
 {
 	BaseClass::ModifyContext(pContext);
 
+	if (CWorkbench::IsActive())
+	{
+		BaseClass::ModifyContext(pContext);
+		return;
+	}
+
 	if (!Game()->GetNumLocalPlayers())
 		return;
 
@@ -120,6 +133,12 @@ void CGrottoRenderer::SetupFrame(class CRenderingContext* pContext)
 void CGrottoRenderer::StartRendering(class CRenderingContext* pContext)
 {
 	if (CVar::GetCVarValue("game_mode") == "menu")
+	{
+		BaseClass::StartRendering(pContext);
+		return;
+	}
+
+	if (CWorkbench::IsActive())
 	{
 		BaseClass::StartRendering(pContext);
 		return;
