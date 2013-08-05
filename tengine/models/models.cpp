@@ -288,9 +288,12 @@ bool CModel::Load()
 		if (!m_ahMaterials[i].IsValid())
 			m_ahMaterials[i] = CMaterialLibrary::AddMaterial(GetDirectory(m_sFilename) + "/" + m_pToy->GetMaterialName(i).c_str());
 
+		if (!m_ahMaterials[i].IsValid())
+			m_ahMaterials[i] = CMaterialLibrary::AddMaterial(tstring("materials/") + m_pToy->GetMaterialName(i).c_str());
+
 		//TAssert(m_aiMaterials[i]);
 		if (!m_ahMaterials[i].IsValid())
-			TError(tstring("Couldn't find material \"") + m_pToy->GetMaterialName(i).c_str() + "\"\n");
+			TError(tstring("Couldn't find material \"") + m_pToy->GetMaterialName(i).c_str() + "\" search path: " + GetDirectory(m_sFilename) + "\n");
 	}
 
 	if (m_pToy->GetPhysicsNumTris())
