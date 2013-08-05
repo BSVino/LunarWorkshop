@@ -43,7 +43,7 @@ const TVector CGrottoCharacter::GetGoalVelocity()
 {
 	TVector vecGoalVelocity = BaseClass::GetGoalVelocity();
 
-	if (IsReflected(REFLECTION_LATERAL) ^ IsReflected(REFLECTION_VERTICAL))
+	if (IsReflected(REFLECTION_LATERAL))
 		vecGoalVelocity.y = -vecGoalVelocity.y;
 
 	return vecGoalVelocity;
