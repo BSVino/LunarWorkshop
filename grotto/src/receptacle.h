@@ -19,6 +19,8 @@ public:
 
 	Vector					GetTokenPosition();
 
+	collision_group_t       GetCollisionGroup() const { return CG_STATIC; }
+
 	DECLARE_ENTITY_OUTPUT(OnNormalToken);
 	DECLARE_ENTITY_OUTPUT(OnNormalTokenRemoved);
 	DECLARE_ENTITY_OUTPUT(OnReflectedToken);
