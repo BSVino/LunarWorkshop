@@ -27,6 +27,7 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 #include <frustum.h>
 
 #include <textures/texturehandle.h>
+#include <textures/materiallibrary.h>
 
 #include "render_common.h"
 
@@ -161,7 +162,8 @@ public:
 
 	bool            IsDrawingBackground() const { return m_bDrawBackground; }
 
-	virtual CTextureHandle  GetInvalidTexture() const { return CTextureHandle(); }
+	virtual CTextureHandle  GetInvalidTexture() const;
+	virtual CMaterialHandle GetInvalidMaterial() const;
 
 	void			SetSize(int w, int h);
 

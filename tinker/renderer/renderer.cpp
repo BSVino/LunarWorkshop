@@ -661,6 +661,16 @@ bool CRenderer::IsSphereInFrustum(const Vector& vecCenter, float flRadius)
 	return m_oFrustum.TouchesSphere(vecCenter, flRadius);
 }
 
+CTextureHandle CRenderer::GetInvalidTexture() const
+{
+	return CTextureHandle();
+}
+
+CMaterialHandle CRenderer::GetInvalidMaterial() const
+{
+	return CMaterialHandle();
+}
+
 void CRenderer::SetSize(int w, int h)
 {
 	m_iWidth = w;

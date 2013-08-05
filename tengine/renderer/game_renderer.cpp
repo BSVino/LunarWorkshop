@@ -61,6 +61,14 @@ void CGameRenderer::Render()
 {
 	TPROF("CGameRenderer::Render");
 
+	// Must delay this setup until the shaders are loaded.
+	if (!m_hInvalidMaterial.IsValid())
+	{
+		m_hInvalidMaterial = CMaterialLibrary::CreateBlankMaterial("invalid");
+		m_hInvalidMaterial->SetShader("model");
+		m_hInvalidMaterial->SetParameter("DiffuseTexture", m_hInvalidTexture);
+	}
+
 	CCameraManager* pCamera = GameServer()->GetCameraManager();
 
 	SetCameraPosition(pCamera->GetCameraPosition());
@@ -422,7 +430,15 @@ void CGameRenderer::RenderBatches()
 		if (!iJobs)
 			continue;
 
-		const CMaterialHandle& hMaterial = it->first;
+		CMaterialHandle hMaterial = it->first;
+
+		if (!hMaterial)
+		{
+			if (GetInvalidMaterial().IsValid())
+				hMaterial = GetInvalidMaterial();
+			else
+				continue;
+		}
 
 		if (!hMaterial)
 			continue;

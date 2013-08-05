@@ -427,8 +427,10 @@ void CRenderingContext::UseProgram(class CShader* pShader)
 	oContext.m_bViewUpdated = false;
 }
 
-void CRenderingContext::UseMaterial(const CMaterialHandle& hMaterial)
+void CRenderingContext::UseMaterial(const CMaterialHandle& hUseMaterial)
 {
+	CMaterialHandle hMaterial = hUseMaterial;
+
 	if (!hMaterial.IsValid())
 		return;
 

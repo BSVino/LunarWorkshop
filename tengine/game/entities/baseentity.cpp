@@ -987,8 +987,9 @@ bool CBaseEntity::ShouldRender() const
 		{
 			CMaterialHandle& hMaterial = pModel->m_ahMaterials[i];
 
+			// Invalid material counts as a material, it'll be swapped with the invalid texture
 			if (!hMaterial.IsValid())
-				continue;
+				return true;
 
 			if (!hMaterial->m_sBlend.length() || hMaterial->m_sBlend == "none")
 				return true;
@@ -1009,7 +1010,7 @@ bool CBaseEntity::ShouldRender() const
 				CMaterialHandle& hMaterial = pSceneAreaModel->m_ahMaterials[j];
 
 				if (!hMaterial.IsValid())
-					continue;
+					return true;
 
 				if (!hMaterial->m_sBlend.length() || hMaterial->m_sBlend == "none")
 					return true;
