@@ -74,3 +74,26 @@ void CGrottoPlayer::KeyPress(int c)
 
 	BaseClass::KeyPress(c);
 }
+
+void CGrottoPlayer::JoystickAxis(int iJoystick, int iAxis, float flValue, float flChange)
+{
+	if (!GetPlayerCharacter())
+		return;
+
+	if (iAxis == 3)
+	{
+		if (GetPlayerCharacter()->IsReflected(REFLECTION_VERTICAL))
+			BaseClass::JoystickAxis(iJoystick, iAxis, -flValue, -flChange);
+		else
+			BaseClass::JoystickAxis(iJoystick, iAxis, flValue, flChange);
+	}
+	else if (iAxis == 4)
+	{
+		if (GetPlayerCharacter()->IsReflected(REFLECTION_LATERAL))
+			BaseClass::JoystickAxis(iJoystick, iAxis, -flValue, -flChange);
+		else
+			BaseClass::JoystickAxis(iJoystick, iAxis, flValue, flChange);
+	}
+	else
+		BaseClass::JoystickAxis(iJoystick, iAxis, flValue, flChange);
+}
