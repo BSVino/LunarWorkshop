@@ -131,7 +131,7 @@ bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const
 
 		// Use a tighter area for physics to make sure we never fall outside the level
 		if (bPhysics)
-			return aabbBox.Inside2D(vecPoint - GetGlobalOrigin());
+			return (aabbBox*0.8f).Inside2D(vecPoint - GetGlobalOrigin());
 		else
 			return (aabbBox*1.2f).Inside2D(vecPoint - GetGlobalOrigin());
 	}
