@@ -71,14 +71,14 @@ void CGrottoHUD::Paint(float x, float y, float w, float h)
 		float flScale = (1/pPlayerCharacter->GetToken()->GetVisBoundingBox().Size().Length())/2;
 		c.Scale(flScale, flScale, flScale);
 
-		c.Rotate(85.0f, Vector(0, 0, 1));
-		c.Rotate(15.0f, Vector(0, 1, 0));
-		c.Rotate(75.0f, Vector(1, 0, 0));
+		c.Rotate(-15.0f, Vector(0, 1, 0));
+		c.Rotate(-15.0f, Vector(1, 0, 0));
+		c.Rotate(92.0f, Vector(0, 0, 1));
 
 		CToken* pToken = pPlayerCharacter->GetToken();
 		if (pToken->IsReflected() ^ (pPlayerCharacter->IsReflected(REFLECTION_LATERAL) ^ pPlayerCharacter->IsReflected(REFLECTION_VERTICAL)))
 		{
-			c.Scale(1, 1, -1);
+			c.Scale(1, -1, 1);
 			c.SetWinding(false);
 		}
 

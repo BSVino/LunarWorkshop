@@ -178,6 +178,8 @@ void CGameRenderer::RenderEverything()
 
 	if (ShouldRenderParticles())
 		CParticleSystemLibrary::Render();
+
+	m_bRenderingTransparent = false; // Just in case stuff is drawn in the HUD
 }
 
 void CGameRenderer::SetupFrame(class CRenderingContext* pContext)
