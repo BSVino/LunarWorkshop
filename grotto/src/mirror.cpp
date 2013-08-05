@@ -2,6 +2,8 @@
 
 #include <models/models.h>
 #include <physics/physics.h>
+#include <renderer/renderingcontext.h>
+#include <renderer/shaders.h>
 
 #include "grotto_renderer.h"
 #include "grotto_game.h"
@@ -47,6 +49,29 @@ void CMirror::Spawn()
 	SetMirrorType(MIRROR_VERTICAL);
 
 	m_ahMirrors.push_back(this);
+}
+
+void CMirror::ModifyShader(class CRenderingContext* pContext) const
+{
+	if (!pContext->GetActiveShader())
+		return;
+
+	if (pContext->GetActiveShader()->m_sName != "reflection")
+		return;
+
+	size_t iBuffer = GetBuffer();
+	if (iBuffer == ~0)
+		return;
+
+	CFrameBuffer &oBuffer = GrottoRenderer()->GetReflectionBuffer(iBuffer);
+
+	pContext->SetUniform("flScreenWidth", (float)oBuffer.m_iWidth);
+	pContext->SetUniform("flScreenHeight", (float)oBuffer.m_iHeight);
+
+	pContext->SetUniform("bDiffuse", true);
+	pContext->SetUniform("iDiffuse", 0);
+
+	pContext->BindTexture(oBuffer.m_iMap);
 }
 
 bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const

@@ -43,13 +43,20 @@ typedef enum
 
 class CFrameBuffer
 {
-public:
-					CFrameBuffer();
+	friend class CRenderer;
+
+private:
+	CFrameBuffer();
 
 public:
-	void			Destroy();
+	CFrameBuffer(const tstring& sName);
 
 public:
+	void Destroy();
+
+public:
+	tstring         m_sName;
+
 	unsigned int	m_iWidth;
 	unsigned int	m_iHeight;
 
@@ -63,6 +70,15 @@ public:
 	Vector2D		m_vecVertices[4];
 
 	bool			m_bMultiSample;
+
+public:
+	static tvector<CFrameBuffer>& GetFrameBuffers() { return s_aFrameBuffers; }
+
+private:
+	static void AddToBufferList(CFrameBuffer*);
+	static void RemoveFromBufferList(CFrameBuffer*);
+
+	static tvector<CFrameBuffer> s_aFrameBuffers;
 };
 
 #define BLOOM_FILTERS 3
@@ -80,7 +96,7 @@ public:
 
 	virtual void	WindowResize(int w, int h);
 
-	CFrameBuffer	CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_options_e eOptions);
+	CFrameBuffer	CreateFrameBuffer(const tstring& sName, size_t iWidth, size_t iHeight, fb_options_e eOptions);
 	void			DestroyFrameBuffer(CFrameBuffer* pBuffer);
 
 	// PreFrame is run before thinks, physics, etc.

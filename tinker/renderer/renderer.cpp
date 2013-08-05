@@ -36,11 +36,22 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 
 CFrameBuffer::CFrameBuffer()
 {
+	m_sName = "unnamed";
+
+	m_iRB = m_iMap = m_iDepth = m_iDepthTexture = m_iFB = 0;
+}
+
+CFrameBuffer::CFrameBuffer(const tstring& sName)
+{
+	m_sName = sName;
+
 	m_iRB = m_iMap = m_iDepth = m_iDepthTexture = m_iFB = 0;
 }
 
 void CFrameBuffer::Destroy()
 {
+	RemoveFromBufferList(this);
+
 	if (m_iMap)
 		glDeleteTextures(1, &m_iMap);
 
@@ -58,6 +69,25 @@ void CFrameBuffer::Destroy()
 
 	m_iRB = m_iMap = m_iDepth = m_iDepthTexture = m_iFB = 0;
 }
+
+void CFrameBuffer::AddToBufferList(CFrameBuffer* pBuffer)
+{
+	s_aFrameBuffers.push_back(*pBuffer);
+}
+
+void CFrameBuffer::RemoveFromBufferList(CFrameBuffer* pBuffer)
+{
+	for (size_t i = 0; i < s_aFrameBuffers.size(); i++)
+	{
+		if (pBuffer->m_iFB == s_aFrameBuffers[i].m_iFB)
+		{
+			s_aFrameBuffers.erase(s_aFrameBuffers.begin()+i);
+			return;
+		}
+	}
+}
+
+tvector<CFrameBuffer> CFrameBuffer::s_aFrameBuffers;
 
 CRenderer::CRenderer(size_t iWidth, size_t iHeight)
 {
@@ -114,12 +144,12 @@ void CRenderer::LoadShaders()
 void CRenderer::WindowResize(int w, int h)
 {
 	m_oSceneBuffer.Destroy();
-	m_oSceneBuffer = CreateFrameBuffer(w, h, (fb_options_e)(FB_TEXTURE|FB_DEPTH|FB_MULTISAMPLE));
+	m_oSceneBuffer = CreateFrameBuffer("scene", w, h, (fb_options_e)(FB_TEXTURE|FB_DEPTH|FB_MULTISAMPLE));
 
 	if (m_iScreenSamples)
 	{
 		m_oResolvedSceneBuffer.Destroy();
-		m_oResolvedSceneBuffer = CreateFrameBuffer(w, h, (fb_options_e)(FB_TEXTURE|FB_DEPTH));
+		m_oResolvedSceneBuffer = CreateFrameBuffer("scene_resolved", w, h, (fb_options_e)(FB_TEXTURE|FB_DEPTH));
 	}
 
 	size_t iWidth = m_oSceneBuffer.m_iWidth;
@@ -128,14 +158,14 @@ void CRenderer::WindowResize(int w, int h)
 	{
 		m_oBloom1Buffers[i].Destroy();
 		m_oBloom2Buffers[i].Destroy();
-		m_oBloom1Buffers[i] = CreateFrameBuffer(iWidth, iHeight, (fb_options_e)(FB_TEXTURE|FB_LINEAR));
-		m_oBloom2Buffers[i] = CreateFrameBuffer(iWidth, iHeight, (fb_options_e)(FB_TEXTURE));
+		m_oBloom1Buffers[i] = CreateFrameBuffer(sprintf(tstring("bloom1_%d"), i), iWidth, iHeight, (fb_options_e)(FB_TEXTURE|FB_LINEAR));
+		m_oBloom2Buffers[i] = CreateFrameBuffer(sprintf(tstring("bloom2_%d"), i), iWidth, iHeight, (fb_options_e)(FB_TEXTURE));
 		iWidth /= 2;
 		iHeight /= 2;
 	}
 }
 
-CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_options_e eOptions)
+CFrameBuffer CRenderer::CreateFrameBuffer(const tstring& sName, size_t iWidth, size_t iHeight, fb_options_e eOptions)
 {
 	TAssert((eOptions&FB_TEXTURE) ^ (eOptions&FB_RENDERBUFFER));
 
@@ -161,7 +191,7 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 	if (bUseMultisample)
 		iTextureTarget = GL_TEXTURE_2D_MULTISAMPLE;
 
-	CFrameBuffer oBuffer;
+	CFrameBuffer oBuffer(sName);
 	oBuffer.m_bMultiSample = bUseMultisample;
 
 	if (eOptions&FB_TEXTURE)
@@ -250,6 +280,8 @@ CFrameBuffer CRenderer::CreateFrameBuffer(size_t iWidth, size_t iHeight, fb_opti
 	oBuffer.m_vecVertices[1] = Vector2D(0, (float)iHeight);
 	oBuffer.m_vecVertices[2] = Vector2D((float)iWidth, (float)iHeight);
 	oBuffer.m_vecVertices[3] = Vector2D((float)iWidth, 0);
+
+	CFrameBuffer::AddToBufferList(&oBuffer);
 
 	return oBuffer;
 }
@@ -676,7 +708,7 @@ bool CRenderer::HardwareSupported()
 
 	// Compile a test framebuffer. If it fails we don't support framebuffers.
 
-	CFrameBuffer oBuffer;
+	CFrameBuffer oBuffer("hardware_test");
 
 	glGenTextures(1, &oBuffer.m_iMap);
 	glBindTexture(GL_TEXTURE_2D, (GLuint)oBuffer.m_iMap);
@@ -1038,7 +1070,7 @@ void R_DumpFBO(class CCommand* pCommand, tvector<tstring>& asTokens, const tstri
 	glViewport(0, 0, (GLsizei)iWidth, (GLsizei)iHeight);
 
 	// In case it's multisampled, blit it over to a normal one first.
-	CFrameBuffer oResolvedBuffer = Application()->GetRenderer()->CreateFrameBuffer(iWidth, iHeight, (fb_options_e)(FB_RENDERBUFFER|FB_DEPTH));
+	CFrameBuffer oResolvedBuffer = Application()->GetRenderer()->CreateFrameBuffer("resolved", iWidth, iHeight, (fb_options_e)(FB_RENDERBUFFER|FB_DEPTH));
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, iFBO);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, oResolvedBuffer.m_iFB);
@@ -1062,3 +1094,16 @@ void R_DumpFBO(class CCommand* pCommand, tvector<tstring>& asTokens, const tstri
 }
 
 CCommand r_dumpfbo(tstring("r_dumpfbo"), ::R_DumpFBO);
+
+void R_ListFBOs(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
+{
+	for (size_t i = 0; i < CFrameBuffer::GetFrameBuffers().size(); i++)
+	{
+		auto& oFrameBuffer = CFrameBuffer::GetFrameBuffers()[i];
+		TMsg(sprintf(tstring("Buffer %d \"%s\" (%dx%d): RB:%d, Map:%d, Depth:%d, DepthTexture:%d, Multisample:%s\n"),
+			oFrameBuffer.m_iFB, oFrameBuffer.m_sName.c_str(), oFrameBuffer.m_iWidth, oFrameBuffer.m_iHeight, oFrameBuffer.m_iRB,
+			oFrameBuffer.m_iMap, oFrameBuffer.m_iDepth, oFrameBuffer.m_iDepthTexture, oFrameBuffer.m_bMultiSample?"yes":"no"));
+	}
+}
+
+CCommand r_listfbos(tstring("r_listfbos"), ::R_ListFBOs);

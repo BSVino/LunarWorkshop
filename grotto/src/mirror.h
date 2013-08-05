@@ -22,6 +22,8 @@ public:
 	void				Precache();
 	void				Spawn();
 
+	void                ModifyShader(class CRenderingContext* pContext) const;
+
 	collision_group_t   GetCollisionGroup() const { return CG_STATIC; }
 
 	bool				IsPointInside(const Vector& vecPoint, bool bPhysics = true) const;

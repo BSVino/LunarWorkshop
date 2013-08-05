@@ -18,7 +18,10 @@ CGrottoRenderer::CGrottoRenderer()
 	: CGameRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
 {
 	for (size_t i = 0; i < 5; i++)
-		m_aoReflectionBuffers.push_back(CreateFrameBuffer(m_iWidth, m_iHeight, (fb_options_e)(FB_TEXTURE|FB_DEPTH|FB_LINEAR)));
+	{
+		auto& oBuffer = CreateFrameBuffer(sprintf(tstring("mirror%d"), i), m_iWidth, m_iHeight, (fb_options_e)(FB_TEXTURE|FB_DEPTH|FB_LINEAR));
+		m_aoReflectionBuffers.push_back(oBuffer);
+	}
 }
 
 void CGrottoRenderer::Initialize()
