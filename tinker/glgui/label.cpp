@@ -504,6 +504,8 @@ void CLabel::SetFont(const tstring& sFontName, int iSize)
 		m_pFont = GetFont(m_sFontName, m_iFontFaceSize);
 	}
 
+	TAssert((int)(m_pFont) > 100);
+
 	m_bNeedsCompute = true;
 }
 
@@ -560,7 +562,7 @@ void CLabel::ComputeLines(float w, float h)
 	oSection.m_iFontSize = m_iFontFaceSize;
 	oSection.m_pFont = GetFont(m_sFontName, m_iFontFaceSize);
 
-	TAssert(oSection.m_pFont);
+	TAssert((int)(oSection.m_pFont) > 100);
 
 	// This stack is so that markups can be nested.
 	// ie [size=20]big[size=20]bigger[/size][/size]
@@ -613,6 +615,7 @@ void CLabel::ComputeLines(float w, float h)
 				aSectionStack.push_back(oSection);
 				AddFontSize(oSection.m_sFont, oSection.m_iFontSize);
 				aSectionStack.back().m_pFont = GetFont(oSection.m_sFont, iSize);
+				TAssert((int)(aSectionStack.back().m_pFont) > 100);
 
 				iLastBreak = iChar;
 			}
@@ -703,6 +706,7 @@ void CLabel::ComputeLines(float w, float h)
 				aSectionStack.push_back(oSection);
 				AddFontSize(oSection.m_sFont, oSection.m_iFontSize);
 				aSectionStack.back().m_pFont = GetFont(oSection.m_sFont, oSection.m_iFontSize);
+				TAssert((int)(aSectionStack.back().m_pFont) > 100);
 
 				iLastBreak = iChar;
 			}
