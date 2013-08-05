@@ -79,3 +79,8 @@ void CCharacterCamera::SetCharacter(CCharacter* pCharacter)
 {
 	m_hCharacter = pCharacter;
 }
+
+CCharacter* CCharacterCamera::GetCharacter() const
+{
+	return m_hCharacter;
+}

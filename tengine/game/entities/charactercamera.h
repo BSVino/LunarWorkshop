@@ -25,6 +25,7 @@ public:
 	virtual float           GetCameraNear() const { return 0.05f; }
 
 	void                    SetCharacter(CCharacter* pCharacter);
+	CCharacter*             GetCharacter() const;
 
 private:
 	bool						m_bThirdPerson;

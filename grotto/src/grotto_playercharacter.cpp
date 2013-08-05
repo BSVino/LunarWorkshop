@@ -35,7 +35,7 @@ void CPlayerCharacter::Spawn()
 
 	BaseClass::Spawn();
 
-	m_hCamera = GameServer()->Create<CCharacterCamera>("CCharacterCamera");
+	m_hCamera = GameServer()->Create<CCharacterCamera>("CGrottoCamera");
 	m_hCamera->SetCharacter(this);
 }
 
