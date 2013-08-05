@@ -255,7 +255,7 @@ inline bool TemplateAABB<F>::Inside2D(const TemplateVector<F>& vecPoint) const
 	if (vecPoint.x < m_vecMins.x - flEpsilon || vecPoint.x > m_vecMaxs.x + flEpsilon)
 		return false;
 
-	if (vecPoint.z < m_vecMins.z - flEpsilon || vecPoint.z > m_vecMaxs.z + flEpsilon)
+	if (vecPoint.y < m_vecMins.y - flEpsilon || vecPoint.y > m_vecMaxs.y + flEpsilon)
 		return false;
 
 	return true;
