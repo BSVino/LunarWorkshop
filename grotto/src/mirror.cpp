@@ -71,6 +71,8 @@ void CMirror::ModifyShader(class CRenderingContext* pContext) const
 	pContext->SetUniform("bDiffuse", true);
 	pContext->SetUniform("iDiffuse", 0);
 
+	pContext->SetUniform("bDiscardReflection", GrottoRenderer()->IsRenderingReflection());
+
 	pContext->BindTexture(oBuffer.m_iMap);
 }
 
