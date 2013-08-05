@@ -592,11 +592,17 @@ void CRenderingContext::SetupMaterial()
 
 	for (size_t i = 0; i < m_pShader->m_asTextures.size(); i++)
 	{
-		if (!oContext.m_hMaterial->m_ahTextures[i].IsValid())
-			continue;
+		CTextureHandle& hTexture = oContext.m_hMaterial->m_ahTextures[i];
+		if (!hTexture.IsValid())
+		{
+			if (m_pRenderer->GetInvalidTexture().IsValid())
+				hTexture = m_pRenderer->GetInvalidTexture();
+			else
+				continue;
+		}
 
 		glActiveTexture(GL_TEXTURE0+i);
-		glBindTexture(GL_TEXTURE_2D, (GLuint)oContext.m_hMaterial->m_ahTextures[i]->m_iGLID);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)hTexture->m_iGLID);
 		SetUniform(m_pShader->m_asTextures[i].c_str(), (int)i);
 	}
 }

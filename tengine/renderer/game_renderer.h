@@ -61,6 +61,8 @@ public:
 	virtual bool	ShouldRenderPhysicsDebug() const { return true; };
 	virtual bool    ShouldRenderParticles() const { return true; }
 
+	CTextureHandle  GetInvalidTexture() const { return m_hInvalidTexture; }
+
 protected:
 	CTextureHandle	m_hSkyboxFT;
 	CTextureHandle	m_hSkyboxLF;
@@ -89,6 +91,9 @@ protected:
 
 	tmap<tstring, size_t> m_aiCurrentSceneAreas;
 
+	CTextureHandle  m_hInvalidTexture;
+
+private:
 	static size_t	s_iTexturesLoaded;
 };
 

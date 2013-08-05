@@ -38,6 +38,21 @@ CGameRenderer::CGameRenderer(size_t iWidth, size_t iHeight)
 	DisableSkybox();
 
 	m_pRendering = nullptr;
+
+	const int iSize = 64;
+	Vector aclrInvalid[iSize*iSize];
+	for (size_t i = 0; i < iSize; i++)
+	{
+		for (size_t j = 0; j < iSize; j++)
+		{
+			if ((i/4+j/4)%2 == 0)
+				aclrInvalid[i*iSize+j] = Vector(1, 0, 1);
+			else
+				aclrInvalid[i*iSize+j] = Vector(0, 0, 0);
+		}
+	}
+
+	m_hInvalidTexture = CTextureLibrary::AddTexture(aclrInvalid, iSize, iSize);
 }
 
 CVar r_cullfrustum("r_frustumculling", "on");

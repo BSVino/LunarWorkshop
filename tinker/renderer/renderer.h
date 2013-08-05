@@ -161,6 +161,8 @@ public:
 
 	bool            IsDrawingBackground() const { return m_bDrawBackground; }
 
+	virtual CTextureHandle  GetInvalidTexture() const { return CTextureHandle(); }
+
 	void			SetSize(int w, int h);
 
 	Vector			ScreenPosition(Vector vecWorld);
