@@ -579,7 +579,9 @@ void CLabel::ComputeLines(float w, float h)
 		m_aLines.push_back(oLine);
 
 		// Default the line height to whatever's on the top of the section stack.
-		m_aLines.back().m_flLineHeight = aSectionStack.back().m_pFont->LineHeight();
+		CLineSection& oSection = aSectionStack.back();
+		auto pFont = oSection.m_pFont;
+		m_aLines.back().m_flLineHeight = pFont->LineHeight();
 
 		float lw = 0;
 		unsigned int iChar = 0;
