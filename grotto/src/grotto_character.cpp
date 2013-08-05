@@ -165,9 +165,6 @@ if ((x) > (y)) \
 
 	m_aabbPhysBoundingBox = AABB(vecReflectedMins, vecReflectedMaxs);
 
-	if (eReflectionType == REFLECTION_LATERAL)
-		m_vecMoveVelocity.y = -m_vecMoveVelocity.y;
-
 	bool bWasReflected = !!(m_iReflected&(1<<eReflectionType));
 	if (bWasReflected)
 		m_iReflected &= ~(1<<eReflectionType);
@@ -198,6 +195,13 @@ if ((x) > (y)) \
 		else
 			m_mLateralReflection.Identity();
 	}
+
+	Vector vecControllerMoveVelocity = GamePhysics()->GetControllerMoveVelocity(this);
+
+	if (eReflectionType == REFLECTION_LATERAL)
+		vecControllerMoveVelocity.y = -vecControllerMoveVelocity.y;
+
+	GamePhysics()->SetControllerMoveVelocity(this, vecControllerMoveVelocity);
 
 	Reflected(eReflectionType);
 
