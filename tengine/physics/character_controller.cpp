@@ -294,18 +294,12 @@ void CCharacterController::PlayerWalk(btCollisionWorld* pCollisionWorld, btScala
 
 		if (tr.m_flFraction < 1)
 		{
-			// Only modify the position if the hit was a slope and not a wall or ceiling.
-			if(tr.m_vecNormal.Dot(ToTVector(GetUpVector())) > 0.0)
-			{
-				// we moved up only a fraction of the step height
-				btVector3 vecInterpolated;
-				vecInterpolated.setInterpolate3(m_pGhostObject->getWorldTransform().getOrigin(), vecTargetPosition, tr.m_flFraction);
-				m_pGhostObject->getWorldTransform().setOrigin(vecInterpolated);
+			// we moved up only a fraction of the step height
+			btVector3 vecInterpolated;
+			vecInterpolated.setInterpolate3(m_pGhostObject->getWorldTransform().getOrigin(), vecTargetPosition, tr.m_flFraction);
+			m_pGhostObject->getWorldTransform().setOrigin(vecInterpolated);
 
-				vecSavedStepUp = vecInterpolated - vecStartPosition;
-			}
-			else
-				TAssert(false);
+			vecSavedStepUp = vecInterpolated - vecStartPosition;
 		}
 		else
 		{
