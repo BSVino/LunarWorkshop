@@ -259,7 +259,7 @@ void CBaseEntity::SetSaveDataDefaults()
 			if (strcmp(pSaveData->m_pszVariableName, "m_iModel") == 0)
 			{
 				// Special handling for models.
-				m_iModel = CModelLibrary::FindModel(pDefault);
+				SetModel(CModelLibrary::FindModel(pDefault));
 				continue;
 			}
 
