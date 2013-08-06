@@ -156,7 +156,11 @@ void CEntityPropertiesPanel::Layout()
 				}
 				else if (pSaveData->m_bDefault)
 				{
-					if (strcmp(pSaveData->m_pszType, "size_t") == 0)
+					if (strcmp(pSaveData->m_pszVariableName, "m_iModel") == 0)
+					{
+						hTextField->SetText(pSaveData->m_oDefault);
+					}
+					else if (strcmp(pSaveData->m_pszType, "size_t") == 0)
 					{
 						size_t i = *((size_t*)&pSaveData->m_oDefault[0]);
 						hTextField->SetText(sprintf("%d", i));

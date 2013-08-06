@@ -127,6 +127,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bClientSpawn);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, int, m_iCollisionGroup);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT_FUNCTION(CSaveData::DATA_NETVAR, size_t, m_iModel, "Model", ~0, UnserializeString_ModelID);
+	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_NETVAR, const char*, m_iModel, "Model", ""); // Special for model: Store a string instead of an int.
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CMaterialHandle, m_hMaterialModel);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bRenderInverted, "RenderInverted", false);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bDisableBackCulling, "DisableBackCulling", false);
@@ -254,6 +255,13 @@ void CBaseEntity::SetSaveDataDefaults()
 			TAssert(pSaveData->m_iOffset);
 			if (!pSaveData->m_iOffset)
 				continue;
+
+			if (strcmp(pSaveData->m_pszVariableName, "m_iModel") == 0)
+			{
+				// Special handling for models.
+				m_iModel = CModelLibrary::FindModel(pDefault);
+				continue;
+			}
 
 			char* pData = (char*)this + pSaveData->m_iOffset;
 			switch(pSaveData->m_eType)
@@ -1462,6 +1470,152 @@ void CBaseEntity::ClientSpawn()
 	CallOutput("OnSpawn");
 }
 
+void CBaseEntity::SaveData_OverrideDefault(CEntityRegistration* pRegistration, CSaveData::datatype_t eDataType, const char* pszName, const char* pszHandle, const char* pszDefault)
+{
+	CSaveData* pSaveData = FindSaveDataByHandle(pszHandle, true);
+	if (!pSaveData)
+	{
+		CSaveData* pHandleData = FindSaveDataByHandle(pRegistration->m_pszParentClass, pszHandle);
+		TAssert(pHandleData);
+
+		pSaveData = &pRegistration->m_aSaveData.push_back();
+		pSaveData->m_eType = eDataType;
+		pSaveData->m_pszVariableName = pszName;
+		pSaveData->m_pszHandle = pszHandle;
+		pSaveData->m_bOverride = true;
+		pSaveData->m_bShowInEditor = false;
+		pSaveData->m_pszType = "const char*";
+
+		pSaveData->m_iOffset = pHandleData->m_iOffset;
+		pSaveData->m_iSizeOfVariable = pHandleData->m_iSizeOfVariable;
+		pSaveData->m_iSizeOfType = pHandleData->m_iSizeOfType;
+	}
+
+	strncpy(pSaveData->m_oDefault, pszDefault, sizeof(pSaveData->m_oDefault));
+	pSaveData->m_bDefault = true;
+}
+
+void CBaseEntity::SaveData_OverrideDefault(CEntityRegistration* pRegistration, CSaveData::datatype_t eDataType, const char* pszName, const char* pszHandle, float flDefault)
+{
+	CSaveData* pSaveData = FindSaveDataByHandle(pszHandle, true);
+	if (!pSaveData)
+	{
+		CSaveData* pHandleData = FindSaveDataByHandle(pRegistration->m_pszParentClass, pszHandle);
+		TAssert(pHandleData);
+
+		pSaveData = &pRegistration->m_aSaveData.push_back();
+		pSaveData->m_eType = eDataType;
+		pSaveData->m_pszVariableName = pszName;
+		pSaveData->m_pszHandle = pszHandle;
+		pSaveData->m_bOverride = true;
+		pSaveData->m_bShowInEditor = false;
+		pSaveData->m_pszType = "float";
+
+		pSaveData->m_iOffset = pHandleData->m_iOffset;
+		pSaveData->m_iSizeOfVariable = pHandleData->m_iSizeOfVariable;
+		pSaveData->m_iSizeOfType = pHandleData->m_iSizeOfType;
+	}
+
+	memcpy(pSaveData->m_oDefault, &flDefault, sizeof(float));
+	pSaveData->m_bDefault = true;
+}
+
+void CBaseEntity::SaveData_OverrideDefault(CEntityRegistration* pRegistration, CSaveData::datatype_t eDataType, const char* pszName, const char* pszHandle, int iDefault)
+{
+	CSaveData* pSaveData = FindSaveDataByHandle(pszHandle, true);
+	if (!pSaveData)
+	{
+		CSaveData* pHandleData = FindSaveDataByHandle(pRegistration->m_pszParentClass, pszHandle);
+		TAssert(pHandleData);
+
+		pSaveData = &pRegistration->m_aSaveData.push_back();
+		pSaveData->m_eType = eDataType;
+		pSaveData->m_pszVariableName = pszName;
+		pSaveData->m_pszHandle = pszHandle;
+		pSaveData->m_bOverride = true;
+		pSaveData->m_bShowInEditor = false;
+		pSaveData->m_pszType = "int";
+
+		pSaveData->m_iOffset = pHandleData->m_iOffset;
+		pSaveData->m_iSizeOfVariable = pHandleData->m_iSizeOfVariable;
+		pSaveData->m_iSizeOfType = pHandleData->m_iSizeOfType;
+	}
+
+	memcpy(pSaveData->m_oDefault, &iDefault, sizeof(int));
+	pSaveData->m_bDefault = true;
+}
+
+void CBaseEntity::SaveData_OverrideDefault(CEntityRegistration* pRegistration, CSaveData::datatype_t eDataType, const char* pszName, const char* pszHandle, const AABB& aabbDefault)
+{
+	CSaveData* pSaveData = FindSaveDataByHandle(pszHandle, true);
+	if (!pSaveData)
+	{
+		CSaveData* pHandleData = FindSaveDataByHandle(pRegistration->m_pszParentClass, pszHandle);
+		TAssert(pHandleData);
+
+		pSaveData = &pRegistration->m_aSaveData.push_back();
+		pSaveData->m_eType = eDataType;
+		pSaveData->m_pszVariableName = pszName;
+		pSaveData->m_pszHandle = pszHandle;
+		pSaveData->m_bOverride = true;
+		pSaveData->m_bShowInEditor = false;
+		pSaveData->m_pszType = "AABB";
+
+		pSaveData->m_iOffset = pHandleData->m_iOffset;
+		pSaveData->m_iSizeOfVariable = pHandleData->m_iSizeOfVariable;
+		pSaveData->m_iSizeOfType = pHandleData->m_iSizeOfType;
+	}
+
+	memcpy(pSaveData->m_oDefault, &aabbDefault, sizeof(AABB));
+	pSaveData->m_bDefault = true;
+}
+
+void CBaseEntity::SaveData_OverrideDefault(CEntityRegistration* pRegistration, CSaveData::datatype_t eDataType, const char* pszName, const char* pszHandle, bool bDefault)
+{
+	CSaveData* pSaveData = FindSaveDataByHandle(pszHandle, true);
+	if (!pSaveData)
+	{
+		CSaveData* pHandleData = FindSaveDataByHandle(pRegistration->m_pszParentClass, pszHandle);
+		TAssert(pHandleData);
+
+		pSaveData = &pRegistration->m_aSaveData.push_back();
+		pSaveData->m_eType = eDataType;
+		pSaveData->m_pszVariableName = pszName;
+		pSaveData->m_pszHandle = pszHandle;
+		pSaveData->m_bOverride = true;
+		pSaveData->m_bShowInEditor = false;
+		pSaveData->m_pszType = "bool";
+
+		pSaveData->m_iOffset = pHandleData->m_iOffset;
+		pSaveData->m_iSizeOfVariable = pHandleData->m_iSizeOfVariable;
+		pSaveData->m_iSizeOfType = pHandleData->m_iSizeOfType;
+	}
+
+	memcpy(pSaveData->m_oDefault, &bDefault, sizeof(bool));
+	pSaveData->m_bDefault = true;
+}
+
+void CBaseEntity::SaveData_EditorVariable(CEntityRegistration* pRegistration, const char* pszHandle)
+{
+	CSaveData* pSaveData = FindSaveDataByHandle(pszHandle, true);
+	if (pSaveData)
+	{
+		pSaveData->m_bShowInEditor = true;
+	}
+	else
+	{
+		CSaveData* pHandleData = FindSaveDataByHandle(pszHandle);
+		TAssert(pHandleData);
+		if (pHandleData)
+		{
+			pRegistration->m_aSaveData.push_back(*pHandleData);
+			pSaveData = &pRegistration->m_aSaveData.back();
+			pSaveData->m_bShowInEditor = true;
+			pSaveData->m_bOverride = false;
+		}
+	}
+}
+
 CSaveData* CBaseEntity::FindSaveData(const char* pszName, bool bThisClassOnly)
 {
 	return FindSaveData(GetClassName(), pszName, bThisClassOnly);
@@ -2619,4 +2773,16 @@ void UnserializeString_MoveParent(const tstring& sData, CSaveData* pSaveData, CB
 	}
 
 	pEntity->SetMoveParent(pNamedEntity);
+}
+
+CSaveData::CSaveData()
+{
+	m_eType = DATA_OMIT;
+	m_pszVariableName = m_pszType = m_pszHandle = "";
+	m_pfnUnserializeString = nullptr;
+	m_pfnResizeVector = nullptr;
+	m_bOverride = false;
+	m_bShowInEditor = false;
+	m_bDefault = false;
+	m_iOffset = m_iSizeOfVariable = m_iSizeOfType = 0;
 }

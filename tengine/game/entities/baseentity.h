@@ -80,6 +80,9 @@ void UnserializeString_EntityHandle(const tstring& sData, class CSaveData* pData
 class CSaveData
 {
 public:
+	CSaveData();
+
+public:
 	typedef enum
 	{
 		DATA_OMIT = 0,
@@ -399,53 +402,11 @@ void entity::RegisterSaveData() \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfVariable); \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfType); \
 
-#define SAVEDATA_OVERRIDE_DEFAULT(copy, type, name, handle, def) \
-	pSaveData = &pRegistration->m_aSaveData.push_back(); \
-	pSaveData->m_eType = copy; \
-	pSaveData->m_pszVariableName = #name; \
-	pSaveData->m_pszHandle = handle; \
-	pSaveData->m_bOverride = true; \
-	pSaveData->m_bShowInEditor = false; \
-	pSaveData->m_pszType = #type; \
-	{ \
-		CSaveData* pHandleData = FindSaveDataByHandle(handle); \
-		TAssert(pHandleData); \
-		pSaveData->m_iOffset = pHandleData->m_iOffset; \
-		pSaveData->m_iSizeOfVariable = pHandleData->m_iSizeOfVariable; \
-		pSaveData->m_iSizeOfType = pHandleData->m_iSizeOfType; \
- \
-		type iDefault = def; \
-		memcpy(pSaveData->m_oDefault, &iDefault, sizeof(def)); \
-		pSaveData->m_bDefault = true; \
-	} \
+#define SAVEDATA_OVERRIDE_DEFAULT(eDataType, type, name, handle, def) \
+	SaveData_OverrideDefault(pRegistration, eDataType, #name, handle, (type)def) \
 
 #define SAVEDATA_EDITOR_VARIABLE(handle) \
-	pSaveData = FindSaveDataByHandle(handle, true); \
-	if (pSaveData) \
-	{ \
-		pSaveData->m_bShowInEditor = true; \
-	} \
-	else \
-	{ \
-		CSaveData* pHandleData = FindSaveDataByHandle(handle); \
-		TAssert(pHandleData); \
-		if (pHandleData) \
-		{ \
-			pSaveData = &pRegistration->m_aSaveData.push_back(); \
-			pSaveData->m_eType = pHandleData->m_eType; \
-			pSaveData->m_pszVariableName = pHandleData->m_pszVariableName; \
-			pSaveData->m_pszHandle = pHandleData->m_pszHandle; \
-			pSaveData->m_pszType = pHandleData->m_pszType; \
-			pSaveData->m_bShowInEditor = true; \
-			pSaveData->m_bOverride = false; \
-			pSaveData->m_bDefault = pHandleData->m_bDefault; \
- \
-			pSaveData->m_iOffset = pHandleData->m_iOffset; \
-			pSaveData->m_iSizeOfVariable = pHandleData->m_iSizeOfVariable; \
-			pSaveData->m_iSizeOfType = pHandleData->m_iSizeOfType; \
-			memcpy(pSaveData->m_oDefault, pHandleData->m_oDefault, sizeof(pSaveData->m_oDefault)); \
-		} \
-	} \
+	SaveData_EditorVariable(pRegistration, handle) \
 
 #define SAVEDATA_TABLE_END() \
 	CheckSaveDataSize(pRegistration); \
@@ -687,6 +648,13 @@ public:
 	bool									HasIssuedClientSpawn() { return m_bClientSpawn; }
 	void									IssueClientSpawn();
 	virtual void							ClientSpawn();
+
+	void SaveData_OverrideDefault(CEntityRegistration*, CSaveData::datatype_t, const char* pszName, const char* pszHandle, bool bDefault);
+	void SaveData_OverrideDefault(CEntityRegistration*, CSaveData::datatype_t, const char* pszName, const char* pszHandle, const char* pszDefault);
+	void SaveData_OverrideDefault(CEntityRegistration*, CSaveData::datatype_t, const char* pszName, const char* pszHandle, int iDefault);
+	void SaveData_OverrideDefault(CEntityRegistration*, CSaveData::datatype_t, const char* pszName, const char* pszHandle, float flDefault);
+	void SaveData_OverrideDefault(CEntityRegistration*, CSaveData::datatype_t, const char* pszName, const char* pszHandle, const AABB& aabbDefault);
+	void SaveData_EditorVariable(CEntityRegistration*, const char* pszHandle);
 
 	CSaveData*								FindSaveData(const char* pszName, bool bThisClassOnly=false);
 	CSaveData*								FindSaveDataByHandle(const char* pszHandle, bool bThisClassOnly=false);

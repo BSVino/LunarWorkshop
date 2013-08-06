@@ -236,7 +236,12 @@ void CLevelEntity::SetParameterValue(const tstring& sKey, const tstring& sValue)
 	{
 		// Special case.
 		if (strcmp(pSaveData->m_pszHandle, "Model") == 0)
+		{
 			m_hMaterialModel = CMaterialLibrary::AddMaterial(sValue);
+
+			// Don't continue to erasing the default parameters if it's a model, since models have special processing.
+			return;
+		}
 
 		if (strcmp(pSaveData->m_pszType, "bool") == 0)
 		{
@@ -433,7 +438,20 @@ bool CLevelEntity::CalculateDisableBackCulling(CLevelEntity* pThis)
 size_t CLevelEntity::CalculateModelID(CLevelEntity* pThis)
 {
 	tstring sModel = pThis->GetParameterValue("Model");
-	return CModelLibrary::FindModel(sModel);
+	size_t iModel = CModelLibrary::FindModel(sModel);
+
+	if (iModel != ~0)
+		return iModel;
+
+	CSaveData* pSaveData = CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "Model");
+	TAssert(pSaveData);
+	if (!pSaveData)
+		return ~0;
+
+	if (pSaveData->m_bDefault)
+		return CModelLibrary::FindModel(pSaveData->m_oDefault);
+
+	return ~0;
 }
 
 Vector CLevelEntity::CalculateScale(CLevelEntity* pThis)

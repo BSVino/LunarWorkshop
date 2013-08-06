@@ -10,7 +10,7 @@ REGISTER_ENTITY(CReceptacle);
 NETVAR_TABLE_BEGIN(CReceptacle);
 NETVAR_TABLE_END();
 
-SAVEDATA_TABLE_BEGIN(CReceptacle);
+SAVEDATA_TABLE_BEGIN_EDITOR(CReceptacle);
 	SAVEDATA_DEFINE_OUTPUT(OnNormalToken);
 	SAVEDATA_DEFINE_OUTPUT(OnNormalTokenRemoved);
 	SAVEDATA_DEFINE_OUTPUT(OnReflectedToken);
@@ -24,6 +24,7 @@ SAVEDATA_TABLE_BEGIN(CReceptacle);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, Matrix4x4, m_mTokenOffset, "TokenOffset");
 	SAVEDATA_EDITOR_VARIABLE("Model");
 	SAVEDATA_EDITOR_VARIABLE("Visible");
+	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_NETVAR, const char*, m_iModel, "Model", "models/pedestal.toy");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CReceptacle);
@@ -36,11 +37,11 @@ void CReceptacle::Precache()
 
 void CReceptacle::Spawn()
 {
-	Precache();
-
 	BaseClass::Spawn();
 
-	SetModel("models/pedestal.toy");
+	if (m_iModel == (size_t)~0)
+		SetModel("models/pedestal.toy");
+
 	AddToPhysics(CT_KINEMATIC);
 
 	m_mTokenOffset = TMatrix(EAngle(40, 0, 0), Vector(0, 0, 0.742105f));

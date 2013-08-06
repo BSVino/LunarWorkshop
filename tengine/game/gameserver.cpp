@@ -304,7 +304,15 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 	// one entity needs to connect to another entity which has not yet been created.
 	tmap<size_t, CBaseEntity*> apEntities;
 
+	// Do a quick precache now to load default models and such. Another precache will come later.
 	const auto& aEntities = pLevel->GetEntityData();
+	for (size_t i = 0; i < aEntities.size(); i++)
+		AddToPrecacheList("C" + aEntities[i].GetClass());
+
+	PrecacheList();
+
+	m_bAllowPrecaches = true;
+
 	for (size_t i = 0; i < aEntities.size(); i++)
 	{
 		const CLevelEntity* pLevelEntity = &aEntities[i];
@@ -319,7 +327,7 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 			continue;
 		}
 
-		AddToPrecacheList(sClass);
+		AddToPrecacheList("C" + aEntities[i].GetClass());
 
 		CBaseEntity* pEntity = Create<CBaseEntity>(sClass.c_str());
 
