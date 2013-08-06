@@ -1005,13 +1005,16 @@ void CBulletPhysics::CharacterMovement(IPhysicsEntity* pEnt, class btCollisionWo
 	pPhysicsEntity->m_pCharacterController->CharacterMovement(pCollisionWorld, flDelta);
 }
 
-void CBulletPhysics::TraceLine(CTraceResult& tr, const Vector& v1, const Vector& v2, IPhysicsEntity* pIgnore)
+void CBulletPhysics::TraceLine(CTraceResult& tr, const Vector& v1, const Vector& v2, collision_group_t eCollisions, IPhysicsEntity* pIgnore)
 {
 	btVector3 vecFrom, vecTo;
 	vecFrom = ToBTVector(v1);
 	vecTo = ToBTVector(v2);
 
 	CClosestRayResultCallback callback(vecFrom, vecTo, pIgnore?GetPhysicsEntity(pIgnore)->m_pRigidBody:nullptr);
+
+	callback.m_collisionFilterGroup = eCollisions;
+	callback.m_collisionFilterMask = CG_ALL;
 
 	m_pDynamicsWorld->rayTest(vecFrom, vecTo, callback);
 
@@ -1026,7 +1029,7 @@ void CBulletPhysics::TraceLine(CTraceResult& tr, const Vector& v1, const Vector&
 	}
 }
 
-void CBulletPhysics::TraceEntity(CTraceResult& tr, IPhysicsEntity* pEntity, const Vector& v1, const Vector& v2)
+void CBulletPhysics::TraceEntity(CTraceResult& tr, IPhysicsEntity* pEntity, const Vector& v1, const Vector& v2, collision_group_t eCollisions)
 {
 	btVector3 vecFrom, vecTo;
 	vecFrom = ToBTVector(v1);
@@ -1059,6 +1062,9 @@ void CBulletPhysics::TraceEntity(CTraceResult& tr, IPhysicsEntity* pEntity, cons
 	TAssert(pObject);
 
 	CClosestConvexResultCallback callback(vecFrom, vecTo, pObject);
+
+	callback.m_collisionFilterGroup = eCollisions;
+	callback.m_collisionFilterMask = CG_ALL;
 
 	m_pDynamicsWorld->convexSweepTest(pShape, mFrom, mTo, callback);
 

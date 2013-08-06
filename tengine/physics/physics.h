@@ -23,6 +23,7 @@ typedef enum
 	CG_STATIC = (1<<1),
 	CG_CHARACTER = (1<<2),
 	CG_TRIGGER = (1<<3),
+	CG_ALL = ~0,
 } collision_group_t;
 
 class IPhysicsEntity
@@ -131,8 +132,8 @@ public:
 
 	virtual void            CharacterMovement(IPhysicsEntity* pEnt, class btCollisionWorld* pCollisionWorld, float flDelta) {};
 
-	virtual void            TraceLine(CTraceResult& tr, const Vector& v1, const Vector& v2, IPhysicsEntity* pIgnore=nullptr) {};
-	virtual void            TraceEntity(CTraceResult& tr, IPhysicsEntity* pEntity, const Vector& v1, const Vector& v2) {};
+	virtual void            TraceLine(CTraceResult& tr, const Vector& v1, const Vector& v2, collision_group_t eCollisions = CG_ALL, IPhysicsEntity* pIgnore=nullptr) {};
+	virtual void            TraceEntity(CTraceResult& tr, IPhysicsEntity* pEntity, const Vector& v1, const Vector& v2, collision_group_t eCollisions = CG_ALL) {};
 	virtual void            CheckSphere(CTraceResult& tr, float flRadius, const Vector& vecCenter, IPhysicsEntity* pIgnore=nullptr) {};
 
 	virtual void			CharacterJump(IPhysicsEntity* pEnt) {};

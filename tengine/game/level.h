@@ -124,7 +124,7 @@ public:
 	size_t            GetHandle() const { return m_iHandle; }
 	class CModel*     GetModel() const;
 	const char*       GetClassName() const { return GetClass().c_str(); }
-	collision_group_t GetCollisionGroup() const { return CG_DEFAULT; }
+	collision_group_t GetCollisionGroup() const { return CG_STATIC; }
 
 	const AABB        GetPhysBoundingBox() const { return GetBoundingBox(); }
 	const AABB        GetVisBoundingBox() const { return GetBoundingBox(); }
