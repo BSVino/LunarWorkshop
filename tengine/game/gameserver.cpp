@@ -80,11 +80,51 @@ CGameServer::CGameServer(IWorkListener* pWorkListener)
 	if (m_pWorkListener)
 		m_pWorkListener->SetAction("Registering entities", CBaseEntity::GetEntityRegistration().size());
 
+	tmap<tstring, bool> abRegistered;
+
+	for (tmap<tstring, CEntityRegistration>::iterator it = CBaseEntity::GetEntityRegistration().begin(); it != CBaseEntity::GetEntityRegistration().end(); it++)
+		abRegistered[it->first] = false;
+
+	tvector<tstring> asRegisterStack;
+
 	size_t i = 0;
 	for (tmap<tstring, CEntityRegistration>::iterator it = CBaseEntity::GetEntityRegistration().begin(); it != CBaseEntity::GetEntityRegistration().end(); it++)
 	{
 		CEntityRegistration* pRegistration = &it->second;
-		pRegistration->m_pfnRegisterCallback();
+
+		if (abRegistered[it->first])
+			continue;
+
+		asRegisterStack.clear();
+		asRegisterStack.push_back(it->first);
+
+		// Make sure I register all parent classes before I register this one.
+		if (pRegistration->m_pszParentClass)
+		{
+			tstring sThisClass = it->first;
+			tstring sParentClass = pRegistration->m_pszParentClass;
+			while (!abRegistered[sParentClass])
+			{
+				// Push to the top, we'll register from the top first.
+				asRegisterStack.push_back(sParentClass);
+
+				CEntityRegistration* pRegistration = &CBaseEntity::GetEntityRegistration()[sParentClass];
+
+				sThisClass = sParentClass;
+				sParentClass = pRegistration->m_pszParentClass?pRegistration->m_pszParentClass:"";
+
+				if (!sParentClass.length())
+					break;
+			}
+		}
+
+		// The top of the stack is the highest entity on the tree that I must register first.
+		while (asRegisterStack.size())
+		{
+			CBaseEntity::GetEntityRegistration()[asRegisterStack.back()].m_pfnRegisterCallback();
+			abRegistered[asRegisterStack.back()] = true;
+			asRegisterStack.pop_back();
+		}
 
 		if (m_pWorkListener)
 			m_pWorkListener->WorkProgress(++i);
