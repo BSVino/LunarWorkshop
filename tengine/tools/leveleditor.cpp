@@ -978,15 +978,12 @@ CLevelEditor::~CLevelEditor()
 
 void CLevelEditor::LoadLevel(const CHandle<CLevel>& pLevel)
 {
-	if (pLevel == m_pLevel)
-		return;
-
 	m_pLevel = pLevel;
+
+	EditorPhysics()->RemoveAllEntities();
 
 	if (!m_pLevel.Get())
 		return;
-
-	EditorPhysics()->RemoveAllEntities();
 
 	for (size_t i = 0; i < m_pLevel->GetEntityData().size(); i++)
 	{
@@ -1175,6 +1172,7 @@ void CLevelEditor::RenderCreateEntityPreview()
 
 	PopulateLevelEntityFromPanel(&oRenderEntity, m_hCreateEntityPanel->m_hPropertiesPanel);
 
+	oRenderEntity.SetParameterValue("Visible", "no"); // Make it semitransparent
 	oRenderEntity.SetParameterValue("Name", m_hCreateEntityPanel->m_hNameText->GetText());
 	oRenderEntity.SetParameterValue("Model", m_hCreateEntityPanel->m_hModelText->GetText());
 	oRenderEntity.SetGlobalTransform(Matrix4x4(EAngle(0, 0, 0), PositionFromMouse()));
@@ -1517,6 +1515,8 @@ void CLevelEditor::Activate()
 void CLevelEditor::Deactivate()
 {
 	BaseClass::Deactivate();
+
+	EditorPhysics()->RemoveAllEntities();
 
 	m_hEditorPanel->SetVisible(false);
 	m_hCreateEntityButton->SetVisible(false);
