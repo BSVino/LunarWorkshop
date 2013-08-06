@@ -10,35 +10,38 @@ class CKinematic : public CBaseEntity
 
 public:
 	void				Spawn();
+	void                PostLoad();
 	virtual void		OnSetModel();
 	virtual void		Think();
 
 	virtual void		OnSetLocalTransform(TMatrix& m);
 
-	virtual void		SetLerpTime(float flLerpTime) { m_flLerpTime = flLerpTime; }
-	virtual void		SetAngleLerpTime(float flLerpTime) { m_flAngleLerpTime = flLerpTime; }
+	virtual void        SetMoveTime(float flMoveTime) { m_flMoveTime = flMoveTime; }
+	virtual void        SetRotateTime(float flRotateTime) { m_flRotateTime = flRotateTime; }
 
-	DECLARE_ENTITY_INPUT(LerpTo);
-	DECLARE_ENTITY_INPUT(LerpAnglesTo);
+	DECLARE_ENTITY_INPUT(MoveTo);
+	DECLARE_ENTITY_INPUT(MoveOffset);
+	DECLARE_ENTITY_INPUT(RotateTo);
 
 	collision_group_t   GetCollisionGroup() const { return CG_STATIC; }
 
 protected:
-	double				m_flLerpTime;
-	double				m_flLerpStart;
-	double				m_flLerpEnd;
+	double              m_flMoveTime;
+	double              m_flMoveStart;
+	double              m_flMoveEnd;
 
-	Vector				m_vecLerpStart;
-	Vector				m_vecLerpGoal;
+	Vector              m_vecOriginalPosition;
+	Vector              m_vecMoveStart;
+	Vector              m_vecMoveGoal;
 
-	double				m_flAngleLerpTime;
-	double				m_flAngleLerpStart;
-	double				m_flAngleLerpEnd;
+	double              m_flRotateTime;
+	double              m_flRotateStart;
+	double              m_flRotateEnd;
 
-	EAngle				m_angLerpStart;
-	EAngle				m_angLerpGoal;
+	EAngle              m_angRotateStart;
+	EAngle              m_angRotateGoal;
 
-	bool				m_bLerping;
+	bool                m_bMoving;
 };
 
 #endif
