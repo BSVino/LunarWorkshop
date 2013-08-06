@@ -209,3 +209,33 @@ void UnserializeString_MirrorType(const tstring& sData, CSaveData* pSaveData, CB
 	else
 		pMirror->SetMirrorType(MIRROR_VERTICAL);
 }
+
+
+REGISTER_ENTITY(CVerticalMirror);
+
+NETVAR_TABLE_BEGIN(CVerticalMirror);
+NETVAR_TABLE_END();
+
+SAVEDATA_TABLE_BEGIN_EDITOR(CVerticalMirror);
+	SAVEDATA_EDITOR_VARIABLE("Model");
+	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_NETVAR, const char*, m_iModel, "Model", "models/mirror.toy");
+	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", REFLECTION_LATERAL);
+SAVEDATA_TABLE_END();
+
+INPUTS_TABLE_BEGIN(CVerticalMirror);
+INPUTS_TABLE_END();
+
+
+REGISTER_ENTITY(CHorizontalMirror);
+
+NETVAR_TABLE_BEGIN(CHorizontalMirror);
+NETVAR_TABLE_END();
+
+SAVEDATA_TABLE_BEGIN_EDITOR(CHorizontalMirror);
+	SAVEDATA_EDITOR_VARIABLE("Model");
+	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_NETVAR, const char*, m_iModel, "Model", "models/mirror_horizontal.toy");
+	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", REFLECTION_VERTICAL);
+SAVEDATA_TABLE_END();
+
+INPUTS_TABLE_BEGIN(CHorizontalMirror);
+INPUTS_TABLE_END();

@@ -49,3 +49,14 @@ protected:
 
 	static tvector<CEntityHandle<CMirror> >	m_ahMirrors;
 };
+
+// These are just for the benefit of the editor.
+class CVerticalMirror : public CMirror
+{
+	REGISTER_ENTITY_CLASS(CVerticalMirror, CMirror);
+};
+
+class CHorizontalMirror : public CMirror
+{
+	REGISTER_ENTITY_CLASS(CHorizontalMirror, CMirror);
+};
