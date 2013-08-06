@@ -43,9 +43,9 @@ CReceptacle* CToken::GetReceptacle() const
 	return m_hReceptacle;
 }
 
-void CToken::ModifyContext(CRenderingContext* pContext, bool bTransparent) const
+void CToken::ModifyContext(CRenderingContext* pContext) const
 {
-	if (bTransparent)
+	if (GrottoRenderer()->IsRenderingTransparent())
 		return;
 
 	if (IsReflected())
