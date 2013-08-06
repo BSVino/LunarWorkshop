@@ -75,6 +75,17 @@ void CGrottoPlayer::KeyPress(int c)
 	BaseClass::KeyPress(c);
 }
 
+void CGrottoPlayer::JoystickButtonPress(int iJoystick, int c)
+{
+	if (c == TINKER_KEY_JOYSTICK_1)
+	{
+		GetPlayerCharacter()->FindItems();
+		return;
+	}
+
+	BaseClass::JoystickButtonPress(iJoystick, c);
+}
+
 void CGrottoPlayer::JoystickAxis(int iJoystick, int iAxis, float flValue, float flChange)
 {
 	if (!GetPlayerCharacter())
