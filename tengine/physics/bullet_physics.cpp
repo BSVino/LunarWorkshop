@@ -192,7 +192,7 @@ void CBulletPhysics::AddEntity(IPhysicsEntity* pEntity, collision_type_t eCollis
 			if (pEntity->GetModelID() != ~0)
 				AddModel(pEntity, eCollisionType, pEntity->GetModelID());
 			else
-				AddShape(pEntity, eCollisionType);
+				AddHull(pEntity, eCollisionType);
 		}
 		else if (eCollisionType == CT_KINEMATIC)
 		{
@@ -205,7 +205,7 @@ void CBulletPhysics::AddEntity(IPhysicsEntity* pEntity, collision_type_t eCollis
 	}
 }
 
-void CBulletPhysics::AddShape(IPhysicsEntity* pEntity, collision_type_t eCollisionType)
+void CBulletPhysics::AddHull(IPhysicsEntity* pEntity, collision_type_t eCollisionType)
 {
 	CPhysicsEntity* pPhysicsEntity = &m_aEntityList[pEntity->GetHandle()];
 
@@ -221,21 +221,21 @@ void CBulletPhysics::AddShape(IPhysicsEntity* pEntity, collision_type_t eCollisi
 
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(0, &pPhysicsEntity->m_oMotionState, pCollisionShape, vecLocalInertia);
 
-	pPhysicsEntity->m_apPhysicsShapes.push_back(new btRigidBody(rbInfo));
-	pPhysicsEntity->m_apPhysicsShapes.back()->setUserPointer((void*)pEntity->GetHandle());
+	pPhysicsEntity->m_apPhysicsHulls.push_back(new btRigidBody(rbInfo));
+	pPhysicsEntity->m_apPhysicsHulls.back()->setUserPointer((void*)pEntity->GetHandle());
 
 	if (eCollisionType == CT_KINEMATIC)
 	{
-		pPhysicsEntity->m_apPhysicsShapes.back()->setCollisionFlags((pPhysicsEntity->m_pRigidBody?pPhysicsEntity->m_pRigidBody->getCollisionFlags():0) | btCollisionObject::CF_KINEMATIC_OBJECT);
-		pPhysicsEntity->m_apPhysicsShapes.back()->setActivationState(DISABLE_DEACTIVATION);
+		pPhysicsEntity->m_apPhysicsHulls.back()->setCollisionFlags((pPhysicsEntity->m_pRigidBody?pPhysicsEntity->m_pRigidBody->getCollisionFlags():0) | btCollisionObject::CF_KINEMATIC_OBJECT);
+		pPhysicsEntity->m_apPhysicsHulls.back()->setActivationState(DISABLE_DEACTIVATION);
 	}
 	else if (eCollisionType == CT_STATIC_MESH)
-		pPhysicsEntity->m_apPhysicsShapes.back()->setActivationState(DISABLE_SIMULATION);
+		pPhysicsEntity->m_apPhysicsHulls.back()->setActivationState(DISABLE_SIMULATION);
 
 	// Don't update the AABB's because the object's not in the world yet, that would be a crash.
 	SetEntityTransform(pEntity, pEntity->GetPhysicsTransform(), false);
 
-	m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_apPhysicsShapes.back(), pEntity->GetCollisionGroup(), GetMaskForGroup(pEntity->GetCollisionGroup()));
+	m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_apPhysicsHulls.back(), pEntity->GetCollisionGroup(), GetMaskForGroup(pEntity->GetCollisionGroup()));
 }
 
 void CBulletPhysics::AddModel(IPhysicsEntity* pEntity, collision_type_t eCollisionType, size_t iModel)
@@ -408,6 +408,13 @@ void CBulletPhysics::RemoveEntity(CPhysicsEntity* pPhysicsEntity)
 	}
 	pPhysicsEntity->m_apPhysicsShapes.clear();
 
+	for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsHulls.size(); i++)
+	{
+		m_pDynamicsWorld->removeRigidBody(pPhysicsEntity->m_apPhysicsHulls[i]);
+		delete pPhysicsEntity->m_apPhysicsHulls[i];
+	}
+	pPhysicsEntity->m_apPhysicsHulls.clear();
+
 	if (pPhysicsEntity->m_pGhostObject)
 		m_pDynamicsWorld->removeCollisionObject(pPhysicsEntity->m_pGhostObject);
 	delete pPhysicsEntity->m_pGhostObject;
@@ -578,6 +585,12 @@ bool CBulletPhysics::IsEntityAdded(IPhysicsEntity* pEntity)
 	for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
 	{
 		if (pPhysicsEntity->m_apPhysicsShapes[i])
+			return true;
+	}
+
+	for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsHulls.size(); i++)
+	{
+		if (pPhysicsEntity->m_apPhysicsHulls[i])
 			return true;
 	}
 
@@ -788,6 +801,12 @@ void CBulletPhysics::SetEntityCollisionDisabled(IPhysicsEntity* pEnt, bool bDisa
 			if (pPhysicsEntity->m_apPhysicsShapes[i])
 				m_pDynamicsWorld->removeRigidBody(pPhysicsEntity->m_apPhysicsShapes[i]);
 		}
+
+		for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsHulls.size(); i++)
+		{
+			if (pPhysicsEntity->m_apPhysicsHulls[i])
+				m_pDynamicsWorld->removeRigidBody(pPhysicsEntity->m_apPhysicsHulls[i]);
+		}
 	}
 	else
 	{
@@ -798,6 +817,12 @@ void CBulletPhysics::SetEntityCollisionDisabled(IPhysicsEntity* pEnt, bool bDisa
 		{
 			if (pPhysicsEntity->m_apPhysicsShapes[i])
 				m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_apPhysicsShapes[i]);
+		}
+
+		for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsHulls.size(); i++)
+		{
+			if (pPhysicsEntity->m_apPhysicsHulls[i])
+				m_pDynamicsWorld->addRigidBody(pPhysicsEntity->m_apPhysicsHulls[i]);
 		}
 	}
 }
@@ -830,6 +855,7 @@ void CBulletPhysics::SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& m
 		CToy* pToy = pModel?pModel->m_pToy:nullptr;
 		if (pToy)
 		{
+			TAssert(pPhysicsEntity->m_apPhysicsShapes.size() == pModel->m_pToy->GetPhysicsNumBoxes());
 			for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
 			{
 				mCenter = pModel->m_pToy->GetPhysicsBox(i).GetMatrix4x4(false, false);
@@ -839,10 +865,19 @@ void CBulletPhysics::SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& m
 				pPhysicsEntity->m_apPhysicsShapes[i]->setCenterOfMassTransform(m);
 			}
 		}
-		else if (pPhysicsEntity->m_apPhysicsShapes.size())
+		else
 		{
-			for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
-				pPhysicsEntity->m_apPhysicsShapes[i]->setCenterOfMassTransform(m);
+			if (pPhysicsEntity->m_apPhysicsShapes.size())
+			{
+				for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsShapes.size(); i++)
+					pPhysicsEntity->m_apPhysicsShapes[i]->setCenterOfMassTransform(m);
+			}
+
+			if (pPhysicsEntity->m_apPhysicsHulls.size())
+			{
+				for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsHulls.size(); i++)
+					pPhysicsEntity->m_apPhysicsHulls[i]->setCenterOfMassTransform(m);
+			}
 		}
 	}
 	else
@@ -860,6 +895,12 @@ void CBulletPhysics::SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& m
 			TUnimplemented(); // This may work but it also may cause boxes to be misaligned.
 			pPhysicsEntity->m_apPhysicsShapes[i]->setCenterOfMassTransform(m);
 		}
+
+		for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsHulls.size(); i++)
+		{
+			TUnimplemented(); // Not really tested, actually.
+			pPhysicsEntity->m_apPhysicsHulls[i]->setCenterOfMassTransform(m);
+		}
 	}
 
 	// If the entity isn't in the world yet, maybe because it's still being added, you can turn this off to avoid a crash.
@@ -872,6 +913,12 @@ void CBulletPhysics::SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& m
 		{
 			if (pPhysicsEntity->m_apPhysicsShapes[i]->getActivationState() == DISABLE_SIMULATION)
 				m_pDynamicsWorld->updateSingleAabb(pPhysicsEntity->m_apPhysicsShapes[i]);
+		}
+
+		for (size_t i = 0; i < pPhysicsEntity->m_apPhysicsHulls.size(); i++)
+		{
+			if (pPhysicsEntity->m_apPhysicsHulls[i]->getActivationState() == DISABLE_SIMULATION)
+				m_pDynamicsWorld->updateSingleAabb(pPhysicsEntity->m_apPhysicsHulls[i]);
 		}
 	}
 }

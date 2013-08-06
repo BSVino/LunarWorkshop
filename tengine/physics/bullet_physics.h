@@ -143,6 +143,7 @@ public:
 	btCollisionShape*                   m_pExtraShape;
 	tvector<btRigidBody*>				m_apAreaBodies;
 	tvector<btRigidBody*>				m_apPhysicsShapes;
+	tvector<btRigidBody*>               m_apPhysicsHulls;
 	class btPairCachingGhostObject*		m_pGhostObject;
 	class CCharacterController*         m_pCharacterController;
 	CTriggerController*					m_pTriggerController;
@@ -160,7 +161,7 @@ public:
 
 public:
 	virtual void			AddEntity(IPhysicsEntity* pEnt, collision_type_t eCollisionType);
-	virtual void            AddShape(IPhysicsEntity* pEnt, collision_type_t eCollisionType);
+	virtual void            AddHull(IPhysicsEntity* pEnt, collision_type_t eCollisionType);
 	virtual void			AddModel(IPhysicsEntity* pEnt, collision_type_t eCollisionType, size_t iModel);
 	virtual void			AddModelTris(IPhysicsEntity* pEnt, collision_type_t eCollisionType, size_t iModel);
 	virtual void			RemoveEntity(IPhysicsEntity* pEnt);
