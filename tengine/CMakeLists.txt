@@ -103,8 +103,14 @@ set (TENGINE_LOBBY_SOURCES
 	lobby/lobby_server.cpp
 )
 
+set (TENGINE_TOOLS_LEVELEDITOR_SOURCES
+	tools/leveleditor/entitypropertiespanel.cpp
+	tools/leveleditor/editorpanel.cpp
+	tools/leveleditor/createentitypanel.cpp
+	tools/leveleditor/leveleditor.cpp
+)
+
 set (TENGINE_TOOLS_SOURCES
-	tools/leveleditor.cpp
 	tools/materialeditor.cpp
 	tools/toyeditor.cpp
 	tools/toyviewer.cpp
@@ -127,6 +133,7 @@ set (TENGINE_SOURCES
 	${TENGINE_UI_SOURCES}
 	${TENGINE_LOBBY_SOURCES}
 	${TENGINE_TOOLS_SOURCES}
+	${TENGINE_TOOLS_LEVELEDITOR_SOURCES}
 	${TENGINE_PORTALS_SOURCES}
 )
 
@@ -140,6 +147,7 @@ source_group(Sound FILES ${TENGINE_SOUND_SOURCES})
 source_group(UI FILES ${TENGINE_UI_SOURCES})
 source_group(Lobby FILES ${TENGINE_LOBBY_SOURCES})
 source_group(Tools FILES ${TENGINE_TOOLS_SOURCES})
+source_group(Tools\\LevelEditor FILES ${TENGINE_TOOLS_LEVELEDITOR_SOURCES})
 source_group(Portals FILES ${TENGINE_PORTALS_SOURCES})
 
 #Breaks other stuff.
