@@ -443,6 +443,11 @@ size_t CLevelEntity::CalculateModelID(CLevelEntity* pThis)
 	if (iModel != ~0)
 		return iModel;
 
+	iModel = CModelLibrary::AddModel(sModel);
+
+	if (iModel != ~0)
+		return iModel;
+
 	CSaveData* pSaveData = CBaseEntity::FindSaveDataByHandle(("C" + pThis->m_sClass).c_str(), "Model");
 	TAssert(pSaveData);
 	if (!pSaveData)
