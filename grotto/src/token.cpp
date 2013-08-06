@@ -16,6 +16,7 @@ void UnserializeString_TokenReceptacle(const tstring& sData, CSaveData* pSaveDat
 
 SAVEDATA_TABLE_BEGIN_EDITOR(CToken);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_COPYTYPE, CEntityHandle<CReceptacle>, m_hReceptacle, "Receptacle", UnserializeString_TokenReceptacle);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CReceptacle>, m_hPostPlaceInReceptacle);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bReflected, "Reflected");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sType, "TokenType");
 	SAVEDATA_EDITOR_VARIABLE("Receptacle");
@@ -36,6 +37,17 @@ void CToken::Precache()
 void CToken::Spawn()
 {
 	m_bReflected = false;
+}
+
+void CToken::PostLoad()
+{
+	BaseClass::PostLoad();
+
+	if (!!m_hPostPlaceInReceptacle)
+	{
+		m_hPostPlaceInReceptacle->SetToken(this);
+		m_hPostPlaceInReceptacle = nullptr;
+	}
 }
 
 CReceptacle* CToken::GetReceptacle() const
@@ -65,6 +77,11 @@ bool CToken::IsReflected() const
 	return m_bReflected;
 }
 
+void CToken::PostPlaceInReceptacle(CReceptacle* pReceptacle)
+{
+	m_hPostPlaceInReceptacle = pReceptacle;
+}
+
 void UnserializeString_TokenReceptacle(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
 {
 	CBaseEntity* pReceptacleEntity = CBaseEntity::GetEntityByName(sData);
@@ -92,5 +109,7 @@ void UnserializeString_TokenReceptacle(const tstring& sData, CSaveData* pSaveDat
 		return;
 	}
 
-	pReceptacle->SetToken(pToken);
+	// Don't place it immediately, wait for all other data to be set first
+	// so that the receptacle knows what kind of token it is and etc.
+	pToken->PostPlaceInReceptacle(pReceptacle);
 }

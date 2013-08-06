@@ -15,6 +15,7 @@ class CToken : public CBaseEntity
 public:
 	void				Precache();
 	void				Spawn();
+	void                PostLoad();
 
 	CReceptacle*		GetReceptacle() const;
 
@@ -24,10 +25,13 @@ public:
 	void				SetReflected(bool bReflected) { m_bReflected = bReflected; }
 	bool				IsReflected() const;
 
+	void                PostPlaceInReceptacle(CReceptacle* pReceptacle);
+
 	tstring				GetType() const { return m_sType; }
 
 protected:
 	CEntityHandle<CReceptacle>	m_hReceptacle;
+	CEntityHandle<CReceptacle>  m_hPostPlaceInReceptacle;
 	bool				m_bReflected;
 	tstring				m_sType;
 };
