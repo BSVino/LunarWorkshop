@@ -33,7 +33,7 @@ void CReflectionProxy::Spawn()
 	BaseClass::Spawn();
 }
 
-void CReflectionProxy::OnPlayerReflection(bool bReflected)
+void CReflectionProxy::OnPlayerReflection(bool bReflected, Matrix4x4& mNewPlayerLocal)
 {
 	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
 	{
@@ -45,7 +45,7 @@ void CReflectionProxy::OnPlayerReflection(bool bReflected)
 		if (!pGrottoKinematic)
 			continue;
 
-		pGrottoKinematic->Reflected();
+		pGrottoKinematic->Reflected(mNewPlayerLocal);
 	}
 
 	if (!s_pProxy)

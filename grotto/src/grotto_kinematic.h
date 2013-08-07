@@ -16,10 +16,11 @@ public:
 
 	const Matrix4x4 GetRenderTransform() const;
 
-	void      Reflected();
+	void      Reflected(Matrix4x4& mNewPlayerLocal);
 
 public:
 	bool      m_bReflected;
 	CEntityHandle<CBaseEntity> m_hNormalPosition;
 	CEntityHandle<CBaseEntity> m_hReflectedPosition;
+	bool      m_bReflectionAffectsPlayer;
 };
