@@ -1,6 +1,6 @@
 #include "reflectionproxy.h"
 
-#include "grotto_kinematic.h"
+#include "asymmetric_kinematic.h"
 
 REGISTER_ENTITY(CReflectionProxy);
 

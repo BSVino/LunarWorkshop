@@ -14,7 +14,7 @@
 #include "mirror.h"
 #include "grotto_playercharacter.h"
 #include "kaleidobeast.h"
-#include "grotto_kinematic.h"
+#include "asymmetric_kinematic.h"
 
 CGrottoRenderer::CGrottoRenderer()
 	: CGameRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
