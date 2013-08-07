@@ -1,5 +1,7 @@
 #include "asymmetric_kinematic.h"
 
+#include <renderer/game_renderingcontext.h>
+
 #include "grotto_renderer.h"
 #include "grotto_playercharacter.h"
 
@@ -51,10 +53,33 @@ const Matrix4x4 CAsymmetricKinematic::GetRenderTransform() const
 	if (!m_hNormalPosition || !m_hReflectedPosition)
 		return BaseClass::GetRenderTransform();
 
-	if (GrottoRenderer()->IsRenderingReflection() ^ m_bReflected)
+	if (GrottoRenderer()->IsRenderingReflection() ^ m_bReflected ^ GrottoRenderer()->IsRenderingTransparent())
 		return m_hReflectedPosition->GetGlobalTransform();
 	else
 		return m_hNormalPosition->GetGlobalTransform();
+}
+
+const TFloat CAsymmetricKinematic::GetBoundingRadius() const
+{
+	return m_aabbVisBoundingBox.Size().Length()/2 + (m_hReflectedPosition->GetGlobalOrigin()-m_hNormalPosition->GetGlobalOrigin()).Length();
+}
+
+void CAsymmetricKinematic::ModifyContext(class CRenderingContext* pContext) const
+{
+	pContext->SetColor(Color(255, 0, 0));
+
+	if (GrottoRenderer()->IsRenderingTransparent())
+	{
+		pContext->SetBlend(BLEND_ALPHA);
+		pContext->SetColor(Color(255, 0, 0, 50));
+	}
+
+	BaseClass::ModifyContext(pContext);
+}
+
+bool CAsymmetricKinematic::ShouldRenderTransparent() const
+{
+	return true;
 }
 
 void CAsymmetricKinematic::Reflected(Matrix4x4& mNewPlayerLocal)
