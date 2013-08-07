@@ -442,6 +442,12 @@ void CGameServer::LoadLevel(const CHandle<CLevel>& pLevel)
 
 			UnserializeParameter(sHandle, sValue, pEntity);
 		}
+	}
+
+	for (auto it = apEntities.begin(); it != apEntities.end(); it++)
+	{
+		auto pLevelEntity = &aEntities[it->first];
+		CBaseEntity* pEntity = it->second;
 
 		// Force MoveParent last so that global -> local conversion is performed.
 		auto itMoveParent = pLevelEntity->GetParameters().find("MoveParent");
