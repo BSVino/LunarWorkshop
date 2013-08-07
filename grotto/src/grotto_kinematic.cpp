@@ -37,6 +37,9 @@ void CGrottoKinematic::Think()
 {
 	BaseClass::Think();
 
+	if (!m_hNormalPosition || !m_hReflectedPosition)
+		return;
+
 	if (m_bReflected)
 		SetGlobalTransform(m_hReflectedPosition->GetGlobalTransform());
 	else
@@ -45,6 +48,9 @@ void CGrottoKinematic::Think()
 
 const Matrix4x4 CGrottoKinematic::GetRenderTransform() const
 {
+	if (!m_hNormalPosition || !m_hReflectedPosition)
+		return BaseClass::GetRenderTransform();
+
 	if (GrottoRenderer()->IsRenderingReflection() ^ m_bReflected)
 		return m_hReflectedPosition->GetGlobalTransform();
 	else
@@ -53,6 +59,9 @@ const Matrix4x4 CGrottoKinematic::GetRenderTransform() const
 
 void CGrottoKinematic::Reflected(Matrix4x4& mNewPlayerLocal)
 {
+	if (!m_hNormalPosition || !m_hReflectedPosition)
+		return;
+
 	if (!m_bReflectionAffectsPlayer)
 	{
 		for (size_t i = 0; i < m_ahMoveChildren.size(); i++)
