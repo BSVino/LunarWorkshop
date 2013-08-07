@@ -834,9 +834,14 @@ void CBulletPhysics::SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& m
 
 void CBulletPhysics::SetEntityTransform(IPhysicsEntity* pEnt, const Matrix4x4& mTransform, bool bUpdateAABB)
 {
+	TAssert(mTransform.GetForwardVector().Cross(mTransform.GetLeftVector()).Equals(mTransform.GetUpVector(), 0.001f));
+
 	CPhysicsEntity* pPhysicsEntity = GetPhysicsEntity(pEnt);
 	if (!pPhysicsEntity)
 		return;
+
+	if (pPhysicsEntity->m_pCharacterController)
+		TAssert(fabs(mTransform.GetUpVector().Dot(Vector(1, 0, 0))) < 0.001f);
 
 	if (pPhysicsEntity->m_bCenterMassOffset)
 	{
@@ -1218,6 +1223,10 @@ void CMotionState::setWorldTransform(const btTransform& mCenterOfMass)
 {
 	Matrix4x4 mGlobal;
 	mCenterOfMass.getOpenGLMatrix(mGlobal);
+
+	TAssert(mGlobal.GetForwardVector().Cross(mGlobal.GetLeftVector()).Equals(mGlobal.GetUpVector(), 0.001f));
+
+	TAssert(fabs(mGlobal.GetUpVector().Dot(Vector(1, 0, 0))) < 0.001f);
 
 	if (m_pPhysics->GetPhysicsEntity(m_pEntity)->m_bCenterMassOffset)
 	{

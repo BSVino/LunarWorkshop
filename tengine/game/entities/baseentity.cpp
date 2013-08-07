@@ -505,6 +505,11 @@ const TMatrix CBaseEntity::GetGlobalTransform() const
 
 void CBaseEntity::SetGlobalTransform(const TMatrix& m)
 {
+#ifdef _DEBUG
+	if (dynamic_cast<CCharacter*>(this))
+		TAssert(m.GetUpVector().Equals(GetUpVector(), 0.0001f));
+#endif
+
 	TMatrix mNew = m;
 	if (HasMoveParent())
 		mNew = GetMoveParent()->GetGlobalToLocalTransform() *  m;

@@ -30,13 +30,12 @@ INPUTS_TABLE_END();
 
 CGrottoCharacter::CGrottoCharacter()
 {
+	m_iReflected = 0;
 }
 
 void CGrottoCharacter::Spawn()
 {
 	BaseClass::Spawn();
-
-	m_iReflected = 0;
 }
 
 const TVector CGrottoCharacter::GetGoalVelocity()
@@ -101,6 +100,8 @@ void CGrottoCharacter::TestMirror(CMirror* pMirror, Matrix4x4& mNew)
 
 void CGrottoCharacter::Reflect(const Matrix4x4& mMirror, const Matrix4x4& mReflection, reflection_t eReflectionType, Matrix4x4& mNew, CMirror* pMirror)
 {
+	TAssert(GetGlobalTransform().GetUpVector().Equals(GetUpVector(), 0.0001f));
+
 	Vector vecNewOrigin = mNew.GetTranslation();
 	Vector vecNewGlobalOrigin = GetParentGlobalTransform() * vecNewOrigin;
 	Vector vecOldLocalOrigin = GetLocalOrigin();
@@ -123,18 +124,34 @@ void CGrottoCharacter::Reflect(const Matrix4x4& mMirror, const Matrix4x4& mRefle
 	}
 #endif
 
+	bool bWasReflected = !!(m_iReflected&(1<<eReflectionType));
+	if (bWasReflected)
+		m_iReflected &= ~(1<<eReflectionType);
+	else
+		m_iReflected |= (1<<eReflectionType);
+
 	// Reflect the velocity
 	Vector vecVelocity = GetGlobalVelocity();
 	Vector vecReflectedVelocity = mReflection.TransformVector(vecVelocity);
 	SetGlobalVelocity(vecReflectedVelocity);
 
+	TAssert(fabs((GetParentGlobalTransform() * mNew).GetUpVector().Dot(Vector(1, 0, 0))) < 0.0001f);
+
 	// Reflect the character's orientation
 	Vector vecForward = GetGlobalTransform().GetForwardVector();
 	Vector vecReflectedForward = mReflection.TransformVector(vecForward);
-	if (HasMoveParent())
-		mNew.SetOrientation(GetMoveParent()->GetGlobalToLocalTransform().TransformVector(vecReflectedForward));
-	else
-		mNew.SetOrientation(vecReflectedForward);
+
+	Matrix4x4 mGlobalNew = GetParentGlobalTransform() * mNew;
+
+	// Character always stands straight up regardless of being on a slope or
+	// angled move parent or whatever, for physics reasons. So really we're
+	// only reflecting if we went through a horizontal mirror.
+	mGlobalNew.SetOrientation(Vector(1, 0, 0), GetUpVector());
+	Matrix4x4 mReflectedNew = GetParentGlobalTransform().InvertedRT() * mGlobalNew;
+
+	TAssert((GetParentGlobalTransform() * mReflectedNew).GetUpVector().Equals(GetUpVector(), 0.0001f));
+
+	mNew = mReflectedNew;
 
 	// Reflect the character's viewing vector
 	Vector vecView = AngleVector(GetViewAngles());
@@ -164,12 +181,6 @@ if ((x) > (y)) \
 	swap_if_greater(vecReflectedMins.z, vecReflectedMaxs.z);
 
 	m_aabbPhysBoundingBox = AABB(vecReflectedMins, vecReflectedMaxs);
-
-	bool bWasReflected = !!(m_iReflected&(1<<eReflectionType));
-	if (bWasReflected)
-		m_iReflected &= ~(1<<eReflectionType);
-	else
-		m_iReflected |= (1<<eReflectionType);
 
 	if (IsReflected(REFLECTION_ANY))
 		m_hMirrorInside = pMirror;
@@ -208,6 +219,8 @@ if ((x) > (y)) \
 	CReflectionProxy::OnPlayerReflection(IsReflected(REFLECTION_LATERAL) ^ IsReflected(REFLECTION_VERTICAL), mNew);
 	if (eReflectionType == REFLECTION_LATERAL)
 		CReflectionProxy::OnPlayerGravity(IsReflected(REFLECTION_VERTICAL));
+
+	TAssert((GetParentGlobalTransform() * mNew).GetUpVector().Equals(GetUpVector(), 0.0001f));
 }
 
 void CGrottoCharacter::ReflectVertical(const tvector<tstring>& asArgs)

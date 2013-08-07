@@ -23,6 +23,7 @@ set (GROTTO_SYSTEM_SOURCES
 
 set (GROTTO_ENTITY_SOURCES
 	asymmetric_kinematic.cpp
+	reflected_kinematic.cpp
 	kaleidobeast.cpp
 	mirror.cpp
 	momento.cpp

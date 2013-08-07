@@ -1,6 +1,7 @@
 #include "reflectionproxy.h"
 
 #include "asymmetric_kinematic.h"
+#include "reflected_kinematic.h"
 
 REGISTER_ENTITY(CReflectionProxy);
 
@@ -42,10 +43,12 @@ void CReflectionProxy::OnPlayerReflection(bool bReflected, Matrix4x4& mNewPlayer
 			continue;
 
 		CAsymmetricKinematic* pAsymmetricKinematic = dynamic_cast<CAsymmetricKinematic*>(pEntity);
-		if (!pAsymmetricKinematic)
-			continue;
+		if (pAsymmetricKinematic)
+			pAsymmetricKinematic->Reflected(mNewPlayerLocal);
 
-		pAsymmetricKinematic->Reflected(mNewPlayerLocal);
+		CReflectedKinematic* pReflectedKinematic = dynamic_cast<CReflectedKinematic*>(pEntity);
+		if (pReflectedKinematic)
+			pReflectedKinematic->Reflected(mNewPlayerLocal);
 	}
 
 	if (!s_pProxy)

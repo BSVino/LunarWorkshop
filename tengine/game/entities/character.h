@@ -90,6 +90,9 @@ public:
 
 	virtual bool					UsePhysicsModelForController() const { return false; }
 	collision_group_t               GetCollisionGroup() const { return CG_CHARACTER; }
+	const Matrix4x4                 GetPhysicsTransform() const;
+	void                            SetPhysicsTransform(const Matrix4x4& m);
+	void                            OnSetLocalTransform(TMatrix& m);
 
 protected:
 	CNetworkedHandle<CPlayer>		m_hControllingPlayer;

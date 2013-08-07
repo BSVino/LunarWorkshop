@@ -61,6 +61,9 @@ const Matrix4x4 CAsymmetricKinematic::GetRenderTransform() const
 
 const TFloat CAsymmetricKinematic::GetBoundingRadius() const
 {
+	if (!m_hNormalPosition || !m_hReflectedPosition)
+		return BaseClass::GetBoundingRadius();
+
 	return m_aabbVisBoundingBox.Size().Length()/2 + (m_hReflectedPosition->GetGlobalOrigin()-m_hNormalPosition->GetGlobalOrigin()).Length();
 }
 

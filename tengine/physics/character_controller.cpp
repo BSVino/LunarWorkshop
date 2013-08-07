@@ -142,6 +142,14 @@ void CCharacterController::CharacterMovement(btCollisionWorld* pCollisionWorld, 
 	CPhysicsEntity* pPhysicsEntity = static_cast<CBulletPhysics*>(GamePhysics())->GetPhysicsEntity(m_hEntity);
 	pPhysicsEntity->m_oMotionState.getWorldTransform(mCharacter);
 
+#ifdef _DEBUG
+	Matrix4x4 mTest;
+	mCharacter.getOpenGLMatrix(mTest);
+	TAssert(mTest.GetForwardVector().Cross(mTest.GetLeftVector()).Equals(mTest.GetUpVector(), 0.001f));
+
+	TAssert(mTest.GetUpVector().Equals(m_hEntity->GetUpVector(), 0.001f));
+#endif
+
 	m_pGhostObject->setWorldTransform(mCharacter);
 
 	PreStep(pCollisionWorld);

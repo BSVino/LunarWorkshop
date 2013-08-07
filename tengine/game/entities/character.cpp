@@ -506,3 +506,26 @@ void CCharacter::SetGroundEntity(CBaseEntity* pEntity)
 void CCharacter::SetGroundEntityExtra(size_t iExtra)
 {
 }
+
+const Matrix4x4 CCharacter::GetPhysicsTransform() const
+{
+	Matrix4x4 mPhysics = BaseClass::GetPhysicsTransform();
+
+	TAssert(mPhysics.GetUpVector().Equals(GetUpVector(), 0.0001f));
+
+	return mPhysics;
+}
+
+void CCharacter::SetPhysicsTransform(const Matrix4x4& m)
+{
+	TAssert(m.GetUpVector().Equals(GetUpVector(), 0.0001f));
+
+	BaseClass::SetPhysicsTransform(m);
+}
+
+void CCharacter::OnSetLocalTransform(TMatrix& m)
+{
+	BaseClass::OnSetLocalTransform(m);
+
+	TAssert((GetParentGlobalTransform()*m).GetUpVector().Equals(GetUpVector(), 0.0001f));
+}
