@@ -109,6 +109,10 @@ void CGrottoHUD::Paint(float x, float y, float w, float h)
 		if (pEntity == pPlayerCharacter->GetToken())
 			continue;
 
+		// Don't consider objects behind the player.
+		if ((pEntity->GetGlobalOrigin() - pPlayerCharacter->GetGlobalOrigin()).Dot(AngleVector(pPlayerCharacter->GetViewAngles())) < 0)
+			continue;
+
 		TFloat flRadius = flTokenRadius*flTokenRadius;
 
 		CMomento* pMomento = dynamic_cast<CMomento*>(pEntity);

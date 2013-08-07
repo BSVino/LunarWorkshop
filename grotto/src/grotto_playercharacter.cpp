@@ -93,6 +93,10 @@ void CPlayerCharacter::FindItems()
 		if (pEntity == m_hToken)
 			continue;
 
+		// Don't consider objects behind the player.
+		if ((pEntity->GetGlobalOrigin() - GetGlobalOrigin()).Dot(AngleVector(GetViewAngles())) < 0)
+			continue;
+
 		TFloat flRadius = flTokenRadius*flTokenRadius;
 
 		CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pEntity);
@@ -157,7 +161,7 @@ void CPlayerCharacter::DropToken()
 		return;
 
 	m_hToken->SetMoveParent(nullptr);
-	m_hToken->SetGlobalOrigin(GetGlobalOrigin() + AngleVector(GetViewAngles()).Flattened().Normalized());
+	m_hToken->SetGlobalOrigin(GetGlobalOrigin() + AngleVector(GetViewAngles()).Flattened().Normalized() + GetUpVector() * 0.1f);
 	m_hToken->SetGlobalAngles(EAngle(0, GetViewAngles().y, (IsReflected(REFLECTION_VERTICAL)?180.0f:0.0f)));
 	m_hToken->SetVisible(true);
 	m_hToken = nullptr;
