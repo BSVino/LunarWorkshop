@@ -312,6 +312,11 @@ const TVector CBaseEntity::GetGlobalCenter() const
 	return GetGlobalTransform() * m_aabbVisBoundingBox.Center();
 }
 
+const TVector CBaseEntity::GetRenderCenter() const
+{
+	return GetRenderTransform() * m_aabbVisBoundingBox.Center();
+}
+
 const TFloat CBaseEntity::GetBoundingRadius() const
 {
 	if (m_hMaterialModel.IsValid())

@@ -1,0 +1,25 @@
+#pragma once
+
+#include <game/entities/kinematic.h>
+
+class CGrottoKinematic : public CKinematic
+{
+	REGISTER_ENTITY_CLASS(CGrottoKinematic, CKinematic);
+
+public:
+	CGrottoKinematic();
+
+public:
+	void      PostLoad();
+
+	void      Think();
+
+	const Matrix4x4 GetRenderTransform() const;
+
+	void      Reflected();
+
+public:
+	bool      m_bReflected;
+	CEntityHandle<CBaseEntity> m_hNormalPosition;
+	CEntityHandle<CBaseEntity> m_hReflectedPosition;
+};

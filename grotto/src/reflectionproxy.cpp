@@ -1,5 +1,7 @@
 #include "reflectionproxy.h"
 
+#include "grotto_kinematic.h"
+
 REGISTER_ENTITY(CReflectionProxy);
 
 NETVAR_TABLE_BEGIN(CReflectionProxy);
@@ -33,6 +35,19 @@ void CReflectionProxy::Spawn()
 
 void CReflectionProxy::OnPlayerReflection(bool bReflected)
 {
+	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
+	{
+		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
+		if (!pEntity)
+			continue;
+
+		CGrottoKinematic* pGrottoKinematic = dynamic_cast<CGrottoKinematic*>(pEntity);
+		if (!pGrottoKinematic)
+			continue;
+
+		pGrottoKinematic->Reflected();
+	}
+
 	if (!s_pProxy)
 		return;
 

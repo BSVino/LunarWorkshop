@@ -458,6 +458,7 @@ public:
 	virtual const AABB                      GetPhysBoundingBox() const { return m_aabbPhysBoundingBox; }
 	virtual const TVector					GetLocalCenter() const;
 	virtual const TVector					GetGlobalCenter() const;
+	virtual const TVector                   GetRenderCenter() const;
 	virtual const TFloat					GetBoundingRadius() const;
 
 	virtual const TFloat					GetRenderRadius() const { return GetBoundingRadius(); };

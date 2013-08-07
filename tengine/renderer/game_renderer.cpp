@@ -142,7 +142,7 @@ void CGameRenderer::RenderEverything()
 		if (!bRenderOpaque && !bRenderTransparent)
 			continue;
 
-		if (bFrustumCulling && !IsSphereInFrustum(pEntity->GetGlobalCenter(), (float)pEntity->GetBoundingRadius()))
+		if (bFrustumCulling && !IsSphereInFrustum(pEntity->GetRenderCenter(), (float)pEntity->GetBoundingRadius()))
 			continue;
 
 		if (bRenderOpaque)
