@@ -621,6 +621,8 @@ void CLabel::ComputeLines(float w, float h)
 			}
 			else if (tstrncmp(&sLine[iChar], "[/size]", 7) == 0)
 			{
+				TAssert(aSectionStack.size());
+
 				// We're ending a section, push our line.
 				PushSection(aSectionStack.back(), tstring(&sLine[iLastBreak], &sLine[iChar]));
 				iLength = 0;
@@ -670,6 +672,9 @@ void CLabel::ComputeLines(float w, float h)
 			}
 			else if (tstrncmp(&sLine[iChar], "[/color]", 8) == 0)
 			{
+				TAssert(aSectionStack.size());
+				TAssert(aSectionStack.back().m_bColor);
+
 				// We're ending a section, push our line.
 				PushSection(aSectionStack.back(), tstring(&sLine[iLastBreak], &sLine[iChar]));
 				iLength = 0;
@@ -712,6 +717,9 @@ void CLabel::ComputeLines(float w, float h)
 			}
 			else if (tstrncmp(&sLine[iChar], "[/link]", 7) == 0)
 			{
+				TAssert(aSectionStack.size());
+				TAssert(aSectionStack.back().m_sLink.length());
+
 				// We're ending a section, push our line.
 				PushSection(aSectionStack.back(), sLine.substr(iLastBreak, iChar-iLastBreak));
 				iLength = 0;
