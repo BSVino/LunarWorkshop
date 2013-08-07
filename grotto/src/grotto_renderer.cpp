@@ -230,7 +230,7 @@ void CGrottoRenderer::StartRenderingReflection(class CRenderingContext* pContext
 
 	if (pMirror->HasMoveParent())
 	{
-		CGrottoKinematic* pKinematic = dynamic_cast<CGrottoKinematic*>(pMirror->GetMoveParent());
+		CAsymmetricKinematic* pKinematic = dynamic_cast<CAsymmetricKinematic*>(pMirror->GetMoveParent());
 		if (pKinematic)
 		{
 			Matrix4x4 mKinematicRenderTransform = pKinematic->GetRenderTransform();

@@ -3,12 +3,12 @@
 #include "grotto_renderer.h"
 #include "grotto_playercharacter.h"
 
-REGISTER_ENTITY(CGrottoKinematic);
+REGISTER_ENTITY(CAsymmetricKinematic);
 
-NETVAR_TABLE_BEGIN(CGrottoKinematic);
+NETVAR_TABLE_BEGIN(CAsymmetricKinematic);
 NETVAR_TABLE_END();
 
-SAVEDATA_TABLE_BEGIN_EDITOR(CGrottoKinematic);
+SAVEDATA_TABLE_BEGIN_EDITOR(CAsymmetricKinematic);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bReflected);
 	SAVEDATA_DEFINE_HANDLE_ENTITY(CSaveData::DATA_COPYTYPE, CEntityHandle<CBaseEntity>, m_hNormalPosition, "NormalPosition");
 	SAVEDATA_DEFINE_HANDLE_ENTITY(CSaveData::DATA_COPYTYPE, CEntityHandle<CBaseEntity>, m_hReflectedPosition, "ReflectedPosition");
@@ -18,22 +18,22 @@ SAVEDATA_TABLE_BEGIN_EDITOR(CGrottoKinematic);
 	SAVEDATA_EDITOR_VARIABLE("ReflectionAffectsPlayer");
 SAVEDATA_TABLE_END();
 
-INPUTS_TABLE_BEGIN(CGrottoKinematic);
+INPUTS_TABLE_BEGIN(CAsymmetricKinematic);
 INPUTS_TABLE_END();
 
-CGrottoKinematic::CGrottoKinematic()
+CAsymmetricKinematic::CAsymmetricKinematic()
 {
 	m_bReflected = false;
 }
 
-void CGrottoKinematic::PostLoad()
+void CAsymmetricKinematic::PostLoad()
 {
 	BaseClass::PostLoad();
 
 	TAssert(!!m_hNormalPosition && !!m_hReflectedPosition);
 }
 
-void CGrottoKinematic::Think()
+void CAsymmetricKinematic::Think()
 {
 	BaseClass::Think();
 
@@ -46,7 +46,7 @@ void CGrottoKinematic::Think()
 		SetGlobalTransform(m_hNormalPosition->GetGlobalTransform());
 }
 
-const Matrix4x4 CGrottoKinematic::GetRenderTransform() const
+const Matrix4x4 CAsymmetricKinematic::GetRenderTransform() const
 {
 	if (!m_hNormalPosition || !m_hReflectedPosition)
 		return BaseClass::GetRenderTransform();
@@ -57,7 +57,7 @@ const Matrix4x4 CGrottoKinematic::GetRenderTransform() const
 		return m_hNormalPosition->GetGlobalTransform();
 }
 
-void CGrottoKinematic::Reflected(Matrix4x4& mNewPlayerLocal)
+void CAsymmetricKinematic::Reflected(Matrix4x4& mNewPlayerLocal)
 {
 	if (!m_hNormalPosition || !m_hReflectedPosition)
 		return;

@@ -41,11 +41,11 @@ void CReflectionProxy::OnPlayerReflection(bool bReflected, Matrix4x4& mNewPlayer
 		if (!pEntity)
 			continue;
 
-		CGrottoKinematic* pGrottoKinematic = dynamic_cast<CGrottoKinematic*>(pEntity);
-		if (!pGrottoKinematic)
+		CAsymmetricKinematic* pAsymmetricKinematic = dynamic_cast<CAsymmetricKinematic*>(pEntity);
+		if (!pAsymmetricKinematic)
 			continue;
 
-		pGrottoKinematic->Reflected(mNewPlayerLocal);
+		pAsymmetricKinematic->Reflected(mNewPlayerLocal);
 	}
 
 	if (!s_pProxy)

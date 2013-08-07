@@ -2,12 +2,12 @@
 
 #include <game/entities/kinematic.h>
 
-class CGrottoKinematic : public CKinematic
+class CAsymmetricKinematic : public CKinematic
 {
-	REGISTER_ENTITY_CLASS(CGrottoKinematic, CKinematic);
+	REGISTER_ENTITY_CLASS(CAsymmetricKinematic, CKinematic);
 
 public:
-	CGrottoKinematic();
+	CAsymmetricKinematic();
 
 public:
 	void      PostLoad();
