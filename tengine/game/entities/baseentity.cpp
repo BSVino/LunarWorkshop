@@ -471,6 +471,11 @@ void CBaseEntity::InvalidateGlobalTransforms()
 {
 	m_bGlobalTransformsDirty = true;
 
+	InvalidateChildrenTransforms();
+}
+
+void CBaseEntity::InvalidateChildrenTransforms()
+{
 	for (size_t i = 0; i < m_ahMoveChildren.size(); i++)
 		m_ahMoveChildren[i]->InvalidateGlobalTransforms();
 }
@@ -517,6 +522,8 @@ void CBaseEntity::SetGlobalTransform(const TMatrix& m)
 		m_mGlobalTransform = m_mLocalTransform = mNew;
 		m_bGlobalTransformsDirty = false;
 	}
+
+	InvalidateChildrenTransforms();
 
 	m_vecLocalOrigin = m_mLocalTransform.GetTranslation();
 
