@@ -16,7 +16,6 @@ public:
 
 	const Matrix4x4 GetRenderTransform() const;
 	void            ModifyContext(class CRenderingContext* pContext) const;
-	bool            ShouldRenderTransparent() const;
 	const TFloat    GetBoundingRadius() const;
 
 	void            Reflected(Matrix4x4& mNewPlayerLocal);

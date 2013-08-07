@@ -64,18 +64,7 @@ void CReflectedKinematic::ModifyContext(class CRenderingContext* pContext) const
 {
 	pContext->SetColor(Color(255, 0, 0));
 
-	if (GrottoRenderer()->IsRenderingTransparent())
-	{
-		pContext->SetBlend(BLEND_ALPHA);
-		pContext->SetColor(Color(255, 0, 0, 50));
-	}
-
 	BaseClass::ModifyContext(pContext);
-}
-
-bool CReflectedKinematic::ShouldRenderTransparent() const
-{
-	return true;
 }
 
 void CReflectedKinematic::Reflected(Matrix4x4& mNewPlayerLocal)
