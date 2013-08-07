@@ -14,6 +14,7 @@
 #include "mirror.h"
 #include "grotto_playercharacter.h"
 #include "kaleidobeast.h"
+#include "grotto_kinematic.h"
 
 CGrottoRenderer::CGrottoRenderer()
 	: CGameRenderer(CApplication::Get()->GetWindowWidth(), CApplication::Get()->GetWindowHeight())
@@ -76,6 +77,8 @@ void CGrottoRenderer::PreRender()
 
 		CMirror* pMirror = apMirrors[i];
 
+		m_bRenderingReflection = true;
+
 		CRenderingContext c(this);
 
 		StartRenderingReflection(&c, pMirror);
@@ -84,8 +87,6 @@ void CGrottoRenderer::PreRender()
 		c.UseFrameBuffer(&m_aoReflectionBuffers[i]);
 
 		c.ClearDepth();
-
-		m_bRenderingReflection = true;
 
 		CGrottoCharacter* pPlayerCharacter = GrottoGame()->GetLocalPlayerCharacter();
 
@@ -220,11 +221,35 @@ void CGrottoRenderer::StartRenderingReflection(class CRenderingContext* pContext
 		));
 
 	Vector vecMirror = pMirror->GetGlobalOrigin();
+
 	Vector vecMirrorForward = pMirror->GetGlobalTransform().GetForwardVector();
 
 	Vector vecCameraPosition = m_vecCameraPosition;
 	Vector vecCameraDirection = m_vecCameraDirection;
 	Vector vecCameraUp = m_vecCameraUp;
+
+	if (pMirror->HasMoveParent())
+	{
+		CGrottoKinematic* pKinematic = dynamic_cast<CGrottoKinematic*>(pMirror->GetMoveParent());
+		if (pKinematic)
+		{
+			Matrix4x4 mKinematicRenderTransform = pKinematic->GetRenderTransform();
+			Vector vecMirrorLocal = pMirror->GetLocalOrigin();
+
+			vecMirror = mKinematicRenderTransform * vecMirrorLocal;
+
+			Matrix4x4 mKinematicTransformGlobalToLocal = pKinematic->GetGlobalTransform().InvertedRT();
+
+			Vector vecCameraPositionLocal = mKinematicTransformGlobalToLocal * vecCameraPosition;
+			vecCameraPosition = mKinematicRenderTransform * vecCameraPositionLocal;
+
+			Vector vecCameraDirectionLocal = mKinematicTransformGlobalToLocal.TransformVector(vecCameraDirection);
+			vecCameraDirection = mKinematicRenderTransform.TransformVector(vecCameraDirectionLocal);
+
+			Vector vecCameraUpLocal = mKinematicTransformGlobalToLocal.TransformVector(vecCameraUp);
+			vecCameraUp = mKinematicRenderTransform.TransformVector(vecCameraUpLocal);
+		}
+	}
 
 	CGrottoCharacter* pPlayerCharacter = GrottoGame()->GetLocalPlayerCharacter();
 
@@ -234,9 +259,9 @@ void CGrottoRenderer::StartRenderingReflection(class CRenderingContext* pContext
 	mTranslate.SetTranslation(vecMirror);
 	mInverseTranslate = mTranslate.InvertedRT();
 
-	vecCameraPosition = mTranslate * (mReflect * (mInverseTranslate * m_vecCameraPosition));
-	vecCameraDirection = mTranslate.TransformVector(mReflect.TransformVector(mInverseTranslate.TransformVector(m_vecCameraDirection)));
-	vecCameraUp = mReflect * m_vecCameraUp;
+	vecCameraPosition = mTranslate * (mReflect * (mInverseTranslate * vecCameraPosition));
+	vecCameraDirection = mTranslate.TransformVector(mReflect.TransformVector(mInverseTranslate.TransformVector(vecCameraDirection)));
+	vecCameraUp = mReflect * vecCameraUp;
 
 	mReflect *= pMirror->GetReflection();
 
