@@ -29,6 +29,7 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 #define FRUSTUM_UP		4
 #define FRUSTUM_DOWN	5
 
+// Normals face inside.
 class Frustum
 {
 public:

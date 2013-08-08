@@ -36,6 +36,7 @@ public:
 
 	// Which side of the mirror is this point on?
 	bool				GetSide(const Vector& vecPoint) const;
+	const Vector        GetMirrorFace() const;
 	Matrix4x4			GetReflection() const;
 
 	void				SetBuffer(size_t i) { m_iBuffer = i; }

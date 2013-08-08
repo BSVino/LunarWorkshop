@@ -197,8 +197,6 @@ void CGrottoRenderer::StartRendering(class CRenderingContext* pContext)
 
 	m_oFrustum.CreateFrom(pContext->GetProjection() * pContext->GetView());
 
-	// Optimization opportunity: shrink the view frustum to the edges and surface of the mirror?
-
 	// Momentarily return the viewport to the window size. This is because if the scene buffer is not the same as the window size,
 	// the viewport here will be the scene buffer size, but we need it to be the window size so we can do world/screen transformations.
 	glViewport(0, 0, (GLsizei)m_iWidth, (GLsizei)m_iHeight);
@@ -215,10 +213,14 @@ void CGrottoRenderer::FinishRendering(class CRenderingContext* pContext)
 
 void CGrottoRenderer::StartRenderingReflection(class CRenderingContext* pContext, CMirror* pMirror)
 {
+	float flNear = (pMirror->GetRenderOrigin() - m_vecCameraPosition).Length() - pMirror->GetBoundingRadius();
+
+	flNear = max(m_flCameraNear, flNear);
+
 	pContext->SetProjection(Matrix4x4::ProjectPerspective(
 			m_flCameraFOV,
 			(float)m_iWidth/(float)m_iHeight,
-			m_flCameraNear,
+			flNear,
 			m_flCameraFar
 		));
 
@@ -288,7 +290,17 @@ void CGrottoRenderer::StartRenderingReflection(class CRenderingContext* pContext
 
 	m_oFrustum.CreateFrom(pContext->GetProjection() * pContext->GetView());
 
-	// TODO: Optimization opportunity: shrink the view frustum to the edges and surface of the mirror
+	// Shrink the view frustum to the edges and surface of the mirror
+	Vector vecMirrorFace = pMirror->GetMirrorFace();
+	Vector vecOldNearNormal = m_oFrustum.p[FRUSTUM_NEAR].n;
+
+	if (vecOldNearNormal.Dot(vecMirrorFace) < 0)
+		vecMirrorFace = -vecMirrorFace;
+
+	// Move up the near plane so it matches the surface of the mirror.
+	m_oFrustum.p[FRUSTUM_NEAR] = Plane(pMirror->GetGlobalOrigin(), vecMirrorFace);
+
+	// TODO: Optimization opportunity: shrink the view frustum to the edges of the mirror
 
 	// Momentarily return the viewport to the window size. This is because if the scene buffer is not the same as the window size,
 	// the viewport here will be the scene buffer size, but we need it to be the window size so we can do world/screen transformations.

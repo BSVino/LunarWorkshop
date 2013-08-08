@@ -23,7 +23,19 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 class Plane
 {
 public:
-	void		Normalize()
+	Plane()
+	{
+	}
+
+	Plane(const Vector& p, const Vector& N)
+	{
+		d = -p.Dot(N);
+		n = N;
+		Normalize();
+	}
+
+public:
+	void Normalize()
 	{
 		float flMagnitude = 1/sqrt(n.x*n.x + n.y*n.y + n.z*n.z);
 		n.x *= flMagnitude;

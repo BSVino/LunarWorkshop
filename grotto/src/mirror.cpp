@@ -205,14 +205,19 @@ bool CMirror::GetSide(const Vector& vecPoint) const
 	return false;
 }
 
-Matrix4x4 CMirror::GetReflection() const
+const Vector CMirror::GetMirrorFace() const
 {
 	if (m_eMirrorType == REFLECTION_LATERAL)
-		return Matrix4x4().AddReflection(GetGlobalTransform().GetForwardVector());
+		return GetGlobalTransform().GetForwardVector();
 	else if (m_eMirrorType == REFLECTION_VERTICAL)
-		return Matrix4x4().AddReflection(Vector(0, 0, 1));
+		return Vector(0, 0, 1);
 
-	return Matrix4x4();
+	return Vector();
+}
+
+Matrix4x4 CMirror::GetReflection() const
+{
+	return Matrix4x4().AddReflection(GetMirrorFace());
 }
 
 void UnserializeString_MirrorType(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)
