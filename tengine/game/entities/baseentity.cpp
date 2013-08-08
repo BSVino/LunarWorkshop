@@ -380,6 +380,10 @@ void CBaseEntity::SetMaterialModel(const CMaterialHandle& hMaterial)
 
 void CBaseEntity::SetMoveParent(CBaseEntity* pParent)
 {
+	TAssert(pParent != this);
+	if (pParent == this)
+		return;
+
 	if (IsInPhysics() && pParent)
 	{
 		collision_type_t eCollisionType = GamePhysics()->GetEntityCollisionType(this);
