@@ -71,6 +71,8 @@ bool CMirror::ModifyShader(class CRenderingContext* pContext) const
 	pContext->SetUniform("flScreenWidth", (float)oBuffer.m_iWidth);
 	pContext->SetUniform("flScreenHeight", (float)oBuffer.m_iHeight);
 
+	pContext->SetUniform("flTime", (float)GameServer()->GetGameTime());
+
 	pContext->SetUniform("bDiffuse", true);
 	pContext->SetUniform("iDiffuse", 0);
 
