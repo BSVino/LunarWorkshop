@@ -700,6 +700,10 @@ void CCharacterController::StepForwardAndStrafe(btCollisionWorld* pCollisionWorl
 
 		if (tr.m_flFraction < 1)
 		{
+			Vector vecVelocity = m_hEntity->GetLocalVelocity();
+			Vector vecNewVelocity = ToTVector(PerpendicularComponent(ToBTVector(vecVelocity), ToBTVector(tr.m_vecNormal)));
+			m_hEntity->SetLocalVelocity(vecNewVelocity);
+
 			vecStartPosition.setInterpolate3 (vecStartPosition, vecTargetPosition, tr.m_flFraction);
 
 			btVector3 vecNormal = ToBTVector(tr.m_vecNormal);
