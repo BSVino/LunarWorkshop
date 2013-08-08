@@ -51,17 +51,20 @@ void CMirror::Spawn()
 	m_ahMirrors.push_back(this);
 }
 
-void CMirror::ModifyShader(class CRenderingContext* pContext) const
+bool CMirror::ModifyShader(class CRenderingContext* pContext) const
 {
 	if (!pContext->GetActiveShader())
-		return;
+		return true;
 
 	if (pContext->GetActiveShader()->m_sName != "reflection")
-		return;
+		return true;
+
+	if (GrottoRenderer()->IsRenderingReflection())
+		return false;
 
 	size_t iBuffer = GetBuffer();
 	if (iBuffer == ~0)
-		return;
+		return false;
 
 	CFrameBuffer &oBuffer = GrottoRenderer()->GetReflectionBuffer(iBuffer);
 
@@ -71,9 +74,9 @@ void CMirror::ModifyShader(class CRenderingContext* pContext) const
 	pContext->SetUniform("bDiffuse", true);
 	pContext->SetUniform("iDiffuse", 0);
 
-	pContext->SetUniform("bDiscardReflection", GrottoRenderer()->IsRenderingReflection());
-
 	pContext->BindTexture(oBuffer.m_iMap);
+
+	return true;
 }
 
 bool CMirror::IsPointInside(const Vector& vecPoint, bool bPhysics) const

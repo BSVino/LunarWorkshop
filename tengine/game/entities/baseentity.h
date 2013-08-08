@@ -599,7 +599,7 @@ public:
 	virtual bool							ShouldRenderModel() const { return true; };
 	virtual void							PreRender() const;
 	virtual void							ModifyContext(class CRenderingContext* pContext) const {};
-	virtual void							ModifyShader(class CRenderingContext* pContext) const {};
+	virtual bool							ModifyShader(class CRenderingContext* pContext) const { return true; };
 	void									Render() const;
 	void                                    RenderTransparent() const;
 	virtual void							OnRender(class CGameRenderingContext* pContext) const {};

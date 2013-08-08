@@ -22,7 +22,7 @@ public:
 	void				Precache();
 	void				Spawn();
 
-	void                ModifyShader(class CRenderingContext* pContext) const;
+	bool                ModifyShader(class CRenderingContext* pContext) const;
 
 	collision_group_t   GetCollisionGroup() const { return CG_STATIC; }
 

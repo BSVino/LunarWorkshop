@@ -66,8 +66,14 @@ void CGameRenderingContext::RenderModel(size_t iModel, const CBaseEntity* pEntit
 				continue;
 
 			if (pEntity)
-				pEntity->ModifyShader(this);
-			m_pRenderer->ModifyShader(pEntity, this);
+			{
+				if (!pEntity->ModifyShader(this))
+					continue;
+			}
+
+			if (!m_pRenderer->ModifyShader(pEntity, this))
+				continue;
+
 			RenderModel(pModel, m);
 		}
 

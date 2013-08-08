@@ -34,7 +34,7 @@ public:
 	virtual void	SetupFrame(class CRenderingContext* pContext);
 	virtual void	DrawSkybox(class CRenderingContext* pContext);
 	virtual void	ModifySkyboxContext(class CRenderingContext* c) {};
-	virtual void	ModifyShader(const class CBaseEntity* pEntity, class CRenderingContext* c) {};
+	virtual bool	ModifyShader(const class CBaseEntity* pEntity, class CRenderingContext* c) { return true; };
 	virtual void	FinishRendering(class CRenderingContext* pContext);
 	virtual void	FinishFrame(class CRenderingContext* pContext);
 	virtual void    DrawWeaponViewModel();

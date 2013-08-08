@@ -21,7 +21,8 @@ public:
 	virtual void	StartRendering(class CRenderingContext* pContext);
 	virtual void	FinishRendering(class CRenderingContext* pContext);
 	virtual void	StartRenderingReflection(class CRenderingContext* pContext, CMirror* pMirror);
-	bool			IsRenderingReflection() const { return m_bRenderingReflection; }
+	bool            IsRenderingReflection() const { return !!m_pRenderingReflection; }
+	CMirror*        GetRenderingReflectionMirror() const { return m_pRenderingReflection; }
 
 	float			BloomBrightnessCutoff() const { return 1.25f; }
 
@@ -32,7 +33,7 @@ public:
 protected:
 	tvector<CFrameBuffer>		m_aoReflectionBuffers;
 
-	bool						m_bRenderingReflection;
+	CMirror*        m_pRenderingReflection; // Don't need a handle because mirrors are never destroyed during rendering.
 };
 
 CGrottoRenderer* GrottoRenderer();
