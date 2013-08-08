@@ -403,6 +403,7 @@ void entity::RegisterSaveData() \
 	pGameServer->GenerateSaveCRC(pSaveData->m_iSizeOfType); \
 
 #define SAVEDATA_OVERRIDE_DEFAULT(eDataType, type, name, handle, def) \
+	type name##Test = def; name##Test = name##Test; /*Test to make sure "def" is of type "type" */ \
 	SaveData_OverrideDefault(pRegistration, eDataType, #name, handle, (type)def) \
 
 #define SAVEDATA_EDITOR_VARIABLE(handle) \

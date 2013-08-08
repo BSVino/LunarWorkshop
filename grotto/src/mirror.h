@@ -16,7 +16,8 @@ class CMirror : public CBaseEntity
 	REGISTER_ENTITY_CLASS(CMirror, CBaseEntity);
 
 public:
-	virtual				~CMirror();
+	CMirror();
+	~CMirror();
 
 public:
 	void				Precache();

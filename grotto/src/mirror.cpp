@@ -26,6 +26,11 @@ INPUTS_TABLE_END();
 
 tvector<CEntityHandle<CMirror> > CMirror::m_ahMirrors;
 
+CMirror::CMirror()
+{
+	m_eMirrorType = MIRROR_NONE;
+}
+
 CMirror::~CMirror()
 {
 	for (size_t i = 0; i < m_ahMirrors.size(); i++)
@@ -46,7 +51,12 @@ void CMirror::Precache()
 
 void CMirror::Spawn()
 {
-	SetMirrorType(MIRROR_VERTICAL);
+	if (!m_eMirrorType)
+		SetMirrorType(MIRROR_VERTICAL);
+
+	if (IsInPhysics())
+		RemoveFromPhysics();
+	AddToPhysics(CT_KINEMATIC);
 
 	m_ahMirrors.push_back(this);
 }
@@ -224,7 +234,7 @@ NETVAR_TABLE_END();
 SAVEDATA_TABLE_BEGIN_EDITOR(CVerticalMirror);
 	SAVEDATA_EDITOR_VARIABLE("Model");
 	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_NETVAR, const char*, m_iModel, "Model", "models/mirror.toy");
-	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", REFLECTION_LATERAL);
+	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", MIRROR_VERTICAL);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CVerticalMirror);
@@ -239,7 +249,7 @@ NETVAR_TABLE_END();
 SAVEDATA_TABLE_BEGIN_EDITOR(CHorizontalMirror);
 	SAVEDATA_EDITOR_VARIABLE("Model");
 	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_NETVAR, const char*, m_iModel, "Model", "models/mirror_horizontal.toy");
-	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", REFLECTION_VERTICAL);
+	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", MIRROR_HORIZONTAL);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CHorizontalMirror);
