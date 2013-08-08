@@ -309,6 +309,31 @@ void CGrottoRenderer::StartRenderingReflection(class CRenderingContext* pContext
 	glViewport(0, 0, (GLsizei)m_oSceneBuffer.m_iWidth, (GLsizei)m_oSceneBuffer.m_iHeight);
 }
 
+bool CGrottoRenderer::ModifyShader(const CBaseEntity* pEntity, class CRenderingContext* c)
+{
+	if (!c->GetActiveShader())
+		return BaseClass::ModifyShader(pEntity, c);
+
+	if (c->GetActiveShader()->m_sName != "model")
+		return BaseClass::ModifyShader(pEntity, c);
+
+	c->SetUniform("bRenderingReflection", false);
+
+	if (!IsRenderingReflection())
+		return BaseClass::ModifyShader(pEntity, c);
+
+	c->SetUniform("bRenderingReflection", true);
+
+	Vector vecMirrorFace = GetRenderingReflectionMirror()->GetMirrorFace();
+	if (vecMirrorFace.Dot(c->GetView().InvertedRT().GetTranslation() - GetRenderingReflectionMirror()->GetGlobalOrigin()) < 0)
+		vecMirrorFace = -vecMirrorFace;
+
+	Plane plSurface(GetRenderingReflectionMirror()->GetGlobalOrigin(), vecMirrorFace);
+	c->SetUniform("vecMirrorPlane", Vector4D(plSurface.n.x, plSurface.n.y, plSurface.n.z, plSurface.d));
+
+	return BaseClass::ModifyShader(pEntity, c);
+}
+
 CFrameBuffer& CGrottoRenderer::GetReflectionBuffer(size_t i)
 {
 	return m_aoReflectionBuffers[i];

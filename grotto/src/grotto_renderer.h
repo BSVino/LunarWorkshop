@@ -21,6 +21,7 @@ public:
 	virtual void	StartRendering(class CRenderingContext* pContext);
 	virtual void	FinishRendering(class CRenderingContext* pContext);
 	virtual void	StartRenderingReflection(class CRenderingContext* pContext, CMirror* pMirror);
+	virtual bool    ModifyShader(const class CBaseEntity* pEntity, class CRenderingContext* c);
 	bool            IsRenderingReflection() const { return !!m_pRenderingReflection; }
 	CMirror*        GetRenderingReflectionMirror() const { return m_pRenderingReflection; }
 
