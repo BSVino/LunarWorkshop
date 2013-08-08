@@ -19,7 +19,8 @@ public:
 	void						CreateGame(const tstring& sRequestedGameType);
 	void						DestroyGame();
 	void						Restart(tstring sGameType);
-	void						ReloadLevel();
+	void						QueueReloadLevel();
+	void                        ReloadLevelNow();
 
 	void						Run();
 	virtual void				PreFrame();
@@ -65,6 +66,7 @@ protected:
 	class CInstructor*          m_pInstructor;
 
 	tstring						m_sRestartGameMode;
+	bool                        m_bReloadLevel;
 };
 
 inline CGameWindow* GameWindow()

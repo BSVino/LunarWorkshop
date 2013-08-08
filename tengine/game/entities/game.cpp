@@ -24,6 +24,7 @@ SAVEDATA_TABLE_BEGIN(CGame);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CGame);
+	INPUT_DEFINE(ReloadLevel);
 	INPUT_DEFINE(LoadLevel);
 INPUTS_TABLE_END();
 
@@ -42,6 +43,11 @@ void CGame::Spawn()
 	BaseClass::Spawn();
 
 	RegisterNetworkFunctions();
+}
+
+void CGame::ReloadLevel(const tvector<tstring>& asArgs)
+{
+	GameWindow()->QueueReloadLevel();
 }
 
 void CGame::LoadLevel(const tvector<tstring>& asArgs)

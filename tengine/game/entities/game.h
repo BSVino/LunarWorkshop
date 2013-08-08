@@ -22,6 +22,7 @@ public:
 
 	virtual void								SetupGame(tstring sType) {};
 
+	DECLARE_ENTITY_INPUT(ReloadLevel);
 	DECLARE_ENTITY_INPUT(LoadLevel);
 
 	virtual void								Simulate() {};

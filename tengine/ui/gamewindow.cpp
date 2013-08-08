@@ -33,6 +33,8 @@ CGameWindow::CGameWindow(int argc, char** argv)
 	m_bHaveLastMouse = false;
 
 	m_pChatBox = nullptr;
+
+	m_bReloadLevel = false;
 }
 
 void CGameWindow::OpenWindow()
@@ -195,12 +197,17 @@ void CGameWindow::DestroyGame()
 
 void ReloadLevel(class CCommand* pCommand, tvector<tstring>& asTokens, const tstring& sCommand)
 {
-	GameWindow()->ReloadLevel();
+	GameWindow()->QueueReloadLevel();
 }
 
 CCommand level_reload("level_reload", ::ReloadLevel);
 
-void CGameWindow::ReloadLevel()
+void CGameWindow::QueueReloadLevel()
+{
+	m_bReloadLevel = true;
+}
+
+void CGameWindow::ReloadLevelNow()
 {
 	GameServer()->SetLoading(true);
 
@@ -222,6 +229,8 @@ void CGameWindow::ReloadLevel()
 	Game()->SetupGame(game_mode.GetValue());
 
 	GameServer()->SetLoading(false);
+
+	m_bReloadLevel = false;
 }
 
 void CGameWindow::Restart(tstring sGameMode)
@@ -243,6 +252,9 @@ void CGameWindow::Run()
 			DestroyGame();
 			CreateGame(m_sRestartGameMode);
 		}
+
+		if (m_bReloadLevel)
+			ReloadLevelNow();
 
 		if (true)
 		{
