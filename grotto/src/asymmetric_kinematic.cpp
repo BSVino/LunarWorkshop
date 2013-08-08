@@ -69,12 +69,12 @@ const TFloat CAsymmetricKinematic::GetBoundingRadius() const
 
 void CAsymmetricKinematic::ModifyContext(class CRenderingContext* pContext) const
 {
-	pContext->SetColor(Color(255, 0, 0));
+	pContext->SetColor(Color(0, 0, 255));
 
 	if (GrottoRenderer()->IsRenderingTransparent())
 	{
 		pContext->SetBlend(BLEND_ALPHA);
-		pContext->SetColor(Color(255, 0, 0, 50));
+		pContext->SetColor(Color(0, 0, 255, 50));
 	}
 
 	BaseClass::ModifyContext(pContext);

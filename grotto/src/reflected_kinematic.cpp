@@ -62,7 +62,7 @@ const TFloat CReflectedKinematic::GetBoundingRadius() const
 
 void CReflectedKinematic::ModifyContext(class CRenderingContext* pContext) const
 {
-	pContext->SetColor(Color(255, 0, 0));
+	pContext->SetColor(Color(0, 0, 255));
 
 	BaseClass::ModifyContext(pContext);
 }
