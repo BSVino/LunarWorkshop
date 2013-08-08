@@ -98,6 +98,7 @@ void CReflectedKinematic::Reflected(Matrix4x4& mNewPlayerLocal)
 const Matrix4x4 CReflectedKinematic::ReflectProperly() const
 {
 	Matrix4x4 mMirror = m_hMirror->GetGlobalTransform();
+	mMirror.SetAngles(EAngle(0, 0, 0));
 	Matrix4x4 mMirrorToLocal = mMirror.InvertedRT();
 	Matrix4x4 mReflection = GetMirror()->GetReflection();
 
@@ -106,12 +107,10 @@ const Matrix4x4 CReflectedKinematic::ReflectProperly() const
 
 	// The physics system can't handle anything that's been reflected.
 	// So, reverse the reflection, and for now we'll only reflect symmetric objects this way.
-	Matrix4x4 mTranslation(EAngle(0, 0, 0), mReflected.GetTranslation());
-	Matrix4x4 mTranslationInverse(EAngle(0, 0, 0), -mReflected.GetTranslation());
-	Matrix4x4 mFixup = mTranslation * mReflection * mTranslationInverse;
+	Matrix4x4 mFixup = mReflected;
+	mFixup.SetAngles(GetGlobalTransform().GetAngles());
 
-	Matrix4x4 mFinal = mFixup * mReflected;
-	return mFinal;
+	return mFixup;
 }
 
 CMirror* CReflectedKinematic::GetMirror() const
