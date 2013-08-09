@@ -6,6 +6,7 @@
 
 #include "grotto_renderer.h"
 #include "receptacle.h"
+#include "grotto_playercharacter.h"
 
 REGISTER_ENTITY(CToken);
 
@@ -37,6 +38,8 @@ void CToken::Precache()
 void CToken::Spawn()
 {
 	m_bReflected = false;
+
+	SetUsable(true);
 }
 
 void CToken::PostLoad()
@@ -48,6 +51,24 @@ void CToken::PostLoad()
 		m_hPostPlaceInReceptacle->SetToken(this);
 		m_hPostPlaceInReceptacle = nullptr;
 	}
+}
+
+void CToken::OnUse(CBaseEntity* pUser)
+{
+	if (!pUser)
+		return;
+
+	CPlayerCharacter* pPlayer = dynamic_cast<CPlayerCharacter*>(pUser);
+	if (!pPlayer)
+		return;
+
+	if (GetReceptacle() && !GetReceptacle()->IsActive())
+		return;
+
+	if (pPlayer->GetToken() != nullptr)
+		pPlayer->DropToken();
+
+	pPlayer->PickUpToken(this);
 }
 
 CReceptacle* CToken::GetReceptacle() const

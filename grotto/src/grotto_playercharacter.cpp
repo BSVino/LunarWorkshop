@@ -68,91 +68,14 @@ CMirror* CPlayerCharacter::GetMirror() const
 	return m_hMirror;
 }
 
-void CPlayerCharacter::FindItems()
+CBaseEntity* CPlayerCharacter::Use()
 {
-	CToken* pToken = NULL;
-	float flTokenRadius = 2.5f;
+	CBaseEntity* pUseItem = BaseClass::Use();
 
-	size_t iMaxEntities = GameServer()->GetMaxEntities();
-	for (size_t j = 0; j < iMaxEntities; j++)
-	{
-		CBaseEntity* pEntity = CBaseEntity::GetEntity(j);
+	if (!pUseItem)
+		DropToken();
 
-		if (!pEntity)
-			continue;
-
-		if (pEntity->IsDeleted())
-			continue;
-
-		if (!pEntity->IsVisible())
-			continue;
-
-		if (pEntity == this)
-			continue;
-
-		if (pEntity == m_hToken)
-			continue;
-
-		// Don't consider objects behind the player.
-		if ((pEntity->GetGlobalOrigin() - GetGlobalOrigin()).Dot(AngleVector(GetViewAngles())) < 0)
-			continue;
-
-		TFloat flRadius = flTokenRadius*flTokenRadius;
-
-		CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pEntity);
-		if (pReceptacle)
-		{
-			if (!pReceptacle->IsActive())
-				continue;
-
-			if ((GetGlobalCenter() - pReceptacle->GetTokenPosition()).LengthSqr() > flRadius)
-				continue;
-
-			if (pReceptacle->GetToken() && m_hToken != nullptr)
-			{
-				pToken = m_hToken;
-				DropToken();
-				CToken* pOther = pReceptacle->GetToken();
-				pReceptacle->SetToken(pToken);
-				PickUpToken(pOther);
-				return;
-			}
-
-			if (!pReceptacle->GetToken() && m_hToken != nullptr)
-			{
-				pToken = m_hToken;
-				DropToken();
-				pReceptacle->SetToken(pToken);
-				return;
-			}
-
-			if (pReceptacle->GetToken() && !m_hToken)
-			{
-				pToken = pReceptacle->GetToken();
-				pReceptacle->SetToken(nullptr);
-				PickUpToken(pToken);
-				return;
-			}
-		}
-
-		pToken = dynamic_cast<CToken*>(pEntity);
-		if (pToken && !pToken->GetReceptacle())
-		{
-			if (pToken->GetReceptacle() && !pToken->GetReceptacle()->IsActive())
-				continue;
-
-			if ((GetGlobalCenter() - pToken->GetGlobalCenter()).LengthSqr() > flRadius)
-				continue;
-
-			if (m_hToken != nullptr)
-				DropToken();
-			PickUpToken(pToken);
-			return;
-		}
-	}
-
-	// If we couldn't find any tokens or receptacles, just drop our token.
-	DropToken();
+	return pUseItem;
 }
 
 void CPlayerCharacter::DropToken()
@@ -164,6 +87,7 @@ void CPlayerCharacter::DropToken()
 	m_hToken->SetGlobalOrigin(GetGlobalOrigin() + AngleVector(GetViewAngles()).Flattened().Normalized() + GetUpVector() * 0.1f);
 	m_hToken->SetGlobalAngles(EAngle(0, GetViewAngles().y, (IsReflected(REFLECTION_VERTICAL)?180.0f:0.0f)));
 	m_hToken->SetVisible(true);
+	m_hToken->SetUsable(true);
 	m_hToken = nullptr;
 }
 
@@ -177,6 +101,7 @@ void CPlayerCharacter::PickUpToken(CToken* pToken)
 	pToken->SetVisible(false);
 	pToken->SetMoveParent(this);
 	pToken->SetLocalOrigin(Vector());
+	pToken->SetUsable(false);
 }
 
 CToken* CPlayerCharacter::GetToken() const

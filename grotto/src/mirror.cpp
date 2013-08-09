@@ -19,6 +19,8 @@ void UnserializeString_MirrorType(const tstring& sData, CSaveData* pSaveData, CB
 SAVEDATA_TABLE_BEGIN(CMirror);
 	SAVEDATA_DEFINE_HANDLE_FUNCTION(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", UnserializeString_MirrorType);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iBuffer);
+	SAVEDATA_DEFINE_HANDLE_ENTITY(CSaveData::DATA_COPYTYPE, CEntityHandle<CBaseEntity>, m_hDragTo, "DragTo");
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecOriginalPosition);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CMirror);
@@ -61,10 +63,23 @@ void CMirror::Spawn()
 	m_ahMirrors.push_back(this);
 }
 
+void CMirror::PostLoad()
+{
+	m_vecOriginalPosition = GetGlobalOrigin();
+
+	BaseClass::PostLoad();
+
+	if (!!m_hDragTo)
+		SetUsable(true);
+}
+
 bool CMirror::ModifyShader(class CRenderingContext* pContext) const
 {
 	if (!pContext->GetActiveShader())
 		return true;
+
+	if (CanDrag() && pContext->GetActiveShader()->m_sName == "model")
+		pContext->SetColor(Color(0, 255, 0));
 
 	if (pContext->GetActiveShader()->m_sName != "reflection")
 		return true;
@@ -238,6 +253,7 @@ NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN_EDITOR(CVerticalMirror);
 	SAVEDATA_EDITOR_VARIABLE("Model");
+	SAVEDATA_EDITOR_VARIABLE("DragTo");
 	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_NETVAR, const char*, m_iModel, "Model", "models/mirror.toy");
 	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", MIRROR_VERTICAL);
 SAVEDATA_TABLE_END();
@@ -253,6 +269,7 @@ NETVAR_TABLE_END();
 
 SAVEDATA_TABLE_BEGIN_EDITOR(CHorizontalMirror);
 	SAVEDATA_EDITOR_VARIABLE("Model");
+	SAVEDATA_EDITOR_VARIABLE("DragTo");
 	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_NETVAR, const char*, m_iModel, "Model", "models/mirror_horizontal.toy");
 	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_COPYTYPE, mirror_t, m_eMirrorType, "MirrorType", MIRROR_HORIZONTAL);
 SAVEDATA_TABLE_END();

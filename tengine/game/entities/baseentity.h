@@ -341,6 +341,17 @@ void entity::RegisterSaveData() \
 		pSaveData->m_bDefault = true; \
 	} \
 
+#define SAVEDATA_DEFINE_DEFAULT(copy, type, name, def) \
+	SAVEDATA_DEFINE_COMMON(copy, type, name) \
+	pSaveData->m_pszHandle = nullptr; \
+	pSaveData->m_pfnUnserializeString = &UnserializeString_##type; \
+	{ \
+		type iDefault = def; \
+		TAssert(sizeof(pSaveData->m_oDefault) >= sizeof(def)); \
+		memcpy(pSaveData->m_oDefault, &iDefault, sizeof(def)); \
+		pSaveData->m_bDefault = true; \
+	} \
+
 #define SAVEDATA_DEFINE(copy, type, name) \
 	SAVEDATA_DEFINE_COMMON(copy, type, name) \
 	pSaveData->m_pszHandle = nullptr; \
@@ -365,6 +376,7 @@ void entity::RegisterSaveData() \
 #define SAVEDATA_DEFINE_HANDLE_ENTITY(copy, type, name, handle) \
 	SAVEDATA_DEFINE_COMMON(copy, type, name) \
 	pSaveData->m_pszHandle = handle; \
+	TAssert(strncmp(#type, "CEntityHandle", 13) == 0); \
 	pSaveData->m_pfnUnserializeString = &UnserializeString_EntityHandle; \
 	memset(pSaveData->m_oDefault, 0, sizeof(type)); \
 
@@ -594,6 +606,9 @@ public:
 	virtual void                            OnUse(CBaseEntity* pUser);
 	DECLARE_ENTITY_INPUT(Use);
 	DECLARE_ENTITY_OUTPUT(OnUsed);
+	void                                    SetUsable(bool bUsable);
+	bool                                    IsUsable() const;
+	const TVector                           GetUsePosition() const { return GetGlobalOrigin(); }
 
 	virtual bool							ShouldRender() const;
 	virtual bool                            ShouldRenderTransparent() const;
@@ -768,6 +783,8 @@ protected:
 
 	size_t									m_iSpawnSeed;
 	CNetworkedVariable<double>				m_flSpawnTime;
+
+	bool                                    m_bUsable;
 
 	CGameEntityData							m_oGameData;
 

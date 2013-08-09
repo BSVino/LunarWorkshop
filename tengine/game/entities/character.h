@@ -94,6 +94,9 @@ public:
 	void                            SetPhysicsTransform(const Matrix4x4& m);
 	void                            OnSetLocalTransform(TMatrix& m);
 
+	virtual CBaseEntity*            Use();
+	virtual CBaseEntity*            FindUseItem() const;
+
 protected:
 	CNetworkedHandle<CPlayer>		m_hControllingPlayer;
 

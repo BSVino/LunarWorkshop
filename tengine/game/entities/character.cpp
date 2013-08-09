@@ -529,3 +529,71 @@ void CCharacter::OnSetLocalTransform(TMatrix& m)
 
 	TAssert((GetParentGlobalTransform()*m).GetUpVector().Equals(GetUpVector(), 0.0001f));
 }
+
+CBaseEntity* CCharacter::Use()
+{
+	CBaseEntity* pUseItem = FindUseItem();
+
+	if (pUseItem)
+		pUseItem->Use(this);
+
+	return pUseItem;
+}
+
+CBaseEntity* CCharacter::FindUseItem() const
+{
+	CBaseEntity* pItem = nullptr;
+	float flItemDistance = 0;
+
+	float flUseRadius = 3;
+
+	Vector vecEye = GetGlobalOrigin() + GetUpVector() * EyeHeight();
+
+	size_t iMaxEntities = GameServer()->GetMaxEntities();
+	for (size_t j = 0; j < iMaxEntities; j++)
+	{
+		CBaseEntity* pEntity = CBaseEntity::GetEntity(j);
+
+		if (!pEntity)
+			continue;
+
+		if (pEntity->IsDeleted())
+			continue;
+
+		if (!pEntity->IsVisible())
+			continue;
+
+		if (!pEntity->IsUsable())
+			continue;
+
+		if (!pEntity->IsActive())
+			continue;
+
+		if (pEntity == this)
+			continue;
+
+		// Don't consider objects behind the player.
+		if ((pEntity->GetGlobalOrigin() - GetGlobalOrigin()).Dot(AngleVector(GetViewAngles())) < 0)
+			continue;
+
+		if ((vecEye - pEntity->GetUsePosition()).LengthSqr() > flUseRadius*flUseRadius)
+			continue;
+
+		if (!pItem)
+		{
+			pItem = pEntity;
+			flItemDistance = DistanceToLine(pEntity->GetGlobalOrigin(), vecEye, vecEye + AngleVector(pEntity->GetViewAngles()));
+			continue;
+		}
+
+		float flEntityDistance = DistanceToLine(pEntity->GetGlobalOrigin(), vecEye, vecEye + AngleVector(pEntity->GetViewAngles()));
+
+		if (flEntityDistance < flItemDistance)
+		{
+			pItem = pEntity;
+			flItemDistance = flEntityDistance;
+		}
+	}
+
+	return pItem;
+}

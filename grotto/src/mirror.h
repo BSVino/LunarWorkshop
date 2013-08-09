@@ -22,6 +22,7 @@ public:
 public:
 	void				Precache();
 	void				Spawn();
+	void                PostLoad();
 
 	bool                ModifyShader(class CRenderingContext* pContext) const;
 
@@ -42,12 +43,17 @@ public:
 	void				SetBuffer(size_t i) { m_iBuffer = i; }
 	size_t				GetBuffer() const { return m_iBuffer; }
 
+	bool                CanDrag() const { return !!m_hDragTo; }
+
 	static size_t		GetNumMirrors() { return m_ahMirrors.size(); };
 	static CMirror*		GetMirror(size_t i) { return m_ahMirrors[i]; };
 
 protected:
 	mirror_t			m_eMirrorType;
 	size_t				m_iBuffer;
+
+	CEntityHandle<CBaseEntity> m_hDragTo;
+	Vector                     m_vecOriginalPosition;
 
 	static tvector<CEntityHandle<CMirror> >	m_ahMirrors;
 };

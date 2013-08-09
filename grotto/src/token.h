@@ -17,6 +17,8 @@ public:
 	void				Spawn();
 	void                PostLoad();
 
+	void                OnUse(CBaseEntity* pUser);
+
 	CReceptacle*		GetReceptacle() const;
 
 	virtual void		ModifyContext(class CRenderingContext* pContext) const;

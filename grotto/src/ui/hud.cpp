@@ -87,100 +87,49 @@ void CGrottoHUD::Paint(float x, float y, float w, float h)
 
 	int iKey = TranslateKeyFromQwerty('E');
 
-	float flTokenRadius = 2.5f;
-	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
+	CBaseEntity* pUseItem = pPlayerCharacter->FindUseItem();
+
+	CMomento* pMomento = dynamic_cast<CMomento*>(pUseItem);
+	if (pMomento)
 	{
-		CBaseEntity* pEntity = CBaseEntity::GetEntity(i);
-		if (!pEntity)
-			continue;
+		Vector vecScreen = GameServer()->GetRenderer()->ScreenPosition(pMomento->GetGlobalOrigin()) + Vector(30, 0, 0);
 
-		if (!pEntity)
-			continue;
-
-		if (pEntity->IsDeleted())
-			continue;
-
-		if (!pEntity->IsVisible())
-			continue;
-
-		if (pEntity == pPlayerCharacter)
-			continue;
-
-		if (pEntity == pPlayerCharacter->GetToken())
-			continue;
-
-		// Don't consider objects behind the player.
-		if ((pEntity->GetGlobalOrigin() - pPlayerCharacter->GetGlobalOrigin()).Dot(AngleVector(pPlayerCharacter->GetViewAngles())) < 0)
-			continue;
-
-		TFloat flRadius = flTokenRadius*flTokenRadius;
-
-		CMomento* pMomento = dynamic_cast<CMomento*>(pEntity);
-		if (pMomento)
+		if (vecScreen.x > 100 && vecScreen.y > 100 && vecScreen.x < GetWidth()-100 && vecScreen.y < GetHeight()-100)
 		{
-			if (!GameServer()->GetRenderer()->IsSphereInFrustum(pMomento->GetGlobalOrigin(), pMomento->GetBoundingRadius()))
-				continue;
-
-			if (pMomento->GetGlobalOrigin().DistanceSqr(pPlayerCharacter->GetGlobalCenter()) > flRadius)
-				continue;
-
-			Vector vecScreen = GameServer()->GetRenderer()->ScreenPosition(pMomento->GetGlobalOrigin()) + Vector(30, 0, 0);
-
-			if (vecScreen.x < 100)
-				continue;
-			if (vecScreen.y < 100)
-				continue;
-			if (vecScreen.x > GetWidth()-100)
-				continue;
-			if (vecScreen.y > GetHeight()-100)
-				continue;
-
 			tstring sTip = pMomento->GetMomentoName();
 			float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
 			float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
 			glgui::CBaseControl::PaintRect(vecScreen.x - 5, vecScreen.y - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 1);
 			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, vecScreen.x, vecScreen.y);
-
-			continue;
 		}
+	}
 
-		CToken* pToken = dynamic_cast<CToken*>(pEntity);
-		if (pToken)
+	CToken* pToken = dynamic_cast<CToken*>(pUseItem);
+	if (pToken)
+	{
+		if (pPlayerCharacter->GetToken())
 		{
-			if ((pPlayerCharacter->GetGlobalCenter() - pEntity->GetGlobalCenter()).LengthSqr() > flRadius)
-				continue;
-
-			if (pToken->GetReceptacle() && !pToken->GetReceptacle()->IsActive())
-				continue;
-
-			if (pPlayerCharacter->GetToken())
-			{
-				tstring sTip = sprintf("%c - Swap", iKey);
-				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
-				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
-				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
-			}
-			else
-			{
-				tstring sTip = sprintf("%c - Pick up", iKey);
-				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
-				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
-				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
-			}
-			break;
+			tstring sTip = sprintf("%c - Swap", iKey);
+			float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
+			float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
+			glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
+			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 		}
-
-		CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pEntity);
-		if (pReceptacle && pPlayerCharacter->GetToken() && pReceptacle->IsTokenValid(pPlayerCharacter->GetToken()))
+		else
 		{
-			if (!pReceptacle->IsActive())
-				continue;
+			tstring sTip = sprintf("%c - Pick up", iKey);
+			float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
+			float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
+			glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
+			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
+		}
+	}
 
-			if ((pPlayerCharacter->GetGlobalCenter() - pReceptacle->GetTokenPosition()).LengthSqr() > flRadius)
-				continue;
-
+	CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pUseItem);
+	if (pReceptacle)
+	{
+		if (pPlayerCharacter->GetToken() && pReceptacle->IsTokenValid(pPlayerCharacter->GetToken()))
+		{
 			if (pReceptacle->GetToken())
 			{
 				tstring sTip = sprintf("%c - Swap", iKey);
@@ -197,8 +146,28 @@ void CGrottoHUD::Paint(float x, float y, float w, float h)
 				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
 				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 			}
-			break;
 		}
+		else
+		{
+			if (pReceptacle->GetToken())
+			{
+				tstring sTip = sprintf("%c - Pick up", iKey);
+				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
+				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
+				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
+				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
+			}
+		}
+	}
+
+	CMirror* pMirror = dynamic_cast<CMirror*>(pUseItem);
+	if (pMirror)
+	{
+		tstring sTip = sprintf("%c - Grab", iKey);
+		float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
+		float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
+		glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
+		glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
 	}
 }
 

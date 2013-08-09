@@ -19,7 +19,7 @@ public:
 
 	CMirror*					GetMirror() const;
 
-	void						FindItems();
+	CBaseEntity*                Use();
 	void						DropToken();
 	void						PickUpToken(CToken* pToken);
 	CToken*						GetToken() const;

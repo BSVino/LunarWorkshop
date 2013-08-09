@@ -64,9 +64,6 @@ void CGrottoPlayer::KeyPress(int c)
 	if (m_hCharacter == NULL)
 		return;
 
-	if (c == 'E')
-		GetPlayerCharacter()->FindItems();
-
 	if (c == '1')
 		m_eCurrentMirror = MIRROR_VERTICAL;
 	if (c == '2')
@@ -77,12 +74,6 @@ void CGrottoPlayer::KeyPress(int c)
 
 void CGrottoPlayer::JoystickButtonPress(int iJoystick, int c)
 {
-	if (c == TINKER_KEY_JOYSTICK_1)
-	{
-		GetPlayerCharacter()->FindItems();
-		return;
-	}
-
 	BaseClass::JoystickButtonPress(iJoystick, c);
 }
 

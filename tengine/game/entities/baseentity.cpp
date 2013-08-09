@@ -133,6 +133,7 @@ SAVEDATA_TABLE_BEGIN(CBaseEntity);
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bDisableBackCulling, "DisableBackCulling", false);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iSpawnSeed);
 	SAVEDATA_DEFINE(CSaveData::DATA_NETVAR, double, m_flSpawnTime);
+	SAVEDATA_DEFINE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bUsable, false);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CBaseEntity);
@@ -236,12 +237,9 @@ void CBaseEntity::SetSaveDataDefaults()
 			if (!pSaveData->m_bDefault)
 				continue;
 
-			if (!pSaveData->m_pszHandle || pSaveData->m_pszHandle[0] == '\0')
-				continue;
-
 			char* pDefault = &pSaveData->m_oDefault[0];
 
-			if (pSaveData->m_bOverride)
+			if (pSaveData->m_bOverride && pSaveData->m_pszHandle && pSaveData->m_pszHandle[0])
 			{
 				size_t j = k;
 				while (!pSaveData->m_iOffset && j < asParents.size())
@@ -1004,6 +1002,16 @@ void CBaseEntity::OnUse(CBaseEntity* pUser)
 void CBaseEntity::Use(const tvector<tstring>& sArgs)
 {
 	Use(nullptr);
+}
+
+void CBaseEntity::SetUsable(bool bUsable)
+{
+	m_bUsable = bUsable;
+}
+
+bool CBaseEntity::IsUsable() const
+{
+	return m_bUsable;
 }
 
 bool CBaseEntity::ShouldRender() const

@@ -105,6 +105,9 @@ void CPlayer::KeyPress(int c)
 
 	if (c == ' ')
 		m_hCharacter->Jump();
+
+	if (c == 'E')
+		m_hCharacter->Use();
 }
 
 void CPlayer::KeyRelease(int c)
@@ -124,6 +127,9 @@ void CPlayer::KeyRelease(int c)
 
 void CPlayer::JoystickButtonPress(int iJoystick, int c)
 {
+	if (c == TINKER_KEY_JOYSTICK_1)
+		m_hCharacter->Use();
+
 	if (c == TINKER_KEY_JOYSTICK_2)
 		m_hCharacter->Jump();
 }

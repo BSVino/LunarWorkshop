@@ -14,10 +14,13 @@ public:
 
 	virtual bool			IsTokenValid(const CToken* pToken) const;
 
+	void                    OnUse(CBaseEntity* pUser);
+
 	void					SetToken(CToken* pToken);
 	CToken*					GetToken() const { return m_hToken; }
 
-	Vector					GetTokenPosition();
+	Vector					GetTokenPosition() const;
+	const TVector           GetUsePosition() const { return GetTokenPosition(); }
 
 	collision_group_t       GetCollisionGroup() const { return CG_STATIC; }
 

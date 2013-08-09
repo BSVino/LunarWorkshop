@@ -4,6 +4,7 @@
 #include <tinker/application.h>
 
 #include "token.h"
+#include "grotto_playercharacter.h"
 
 REGISTER_ENTITY(CReceptacle);
 
@@ -45,6 +46,8 @@ void CReceptacle::Spawn()
 	AddToPhysics(CT_KINEMATIC);
 
 	m_mTokenOffset = TMatrix(EAngle(40, 0, 0), Vector(0, 0, 0.742105f));
+
+	SetUsable(true);
 }
 
 bool CReceptacle::IsTokenValid(const CToken* pToken) const
@@ -59,6 +62,42 @@ bool CReceptacle::IsTokenValid(const CToken* pToken) const
 		return false;
 
 	return true;
+}
+
+void CReceptacle::OnUse(CBaseEntity* pUser)
+{
+	if (!pUser)
+		return;
+
+	CPlayerCharacter* pPlayer = dynamic_cast<CPlayerCharacter*>(pUser);
+	if (!pPlayer)
+		return;
+
+	CToken* pPlayerToken = pPlayer->GetToken();
+	if (GetToken() && pPlayerToken)
+	{
+		pPlayer->DropToken();
+		CToken* pOther = GetToken();
+		SetToken(pPlayerToken);
+		pPlayer->PickUpToken(pOther);
+		return;
+	}
+
+	if (!GetToken() && pPlayerToken)
+	{
+		pPlayer->DropToken();
+		SetToken(pPlayerToken);
+		pPlayerToken->SetUsable(false);
+		return;
+	}
+
+	if (GetToken() && !pPlayerToken)
+	{
+		CToken* pToken = GetToken();
+		SetToken(nullptr);
+		pPlayer->PickUpToken(pToken);
+		return;
+	}
 }
 
 void CReceptacle::SetToken(CToken* pToken)
@@ -79,7 +118,10 @@ void CReceptacle::SetToken(CToken* pToken)
 	}
 
 	if (m_hToken != nullptr)
+	{
 		m_hToken->m_hReceptacle = nullptr;
+		m_hToken->SetUsable(true);
+	}
 
 	m_hToken = pToken;
 
@@ -89,6 +131,7 @@ void CReceptacle::SetToken(CToken* pToken)
 	pToken->SetMoveParent(this);
 	pToken->SetLocalTransform(m_mTokenOffset);
 	pToken->m_hReceptacle = this;
+	pToken->SetUsable(false);
 
 	if (IsTokenValid(pToken))
 	{
@@ -100,7 +143,7 @@ void CReceptacle::SetToken(CToken* pToken)
 	}
 }
 
-Vector CReceptacle::GetTokenPosition()
+Vector CReceptacle::GetTokenPosition() const
 {
 	return (GetGlobalTransform() * m_mTokenOffset).GetTranslation();
 }
