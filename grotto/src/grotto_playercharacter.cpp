@@ -17,6 +17,9 @@ NETVAR_TABLE_END();
 SAVEDATA_TABLE_BEGIN(CPlayerCharacter);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CMirror>, m_hMirror);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CToken>, m_hToken);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CMirror>, m_hDraggingMirror);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecDraggingPlayerStart);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecDraggingMirrorStart);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CPlayerCharacter);
@@ -37,6 +40,20 @@ void CPlayerCharacter::Spawn()
 
 	m_hCamera = GameServer()->Create<CCharacterCamera>("CGrottoCamera");
 	m_hCamera->SetCharacter(this);
+}
+
+void CPlayerCharacter::Think()
+{
+	BaseClass::Think();
+
+	if (!!m_hDraggingMirror)
+	{
+		Vector vecNewPosition = GetGlobalOrigin() + (m_vecDraggingMirrorStart - m_vecDraggingPlayerStart);
+		m_hDraggingMirror->SetDragLocation(vecNewPosition);
+
+		if ((m_hDraggingMirror->GetGlobalOrigin() - GetGlobalOrigin()).Length() > 3)
+			ReleaseMirror();
+	}
 }
 
 void CPlayerCharacter::PlaceMirror(mirror_t eMirror)
@@ -124,4 +141,29 @@ void CPlayerCharacter::Reflected(reflection_t eReflectionType)
 
 		pKaleidobeast->LosePlayer();
 	}
+
+	ReleaseMirror();
+}
+
+bool CPlayerCharacter::DraggingMirror() const
+{
+	return !!m_hDraggingMirror;
+}
+
+void CPlayerCharacter::DragMirror(CMirror* pMirror)
+{
+	if (!pMirror)
+	{
+		ReleaseMirror();
+		return;
+	}
+
+	m_hDraggingMirror = pMirror;
+	m_vecDraggingPlayerStart = GetGlobalOrigin();
+	m_vecDraggingMirrorStart = pMirror->GetGlobalOrigin();
+}
+
+void CPlayerCharacter::ReleaseMirror()
+{
+	m_hDraggingMirror = nullptr;
 }

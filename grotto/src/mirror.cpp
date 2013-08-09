@@ -8,6 +8,7 @@
 #include "grotto_renderer.h"
 #include "grotto_game.h"
 #include "grotto_character.h"
+#include "grotto_playercharacter.h"
 
 REGISTER_ENTITY(CMirror);
 
@@ -233,6 +234,32 @@ const Vector CMirror::GetMirrorFace() const
 Matrix4x4 CMirror::GetReflection() const
 {
 	return Matrix4x4().AddReflection(GetMirrorFace());
+}
+
+void CMirror::OnUse(CBaseEntity* pUser)
+{
+	if (!pUser)
+		return;
+
+	CPlayerCharacter* pPlayer = dynamic_cast<CPlayerCharacter*>(pUser);
+	if (!pPlayer)
+		return;
+
+	if (pPlayer->DraggingMirror())
+		pPlayer->ReleaseMirror();
+	else
+		pPlayer->DragMirror(this);
+}
+
+void CMirror::SetDragLocation(const Vector& vecLocation)
+{
+	Vector vecDragEnd = m_hDragTo->GetGlobalOrigin();
+	vecDragEnd.z = m_vecOriginalPosition.z;
+
+	Vector vecClosest;
+	DistanceToLineSegment(vecLocation, m_vecOriginalPosition, vecDragEnd, &vecClosest);
+
+	SetGlobalOrigin(vecClosest);
 }
 
 void UnserializeString_MirrorType(const tstring& sData, CSaveData* pSaveData, CBaseEntity* pEntity)

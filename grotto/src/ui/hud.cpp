@@ -108,21 +108,9 @@ void CGrottoHUD::Paint(float x, float y, float w, float h)
 	if (pToken)
 	{
 		if (pPlayerCharacter->GetToken())
-		{
-			tstring sTip = sprintf("%c - Swap", iKey);
-			float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
-			float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-			glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
-			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
-		}
+			PaintHintText(sprintf("%c - Swap", iKey));
 		else
-		{
-			tstring sTip = sprintf("%c - Pick up", iKey);
-			float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
-			float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-			glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
-			glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
-		}
+			PaintHintText(sprintf("%c - Pick up", iKey));
 	}
 
 	CReceptacle* pReceptacle = dynamic_cast<CReceptacle*>(pUseItem);
@@ -131,44 +119,33 @@ void CGrottoHUD::Paint(float x, float y, float w, float h)
 		if (pPlayerCharacter->GetToken() && pReceptacle->IsTokenValid(pPlayerCharacter->GetToken()))
 		{
 			if (pReceptacle->GetToken())
-			{
-				tstring sTip = sprintf("%c - Swap", iKey);
-				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
-				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
-				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
-			}
+				PaintHintText(sprintf("%c - Swap", iKey));
 			else
-			{
-				tstring sTip = sprintf("%c - Place", iKey);
-				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
-				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
-				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
-			}
+				PaintHintText(sprintf("%c - Place", iKey));
 		}
 		else
 		{
 			if (pReceptacle->GetToken())
-			{
-				tstring sTip = sprintf("%c - Pick up", iKey);
-				float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
-				float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-				glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
-				glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
-			}
+				PaintHintText(sprintf("%c - Pick up", iKey));
 		}
 	}
 
 	CMirror* pMirror = dynamic_cast<CMirror*>(pUseItem);
 	if (pMirror)
 	{
-		tstring sTip = sprintf("%c - Grab", iKey);
-		float flTextWidth = glgui::CLabel::GetTextWidth(sTip, sTip.length(), "sans-serif", 18);
-		float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
-		glgui::CBaseControl::PaintRect(w/2+200 - 5, h/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
-		glgui::CLabel::PaintText(sTip, sTip.length(), "sans-serif", 18, w/2+200, h/2);
+		if (pPlayerCharacter->DraggingMirror())
+			PaintHintText(sprintf("%c - Release", iKey));
+		else
+			PaintHintText(sprintf("%c - Grab", iKey));
 	}
+}
+
+void CGrottoHUD::PaintHintText(const tstring& sHint)
+{
+	float flTextWidth = glgui::CLabel::GetTextWidth(sHint, sHint.length(), "sans-serif", 18);
+	float flFontHeight = glgui::CLabel::GetFontHeight("sans-serif", 18);
+	glgui::CBaseControl::PaintRect(GetWidth()/2+200 - 5, GetHeight()/2 - 5, flTextWidth + 10, flFontHeight + 10, Color(50, 50, 50, 150), 2);
+	glgui::CLabel::PaintText(sHint, sHint.length(), "sans-serif", 18, GetWidth()/2+200, GetHeight()/2);
 }
 
 bool CGrottoHUD::KeyPressed(int code, bool bCtrlDown)

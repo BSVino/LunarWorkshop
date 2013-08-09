@@ -14,6 +14,8 @@ public:
 public:
 	virtual void	Paint(float x, float y, float w, float h);
 
+	void            PaintHintText(const tstring& sText);
+
 	virtual bool	KeyPressed(int code, bool bCtrlDown = false);
 
 protected:

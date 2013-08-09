@@ -40,6 +40,9 @@ public:
 	const Vector        GetMirrorFace() const;
 	Matrix4x4			GetReflection() const;
 
+	void                OnUse(CBaseEntity* pUser);
+	void                SetDragLocation(const Vector& vecDragLocation);
+
 	void				SetBuffer(size_t i) { m_iBuffer = i; }
 	size_t				GetBuffer() const { return m_iBuffer; }
 
