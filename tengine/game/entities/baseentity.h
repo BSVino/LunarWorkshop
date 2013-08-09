@@ -607,7 +607,7 @@ public:
 	DECLARE_ENTITY_INPUT(Use);
 	DECLARE_ENTITY_OUTPUT(OnUsed);
 	void                                    SetUsable(bool bUsable);
-	bool                                    IsUsable() const;
+	virtual bool                            IsUsable(const CBaseEntity* pUser) const;
 	const TVector                           GetUsePosition() const { return GetGlobalOrigin(); }
 
 	virtual bool							ShouldRender() const;

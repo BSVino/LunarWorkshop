@@ -17,6 +17,7 @@ public:
 	void				Spawn();
 	void                PostLoad();
 
+	bool                IsUsable(const CBaseEntity* pUser) const;
 	void                OnUse(CBaseEntity* pUser);
 
 	CReceptacle*		GetReceptacle() const;
@@ -36,4 +37,5 @@ protected:
 	CEntityHandle<CReceptacle>  m_hPostPlaceInReceptacle;
 	bool				m_bReflected;
 	tstring				m_sType;
+	bool                m_bMustMatchUpVector;
 };

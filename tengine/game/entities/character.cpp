@@ -563,7 +563,7 @@ CBaseEntity* CCharacter::FindUseItem() const
 		if (!pEntity->IsVisible())
 			continue;
 
-		if (!pEntity->IsUsable())
+		if (!pEntity->IsUsable(this))
 			continue;
 
 		if (!pEntity->IsActive())

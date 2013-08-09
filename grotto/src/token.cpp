@@ -20,8 +20,10 @@ SAVEDATA_TABLE_BEGIN_EDITOR(CToken);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, CEntityHandle<CReceptacle>, m_hPostPlaceInReceptacle);
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_COPYTYPE, bool, m_bReflected, "Reflected");
 	SAVEDATA_DEFINE_HANDLE(CSaveData::DATA_STRING, tstring, m_sType, "TokenType");
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bMustMatchUpVector, "MustMatchUpVector", false);
 	SAVEDATA_EDITOR_VARIABLE("Receptacle");
 	SAVEDATA_EDITOR_VARIABLE("Reflected");
+	SAVEDATA_EDITOR_VARIABLE("MustMatchUpVector");
 	SAVEDATA_EDITOR_VARIABLE("TokenType");
 	SAVEDATA_EDITOR_VARIABLE("Model");
 	SAVEDATA_OVERRIDE_DEFAULT(CSaveData::DATA_NETVAR, const char*, m_iModel, "Model", "models/powersource.toy");
@@ -53,6 +55,14 @@ void CToken::PostLoad()
 	}
 }
 
+bool CToken::IsUsable(const CBaseEntity* pUser) const
+{
+	if (m_bMustMatchUpVector && pUser->GetUpVector().Dot(GetGlobalTransform().GetUpVector()) < 0)
+		return false;
+
+	return BaseClass::IsUsable(pUser);
+}
+
 void CToken::OnUse(CBaseEntity* pUser)
 {
 	if (!pUser)
@@ -63,6 +73,9 @@ void CToken::OnUse(CBaseEntity* pUser)
 		return;
 
 	if (GetReceptacle() && !GetReceptacle()->IsActive())
+		return;
+
+	if (m_bMustMatchUpVector && pPlayer->GetUpVector().Dot(GetGlobalTransform().GetUpVector()) < 0)
 		return;
 
 	if (pPlayer->GetToken() != nullptr)

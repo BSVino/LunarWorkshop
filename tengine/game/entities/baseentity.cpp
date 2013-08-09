@@ -1009,7 +1009,7 @@ void CBaseEntity::SetUsable(bool bUsable)
 	m_bUsable = bUsable;
 }
 
-bool CBaseEntity::IsUsable() const
+bool CBaseEntity::IsUsable(const CBaseEntity* pUser) const
 {
 	return m_bUsable;
 }
