@@ -40,5 +40,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	target_link_libraries(toybuilder ${FREETYPE_LIBRARIES} ${LIBXML2_LIBRARIES})
 	target_link_libraries(toybuilder ${CMAKE_SOURCE_DIR}/../ext-deps/fcolladaCE/FCollada/libfcollada.so)
 	target_link_libraries(toybuilder ${CMAKE_SOURCE_DIR}/../ext-deps/fcolladaCE/FColladaPlugins/FArchiveXML/libfarchivexml.so)
+	target_link_libraries(toybuilder ${CMAKE_SOURCE_DIR}/../ext-deps/protobuf-2.5.0/src/.libs/libprotobuf.a)
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 

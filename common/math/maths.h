@@ -18,6 +18,9 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 #ifndef LW_MATHS_H
 #define LW_MATHS_H
 
+// For min/max
+#include <algorithm>
+
 // Generic math functions
 #include <math.h>
 #include <string.h>

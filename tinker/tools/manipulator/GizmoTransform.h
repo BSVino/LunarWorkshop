@@ -29,6 +29,8 @@
 #ifndef GIZMOTRANSFORM_H__
 #define GIZMOTRANSFORM_H__
 
+#include <float.h>
+
 #include "GizmoTransformRender.h"
 #include "IGizmo.h"
 

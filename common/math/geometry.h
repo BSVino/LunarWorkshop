@@ -297,6 +297,7 @@ inline void TemplateAABB<F>::Expand(const TemplateVector<F>& vecNew)
 	}
 }
 
+template<>
 inline AABB AABB::operator+(const AABB& oBox) const
 {
 	AABB r(*this);
@@ -307,6 +308,7 @@ inline AABB AABB::operator+(const AABB& oBox) const
 	return r;
 }
 
+template<>
 inline AABB AABB::operator*(float s) const
 {
 	AABB r(*this);
@@ -317,11 +319,13 @@ inline AABB AABB::operator*(float s) const
 	return r;
 }
 
+template<>
 inline bool AABB::operator==(const AABB& o) const
 {
 	return (m_vecMins == o.m_vecMins) && (m_vecMaxs == o.m_vecMaxs);
 }
 
+template<>
 inline AABB& AABB::operator+=(const Vector& v)
 {
 	m_vecMaxs += v;
@@ -748,7 +752,7 @@ inline bool ClipRay(float flMin, float flMax, float a, float d, float& tmin, flo
 	return (tmax>tmin);
 }
 
-inline bool RayIntersectsAABB(const Ray& r, const AABB& b, Vector& vecIntersection = Vector())
+inline bool RayIntersectsAABB(const Ray& r, const AABB& b, Vector& vecIntersection)
 {
 	float tmin = 0;
 	float tmax = b.Size().LengthSqr();	// It's a ray so make tmax effectively infinite.
@@ -771,6 +775,12 @@ inline bool RayIntersectsAABB(const Ray& r, const AABB& b, Vector& vecIntersecti
 	vecIntersection = r.m_vecPos + r.m_vecDir * tmin;
 
 	return true;
+}
+
+inline bool RayIntersectsAABB(const Ray& r, const AABB& b)
+{
+    Vector vecIntersection;
+    RayIntersectsAABB(r, b, vecIntersection);
 }
 
 template <class F>

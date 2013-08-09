@@ -121,7 +121,7 @@ inline char* GetCurrentDirectory(int bufLength, char *pszDest)
 
 #endif
 
-#ifdef LINUX
+#ifdef __linux__
 #include <pthread.h>
 
 typedef pthread_mutex_t ZCriticalSection_t;

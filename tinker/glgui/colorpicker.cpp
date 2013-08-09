@@ -224,7 +224,7 @@ bool CColorPicker::Update(int x, int y)
 
 	float flTan = atan2(vecFromCenter.y, -vecFromCenter.x);
 
-	m_flHue = RemapVal(flTan, -M_PI, M_PI, 0, 360);
+	m_flHue = RemapVal(flTan, (float)-M_PI, (float)M_PI, 0.0f, 360.0f);
 	m_flSaturation = sqrt(flDistanceSqr)/flRadius;
 
 	m_clrRGB.SetHSL(m_flHue, m_flSaturation, m_flLightness);

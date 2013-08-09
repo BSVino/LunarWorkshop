@@ -71,18 +71,18 @@ public:
 		m_pIgnore = pIgnore;
 	}
 
-	virtual btScalar addSingleResult(btManifoldPoint& cp,	const btCollisionObject* colObj0,int partId0,int index0,const btCollisionObject* colObj1,int partId1,int index1)
+	virtual btScalar addSingleResult(btManifoldPoint& cp,	const btCollisionObjectWrapper* colObj0,int partId0,int index0,const btCollisionObjectWrapper* colObj1,int partId1,int index1)
 	{
-		if (colObj0 == m_pIgnore)
+		if (colObj0->getCollisionObject() == m_pIgnore)
 			return 1.0;
 
-		if (colObj1 == m_pIgnore)
+		if (colObj1->getCollisionObject() == m_pIgnore)
 			return 1.0;
 
 		CTraceResult::CTraceHit& th = m_tr.m_aHits.push_back();
 
 		th.m_flFraction = cp.getDistance();
-		th.m_iHit = (size_t)colObj1->getUserPointer();
+		th.m_iHit = (size_t)colObj1->getCollisionObject()->getUserPointer();
 		th.m_vecHit = ToTVector(cp.getPositionWorldOnB());
 
 		if (th.m_flFraction < m_tr.m_flFraction)

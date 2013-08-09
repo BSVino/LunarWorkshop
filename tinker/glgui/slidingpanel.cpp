@@ -39,7 +39,7 @@ bool CSlidingPanel::CInnerPanel::IsVisible()
 	return CPanel::IsVisible();
 }
 
-CSlidingPanel::CSlidingPanel(CControl<CSlidingContainer> hParent, char* pszTitle)
+CSlidingPanel::CSlidingPanel(CControl<CSlidingContainer> hParent, const char* pszTitle)
 	: CPanel(0, 0, 100, 5)
 {
 	SetBorder(BT_SOME);

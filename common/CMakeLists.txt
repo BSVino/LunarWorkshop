@@ -1,6 +1,7 @@
 include_directories (
 	${PROJECT_SOURCE_DIR}/../ext-deps/EASTL/include
 	${PROJECT_SOURCE_DIR}/../ext-deps/protobuf-2.5.0/vsprojects/include
+	${PROJECT_SOURCE_DIR}/../ext-deps/protobuf-2.5.0/src
 	../
 	../common
 	math

@@ -75,6 +75,17 @@ public:
 
 		return *this;
 	}
+
+	CResource& operator=(const CResource& c)
+	{
+		if (&c == this)
+			return *this;
+
+		CResource p(c);
+		p.swap(*this);
+
+		return *this;
+	}
 };
 
 template<class C>

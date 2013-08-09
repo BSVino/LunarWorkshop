@@ -35,7 +35,6 @@ public:
 	Vector					PositionFromMouse();
 	Vector                  DirectionFromMouse();
 	size_t                  TraceLine(const Ray& vecTrace);
-	bool                    TraceBox(const Ray& vecTrace, const AABB& aabbTrace, Vector& vecHit = Vector());
 	void					EntitySelected();
 	void					CreateEntityFromPanel(const Vector& vecPosition);
 	static void				PopulateLevelEntityFromPanel(class CLevelEntity* pEntity, class CEntityPropertiesPanel* pPanel);

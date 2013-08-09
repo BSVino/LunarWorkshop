@@ -48,7 +48,7 @@ public:
 public:
 	void erase_value(const T& value)
 	{
-		erase(remove(begin(), end(), value), end());
+		erase(remove(tvector<T>::begin(), tvector<T>::end(), value), tvector<T>::end());
 	}
 
 #ifndef WITH_EASTL

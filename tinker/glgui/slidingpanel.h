@@ -40,7 +40,7 @@ namespace glgui
 		};
 
 	public:
-									CSlidingPanel(CControl<CSlidingContainer> hParent, char* pszTitle);
+									CSlidingPanel(CControl<CSlidingContainer> hParent, const char* pszTitle);
 
 	public:
 		virtual void				Layout();

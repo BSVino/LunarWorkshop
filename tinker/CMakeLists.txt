@@ -91,7 +91,7 @@ target_link_libraries(tinker lwbase)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set (CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECTUABLE} -static-libgcc")
-	target_link_libraries (tinker /usr/lib/libc.a)
+	#target_link_libraries (tinker /usr/lib/libc.a)
 	target_link_libraries (tinker ${FREETYPE_LIBRARIES})
 	target_link_libraries (tinker X11 Xrandr GL GLU)
 	target_link_libraries (tinker ${CMAKE_SOURCE_DIR}/../ext-deps/ftgl-gl3/src/libftgl-gl3.a)

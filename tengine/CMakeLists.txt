@@ -8,6 +8,7 @@ include_directories (
 	${PROJECT_SOURCE_DIR}/../ext-deps/enet-1.3.0/include
 	${PROJECT_SOURCE_DIR}/../ext-deps/enet-1.3.3/include
 	${PROJECT_SOURCE_DIR}/../ext-deps/protobuf-2.5.0/vsprojects/include
+	${PROJECT_SOURCE_DIR}/../ext-deps/protobuf-2.5.0/src
 	${CMAKE_SOURCE_DIR}/
 	${CMAKE_SOURCE_DIR}/common
 	${CMAKE_SOURCE_DIR}/common/math
@@ -23,6 +24,10 @@ if (WIN32)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/SDL_mixer-1.2.11/include)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/src)
 endif (WIN32)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.81/src)
+endif ()
 
 set (TENGINE_GAME_SOURCES
 	game/cameramanager.cpp
@@ -199,5 +204,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	target_link_libraries (tengine /usr/lib/libpng.a)
 	target_link_libraries (tengine /usr/lib/libz.a)
 	target_link_libraries (tengine SDL SDL_mixer)
+	target_link_libraries (tengine ${CMAKE_SOURCE_DIR}/../ext-deps/protobuf-2.5.0/src/.libs/libprotobuf.a)
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 

@@ -130,7 +130,7 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	BeginRenderVertexArray(pModel->m_aiVertexBuffers[iMaterial]);
 	if (pModel->m_pToy)
 	{
-		SetPositionBuffer(0u, pModel->m_pToy->GetVertexSizeInBytes(iMaterial));
+		SetPositionBuffer((size_t)0u, pModel->m_pToy->GetVertexSizeInBytes(iMaterial));
 		if (pModel->m_pToy->GetVertexUVOffsetInBytes(iMaterial) > 0)
 			SetTexCoordBuffer(BUFFER_OFFSET(pModel->m_pToy->GetVertexUVOffsetInBytes(iMaterial)), pModel->m_pToy->GetVertexSizeInBytes(iMaterial));
 		if (pModel->m_pToy->GetVertexNormalOffsetInBytes(iMaterial) > 0)
@@ -143,7 +143,7 @@ void CGameRenderingContext::RenderModel(CModel* pModel, size_t iMaterial)
 	else
 	{
 		// If there's no toy then we are using fixed size source models.
-		SetPositionBuffer(0u, 4*FIXED_FLOATS_PER_VERTEX);
+		SetPositionBuffer((size_t)0u, 4*FIXED_FLOATS_PER_VERTEX);
 		SetTexCoordBuffer(BUFFER_OFFSET(4*FIXED_UV_OFFSET), 4*FIXED_FLOATS_PER_VERTEX);
 	}
 	EndRenderVertexArray(pModel->m_aiVertexBufferSizes[iMaterial]);

@@ -37,8 +37,8 @@ void CTriggerController::updateAction(btCollisionWorld* pCollisionWorld, btScala
 		{
 			btPersistentManifold* pManifold = m_aManifolds[j];
 
-			btCollisionObject* obA = static_cast<btCollisionObject*>(pManifold->getBody0());
-			btCollisionObject* obB = static_cast<btCollisionObject*>(pManifold->getBody1());
+			const btCollisionObject* obA = static_cast<const btCollisionObject*>(pManifold->getBody0());
+			const btCollisionObject* obB = static_cast<const btCollisionObject*>(pManifold->getBody1());
 
 			btScalar directionSign;
 			size_t iOther;
