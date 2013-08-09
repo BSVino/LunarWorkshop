@@ -216,7 +216,7 @@ if ((x) > (y)) \
 
 	Reflected(eReflectionType);
 
-	CReflectionProxy::OnPlayerReflection(IsReflected(REFLECTION_LATERAL) ^ IsReflected(REFLECTION_VERTICAL), mNew);
+	CReflectionProxy::OnPlayerReflection(pMirror, IsReflected(REFLECTION_LATERAL) ^ IsReflected(REFLECTION_VERTICAL), mNew);
 	if (eReflectionType == REFLECTION_LATERAL)
 		CReflectionProxy::OnPlayerGravity(IsReflected(REFLECTION_VERTICAL));
 

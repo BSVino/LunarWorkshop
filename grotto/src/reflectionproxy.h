@@ -19,7 +19,7 @@ public:
 	DECLARE_ENTITY_OUTPUT(OnPlayerOnGround);
 
 public:
-	static void				OnPlayerReflection(bool bReflected, Matrix4x4& mNewPlayerLocal);
+	static void				OnPlayerReflection(class CMirror* pMirror, bool bReflected, Matrix4x4& mNewPlayerLocal);
 	static void				OnPlayerGravity(bool bCeiling);
 
 protected:

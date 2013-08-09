@@ -14,8 +14,10 @@ SAVEDATA_TABLE_BEGIN_EDITOR(CReflectedKinematic);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bReflected);
 	SAVEDATA_DEFINE_HANDLE_ENTITY(CSaveData::DATA_COPYTYPE, CEntityHandle<CBaseEntity>, m_hMirror, "Mirror");
 	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bReflectionAffectsPlayer, "ReflectionAffectsPlayer", true);
+	SAVEDATA_DEFINE_HANDLE_DEFAULT(CSaveData::DATA_COPYTYPE, bool, m_bOnlyAffectedByTarget, "OnlyAffectedByTarget", false);
 	SAVEDATA_EDITOR_VARIABLE("Mirror");
 	SAVEDATA_EDITOR_VARIABLE("ReflectionAffectsPlayer");
+	SAVEDATA_EDITOR_VARIABLE("OnlyAffectedByTarget");
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CReflectedKinematic);
@@ -31,6 +33,9 @@ void CReflectedKinematic::PostLoad()
 	BaseClass::PostLoad();
 
 	TAssert(IsValid());
+
+	if (m_bOnlyAffectedByTarget && IsValid())
+		static_cast<CMirror*>(m_hMirror.GetPointer())->SetKinematicReflector();
 }
 
 void CReflectedKinematic::Think()
@@ -44,6 +49,9 @@ void CReflectedKinematic::Think()
 const Matrix4x4 CReflectedKinematic::GetRenderTransform() const
 {
 	if (!IsValid())
+		return BaseClass::GetRenderTransform();
+
+	if (m_bOnlyAffectedByTarget && GrottoRenderer()->GetRenderingReflectionMirror() != m_hMirror)
 		return BaseClass::GetRenderTransform();
 
 	if (GrottoRenderer()->IsRenderingReflection() ^ GrottoRenderer()->IsRenderingTransparent())
@@ -67,9 +75,12 @@ void CReflectedKinematic::ModifyContext(class CRenderingContext* pContext) const
 	BaseClass::ModifyContext(pContext);
 }
 
-void CReflectedKinematic::Reflected(Matrix4x4& mNewPlayerLocal)
+void CReflectedKinematic::Reflected(CMirror* pMirror, Matrix4x4& mNewPlayerLocal)
 {
 	if (!IsValid())
+		return;
+
+	if (m_bOnlyAffectedByTarget && pMirror != m_hMirror)
 		return;
 
 	if (!m_bReflectionAffectsPlayer)

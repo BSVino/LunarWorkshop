@@ -48,6 +48,8 @@ public:
 
 	bool                CanDrag() const { return !!m_hDragTo; }
 
+	void                SetKinematicReflector() { m_bKinematicReflector = true; }
+
 	static size_t		GetNumMirrors() { return m_ahMirrors.size(); };
 	static CMirror*		GetMirror(size_t i) { return m_ahMirrors[i]; };
 
@@ -57,6 +59,8 @@ protected:
 
 	CEntityHandle<CBaseEntity> m_hDragTo;
 	Vector                     m_vecOriginalPosition;
+
+	bool                m_bKinematicReflector;
 
 	static tvector<CEntityHandle<CMirror> >	m_ahMirrors;
 };

@@ -22,6 +22,7 @@ SAVEDATA_TABLE_BEGIN(CMirror);
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, size_t, m_iBuffer);
 	SAVEDATA_DEFINE_HANDLE_ENTITY(CSaveData::DATA_COPYTYPE, CEntityHandle<CBaseEntity>, m_hDragTo, "DragTo");
 	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, Vector, m_vecOriginalPosition);
+	SAVEDATA_DEFINE(CSaveData::DATA_COPYTYPE, bool, m_bKinematicReflector);
 SAVEDATA_TABLE_END();
 
 INPUTS_TABLE_BEGIN(CMirror);
@@ -32,6 +33,7 @@ tvector<CEntityHandle<CMirror> > CMirror::m_ahMirrors;
 CMirror::CMirror()
 {
 	m_eMirrorType = MIRROR_NONE;
+	m_bKinematicReflector = false;
 }
 
 CMirror::~CMirror()
@@ -79,8 +81,13 @@ bool CMirror::ModifyShader(class CRenderingContext* pContext) const
 	if (!pContext->GetActiveShader())
 		return true;
 
-	if (CanDrag() && pContext->GetActiveShader()->m_sName == "model")
-		pContext->SetColor(Color(0, 255, 0));
+	if (pContext->GetActiveShader()->m_sName == "model")
+	{
+		if (m_bKinematicReflector)
+			pContext->SetColor(Color(0, 0, 255));
+		else if (CanDrag())
+			pContext->SetColor(Color(0, 255, 0));
+	}
 
 	if (pContext->GetActiveShader()->m_sName != "reflection")
 		return true;

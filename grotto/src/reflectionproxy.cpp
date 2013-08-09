@@ -34,7 +34,7 @@ void CReflectionProxy::Spawn()
 	BaseClass::Spawn();
 }
 
-void CReflectionProxy::OnPlayerReflection(bool bReflected, Matrix4x4& mNewPlayerLocal)
+void CReflectionProxy::OnPlayerReflection(CMirror* pMirror, bool bReflected, Matrix4x4& mNewPlayerLocal)
 {
 	for (size_t i = 0; i < GameServer()->GetMaxEntities(); i++)
 	{
@@ -48,7 +48,7 @@ void CReflectionProxy::OnPlayerReflection(bool bReflected, Matrix4x4& mNewPlayer
 
 		CReflectedKinematic* pReflectedKinematic = dynamic_cast<CReflectedKinematic*>(pEntity);
 		if (pReflectedKinematic)
-			pReflectedKinematic->Reflected(mNewPlayerLocal);
+			pReflectedKinematic->Reflected(pMirror, mNewPlayerLocal);
 	}
 
 	if (!s_pProxy)

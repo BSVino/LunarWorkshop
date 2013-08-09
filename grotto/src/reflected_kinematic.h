@@ -18,7 +18,7 @@ public:
 	void            ModifyContext(class CRenderingContext* pContext) const;
 	const TFloat    GetBoundingRadius() const;
 
-	void            Reflected(Matrix4x4& mNewPlayerLocal);
+	void            Reflected(class CMirror* pMirror, Matrix4x4& mNewPlayerLocal);
 	const Matrix4x4 ReflectProperly() const;
 
 	class CMirror* GetMirror() const;
@@ -28,4 +28,5 @@ public:
 	bool      m_bReflected;
 	CEntityHandle<CBaseEntity> m_hMirror;
 	bool      m_bReflectionAffectsPlayer;
+	bool      m_bOnlyAffectedByTarget;
 };
