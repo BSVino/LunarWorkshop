@@ -26,6 +26,8 @@ set (RIFTPARTY_ENTITY_SOURCES
 	riftparty_game.cpp
 	riftparty_character.cpp
 	riftparty_playercharacter.cpp
+
+	robot.cpp
 )
 
 set (RIFTPARTY_UI_SOURCES
