@@ -78,6 +78,7 @@ if (BUILD_ENGINE)
 	add_subdirectory (tools)
 
 	add_subdirectory (grotto)
+	add_subdirectory (riftparty)
 endif (BUILD_ENGINE)
 
 if (BUILD_CHAIN AND BUILD_ENGINE)

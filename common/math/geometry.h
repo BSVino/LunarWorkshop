@@ -779,8 +779,8 @@ inline bool RayIntersectsAABB(const Ray& r, const AABB& b, Vector& vecIntersecti
 
 inline bool RayIntersectsAABB(const Ray& r, const AABB& b)
 {
-    Vector vecIntersection;
-    RayIntersectsAABB(r, b, vecIntersection);
+	Vector vecIntersection;
+	return RayIntersectsAABB(r, b, vecIntersection);
 }
 
 template <class F>

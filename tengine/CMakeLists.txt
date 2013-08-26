@@ -9,6 +9,7 @@ include_directories (
 	${PROJECT_SOURCE_DIR}/../ext-deps/enet-1.3.3/include
 	${PROJECT_SOURCE_DIR}/../ext-deps/protobuf-2.5.0/vsprojects/include
 	${PROJECT_SOURCE_DIR}/../ext-deps/protobuf-2.5.0/src
+	${PROJECT_SOURCE_DIR}/../ext-deps/bullet-2.81/src
 	${CMAKE_SOURCE_DIR}/
 	${CMAKE_SOURCE_DIR}/common
 	${CMAKE_SOURCE_DIR}/common/math
@@ -22,12 +23,7 @@ if (WIN32)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/pthreads-w32-2-8-0-release)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/SDL-1.2.14/include)
 	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/SDL_mixer-1.2.11/include)
-	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/src)
 endif (WIN32)
-
-if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	include_directories(${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.81/src)
-endif ()
 
 set (TENGINE_GAME_SOURCES
 	game/cameramanager.cpp
@@ -166,9 +162,9 @@ if (WIN32)
 	if (WITH_NETWORKING)
 		target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/enet-1.3.0/Debug/enet.lib)
 	endif (WITH_NETWORKING)
-	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/lib/Debug/BulletDynamics_Debug.lib)
-	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/lib/Debug/BulletCollision_Debug.lib)
-	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/lib/Debug/LinearMath_Debug.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.81/lib/Debug/BulletDynamics_Debug.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.81/lib/Debug/BulletCollision_Debug.lib)
+	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.81/lib/Debug/LinearMath_Debug.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/fcollada-2010.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/farchivexml-2010.lib)
 	target_link_libraries(tengine debug ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Debug/libxml-2010.lib)
@@ -179,9 +175,9 @@ if (WIN32)
 	if (WITH_NETWORKING)
 		target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/enet-1.3.0/Release/enet.lib)
 	endif (WITH_NETWORKING)
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/lib/RelWithDebInfo/BulletDynamics_RelWithDebugInfo.lib)
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/lib/RelWithDebInfo/BulletCollision_RelWithDebugInfo.lib)
-	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.79/lib/RelWithDebInfo/LinearMath_RelWithDebugInfo.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.81/lib/RelWithDebInfo/BulletDynamics_RelWithDebugInfo.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.81/lib/RelWithDebInfo/BulletCollision_RelWithDebugInfo.lib)
+	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/bullet-2.81/lib/RelWithDebInfo/LinearMath_RelWithDebugInfo.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/fcollada-2010.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/farchivexml-2010.lib)
 	target_link_libraries(tengine optimized ${CMAKE_SOURCE_DIR}/../ext-deps/fcollada/fcollada-2010/Release/libxml-2010.lib)
